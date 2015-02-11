@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
+    <link rel="next" title="Theoretical background" href="adaptive-qmmm-theory.html" />
+    <link rel="prev" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adaptive-qmmm-theory.html" title="Theoretical background"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="adaptive-qmmm.html" title="Adaptive QM/MM MD of Fracture in Silicon"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#scope-of-the-tutorial">Scope of the tutorial</a></li>
+<li><a class="reference internal" href="#practical-considerations">Practical considerations</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="adaptive-qmmm.html"
+                        title="previous chapter">Adaptive QM/MM MD of Fracture in Silicon</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="adaptive-qmmm-theory.html"
+                        title="next chapter">Theoretical background</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/adaptive-qmmm-step0.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="scope-of-the-tutorial">
+<h2>Scope of the tutorial<a class="headerlink" href="#scope-of-the-tutorial" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we will carry out classical and hybrid multiscale
+QM/MM (quantum mechanics/molecular mechanics) molecular dynamics
+simulations using the Learn on the Fly (LOTF) schmee for fracture in
+silicon. For the classical simulations we will use the
+Stillinger-Weber <a class="reference internal" href="adaptive-qmmm-references.html#stillinger1985" id="id1">[Stillinger1985]</a> interatomic potential, which
+provides a generally good description of many properties of silicon,
+but, not, however of brittle fracture as we will see. The focus of the
+tutorial is on embedding techniques, so we will use an approximate
+quantum mechanical method which demonstrates the approach while
+remaining fast enough to carry out calculations during the time
+available, namely Density Functional Tight Binding <a class="reference internal" href="adaptive-qmmm-references.html#elstner1998" id="id2">[Elstner1998]</a>.</p>
+<p>The tutorial is divided into three sections. There are also some
+extension tasks at the end which you can complete if you have time. In
+the first section we will prepare the model fracture system for our
+simulations. In the second part, we will carry out classical molecular
+dynamics, and in the third part of the tutorial, the &#8216;Learn on the
+Fly&#8217; (<a class="reference internal" href="adaptive-qmmm-references.html#devita1998" id="id3">[DeVita1998]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#csanyi2004" id="id4">[Csanyi2004]</a>) embedding scheme will be used to
+carry out coupled classical and quantum calculations. One of the main
+advantages of the LOTF approach is that the QM region can be moved
+during the simulation (<em>adaptive</em> QM/MM). You can read more details
+about multiscale embedding methods applied to materials systems in
+<a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id5">[Bernstein2009]</a>, and more about brittle fracture in silicon
+investigated with the &#8216;Learn on the Fly&#8217; technique in <a class="reference internal" href="adaptive-qmmm-references.html#kermode2008" id="id6">[Kermode2008]</a>.</p>
+</div>
+<div class="section" id="practical-considerations">
+<span id="practical"></span><h2>Practical considerations<a class="headerlink" href="#practical-considerations" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial we will carry out simulations using a combination of
+two packages: <a class="reference external" href="http://www.jrkermode.co.uk/quippy">quippy</a>, a Python
+interface to the <a class="reference external" href="http://www.libatoms.org">libAtoms/QUIP</a> MD code
+developed at King&#8217;s College London, Cambridge University, the Naval
+Research Lab in Washington and the Fraunhofer IWM in Freiburg, and the
+Atomic Simulation Environment, <a class="reference external" href="https://wiki.fysik.dtu.dk/ase">ASE</a>,
+a Python framework developed at the Centre for Atomistic Materials
+Design (<a class="reference external" href="http://www.camd.dtu.dk/">CAMd</a>) at DTU, Copenhagen.</p>
+<p>If you&#8217;re not familiar with Python don&#8217;t worry, it&#8217;s quite easy to
+pick up and the syntax is very similar to Fortran. We have provided
+template Python code which you should copy and paste into your text
+editor. Save your script with a <tt class="docutils literal"><span class="pre">.py</span></tt> file extension. Whenever you
+see <tt class="docutils literal"><span class="pre">...</span></tt> it means there is something you need to add to the code in
+order to complete it; usually there will be a comment to give you a
+hint. The source code listings are all in boxes like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&#39;Example code listing&#39;</span>     <span class="c"># Print something out</span>
+<span class="k">print</span> <span class="o">...</span>                        <span class="c"># You need to add something here</span>
+                                 <span class="c"># e.g. replace the ... with a number</span>
+</pre></div>
+</div>
+<p>To run code, we will be using <a class="reference external" href="http://ipython.org">ipython</a>, an
+interactive Python shell. You can start <cite>ipython</cite> with a simple shell
+command:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ipython
+</pre></div>
+</div>
+<p>Start by importing everything from the <cite>quippy</cite> package with the
+command:</p>
+<div class="highlight-python"><div class="highlight"><pre>In [1]: from qlab import *
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you have not installed the <cite>AtomEye</cite> plugin then the command
+above will give an <tt class="xref py py-exc docutils literal"><span class="pre">ImportError</span></tt>. You can use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p class="last">instead, which only imports <cite>quippy</cite> and not <cite>AtomEye</cite>, but you
+will then not be able to visualise interactively using the
+<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><tt class="xref py py-func docutils literal"><span class="pre">view()</span></tt></a> function - you can always save configurations to
+external files and visualise them with other tools such as <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> or <a class="reference external" href="http://www.ovito.org">OVITO</a> instead. See the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><tt class="xref py py-mod docutils literal"><span class="pre">qlab</span></tt></a> and
+<a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt></a> documentation for further details.</p>
+</div>
+<p>You should prepare your Python scripts in a text editor and then run
+them from within <cite>ipython</cite> with the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing">%run</a>
+command. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>In [2]: run make_crack.py
+</pre></div>
+</div>
+<p>If your script is taking a long time to run and you realise something
+is wrong you can interrupt it with <cite>Ctrl+C</cite>.</p>
+<p>The tutorial is structured so that you will build up your script as
+you go along. You should keep the same <cite>ipython</cite> session open, and
+simply run the script again each time you add something new. You will
+find it easier to follow the tutorial if you use the same variable
+names as we have used here.</p>
+<p>You can also execute individual Python statements by typing them
+directly into the <cite>ipython</cite> shell. This is very useful for debugging
+and for interactive visualisation (described in more detail in the
+<a class="reference internal" href="adaptive-qmmm-step2.html#visualisation2"><em>2.3 Visualisation and Analysis (as time permits)</em></a> section). Finally, it&#8217;s possible to copy and
+paste code into <cite>ipython</cite> using the <cite>%paste</cite> or <cite>%cpaste</cite> commands.</p>
+<p>You can follow the links in the tutorial to read more documentation for
+functions and classes we will be using, and for <cite>quippy</cite> routines you
+can also browse the source code by clicking on the <cite>[source]</cite> link
+which you will find to the right of class and function definitions in
+the online documentations. You can also explore functions
+interactively from within <cite>ipython</cite> by following the name of an object
+or function with a <tt class="docutils literal"><span class="pre">?</span></tt>, e.g.</p>
+<div class="highlight-python"><div class="highlight"><pre>In [3]: Atoms ?
+</pre></div>
+</div>
+<p>displays information about the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> class, or</p>
+<div class="highlight-python"><div class="highlight"><pre>In [4]: write ?
+</pre></div>
+</div>
+<p>displays information about the <a class="reference internal" href="io.html#quippy.io.write" title="quippy.io.write"><tt class="xref py py-func docutils literal"><span class="pre">write()</span></tt></a> function. See
+the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/tutorial.html">ipython tutorial</a>
+for more information.</p>
+<p>Each subsection indicates the approximate amount of time you should
+spend on it. At the end of each subsection there is a <em>Milestone</em>
+where a script for that stage of the tutorial is provided. If you run
+out of time, just skip ahead to the next milestone, download the
+script and then continue with the next section.</p>
+<p>Continue with <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><em>Step 1: Setup of the Silicon model system</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adaptive-qmmm-theory.html" title="Theoretical background"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="adaptive-qmmm.html" title="Adaptive QM/MM MD of Fracture in Silicon"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

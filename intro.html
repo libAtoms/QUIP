@@ -1,0 +1,787 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction to quippy &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="next" title="Installation" href="install.html" />
+    <link rel="prev" title="quippy" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="quippy"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction to <tt class="docutils literal"><span class="pre">quippy</span></tt></a><ul>
+<li><a class="reference internal" href="#overview-of-libatoms-and-quip">Overview of <tt class="docutils literal"><span class="pre">libAtoms</span></tt> and <tt class="docutils literal"><span class="pre">QUIP</span></tt></a><ul>
+<li><a class="reference internal" href="#potentials-implemented-in-quip">Potentials implemented in <tt class="docutils literal"><span class="pre">QUIP</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripting-interfaces">Scripting interfaces</a><ul>
+<li><a class="reference internal" href="#benefits-of-scripting-interfaces">Benefits of scripting interfaces</a></li>
+<li><a class="reference internal" href="#why-python">Why Python?</a></li>
+<li><a class="reference internal" href="#wrapping-fortran-codes-in-python">Wrapping Fortran codes in Python</a><ul>
+<li><a class="reference internal" href="#automatic-wrapper-generation-with-f2py">Automatic wrapper generation with <tt class="docutils literal"><span class="pre">f2py</span></tt></a></li>
+<li><a class="reference internal" href="#derived-type-support-via-f90wrap">Derived type support via <tt class="docutils literal"><span class="pre">f90wrap</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#overview-of-quippy-capabilities">Overview of <tt class="docutils literal"><span class="pre">quippy</span></tt> capabilities</a><ul>
+<li><a class="reference internal" href="#creating-structures">Creating structures</a></li>
+<li><a class="reference internal" href="#interactive-visualisation-with-atomeye">Interactive visualisation with <tt class="docutils literal"><span class="pre">AtomEye</span></tt></a></li>
+<li><a class="reference internal" href="#manipulating-atoms">Manipulating atoms</a></li>
+<li><a class="reference internal" href="#post-processing-of-results">Post-processing of results</a><ul>
+<li><a class="reference internal" href="#reading-configurations">Reading configurations</a></li>
+<li><a class="reference internal" href="#post-processing-calculations">Post processing calculations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performing-calculations">Performing calculations</a><ul>
+<li><a class="reference internal" href="#creating-a-potential">Creating a Potential</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#higher-level-functionality">Higher level functionality</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#interoperability-between-electronic-structure-codes">Interoperability between electronic structure codes</a><ul>
+<li><a class="reference internal" href="#alternative-invocation-methods">Alternative invocation methods</a></li>
+<li><a class="reference internal" href="#changing-parameters">Changing parameters</a></li>
+<li><a class="reference internal" href="#harmonic-fit-to-data">Harmonic fit to data</a></li>
+<li><a class="reference internal" href="#going-beyond-gga">Going beyond GGA</a></li>
+<li><a class="reference internal" href="#robustness">Robustness</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#summary-and-conclusions">Summary and Conclusions</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">quippy</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction-to-quippy">
+<h1>Introduction to <tt class="docutils literal"><span class="pre">quippy</span></tt><a class="headerlink" href="#introduction-to-quippy" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">James Kermode</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">28 January 2013</td>
+</tr>
+</tbody>
+</table>
+<p>This introduction is adapted from a <a class="reference external" href="http://www.cecam.org/workshop-4-717.html?presentation_id=9165">talk</a>
+given at a CECAM workshop <a class="reference external" href="http://www.cecam.org/workshop-717.html">Validation and Verification in
+Electronic-Structure calculations</a> in September 2012.</p>
+<div class="section" id="overview-of-libatoms-and-quip">
+<h2>Overview of <tt class="docutils literal"><span class="pre">libAtoms</span></tt> and <tt class="docutils literal"><span class="pre">QUIP</span></tt><a class="headerlink" href="#overview-of-libatoms-and-quip" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The <a class="reference external" href="http://www.libatoms.org">libAtoms</a> package is a software
+library written in Fortran 95 for the purposes of carrying out
+molecular dynamics simulations.</li>
+<li>The <tt class="docutils literal"><span class="pre">QUIP</span></tt> (<strong>QU</strong>antum mechanics and <strong>I</strong>nteratomic
+<strong>P</strong>otentials) package, built on top of <tt class="docutils literal"><span class="pre">libAtoms</span></tt>, implements a
+wide variety of interatomic potentials and tight binding quantum
+mechanics, and is also able to call external packages.</li>
+<li>Various hybrid combinations are also supported in the style of
+QM/MM, including <cite>Learn on the Fly</cite> scheme <a class="reference internal" href="#lotf" id="id1">[LOTF]</a></li>
+<li><a class="reference external" href="http://www.jrkermode.co.uk/quippy">quippy</a> is a Python interface
+to libAtoms and QUIP.</li>
+</ul>
+<div class="section" id="potentials-implemented-in-quip">
+<h3>Potentials implemented in <tt class="docutils literal"><span class="pre">QUIP</span></tt><a class="headerlink" href="#potentials-implemented-in-quip" title="Permalink to this headline">¶</a></h3>
+<p>Classical interatomic potentials:</p>
+<ul class="simple">
+<li>BKS (silica)</li>
+<li>Brenner (carbon)</li>
+<li>EAM (fcc)</li>
+<li>Fanourgakis-Xantheas</li>
+<li>Finnis-Sinclair (bcc)</li>
+<li>Flikkema-Bromley</li>
+<li>GAP (general many-body)</li>
+<li>Guggenheim-McGlashan</li>
+<li>Lennard-Jones</li>
+<li>Morse</li>
+<li>Partridge-Schwenke (water monomer)</li>
+<li>Si-MEAM (silicon)</li>
+<li>Stillinger-Weber (carbon, silicon, germanium)</li>
+<li>Stillinger-Weber + Vashishta (silicon/silica interfaces)</li>
+<li>Sutton-Chen</li>
+<li>Tangney-Scandolo (silica, titania etc)</li>
+<li>Tersoff (silicon, carbon)</li>
+</ul>
+<p>Plus several tight binding parameterisations (Bowler, DFTB, GSP,
+NRL-TB, ...)</p>
+<p>External packages:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">CASTEP</span></tt>&#8212; DFT, planewaves, ultrasoft pseudopotentials</li>
+<li><tt class="docutils literal"><span class="pre">CP2K</span></tt> &#8212; DFT, mixed Gaussian/planewave basis set, various pseudopotentials.
+Our <tt class="docutils literal"><span class="pre">CP2K</span></tt> Driver supports QM, MM and QM/MM.</li>
+<li><tt class="docutils literal"><span class="pre">MOLPRO</span></tt> &#8212; All electron quantum chemistry code. DFT, CCSD(T), MP2</li>
+<li><tt class="docutils literal"><span class="pre">VASP</span></tt> &#8212; DFT, planewaves, PAW or ultrasoft pseudopotentials</li>
+<li>Interface to <a class="reference external" href="http://www.openkim.org">OpenKIM</a> project</li>
+<li>Relatively easy to add new codes</li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">QUIP</span></tt> also has a full interface to the Atomic Simulation
+Environment, <a class="reference external" href="https://wiki.fysik.dtu.dk/ase">ASE</a></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">ASE</span></tt> adds support for several more codes e.g. <tt class="docutils literal"><span class="pre">ABINIT</span></tt>, <tt class="docutils literal"><span class="pre">Elk</span></tt>,
+<tt class="docutils literal"><span class="pre">Exciting</span></tt>, <tt class="docutils literal"><span class="pre">GPAW</span></tt>, <tt class="docutils literal"><span class="pre">SIESTA</span></tt>, ...</li>
+<li><tt class="docutils literal"><span class="pre">ASE</span></tt> also works with the <a class="reference external" href="https://wiki.fysik.dtu.dk/cmr">CMR</a> database system</li>
+</ul>
+</div>
+</div>
+<div class="section" id="scripting-interfaces">
+<h2>Scripting interfaces<a class="headerlink" href="#scripting-interfaces" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="benefits-of-scripting-interfaces">
+<h3>Benefits of scripting interfaces<a class="headerlink" href="#benefits-of-scripting-interfaces" title="Permalink to this headline">¶</a></h3>
+<p>A scripting interface provides access to all the functionality of a
+code written in a low level language (e.g. Fortran, C) via a high
+level language (e.g. Java, Python, Perl, TCL, ...).</p>
+<ul class="simple">
+<li>Can be generated either automatically or manually from
+the source code of the low level code</li>
+</ul>
+<p>Primary benefits of scripting interfaces are:</p>
+<ul class="simple">
+<li>Preparation of input files</li>
+<li>Analysis and post processing of results</li>
+</ul>
+<p>Scripting intefaces also bring increased flexibility:</p>
+<ul class="simple">
+<li>Can be used interactively, or via shell commands/scripts</li>
+<li>Interactive visualisation and structure modification</li>
+<li>Interoperability with other codes:
+Make use of routines from other scientific packages</li>
+<li>Batch processing:
+parameter sweeps, high throughput</li>
+<li>Assemble existing components in new ways:
+easily put internal subroutines to work</li>
+<li>Good for less experienced programmers:
+high level languages generally more fault tolerant</li>
+</ul>
+<p>Finally, scripting interfaces can bring improvements to the code
+being wrapped:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Simplify top level programs</dt>
+<dd><ul class="first last simple">
+<li>Replace Fortran or C main programs with scripts (computational steering)</li>
+<li>Reduce need for special purpose keywords and options</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Encourages good software development practices
+- <em>e.g.</em> modularity, well defined APIs</p>
+</li>
+<li><dl class="first docutils">
+<dt>Speed up development of new algorithms and routines</dt>
+<dd><ul class="first last simple">
+<li>Prototype in high level language</li>
+<li>Later reimplement time critical parts in low level language</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Eases creation and maintenance of unit/regression tests</p>
+</li>
+</ul>
+</div>
+<div class="section" id="why-python">
+<h3>Why Python?<a class="headerlink" href="#why-python" title="Permalink to this headline">¶</a></h3>
+<p>Python has become increasingly popular for scientific computing in
+recent years, due to</p>
+<ul class="simple">
+<li>Clean, easy-to-learn syntax</li>
+<li>Very high level object-oriented language</li>
+<li>Availability of packages: many fast, robust mathematical and
+scientific tools, principally <a class="reference external" href="http://www.numpy.org">numpy</a> and
+<a class="reference external" href="http://www.scipy.org">scipy</a> but now also many more.</li>
+</ul>
+<p>But aren&#8217;t interpreted languages like Python really slow?</p>
+<ul class="simple">
+<li>Providing numerically intensive parts are vectorised, Python code
+can run surprisingly fast</li>
+<li>Mixture of high and low level languages can be ideal to maximise
+overall efficiency of developing <em>and</em> running codes</li>
+</ul>
+</div>
+<div class="section" id="wrapping-fortran-codes-in-python">
+<h3>Wrapping Fortran codes in Python<a class="headerlink" href="#wrapping-fortran-codes-in-python" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="automatic-wrapper-generation-with-f2py">
+<h4>Automatic wrapper generation with <tt class="docutils literal"><span class="pre">f2py</span></tt><a class="headerlink" href="#automatic-wrapper-generation-with-f2py" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><a class="reference internal" href="#f2py" id="id2">[f2py]</a>, part of <cite>numpy</cite>, allows Fortran routines to be
+called from Python</li>
+<li><tt class="docutils literal"><span class="pre">f2py</span></tt> scans Fortran 77/90/95 codes and automatically generates
+Python interfaces</li>
+<li>Portable, compiler independent</li>
+<li>Produces easy-to-use Python extension modules</li>
+<li>Supports all basic Fortran types, multi-dimensional arrays</li>
+<li>But no support for derived types or overloaded interfaces</li>
+</ul>
+<p>Also allows Fortran routines to call back to Python functions</p>
+</div>
+<div class="section" id="derived-type-support-via-f90wrap">
+<h4>Derived type support via <tt class="docutils literal"><span class="pre">f90wrap</span></tt><a class="headerlink" href="#derived-type-support-via-f90wrap" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="#f90wrap" id="id3">[f90wrap]</a> adds support for Fortran 90 derived types and generic
+interfaces to <tt class="docutils literal"><span class="pre">f2py</span></tt></p>
+<ul class="simple">
+<li>Based on Fortran 90 documentation generator <tt class="docutils literal"><span class="pre">f90doc</span></tt> <a class="reference internal" href="#rutt2004" id="id4">[Rutt2004]</a></li>
+<li>Opaque interface layer wraps derived types
+using <tt class="docutils literal"><span class="pre">transfer()</span></tt> <a class="reference internal" href="#pletzer2008" id="id5">[Pletzer2008]</a>.</li>
+<li>Thin object-oriented layer on top gives wrapped
+code natural (Pythonic) look and feel</li>
+<li>Currently <tt class="docutils literal"><span class="pre">f90wrap</span></tt> is part of <tt class="docutils literal"><span class="pre">quippy</span></tt>, but to be released in
+future as a standalone utility, or merged into f2py</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="overview-of-quippy-capabilities">
+<h2>Overview of <tt class="docutils literal"><span class="pre">quippy</span></tt> capabilities<a class="headerlink" href="#overview-of-quippy-capabilities" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">quippy</span></tt> is a general purpose tool for:<ul>
+<li>Manipulating atomic configurations</li>
+<li>Visualising and analysing results</li>
+<li>Performing classical and <em>ab initio</em> calculations</li>
+</ul>
+</li>
+<li>Other similar tools exist, with different focuses, <em>e.g.</em>:<ul>
+<li><a class="reference external" href="https://wiki.fysik.dtu.dk/ase">ASE</a> – atomic simulation environment</li>
+<li><a class="reference external" href="http://dirac.cnrs-orleans.fr/MMTK">MMTK</a> – molecular modelling toolkit</li>
+<li><a class="reference external" href="http://openbabel.org">OpenBabel</a> – toolbox for chemical file format conversion</li>
+<li><a class="reference external" href="http://pizza.sandia.gov">pizza.py</a> – LAMMPS toolkit</li>
+<li><a class="reference external" href="http://www.pymol.org">PyMOL</a> – visualisation suite, optimized for biomolecules</li>
+<li><a class="reference external" href="https://github.com/materialsproject/pymatgen">pymatgen</a> – Materials Project collaboration</li>
+<li><a class="reference external" href="http://code.google.com/p/mdanalysis">MDAnalysis</a> - provides analysis for AMBER, CHARMM, Gromacs</li>
+</ul>
+</li>
+</ul>
+<div class="section" id="creating-structures">
+<h3>Creating structures<a class="headerlink" href="#creating-structures" title="Permalink to this headline">¶</a></h3>
+<p>Python interactive session:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">qlab</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">n</span>
+<span class="go">8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span>
+<span class="go">[[ 0.    0.    0.  ]</span>
+<span class="go"> [ 1.36  1.36  1.36]</span>
+<span class="go"> [ 2.72  2.72  0.  ]</span>
+<span class="go"> [ 4.08  4.08  1.36]</span>
+<span class="go"> [ 2.72  0.    2.72]</span>
+<span class="go"> [ 4.08  1.36  4.08]</span>
+<span class="go"> [ 0.    2.72  2.72]</span>
+<span class="go"> [ 1.36  4.08  4.08]]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="interactive-visualisation-with-atomeye">
+<h3>Interactive visualisation with <tt class="docutils literal"><span class="pre">AtomEye</span></tt><a class="headerlink" href="#interactive-visualisation-with-atomeye" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">quippy</span></tt> includes a <tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt> to the <a class="reference internal" href="#atomeye" id="id7">[AtomEye]</a> atomic
+visualisation programme. To print values, and visualise structure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">[ 0.  0.  0.]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">dia</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/si8-1.png"><img alt="_images/si8-1.png" class="align-center" src="_images/si8-1.png" style="width: 300px;" /></a>
+<p>Modify data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">O_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span><span class="o">/</span><span class="mf">2.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">O_pos</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">redraw</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/si8-2.png"><img alt="_images/si8-2.png" class="align-center" src="_images/si8-2.png" style="width: 300px;" /></a>
+</div>
+<div class="section" id="manipulating-atoms">
+<h3>Manipulating atoms<a class="headerlink" href="#manipulating-atoms" title="Permalink to this headline">¶</a></h3>
+<p>Setup <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz cell:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.92</span><span class="p">,</span>
+<span class="gp">... </span>                    <span class="n">c</span><span class="o">=</span><span class="mf">5.40</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/quartz.png"><img alt="_images/quartz.png" class="align-center" src="_images/quartz.png" style="width: 300px;" /></a>
+<p>Custom atom colouring:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&quot;charge&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="o">==</span><span class="mi">8</span><span class="p">]</span>  <span class="o">=</span> <span class="o">-</span><span class="mf">1.4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="o">==</span><span class="mi">14</span><span class="p">]</span> <span class="o">=</span>  <span class="mf">2.8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="s">&quot;charge&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/quartz-charge.png"><img alt="_images/quartz-charge.png" class="align-center" src="_images/quartz-charge.png" style="width: 300px;" /></a>
+<p>Filtering atoms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span> <span class="o">=</span> <span class="n">aq</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">aq</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq2</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/quartz-filtered.png"><img alt="_images/quartz-filtered.png" class="align-center" src="_images/quartz-filtered.png" style="width: 300px;" /></a>
+<p>Configurations can be written out in number of formats, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;aq.xyz&#39;</span><span class="p">)</span>  <span class="c"># XYZ</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;aq.cell&#39;</span><span class="p">)</span> <span class="c"># CASTEP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;aq.cube&#39;</span><span class="p">)</span> <span class="c"># Gaussian</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;INCAR&#39;</span><span class="p">)</span>   <span class="c"># VASP</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-of-results">
+<h3>Post-processing of results<a class="headerlink" href="#post-processing-of-results" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="reading-configurations">
+<h4>Reading configurations<a class="headerlink" href="#reading-configurations" title="Permalink to this headline">¶</a></h4>
+<p>Individual snapshots or entire trajectories can be read in, also in a
+variety of formats:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s">&#39;md.xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">final</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s">&#39;md.xyz@-1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">traj</span> <span class="o">=</span> <span class="n">AtomsList</span><span class="p">(</span><span class="s">&#39;md.xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">draw_arrows</span><span class="p">(</span><span class="s">&#39;force&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/forces.png"><img alt="_images/forces.png" class="align-center" src="_images/forces.png" style="width: 600px;" /></a>
+<p>Plotting with the <a class="reference external" href="http://matplotlib.org">matplotlib</a> library:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pylab</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">traj</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>     <span class="n">label</span><span class="o">=</span><span class="s">&#39;Potential energy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Time / fs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Energy / eV&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;lower right&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/potentialenergy2.png"><img alt="_images/potentialenergy2.png" class="align-center" src="_images/potentialenergy2.png" style="width: 600px;" /></a>
+</div>
+<div class="section" id="post-processing-calculations">
+<h4>Post processing calculations<a class="headerlink" href="#post-processing-calculations" title="Permalink to this headline">¶</a></h4>
+<p>Calculate kinetic energy, and add total energy to the plot:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">mass</span><span class="o">*</span>
+<span class="gp">... </span>            <span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm2</span><span class="p">())</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="n">ke</span> <span class="o">+</span> <span class="n">traj</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="n">label</span><span class="o">=</span><span class="s">&#39;Total energy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/totalenergy2.png"><img alt="_images/totalenergy2.png" class="align-center" src="_images/totalenergy2.png" style="width: 600px;" /></a>
+<p>Maxwell-Boltzmann distribution of atomic velocities</p>
+<div class="math">
+<p><img src="_images/math/ad4ec527efe60144f574ad3f790dda0837b784cf.png" alt="f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v"/></p>
+</div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="s">&quot;Maxwell-Boltmann distribution of speeds at temperature T for particles of mass m&quot;</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">BOLTZMANN_K</span><span class="o">*</span><span class="n">T</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">BOLTZMANN_K</span><span class="o">*</span><span class="n">T</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">speeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_speeds</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">(</span><span class="n">speeds</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">all_speeds</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">max_bolt</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">500.0</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/velocitydistribution.png"><img alt="_images/velocitydistribution.png" class="align-center" src="_images/velocitydistribution.png" style="width: 600px;" /></a>
+</div>
+</div>
+<div class="section" id="performing-calculations">
+<h3>Performing calculations<a class="headerlink" href="#performing-calculations" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>As well as preparing structures and post-processing results,
+<tt class="docutils literal"><span class="pre">quippy</span></tt> allows calculations to be run</li>
+<li>In <tt class="docutils literal"><span class="pre">QUIP</span></tt> and <tt class="docutils literal"><span class="pre">quippy</span></tt>, all calculations are performed with a
+Potential object (very similar to the
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#ase.calculators.interface.Calculator" title="(in ASE v3.9.0.4128)"><tt class="xref py py-class docutils literal"><span class="pre">Calculator</span></tt></a> concept in <tt class="docutils literal"><span class="pre">ASE</span></tt>)</li>
+<li>Types of potential<ul>
+<li><em>Internal</em>: interatomic potential or tight binding</li>
+<li><em>External</em>: file-based communication with external code or callback-based communication with a Python function</li>
+<li>Plus flexible combinations of other potentials</li>
+</ul>
+</li>
+<li><em>Internal</em> potentials use XML parameter strings</li>
+<li><em>External</em> potentials use template parameter files</li>
+</ul>
+<div class="section" id="creating-a-potential">
+<h4>Creating a Potential<a class="headerlink" href="#creating-a-potential" title="Permalink to this headline">¶</a></h4>
+<p>Internal potential:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sw_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;IP SW&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>External potential:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;FilePot&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">command</span><span class="o">=</span><span class="s">&#39;./castep-driver.sh&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Driver script can be a shell script, an executable program using
+<tt class="docutils literal"><span class="pre">QUIP</span></tt> or a <tt class="docutils literal"><span class="pre">quippy</span></tt> script. It can even invoke code on a remote
+machine.</p>
+</div>
+</div>
+<div class="section" id="higher-level-functionality">
+<h3>Higher level functionality<a class="headerlink" href="#higher-level-functionality" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Any of these codes or potentials can be used for higher level calculations</li>
+<li>Within QUIP<ul>
+<li>Molecular dynamics and QM/MM (any combination of codes)</li>
+<li>Geometry optimisation with CG, damped MD and FIRE</li>
+<li>Transition state searches with NEB and string method</li>
+</ul>
+</li>
+<li>By interoperating with other packages<ul>
+<li>Global minimisation with basin or minima hopping via =ASE=</li>
+<li>Symmetry analysis via <a class="reference external" href="http://spglib.sourceforge.net">spglib</a></li>
+<li>Phonon band structure via <a class="reference external" href="http://phonopy.sourceforge.net">phonopy</a></li>
+<li>...</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="interoperability-between-electronic-structure-codes">
+<h2>Interoperability between electronic structure codes<a class="headerlink" href="#interoperability-between-electronic-structure-codes" title="Permalink to this headline">¶</a></h2>
+<p>For verification and validation, we would often like to compare structural
+properties predicted by a number of DFT codes</p>
+<ul class="simple">
+<li>Let&#8217;s try this with the H<sub>2</sub> molecule for a few codes</li>
+<li>PBE XC-functional</li>
+<li>Basis set parameters have been converged for each code</li>
+</ul>
+<p>Definition of H<sub>2</sub> molecule:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">h2_molecule</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mf">10.0</span><span class="p">):</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="n">vacuum</span><span class="p">,</span> <span class="n">vacuum</span><span class="p">,</span> <span class="n">vacuum</span><span class="p">]))</span>
+    <span class="n">h2</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">h2</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;bond_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="n">h2</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mf">2.0</span>
+    <span class="n">h2</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">+</span><span class="n">a</span><span class="o">/</span><span class="mf">2.0</span>
+    <span class="k">return</span> <span class="n">h2</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">CASTEP</span></tt> calculation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">h2</span> <span class="o">=</span> <span class="n">h2_molecule</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">h2</span><span class="o">.</span><span class="n">energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">h2</span><span class="o">.</span><span class="n">force</span>
+</pre></div>
+</div>
+<div class="section" id="alternative-invocation-methods">
+<h3>Alternative invocation methods<a class="headerlink" href="#alternative-invocation-methods" title="Permalink to this headline">¶</a></h3>
+<p>ASE-compatible calculator interface:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">h2</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">castep</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">h2</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">h2</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Most of these tools can also be used without the <tt class="docutils literal"><span class="pre">quippy</span></tt> Python
+interface, using the QUIP <tt class="docutils literal"><span class="pre">eval</span></tt> tool:</p>
+<div class="highlight-python"><div class="highlight"><pre>eval init_args=&quot;FilePot command=./castep-driver.sh&quot; at_file=h2.xyz F E
+</pre></div>
+</div>
+<p>There is also a command line tool <tt class="docutils literal"><span class="pre">convert.py</span></tt> which can convert
+between file formats, e.g. .xyz to/from <tt class="docutils literal"><span class="pre">CASTEP</span></tt> .cell, <tt class="docutils literal"><span class="pre">VASP</span></tt>
+<tt class="docutils literal"><span class="pre">INCAR</span></tt>, etc. (plus more <a class="reference internal" href="io.html#fileformats"><em>Supported File Formats</em></a>).</p>
+</div>
+<div class="section" id="changing-parameters">
+<h3>Changing parameters<a class="headerlink" href="#changing-parameters" title="Permalink to this headline">¶</a></h3>
+<p>The template input files and other options can be changed by passing
+extra arguments to the <a class="reference internal" href="potential.html#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><tt class="xref py py-meth docutils literal"><span class="pre">calc()</span></tt></a> routine, e.g. to do
+a geometry optimisation instead of a single point calculation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">template</span><span class="o">=</span><span class="s">&#39;h2&#39;</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">task</span><span class="o">=</span><span class="s">&#39;geometryoptimisation&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Parameters can be set interactively while testing, but runs can then of
+course be automated with scripts</li>
+<li>As well as energies, forces and stress tensors, our output parsers
+can extract other information such as bond populations</li>
+</ul>
+</div>
+<div class="section" id="harmonic-fit-to-data">
+<h3>Harmonic fit to data<a class="headerlink" href="#harmonic-fit-to-data" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">numpy</span></tt> provides routines that make it easy to fit a parabola to
+these data</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">fit_and_plot</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">code</span><span class="o">+</span><span class="s">&#39;_energy&#39;</span><span class="p">)</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">color</span><span class="o">+</span><span class="s">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="s">&#39; data&#39;</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">bond_length</span> <span class="o">=</span> <span class="o">-</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">spring_constant</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">color</span><span class="o">+</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="s">&#39; fit&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;|</span><span class="si">%-10s</span><span class="s">|</span><span class="si">%10.3f</span><span class="s">|</span><span class="si">%10.1f</span><span class="s">|&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">bond_length</span><span class="p">,</span> <span class="n">spring_constant</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Complete script for download: <a class="reference download internal" href="_downloads/hydrogen-bond-length.py"><tt class="xref download docutils literal"><span class="pre">hydrogen-bond-length.py</span></tt></a>.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="38%" />
+<col width="46%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Bond length/A</th>
+<th class="head">Force constant / eV/A</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CASTEP</td>
+<td>0.754</td>
+<td>36.0</td>
+</tr>
+<tr class="row-odd"><td>CP2K</td>
+<td>0.756</td>
+<td>35.7</td>
+</tr>
+<tr class="row-even"><td>GPAW</td>
+<td>0.753</td>
+<td>35.1</td>
+</tr>
+<tr class="row-odd"><td>MOLPRO</td>
+<td>0.752</td>
+<td>34.8</td>
+</tr>
+<tr class="row-even"><td>VASP</td>
+<td>0.753</td>
+<td>34.1</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<a class="reference internal image-reference" href="_images/h2-molecule-comparison.png"><img alt="_images/h2-molecule-comparison.png" class="align-center" src="_images/h2-molecule-comparison.png" style="width: 600px;" /></a>
+</div>
+<div class="section" id="going-beyond-gga">
+<h3>Going beyond GGA<a class="headerlink" href="#going-beyond-gga" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">The framework is rather general, so we can easily connect to codes
+which go beyond GGA</p>
+</li>
+<li><p class="first">e.g. MP2 and CCSD(T) with the <tt class="docutils literal"><span class="pre">molpro</span></tt> quantum chemistry code</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="33%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Bond length/A</th>
+<th class="head">Force constant / eV/A</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MOLPRO, MP2</td>
+<td>0.739</td>
+<td>35.2</td>
+</tr>
+<tr class="row-odd"><td>MOLPRO, CCSD(T)</td>
+<td>0.745</td>
+<td>34.6</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+<a class="reference internal image-reference" href="_images/h2-molecule-comparison-molpro.png"><img alt="_images/h2-molecule-comparison-molpro.png" class="align-center" src="_images/h2-molecule-comparison-molpro.png" style="width: 600px;" /></a>
+</div>
+<div class="section" id="robustness">
+<h3>Robustness<a class="headerlink" href="#robustness" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>These tools were initially developed for multiscale QM/MM
+simulations, where typical production runs require ~10<sup>4</sup> DFT
+calculations</li>
+<li>Also used for fitting interatomic potentials to large QM databases
+(up to ~ 10<sup>5</sup> atomic environments)</li>
+<li>Robustness is important!</li>
+<li><tt class="docutils literal"><span class="pre">CASTEP</span></tt>, <tt class="docutils literal"><span class="pre">VASP</span></tt> and <tt class="docutils literal"><span class="pre">CP2K</span></tt> interfaces now particularly robust
+- Convergence checks
+- Fall back on more reliable density mixers
+- Automatic wavefunction reuse when possible
+- <tt class="docutils literal"><span class="pre">CP2K</span></tt> and <tt class="docutils literal"><span class="pre">VASP</span></tt> interfaces allow persistent connections (fast!)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="summary-and-conclusions">
+<h2>Summary and Conclusions<a class="headerlink" href="#summary-and-conclusions" title="Permalink to this headline">¶</a></h2>
+<p>Advantages of <tt class="docutils literal"><span class="pre">quippy</span></tt>:</p>
+<ul class="simple">
+<li>General purpose &#8212; arbitrary, extensible data model</li>
+<li>All speed critical code is in Fortran, so it’s fast and
+scales well to large systems (~10<sup>6</sup> atoms)</li>
+<li>Interactive visualisation with <tt class="docutils literal"><span class="pre">AtomEye</span></tt> plugin
+(which also scales well to large systems)</li>
+<li>Robust interfaces to several DFT codes</li>
+<li>Fully interoperable with ASE for many more</li>
+</ul>
+<p>Disadvantages, compared to e.g. ASE:</p>
+<ul class="simple">
+<li>Fortran wrapping makes it more complex to use</li>
+<li>Harder to compile/install than a pure Python package</li>
+</ul>
+<p>Summary:</p>
+<ul class="simple">
+<li>Adding a scripting interfaces to codes gives lots of benefits relevant
+to validation and verification</li>
+<li>Python and <tt class="docutils literal"><span class="pre">f2py</span></tt> do a good job of wrapping Fortran codes</li>
+<li>Wrapping Fortran 90 codes which make heavy use of derived types is
+also possible with <tt class="docutils literal"><span class="pre">f90wrap</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">libAtoms</span></tt>, <tt class="docutils literal"><span class="pre">QUIP</span></tt> and <tt class="docutils literal"><span class="pre">quippy</span></tt> provide a uniform interface to a number of
+electronic structure codes</li>
+<li>Freely available from [<a class="reference external" href="http://www.libatoms.org">http://www.libatoms.org</a>] (GPLv2)</li>
+</ul>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="lotf" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[LOTF]</a></td><td>Csányi, G., Albaret, T., Payne, M., &amp; De Vita,
+A. &#8216;Learn on the Fly&#8217;: A Hybrid Classical and Quantum-Mechanical
+Molecular Dynamics Simulation. Physical Review Letters,
+93(17), 175503. (2004) <a class="reference external" href="http://prl.aps.org/abstract/PRL/v93/i17/e175503">http://prl.aps.org/abstract/PRL/v93/i17/e175503</a>&gt;</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="f2py" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[f2py]</a></td><td>Peterson, P.F2PY: a tool for connecting Fortran and
+Python programs. International Journal of Computational Science and
+Engineering, 4(4), 296.  (2009) <a class="reference external" href="http://dx.doi.org/10.1504/IJCSE.2009.029165">http://dx.doi.org/10.1504/IJCSE.2009.029165</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rutt2004" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[Rutt2004]</a></td><td>Ian Rutt, f90doc: automatic documentation generator for Fortran 90 (2004)</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="pletzer2008" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[Pletzer2008]</a></td><td>Pletzer, A et al., Exposing Fortran Derived Types to C and Other Languages,
+<em>Computing in Science and Engineering</em>, <strong>10</strong>, 86 (2008).
+<a class="reference external" href="http://link.aip.org/link/?CSENFA/10/86/1">http://link.aip.org/link/?CSENFA/10/86/1</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="f90wrap" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[f90wrap]</a></td><td>James Kermode, Fortran 90 wrapper generation tool (2008-2013),
+<a class="reference external" href="http://jrkermode.co.uk/f90wrap">http://jrkermode.co.uk/f90wrap</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="atomeye" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[AtomEye]</a></td><td>Li, J. AtomEye: an efficient atomistic configuration
+viewer. Modell. Simul. Mater. Sci. Eng. (2003).
+Modified version: <a class="reference external" href="http://jrkermode.co.uk/AtomEye">http://jrkermode.co.uk/AtomEye</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="quippy"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

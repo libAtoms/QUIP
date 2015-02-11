@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tools for polarizable potentials &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" />
+    <link rel="next" title="Tools for electrostatic embedding" href="electrostaticembed.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
+             accesskey="N">next</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="electrostaticembed.html"
+                        title="next chapter">Tools for electrostatic embedding</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/polarization.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.polarization">
+<span id="tools-for-polarizable-potentials"></span><h1>Tools for polarizable potentials<a class="headerlink" href="#module-quippy.polarization" title="Permalink to this headline">¶</a></h1>
+<p>This module contains utility functions for polarizable potentials.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.polarization" title="quippy.polarization: Tools for polarizable potentials"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.polarization</span></tt></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.polarization.born_effective_charge" title="quippy.polarization.born_effective_charge"><tt class="xref py py-obj docutils literal"><span class="pre">born_effective_charge</span></tt></a>(pot,&nbsp;at0[,&nbsp;dx,&nbsp;args_str])</td>
+<td>Calculate Born effective charges for all atoms in at0</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.polarization.epsilon_infty" title="quippy.polarization.epsilon_infty"><tt class="xref py py-obj docutils literal"><span class="pre">epsilon_infty</span></tt></a>(pot,&nbsp;at[,&nbsp;deltafield,&nbsp;zerotol])</td>
+<td>Calculate dielectric tensor.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.polarization.screened_effective_charge" title="quippy.polarization.screened_effective_charge"><tt class="xref py py-obj docutils literal"><span class="pre">screened_effective_charge</span></tt></a>(born,&nbsp;eps)</td>
+<td>Compute screened effective charge tensor from Born and dielectric tensors</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.polarization.born_effective_charge">
+<tt class="descclassname">quippy.polarization.</tt><tt class="descname">born_effective_charge</tt><big>(</big><em>pot</em>, <em>at0</em>, <em>dx=1e-05</em>, <em>args_str=None</em><big>)</big><a class="reference internal" href="_modules/quippy/polarization.html#born_effective_charge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.polarization.born_effective_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Born effective charges for all atoms in at0</p>
+<p>Potential must be polarizable, i.e. compute dipole moments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.polarization.epsilon_infty">
+<tt class="descclassname">quippy.polarization.</tt><tt class="descname">epsilon_infty</tt><big>(</big><em>pot</em>, <em>at</em>, <em>deltafield=0.001</em>, <em>zerotol=1e-05</em><big>)</big><a class="reference internal" href="_modules/quippy/polarization.html#epsilon_infty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.polarization.epsilon_infty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate dielectric tensor.</p>
+<p>Potential must be polarisable and allow an external electic field to be applied.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.polarization.screened_effective_charge">
+<tt class="descclassname">quippy.polarization.</tt><tt class="descname">screened_effective_charge</tt><big>(</big><em>born</em>, <em>eps</em><big>)</big><a class="reference internal" href="_modules/quippy/polarization.html#screened_effective_charge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.polarization.screened_effective_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute screened effective charge tensor from Born and dielectric tensors</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
+             >next</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>quippy.util &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for quippy.util</h1><div class="highlight"><pre>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   Copyright James Kermode 2010</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+
+<span class="sd">&quot;&quot;&quot;Utility functions which will be imported into top-level quippy namespace&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">xml.dom.minidom</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">dictmixin</span> <span class="kn">import</span> <span class="n">PuPyDictionary</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;infer_format&#39;</span><span class="p">,</span> <span class="s">&#39;args_str&#39;</span><span class="p">,</span> <span class="s">&#39;dict_to_args_str&#39;</span><span class="p">,</span> <span class="s">&#39;parse_slice&#39;</span><span class="p">,</span>
+           <span class="s">&#39;parse_comma_colon_list&#39;</span><span class="p">,</span> <span class="s">&#39;loadstring&#39;</span><span class="p">,</span>
+           <span class="s">&#39;quip_xml_parameters&#39;</span><span class="p">,</span> <span class="s">&#39;is_interactive_shell&#39;</span><span class="p">,</span>
+           <span class="s">&#39;parse_params&#39;</span><span class="p">,</span> <span class="s">&#39;args_str_to_dict&#39;</span><span class="p">,</span>
+           <span class="s">&#39;most_recent_file&#39;</span><span class="p">,</span> <span class="s">&#39;time_ordered_glob&#39;</span><span class="p">,</span> <span class="s">&#39;most_recent_files&#39;</span><span class="p">,</span>
+           <span class="s">&#39;analyse_timings&#39;</span><span class="p">,</span> <span class="s">&#39;write_timings&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="infer_format"><a class="viewcode-back" href="../../util.html#quippy.util.infer_format">[docs]</a><span class="k">def</span> <span class="nf">infer_format</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">lookup</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Infer the correct format to read from or write to `file`</span>
+
+<span class="sd">       If `format` is not None, there is nothing to do. Otherwise we</span>
+<span class="sd">       look for file extension in `lookup`.&quot;&quot;&quot;</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="nb">file</span>
+            <span class="k">if</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">lookup</span><span class="p">:</span>
+                <span class="n">format</span> <span class="o">=</span> <span class="nb">file</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+                <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                    <span class="n">format</span> <span class="o">=</span> <span class="n">base</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">format</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">format</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">__class__</span>
+
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">format</span>
+</div>
+<div class="viewcode-block" id="args_str"><a class="viewcode-back" href="../../util.html#quippy.util.args_str">[docs]</a><span class="k">def</span> <span class="nf">args_str</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct args string from file, string or mapping object&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">PuPyDictionary</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
+</div>
+<span class="n">dict_to_args_str</span> <span class="o">=</span> <span class="n">args_str</span> <span class="c"># synonym for args_str() function</span>
+
+<div class="viewcode-block" id="parse_slice"><a class="viewcode-back" href="../../util.html#quippy.util.parse_slice">[docs]</a><span class="k">def</span> <span class="nf">parse_slice</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse string containing slice in form [start]:[stop]:[range] and return slice instance.&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">SliceParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">idx</span>
+
+    <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="s">&#39;SliceParser()[</span><span class="si">%s</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="n">S</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="parse_params"><a class="viewcode-back" href="../../util.html#quippy.util.parse_params">[docs]</a><span class="k">def</span> <span class="nf">parse_params</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;Read key=value pairs from a string or list of string and return a standard Python dictionary&quot;&quot;&quot;</span>
+   <span class="n">p</span> <span class="o">=</span> <span class="n">PuPyDictionary</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+   <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</div>
+<span class="n">args_str_to_dict</span> <span class="o">=</span> <span class="n">parse_params</span> <span class="c"># synonym for parse_params() function</span>
+   
+
+<div class="viewcode-block" id="parse_comma_colon_list"><a class="viewcode-back" href="../../util.html#quippy.util.parse_comma_colon_list">[docs]</a><span class="k">def</span> <span class="nf">parse_comma_colon_list</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse a comma or colon seperated string into a list, converting each entry to lower-case.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">L</span><span class="p">:</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s">&#39;,&#39;</span> <span class="ow">in</span> <span class="n">L</span><span class="p">:</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">L</span><span class="p">]</span>
+</div>
+<span class="k">def</span> <span class="nf">loadstring</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">StringIO</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">loadtxt</span>
+    <span class="k">return</span> <span class="n">loadtxt</span><span class="p">(</span><span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;[&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;]&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="quip_xml_parameters"><a class="viewcode-back" href="../../util.html#quippy.util.quip_xml_parameters">[docs]</a><span class="k">def</span> <span class="nf">quip_xml_parameters</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Search for an QUIP XML parameter set matching `name&#39; and, optionally `label`.</span>
+
+<span class="sd">    Result is the XML stanza as a string. Looks under</span>
+<span class="sd">    ${QUIP_ROOT}/QUIP_Core/parameters for a file matching `name`,</span>
+<span class="sd">    `name`.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If</span>
+<span class="sd">    `label` is given, it should be a text string matching the label</span>
+<span class="sd">    attribute of a QUIP &lt;params&gt; XML stanza. If a matching parameter</span>
+<span class="sd">    set can&#39;t be found, we raise an :exc:`IOError`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">QUIP_ROOT</span>
+    <span class="kn">from</span> <span class="nn">xml.parsers.expat</span> <span class="kn">import</span> <span class="n">ExpatError</span>
+    <span class="kn">from</span> <span class="nn">xml.dom.minidom</span> <span class="kn">import</span> <span class="n">Element</span>
+
+    <span class="n">param_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">QUIP_ROOT</span><span class="p">,</span> <span class="s">&#39;QUIP_Core/parameters&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;filepot&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;callbackpot&#39;</span><span class="p">):</span>
+        <span class="c"># FilePot and CallbackPot don&#39;t need XML params</span>
+        <span class="k">return</span> <span class="s">&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;IP &#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;TB &#39;</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+
+    <span class="n">xml_files</span> <span class="o">=</span> <span class="p">[</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.xml&#39;</span><span class="p">,</span>
+                  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param_dir</span><span class="p">,</span> <span class="s">&#39;ip.parms.&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.xml&#39;</span><span class="p">,</span>
+                  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param_dir</span><span class="p">,</span> <span class="s">&#39;tightbind.parms.&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.xml&#39;</span> <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">xml_file</span> <span class="ow">in</span> <span class="n">xml_files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">xml_file</span><span class="p">):</span> <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;Cannot find XML parameter file matching &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="n">xml_string</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">xml_file</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c"># Read XML and extract tag with matching label attribute</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ExpatError</span><span class="p">:</span>
+            <span class="c"># Add surrounding document element</span>
+            <span class="n">xml_string</span> <span class="o">=</span> <span class="s">r&#39;&lt;params&gt;</span><span class="si">%s</span><span class="s">&lt;/params&gt;&#39;</span> <span class="o">%</span> <span class="n">xml_string</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">firstChild</span>
+
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Element</span><span class="p">):</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s">&#39;label&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s">&#39;label&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;Cannot find XML stanza in file &quot;</span><span class="si">%s</span><span class="s">&quot; matching label &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xml_file</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">toxml</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># Return entire contents of file</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="is_interactive_shell"><a class="viewcode-back" href="../../util.html#quippy.util.is_interactive_shell">[docs]</a><span class="k">def</span> <span class="nf">is_interactive_shell</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return True if we&#39;re running in an interactive shell (including IPython)&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s">&#39;ps1&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">__IPYTHON__</span>
+    <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<span class="k">def</span> <span class="nf">read_text_file</span><span class="p">(</span><span class="n">fh</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read all lines of text from a file</span>
+
+<span class="sd">    fh can be a file, file-like object or filename. If `fh` is a</span>
+<span class="sd">    filename, file is automatically opened and closed.</span>
+
+<span class="sd">    Returns a tuple (filename, lines).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">opened</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">fh</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">opened</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">opened</span><span class="p">:</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lines</span>
+
+<div class="viewcode-block" id="time_ordered_glob"><a class="viewcode-back" href="../../util.html#quippy.util.time_ordered_glob">[docs]</a><span class="k">def</span> <span class="nf">time_ordered_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   Return a list of files matching `pattern` sorted by modification time</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+   
+   <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="most_recent_file"><a class="viewcode-back" href="../../util.html#quippy.util.most_recent_file">[docs]</a><span class="k">def</span> <span class="nf">most_recent_file</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the most recent file matching glob `pattern`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">time_ordered_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="most_recent_files"><a class="viewcode-back" href="../../util.html#quippy.util.most_recent_files">[docs]</a><span class="k">def</span> <span class="nf">most_recent_files</span><span class="p">(</span><span class="n">dir_pattern</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the most recent file matching file_pattern in each of the directories matching dir_pattern</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">most_recent_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">))</span><span class="o">+</span><span class="n">suffix</span> <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">dir_pattern</span><span class="p">)]</span>
+
+
+</div>
+<div class="viewcode-block" id="analyse_timings"><a class="viewcode-back" href="../../util.html#quippy.util.analyse_timings">[docs]</a><span class="k">def</span> <span class="nf">analyse_timings</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Analyse QUIP timing information.</span>
+
+<span class="sd">    Lines should be list of lines read from output file, with</span>
+<span class="sd">    e.g. readlines().  Returns two dictionaries (timings,</span>
+<span class="sd">    summary). `timings` contains entries for each TIMING line, with</span>
+<span class="sd">    &quot;wall&quot; and &quot;cpu&quot; keys. `summary` collapses repeated entries and adds</span>
+<span class="sd">    statistics for th enumber of calls (&quot;len&quot; key), total time (&quot;sum&quot;), and</span>
+<span class="sd">    average time per call (&quot;mean&quot;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">timer_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;TIMER&#39;</span><span class="p">)]</span>
+    <span class="n">timings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">timer_lines</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cpu</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">wall</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[:</span><span class="mi">11</span><span class="p">]</span>
+        <span class="n">cpu</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+        <span class="n">wall</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wall</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">timings</span><span class="p">:</span>
+            <span class="n">timings</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;wall&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;cpu&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="n">timings</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s">&#39;wall&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wall</span><span class="p">)</span>
+        <span class="n">timings</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s">&#39;cpu&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span>
+
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">timings</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">summary</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">,</span> <span class="s">&#39;cpu&#39;</span><span class="p">]:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="n">summary</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;len&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+                                   <span class="s">&#39;sum&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+                                   <span class="s">&#39;mean&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">mean</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">timings</span><span class="p">,</span> <span class="n">summary</span>
+
+</div>
+<div class="viewcode-block" id="write_timings"><a class="viewcode-back" href="../../util.html#quippy.util.write_timings">[docs]</a><span class="k">def</span> <span class="nf">write_timings</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">timings</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;calls&#39;</span><span class="p">,</span> <span class="n">wall_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cpu_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a formatted summary of QUIP `timings` data to `out`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">sort_by_calls</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">][</span><span class="s">&#39;len&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">sort_by_total_wall_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">][</span><span class="s">&#39;sum&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">sort_by_total_cpu_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>            
+        <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">][</span><span class="s">&#39;sum&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">sort_by_mean_wall_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">][</span><span class="s">&#39;mean&#39;</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">sort_by_mean_cpu_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;cpu&#39;</span><span class="p">][</span><span class="s">&#39;mean&#39;</span><span class="p">]</span>
+
+    <span class="n">sort_funcs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">sort_funcs</span><span class="p">[</span><span class="s">&#39;calls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sort_by_calls</span>
+    <span class="n">sort_funcs</span><span class="p">[</span><span class="s">&#39;total_wall_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sort_by_total_wall_time</span>
+    <span class="n">sort_funcs</span><span class="p">[</span><span class="s">&#39;total_cpu_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sort_by_total_cpu_time</span>
+    <span class="n">sort_funcs</span><span class="p">[</span><span class="s">&#39;mean_wall_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sort_by_mean_wall_time</span>
+    <span class="n">sort_funcs</span><span class="p">[</span><span class="s">&#39;mean_cpu_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sort_by_mean_cpu_time</span>
+
+    <span class="n">timing_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">,</span> <span class="s">&#39;cpu&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">wall_only</span><span class="p">:</span>
+        <span class="n">timing_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;wall&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">cpu_only</span><span class="p">:</span>
+        <span class="n">timing_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;cpu&#39;</span><span class="p">]</span>
+
+    <span class="n">sorted_items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">timings</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">sort_funcs</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
+        <span class="n">sorted_items</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">sorted_items</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sorted_items</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">timing_types</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%-20s</span><span class="s"> calls </span><span class="si">%-6d</span><span class="s"> total </span><span class="si">%s</span><span class="s"> </span><span class="si">%6.2f</span><span class="s"> mean </span><span class="si">%s</span><span class="s"> </span><span class="si">%6.2f</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;len&#39;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;sum&#39;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;mean&#39;</span><span class="p">]))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

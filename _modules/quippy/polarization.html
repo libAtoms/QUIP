@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>quippy.polarization &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for quippy.polarization</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module contains utility functions for polarizable potentials.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="kn">import</span> <span class="n">BOHR</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">PI</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">frange</span><span class="p">,</span> <span class="n">fidentity</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;born_effective_charge&#39;</span><span class="p">,</span> <span class="s">&#39;epsilon_infty&#39;</span><span class="p">,</span> <span class="s">&#39;screened_effective_charge&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="born_effective_charge"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.born_effective_charge">[docs]</a><span class="k">def</span> <span class="nf">born_effective_charge</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   Calculate Born effective charges for all atoms in at0</span>
+
+<span class="sd">   Potential must be polarizable, i.e. compute dipole moments.</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+   <span class="n">born_tensor</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">at0</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+
+   <span class="n">restart</span> <span class="o">=</span> <span class="bp">True</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at0</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+
+         <span class="n">at</span> <span class="o">=</span> <span class="n">at0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+         <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dx</span>
+         <span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+
+         <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="n">restart</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
+         <span class="n">restart</span> <span class="o">=</span> <span class="bp">True</span>
+
+         <span class="n">dip1</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">dip1</span> <span class="o">+=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span>
+
+         <span class="n">at</span> <span class="o">=</span> <span class="n">at0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+         <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dx</span>
+         <span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+
+         <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="n">restart</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
+         
+         <span class="n">dip2</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">dip2</span> <span class="o">+=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span>
+
+         <span class="n">born_tensor</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dip2</span> <span class="o">-</span> <span class="n">dip1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">dx</span><span class="o">*</span><span class="mf">2.0</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="n">born_tensor</span>
+         
+</div>
+<div class="viewcode-block" id="epsilon_infty"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.epsilon_infty">[docs]</a><span class="k">def</span> <span class="nf">epsilon_infty</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">deltafield</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">zerotol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   Calculate dielectric tensor.</span>
+
+<span class="sd">   Potential must be polarisable and allow an external electic field to be applied.</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+   <span class="n">dielectric_tensor</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+   <span class="n">celldip</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+
+   <span class="c"># Calculation with no applied field</span>
+   <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">applied_efield</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+   <span class="n">celldip0</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">BOHR</span>
+
+   <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;ext_efield&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+   <span class="c"># Now we apply field along each of x,y,z in turn, and</span>
+   <span class="c"># calculate overall cell dipole moment</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+
+      <span class="n">at</span><span class="o">.</span><span class="n">ext_efield</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+      <span class="n">at</span><span class="o">.</span><span class="n">ext_efield</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+=</span> <span class="n">deltafield</span><span class="o">/</span><span class="p">(</span><span class="n">BOHR</span><span class="o">/</span><span class="n">HARTREE</span><span class="p">)</span>
+
+      <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">applied_efield</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+      <span class="n">celldip</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">BOHR</span>
+      <span class="n">dielectric_tensor</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">celldip</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">celldip0</span>
+      
+   <span class="n">dielectric_tensor</span> <span class="o">=</span> <span class="mf">4.0</span><span class="o">*</span><span class="n">PI</span><span class="o">*</span><span class="n">dielectric_tensor</span><span class="o">/</span><span class="n">deltafield</span><span class="o">/</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">/</span><span class="n">BOHR</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">fidentity</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+   <span class="n">at</span><span class="o">.</span><span class="n">ext_efield</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+   <span class="n">dielectric_tensor</span><span class="p">[</span><span class="n">dielectric_tensor</span> <span class="o">&lt;</span> <span class="n">zerotol</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+   <span class="k">return</span> <span class="n">dielectric_tensor</span>
+      
+</div>
+<span class="k">def</span> <span class="nf">calc_effective_charge_vectors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">born_tensor</span><span class="p">):</span>
+
+   <span class="n">effective_charge</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+      <span class="n">p_norm</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">phonon</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">phonon</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">a</span><span class="o">.</span><span class="n">phonon</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+      <span class="n">disp</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_norm</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ElementMass</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span><span class="o">*</span><span class="n">MASSCONVERT</span><span class="p">))</span><span class="o">/</span><span class="n">BOHR</span>
+      <span class="k">print</span> <span class="n">disp</span>
+      <span class="n">effective_charge</span> <span class="o">=</span> <span class="n">effective_charge</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">born_tensor</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">],</span> <span class="n">disp</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="n">effective_charge</span>
+
+<div class="viewcode-block" id="screened_effective_charge"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.screened_effective_charge">[docs]</a><span class="k">def</span> <span class="nf">screened_effective_charge</span><span class="p">(</span><span class="n">born</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   Compute screened effective charge tensor from Born and dielectric tensors</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+   <span class="n">screened</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+               <span class="k">if</span> <span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span> <span class="k">continue</span>
+               <span class="n">screened</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">born</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">])</span>
+
+   <span class="k">return</span> <span class="n">screened</span>
+</div>
+<span class="k">def</span> <span class="nf">dipole_moment</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">silica_dipole_moment</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">q_si</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">[</span><span class="bp">True</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">indices</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">q_si</span><span class="o">*</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">14</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span>
+                 <span class="mf">0.5</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="mf">0.25</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

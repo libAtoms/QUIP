@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Learn on the Fly embedding scheme &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/lotf.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.lotf">
+<span id="learn-on-the-fly-embedding-scheme"></span><h1><cite>Learn on the Fly</cite> embedding scheme<a class="headerlink" href="#module-quippy.lotf" title="Permalink to this headline">¶</a></h1>
+<p>Module containing <a class="reference internal" href="#quippy.lotf.LOTFDynamics" title="quippy.lotf.LOTFDynamics"><tt class="xref py py-class docutils literal"><span class="pre">LOTFDynamics</span></tt></a> integrator for doing &#8216;Learn on the Fly&#8217;
+predictor-corrector dynamics within the ASE molecular dynamics framework.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.lotf" title="quippy.lotf: `Learn on the Fly` dynamics"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.lotf</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics" title="quippy.lotf.LOTFDynamics"><tt class="xref py py-obj docutils literal"><span class="pre">LOTFDynamics</span></tt></a>(atoms,&nbsp;timestep,&nbsp;extrapolate_steps)</td>
+<td>&#8216;Learn on the Fly&#8217; dynamics with extrapolation and interpolation</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.update_hysteretic_qm_region" title="quippy.lotf.update_hysteretic_qm_region"><tt class="xref py py-obj docutils literal"><span class="pre">update_hysteretic_qm_region</span></tt></a>(atoms,&nbsp;...[,&nbsp;...])</td>
+<td>Update the QM region in <cite>atoms</cite></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.iter_atom_centered_clusters" title="quippy.lotf.iter_atom_centered_clusters"><tt class="xref py py-obj docutils literal"><span class="pre">iter_atom_centered_clusters</span></tt></a>(at[,&nbsp;mark_name])</td>
+<td>Iterate over all atom-centered (little) clusters in <cite>at</cite>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.lotf.LOTFDynamics">
+<em class="property">class </em><tt class="descclassname">quippy.lotf.</tt><tt class="descname">LOTFDynamics</tt><big>(</big><em>atoms</em>, <em>timestep</em>, <em>extrapolate_steps</em>, <em>trajectory=None</em>, <em>logfile=None</em>, <em>loginterval=1</em>, <em>check_force_error=False</em>, <em>qm_update_func=None</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;Learn on the Fly&#8217; dynamics with extrapolation and interpolation</p>
+<p>Subclass of <tt class="xref py py-class docutils literal"><span class="pre">ase.md.md.MolecularDynamics</span></tt> which
+implements LOTF predictor/corrector dynamics. See the <a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><tt class="xref py py-meth docutils literal"><span class="pre">step()</span></tt></a>
+method for a description of the algorithm.</p>
+<p>The calculator associated with <cite>Atoms</cite> should be a
+<a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">quippy.potential.Potential</span></tt></a> object.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.extrapolate_steps" title="quippy.lotf.LOTFDynamics.extrapolate_steps"><tt class="xref py py-obj docutils literal"><span class="pre">extrapolate_steps</span></tt></a></td>
+<td>Number of small time-steps used when extrapolating or interpolating in the LOTF predictor-corrector loop.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.state_label" title="quippy.lotf.LOTFDynamics.state_label"><tt class="xref py py-obj docutils literal"><span class="pre">state_label</span></tt></a></td>
+<td>One-character label for current dynamical state: either &#8220;E&#8221; or &#8220;I&#8221; for extrapolation or interpolation, respectively.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.advance_verlet" title="quippy.lotf.LOTFDynamics.advance_verlet"><tt class="xref py py-obj docutils literal"><span class="pre">advance_verlet</span></tt></a>(f)</td>
+<td>Single advance using velocity Verlet with forces <cite>f</cite></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.fit_forces" title="quippy.lotf.LOTFDynamics.fit_forces"><tt class="xref py py-obj docutils literal"><span class="pre">fit_forces</span></tt></a>(atoms)</td>
+<td>Evaluate QM forces and optimise the adjustable potential to reproduce them</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_extrapolation_forces" title="quippy.lotf.LOTFDynamics.get_extrapolation_forces"><tt class="xref py py-obj docutils literal"><span class="pre">get_extrapolation_forces</span></tt></a>(atoms,&nbsp;i)</td>
+<td>Get LOTF forces at extrapolation step <cite>i</cite></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_interpolation_forces" title="quippy.lotf.LOTFDynamics.get_interpolation_forces"><tt class="xref py py-obj docutils literal"><span class="pre">get_interpolation_forces</span></tt></a>(atoms,&nbsp;i)</td>
+<td>Get LOTF forces at interpolation step <cite>i</cite></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_reference_forces" title="quippy.lotf.LOTFDynamics.get_reference_forces"><tt class="xref py py-obj docutils literal"><span class="pre">get_reference_forces</span></tt></a>(atoms,&nbsp;i)</td>
+<td>Do a reference QM calculation and return forces resulting from standard force mixing.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_state" title="quippy.lotf.LOTFDynamics.get_state"><tt class="xref py py-obj docutils literal"><span class="pre">get_state</span></tt></a>()</td>
+<td>Save dynamical state, including random number seeds</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.initialise_adjustable_potential" title="quippy.lotf.LOTFDynamics.initialise_adjustable_potential"><tt class="xref py py-obj docutils literal"><span class="pre">initialise_adjustable_potential</span></tt></a>(atoms)</td>
+<td>Bootstrap the potential by doing a QM calculation and fitting the adj.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="quippy.lotf.LOTFDynamics.set_qm_update_func"><tt class="xref py py-obj docutils literal"><span class="pre">set_qm_update_func</span></tt></a>(qm_update_func)</td>
+<td>Specify a function that will be called up update the QM region</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_state" title="quippy.lotf.LOTFDynamics.set_state"><tt class="xref py py-obj docutils literal"><span class="pre">set_state</span></tt></a>(saved_state)</td>
+<td>Restore dynamics to a previously saved state.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><tt class="xref py py-obj docutils literal"><span class="pre">step</span></tt></a>()</td>
+<td>Advance the dynamics by one LOTF cycle</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.advance_verlet">
+<tt class="descname">advance_verlet</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.advance_verlet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.advance_verlet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Single advance using velocity Verlet with forces <cite>f</cite></p>
+<p>Do not call this method directly: it is invoked by <a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><tt class="xref py py-meth docutils literal"><span class="pre">step()</span></tt></a>
+once for each extrapolation and interpolation step.</p>
+<p>Note that order of the two half-steps is inverted, to fit in
+with the predictor-corrector loops. This means the momenta
+are half-stepped outside of this routine.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.fit_forces">
+<tt class="descname">fit_forces</tt><big>(</big><em>atoms</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.fit_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.fit_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate QM forces and optimise the adjustable potential to reproduce them</p>
+<p>Returns the QM forces on the atoms at the fit point</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.get_extrapolation_forces">
+<tt class="descname">get_extrapolation_forces</tt><big>(</big><em>atoms</em>, <em>i</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_extrapolation_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_extrapolation_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get LOTF forces at extrapolation step <cite>i</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.get_interpolation_forces">
+<tt class="descname">get_interpolation_forces</tt><big>(</big><em>atoms</em>, <em>i</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_interpolation_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_interpolation_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get LOTF forces at interpolation step <cite>i</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.get_number_of_steps">
+<tt class="descname">get_number_of_steps</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_number_of_steps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_number_of_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of steps taken since start of dynamics</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.get_reference_forces">
+<tt class="descname">get_reference_forces</tt><big>(</big><em>atoms</em>, <em>i</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_reference_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_reference_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a reference QM calculation and return forces resulting from standard force mixing.</p>
+<p>Useful for checking errors during predictor/corrector extrapolation and interpolation.
+Does not change the current set of adjustable potential parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.get_state">
+<tt class="descname">get_state</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save dynamical state, including random number seeds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.get_time">
+<tt class="descname">get_time</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return current time (in ASE time units)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.initialise_adjustable_potential">
+<tt class="descname">initialise_adjustable_potential</tt><big>(</big><em>atoms</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.initialise_adjustable_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.initialise_adjustable_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bootstrap the potential by doing a QM calculation and fitting the adj. pot.</p>
+<p>Returns the initial QM/MM forces on the atoms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.run">
+<tt class="descname">run</tt><big>(</big><em>steps</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run LOTF dynamics forwards for given number of small time steps</p>
+<p>Number of LOTF cycles is given by <tt class="docutils literal"><span class="pre">step/extrapolate_steps</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.set_qm_update_func">
+<tt class="descname">set_qm_update_func</tt><big>(</big><em>qm_update_func</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.set_qm_update_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify a function that will be called up update the QM region</p>
+<p><cite>qm_update_func</cite> should take a single argument, which is the
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object representing the current state of the
+dynamical system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.set_state">
+<tt class="descname">set_state</tt><big>(</big><em>saved_state</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.set_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.set_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore dynamics to a previously saved state.
+Sets arrays directly, ignoring any constraints.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.lotf.LOTFDynamics.step">
+<tt class="descname">step</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advance the dynamics by one LOTF cycle</p>
+<p>The <em>Learn on the Fly</em> algorithm proceeds as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>QM selection</strong> using the function registered
+with the <a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="quippy.lotf.LOTFDynamics.set_qm_update_func"><tt class="xref py py-meth docutils literal"><span class="pre">set_qm_update_func()</span></tt></a> method.</li>
+<li><strong>Save state</strong> of the dynamical system using the
+<a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_state" title="quippy.lotf.LOTFDynamics.get_state"><tt class="xref py py-meth docutils literal"><span class="pre">get_state()</span></tt></a> method.</li>
+<li><strong>Extrapolation</strong> of the dynamics with fixed parameters for
+<a class="reference internal" href="#quippy.lotf.LOTFDynamics.extrapolate_steps" title="quippy.lotf.LOTFDynamics.extrapolate_steps"><tt class="xref py py-attr docutils literal"><span class="pre">extrapolate_steps</span></tt></a>, each of size <tt class="xref py py-attr docutils literal"><span class="pre">dt</span></tt>.
+This is the <em>predictor</em> part of the predictor-corrector cycle.
+The adjustable potential parameters are remapped if
+the set of QM atoms has changed since the most recent fit.</li>
+<li><strong>QM force calculation</strong> and <strong>optimisation</strong> of the adjustable
+potential parameters to reproduce the QM forces at the fit point.
+With the linear &#8216;spings&#8217; method, the fit can be reposed as a linear
+algebra problem and solved via singular value decomposition (SVD).
+See the adjustable potential code for full details in
+<a href="#id1"><span class="problematic" id="id2">:svn:`QUIP_Core/AdjustablePotential.f95`</span></a>.</li>
+<li><strong>Restore state</strong> of the dynamical system saved at step 2,
+returning to before the extrapolation phase.</li>
+<li><strong>Interpolation</strong> of the dynamics, with the adjustable potential
+parameters interpolated between their values at the two fit points.</li>
+</ol>
+</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.lotf.LOTFDynamics.extrapolate_steps">
+<tt class="descname">extrapolate_steps</tt><a class="headerlink" href="#quippy.lotf.LOTFDynamics.extrapolate_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of small time-steps used when extrapolating
+or interpolating in the LOTF predictor-corrector loop.
+See <a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><tt class="xref py py-meth docutils literal"><span class="pre">step()</span></tt></a> for a more detailed description.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.lotf.LOTFDynamics.state_label">
+<tt class="descname">state_label</tt><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.state_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.state_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-character label for current dynamical state: either &#8220;E&#8221; or &#8220;I&#8221;
+for extrapolation or interpolation, respectively.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.lotf.update_hysteretic_qm_region">
+<tt class="descclassname">quippy.lotf.</tt><tt class="descname">update_hysteretic_qm_region</tt><big>(</big><em>atoms</em>, <em>old_qm_list</em>, <em>qm_centre</em>, <em>qm_inner_radius</em>, <em>qm_outer_radius</em>, <em>use_avgpos=False</em>, <em>update_marks=True</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#update_hysteretic_qm_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.update_hysteretic_qm_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the QM region in <cite>atoms</cite></p>
+<p>Calls <a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms" title="quippy.potential.ForceMixingPotential.set_qm_atoms"><tt class="xref py py-meth docutils literal"><span class="pre">set_qm_atoms()</span></tt></a> to mark the atoms
+if the Atoms&#8217; calculator is an instance of <a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential" title="quippy.potential.ForceMixingPotential"><tt class="xref py py-class docutils literal"><span class="pre">ForceMixingPotential</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>old_qm_list</strong> : list</p>
+<blockquote>
+<div><p>List of QM atoms at previous update</p>
+</div></blockquote>
+<p><strong>qm_centre</strong> : array with shape (3,)</p>
+<blockquote>
+<div><p>Position of the new centre of the QM region</p>
+</div></blockquote>
+<p><strong>qm_inner_radius</strong> : float</p>
+<blockquote>
+<div><p>Atoms which come within this distance of any core atom will become
+selected for QM treatment.</p>
+</div></blockquote>
+<p><strong>qm_outer_radius</strong> : float</p>
+<blockquote>
+<div><p>Atoms stay QM until they are more than this distance from any core atom</p>
+</div></blockquote>
+<p><strong>update_marks</strong> : bool</p>
+<blockquote>
+<div><p>If true (default), call <a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms" title="quippy.potential.ForceMixingPotential.set_qm_atoms"><tt class="xref py py-meth docutils literal"><span class="pre">set_qm_atoms()</span></tt></a> to mark the atoms</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>qm_list</strong> : list</p>
+<blockquote class="last">
+<div><p>List of the new QM atom indices</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.lotf.iter_atom_centered_clusters">
+<tt class="descclassname">quippy.lotf.</tt><tt class="descname">iter_atom_centered_clusters</tt><big>(</big><em>at</em>, <em>mark_name='hybrid_mark'</em>, <em>**cluster_args</em><big>)</big><a class="reference internal" href="_modules/quippy/lotf.html#iter_atom_centered_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.iter_atom_centered_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all atom-centered (little) clusters in <cite>at</cite>.</p>
+<p>If <cite>at</cite> has a property with name <cite>mark_name</cite> (default <cite>&#8220;hybrid_mark&#8221;</cite>),
+only those atoms where <tt class="docutils literal"><span class="pre">hybrid_mark</span> <span class="pre">==</span> <span class="pre">HYBRID_ACTIVE_MARK</span></tt> are
+included. Otherwise, all atoms are included.</p>
+<p>Clusters are constructed by calling
+<a class="reference internal" href="clusters.html#quippy.clusters.create_hybrid_weights" title="quippy.clusters.create_hybrid_weights"><tt class="xref py py-func docutils literal"><span class="pre">create_hybrid_weights()</span></tt></a> and
+<a class="reference internal" href="clusters.html#quippy.clusters.create_cluster_simple" title="quippy.clusters.create_cluster_simple"><tt class="xref py py-func docutils literal"><span class="pre">create_cluster_simple()</span></tt></a> once for each atom
+of interest, after setting <tt class="docutils literal"><span class="pre">hybrid_mark=HYBRID_ACTIVE_MARK</span></tt> for that
+atom only.</p>
+<p>Any keyword arguments given are passed along to both cluster
+creation functions.</p>
+</dd></dl>
+
+<span class="target" id="module-quippy.adjustablepotential"></span><p>Module contents for <a class="reference internal" href="#module-quippy.adjustablepotential" title="quippy.adjustablepotential: `Learn on the Fly` adjustable potential"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.adjustablepotential</span></tt></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.adjustablepotential.adjustable_potential_init" title="quippy.adjustablepotential.adjustable_potential_init"><tt class="xref py py-obj docutils literal"><span class="pre">adjustable_potential_init</span></tt></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.adjustablepotential.adjustable_potential_force" title="quippy.adjustablepotential.adjustable_potential_force"><tt class="xref py py-obj docutils literal"><span class="pre">adjustable_potential_force</span></tt></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.adjustablepotential.adjustable_potential_finalise" title="quippy.adjustablepotential.adjustable_potential_finalise"><tt class="xref py py-obj docutils literal"><span class="pre">adjustable_potential_finalise</span></tt></a>()</td>
+<td><p class="rubric">References</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="91%" />
+<col width="9%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">AP_bad_atom_threshold</span></tt></td>
+<td>0.1</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">adjustable_potential_max_spring_constant</span></tt></td>
+<td>1.0</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">adjustable_potential_nparams</span></tt></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.adjustablepotential.adjustable_potential_init">
+<tt class="descclassname">quippy.adjustablepotential.</tt><tt class="descname">adjustable_potential_init</tt><big>(</big><em>atoms_in</em>, <em>fitlist</em>, <em>directionn</em><span class="optional">[</span>, <em>spring_hops</em>, <em>map</em>, <em>method</em>, <em>nnonly</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.adjustablepotential.adjustable_potential_init" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object</p>
+<p><strong>fitlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object</p>
+<p><strong>directionn</strong> :  input int</p>
+<p><strong>spring_hops</strong> :  input int, optional</p>
+<p><strong>map</strong> :  input int, optional</p>
+<p><strong>method</strong> :  input string(len=-1), optional</p>
+<p class="last"><strong>nnonly</strong> :  input int, optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">adjustable_potential_init</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/AdjustablePotential.f95">QUIP_Core/AdjustablePotential.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.adjustablepotential.adjustable_potential_force">
+<tt class="descclassname">quippy.adjustablepotential.</tt><tt class="descname">adjustable_potential_force</tt><big>(</big><em>atoms_in</em>, <em>n0</em><span class="optional">[</span>, <em>interp</em>, <em>interp_space</em>, <em>interp_order</em>, <em>energy</em>, <em>power</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.adjustablepotential.adjustable_potential_force" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_force,0)</p>
+</div></blockquote>
+<p><strong>interp</strong> :  input float, optional</p>
+<p><strong>interp_space</strong> :  input int, optional</p>
+<p><strong>interp_order</strong> :  input string(len=-1), optional</p>
+<p><strong>energy</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p><strong>power</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>force</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">adjustable_potential_force</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/AdjustablePotential.f95">QUIP_Core/AdjustablePotential.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.adjustablepotential.adjustable_potential_finalise">
+<tt class="descclassname">quippy.adjustablepotential.</tt><tt class="descname">adjustable_potential_finalise</tt><big>(</big><big>)</big><a class="headerlink" href="#quippy.adjustablepotential.adjustable_potential_finalise" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">adjustable_potential_finalise</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/AdjustablePotential.f95">QUIP_Core/AdjustablePotential.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

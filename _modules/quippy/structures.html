@@ -1,0 +1,700 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>quippy.structures &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for quippy.structures</h1><div class="highlight"><pre>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   Copyright James Kermode 2010</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains a variety of structure generating routines.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">quippy._structures</span>
+<span class="kn">from</span> <span class="nn">quippy._structures</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">quippy_array</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">FortranArray</span><span class="p">,</span> <span class="n">fidentity</span><span class="p">,</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">frange</span><span class="p">,</span> <span class="n">farray</span><span class="p">,</span> <span class="n">gcd</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">_structures</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;orthorhombic_slab&#39;</span><span class="p">,</span> <span class="s">&#39;rotation_matrix&#39;</span><span class="p">,</span>
+                                        <span class="s">&#39;quartz_params&#39;</span><span class="p">,</span> <span class="s">&#39;get_bulk_params&#39;</span><span class="p">,</span>
+                                        <span class="s">&#39;get_quartz_params&#39;</span><span class="p">,</span> <span class="s">&#39;get_bond_lengths&#39;</span><span class="p">,</span>
+                                        <span class="s">&#39;MillerIndex&#39;</span><span class="p">,</span> <span class="s">&#39;MillerPlane&#39;</span><span class="p">,</span> <span class="s">&#39;MillerDirection&#39;</span><span class="p">,</span> <span class="s">&#39;angle_between&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MillerIndex"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex">[docs]</a><span class="k">class</span> <span class="nc">MillerIndex</span><span class="p">(</span><span class="n">quippy_array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Representation of a three of four index Miller direction or plane</span>
+
+<span class="sd">    A :class:`MillerIndex` can be constructed from vector or parsed from a string::</span>
+
+<span class="sd">        x = MillerIndex(&#39;-211&#39;)</span>
+<span class="sd">        y = MillerIndex(&#39;111&#39;, type=&#39;plane&#39;)</span>
+<span class="sd">        z = x.cross(y)</span>
+<span class="sd">        print x # prints &quot;[-211]&quot;</span>
+<span class="sd">        print y # prints &quot;(111)&quot;, note round brackets denoting a plane</span>
+<span class="sd">        print z.latex()</span>
+<span class="sd">        assert(angle_between(x,y) == pi/2.)</span>
+<span class="sd">        assert(angle_between(y,z) == pi/2.)</span>
+<span class="sd">        assert(angle_between(x,z) == pi/2.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__array_priority__</span> <span class="o">=</span> <span class="mf">101.0</span>
+
+    <span class="n">brackets</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;direction&#39;</span><span class="p">:</span> <span class="s">&#39;[]&#39;</span><span class="p">,</span>
+                <span class="s">&#39;direction_family&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;&gt;&#39;</span><span class="p">,</span>
+                <span class="s">&#39;plane&#39;</span><span class="p">:</span> <span class="s">&#39;()&#39;</span><span class="p">,</span>
+                <span class="s">&#39;plane_family&#39;</span><span class="p">:</span> <span class="s">&#39;{}&#39;</span><span class="p">}</span>
+
+    <span class="n">all_brackets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">brackets</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;direction&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="bp">self</span> <span class="o">=</span> <span class="n">quippy_array</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> input v should be of length 3 or 4&#39;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="s">&#39;direction&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">([&#39;</span><span class="o">+</span><span class="s">&#39;</span><span class="si">%d</span><span class="s">&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;])&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">bopen</span><span class="p">,</span> <span class="n">bclose</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">bopen</span><span class="o">+</span><span class="s">&#39;</span><span class="si">%d</span><span class="s">&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">+</span><span class="n">bclose</span><span class="p">)</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MillerIndex.latex"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.latex">[docs]</a>    <span class="k">def</span> <span class="nf">latex</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Format this :class:`MillerIndex` as a LaTeX string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;$&#39;</span>
+        <span class="n">bopen</span><span class="p">,</span> <span class="n">bclose</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">bopen</span>
+        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">component</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s">r&#39;\bar{</span><span class="si">%d</span><span class="s">}&#39;</span> <span class="o">%</span> <span class="nb">abs</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">component</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">bclose</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&#39;$&#39;</span>
+        <span class="k">return</span> <span class="n">s</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="MillerIndex.parse"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">        Parse a Miller index string</span>
+
+<span class="sd">        Negative indices can be denoted by:</span>
+<span class="sd">         1. leading minus sign, e.g. ``[11-2]``</span>
+<span class="sd">         2. trailing ``b`` (for &#39;bar&#39;), e.g. ``112b``</span>
+<span class="sd">         3. LaTeX ``\bar{}``, e.g. ``[11\bar{2}]`` (which renders as :math:`[11\bar{2}]` in LaTeX)</span>
+
+<span class="sd">        Leading or trailing brackets of various kinds are ignored.</span>
+<span class="sd">        i.e. ``[001]``, ``{001}``, ``(001)``, ``[001]``, ``&lt;001&gt;``, ``001`` are all equivalent.</span>
+
+<span class="sd">        Returns an array of components (i,j,k) or (h,k,i,l)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Can&#39;t parse from </span><span class="si">%r</span><span class="s"> of type </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+
+        <span class="n">orig_s</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="s">r&#39;\bar{&#39;</span><span class="p">,</span><span class="s">&#39;-&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">b</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">all_brackets</span><span class="p">]:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="n">L</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="c"># space for up to 4 elements</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">3</span> <span class="c"># parse backwards from end of string</span>
+        <span class="k">while</span> <span class="n">L</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Cannot parse Miller index from string &quot;</span><span class="si">%s</span><span class="s">&quot;, too many components found&#39;</span> <span class="o">%</span> <span class="n">orig_s</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;-&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Miller index string &quot;</span><span class="si">%s</span><span class="s">&quot; cannot end with a minus sign&#39;</span> <span class="o">%</span> <span class="n">orig_s</span><span class="p">)</span>
+                <span class="n">components</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;b&#39;</span><span class="p">:</span>
+                <span class="n">components</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="s">&#39;2&#39;</span><span class="p">,</span> <span class="s">&#39;3&#39;</span><span class="p">,</span> <span class="s">&#39;4&#39;</span><span class="p">,</span> <span class="s">&#39;5&#39;</span><span class="p">,</span> <span class="s">&#39;6&#39;</span><span class="p">,</span> <span class="s">&#39;7&#39;</span><span class="p">,</span> <span class="s">&#39;8&#39;</span><span class="p">,</span> <span class="s">&#39;9&#39;</span><span class="p">]:</span>
+                <span class="n">components</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unexpected character &quot;</span><span class="si">%s</span><span class="s">&quot; in miller index string &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">orig_s</span><span class="p">))</span>
+                
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">components</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">components</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Cannot parse Miller index from string </span><span class="si">%s</span><span class="s">, too few components found&#39;</span> <span class="o">%</span> <span class="n">orig_s</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="MillerIndex.simplify"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.simplify">[docs]</a>    <span class="k">def</span> <span class="nf">simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simplify by dividing through by greatest common denominator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">reduce</span><span class="p">(</span><span class="n">gcd</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">[:]</span> <span class="o">/=</span> <span class="n">d</span>
+</div>
+    <span class="k">def</span> <span class="nf">simplified</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">copy</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">copy</span>
+
+    <span class="k">def</span> <span class="nf">normalised</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FortranArray</span><span class="p">)</span><span class="o">/</span><span class="n">a</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+
+    <span class="n">hat</span> <span class="o">=</span> <span class="n">normalised</span>
+
+    <span class="k">def</span> <span class="nf">cross</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">MillerIndex</span><span class="p">)</span><span class="o">.</span><span class="n">simplified</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">cosine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">normalised</span><span class="p">(),</span> <span class="n">other</span><span class="o">.</span><span class="n">normalised</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">as4</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">h</span><span class="o">+</span><span class="n">l</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">l</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">as3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">plane_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="MillerPlane"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerPlane">[docs]</a><span class="k">def</span> <span class="nf">MillerPlane</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;Special case of :class:`MillerIndex` with ``type=&quot;plane&quot;``&quot;&quot;&quot;</span>
+   <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s">&#39;plane&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MillerDirection"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerDirection">[docs]</a><span class="k">def</span> <span class="nf">MillerDirection</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;Special case of :class:`MillerIndex` with ``type=&quot;direction&quot;`` (the default)&quot;&quot;&quot;</span>
+   <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s">&#39;direction&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="angle_between"><a class="viewcode-back" href="../../structures.html#quippy.structures.angle_between">[docs]</a><span class="k">def</span> <span class="nf">angle_between</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Angle between crystallographic directions between a=[ijk] and b=[lmn], in radians.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="rotation_matrix"><a class="viewcode-back" href="../../structures.html#quippy.structures.rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">rotation_matrix</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return 3x3 matrix rotation matrix defining a crack with open</span>
+<span class="sd">    surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either</span>
+<span class="sd">    crack tip line `z` or crack propagation direction `x`.&quot;&quot;&quot;</span>
+
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">z</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;exactly one of x and z must be non-null&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>     <span class="c"># plane defined by y=(lmn)</span>
+
+    <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="c"># line defined by z=[pqr]</span>
+
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;y (</span><span class="si">%s</span><span class="s">) and z (</span><span class="si">%s</span><span class="s">) directions are not perpendicular&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">))</span>
+
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;y (</span><span class="si">%s</span><span class="s">) and x (</span><span class="si">%s</span><span class="s">) directions are not perpendicular&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">))</span>
+
+        <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="c"># Rotation matrix is transpose of axes matrix</span>
+    <span class="k">return</span> <span class="n">axes</span><span class="o">.</span><span class="n">T</span>
+
+
+</div>
+<div class="viewcode-block" id="orthorhombic_slab"><a class="viewcode-back" href="../../structures.html#quippy.structures.orthorhombic_slab">[docs]</a><span class="k">def</span> <span class="nf">orthorhombic_slab</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">min_nrep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_nrep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Try to construct an orthorhombic cell equivalent to the</span>
+<span class="sd">       primitive cell `at`, using supercells up to at most `max_nrep`</span>
+<span class="sd">       repeats. Symmetry must be exact within a tolerance of `tol`. If</span>
+<span class="sd">       `rot` is not None, we first transform `at` by the rotation</span>
+<span class="sd">       matrix `rot`. The optional argument `periodicity` can be used to</span>
+<span class="sd">       fix the periodicity one or more directions. It should be a three</span>
+<span class="sd">       component vector with value zero in the unconstrained</span>
+<span class="sd">       directions. The vector `vacuum` can be used to add vacuum in one</span>
+<span class="sd">       or more directions. `shift` is a three component vector which</span>
+<span class="sd">       can be used to shift the positions in the final cell. &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">atoms_near_plane</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of atoms within a distance `tol` of the plane defined by np.dot(n, at.pos) == d&quot;&quot;&quot;</span>
+        <span class="n">pd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span> <span class="o">-</span> <span class="n">d</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pd</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">sort_by_distance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ref_atom</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a copy of `candidates` sorted by perpendicular distance from `ref_atom` in direction `dir`&quot;&quot;&quot;</span>
+        <span class="n">distances_candidates</span> <span class="o">=</span>  <span class="nb">zip</span><span class="p">([</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">],</span> <span class="n">candidates</span><span class="p">)</span>
+        <span class="n">distances_candidates</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="n">distances_candidates</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">orthorhombic_box</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a copy of `at` in an orthorhombic box surrounded by vacuum&quot;&quot;&quot;</span>
+        <span class="n">at</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">([[</span><span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="mf">0.0</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">3</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">3</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">())]],</span>
+                       <span class="n">scale_positions</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">at</span>
+
+    <span class="k">def</span> <span class="nf">discard_outliers</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">keep_fraction</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a copy of `indices` with the atoms with fractional coordinates along directions in `dirs`</span>
+<span class="sd">           outside +/-`keep_fraction`/2 excluded. Lattice used is close fitting, `at.lattice`/2.&quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">lattice</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="n">indices</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">indices</span><span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dirs</span><span class="p">,:]</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">keep_fraction</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">dirs</span><span class="p">,:]</span> <span class="o">&lt;</span> <span class="n">keep_fraction</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">check_candidate_plane</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ref_plane</span><span class="p">,</span> <span class="n">cand_plane</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether in-plane displacements of atoms listed in `ref_plane` match those of `cand_plane` in directions given by `dirs`&quot;&quot;&quot;</span>
+
+        <span class="c"># Which pair of planes has more atoms, reference or candidate?</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref_plane</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cand_plane</span><span class="p">):</span>
+            <span class="n">smaller</span> <span class="o">=</span> <span class="n">ref_plane</span>
+            <span class="n">larger</span>  <span class="o">=</span> <span class="n">cand_plane</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">smaller</span> <span class="o">=</span> <span class="n">cand_plane</span>
+            <span class="n">larger</span>  <span class="o">=</span> <span class="n">ref_plane</span>
+
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">smaller</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">larger</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">dirs</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">dirs</span><span class="p">,</span><span class="n">j</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+                    <span class="n">matches</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+                    <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;   &#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">),</span> <span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">smaller</span><span class="p">),</span> <span class="s">&#39;matches&#39;</span>
+
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">smaller</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">rot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">at</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">rot</span><span class="p">)</span>
+
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">fidentity</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">nrep</span> <span class="o">=</span> <span class="n">min_nrep</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">max_dist</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">periodicity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">periodicity</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">periodicity</span><span class="p">)</span>
+        <span class="n">periodicity</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">((</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">periodicity</span><span class="p">[</span><span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">periodicity</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="n">periodicity</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">print</span> <span class="s">&#39;Periodicity in direction </span><span class="si">%d</span><span class="s"> fixed at </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">atomeye</span>
+        <span class="n">viewer</span> <span class="o">=</span> <span class="n">atomeye</span><span class="o">.</span><span class="n">AtomEyeViewer</span><span class="p">()</span>
+
+    <span class="k">while</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">periodicity</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]:</span>
+        <span class="n">nrep</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">nrep</span> <span class="o">&gt;</span> <span class="n">max_nrep</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Maximum size of supercell (</span><span class="si">%d</span><span class="s">) exceeded&#39;</span> <span class="o">%</span> <span class="n">max_nrep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">Supercell </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">nrep</span>
+        <span class="n">sup</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">nrep</span><span class="p">,</span> <span class="n">nrep</span><span class="p">,</span> <span class="n">nrep</span><span class="p">)</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="n">orthorhombic_box</span><span class="p">(</span><span class="n">sup</span><span class="p">)</span>
+        <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="p">[</span><span class="n">box</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">periodicity</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&#39;  Direction </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">dir</span>
+
+            <span class="n">other_dirs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="nb">dir</span><span class="p">]))</span>
+
+            <span class="n">pos_index</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,:],</span><span class="n">frange</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+            <span class="n">pos_index</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+            <span class="c"># Find a pair of planes</span>
+            <span class="k">while</span> <span class="n">pos_index</span><span class="p">:</span>
+                <span class="n">ref_pos1</span><span class="p">,</span> <span class="n">ref_atom1</span> <span class="o">=</span> <span class="n">pos_index</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="c"># Find atom to define second plane</span>
+                <span class="k">while</span> <span class="n">pos_index</span><span class="p">:</span>
+                    <span class="n">ref_pos2</span><span class="p">,</span> <span class="n">ref_atom2</span> <span class="o">=</span> <span class="n">pos_index</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ref_pos2</span> <span class="o">-</span> <span class="n">ref_pos1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span> <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">ref_plane1</span> <span class="o">=</span> <span class="n">atoms_near_plane</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">xyz</span><span class="p">[:,</span><span class="nb">dir</span><span class="p">],</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom1</span><span class="p">],</span> <span class="n">tol</span><span class="p">)</span>
+                <span class="n">ref_plane2</span> <span class="o">=</span> <span class="n">atoms_near_plane</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">xyz</span><span class="p">[:,</span><span class="nb">dir</span><span class="p">],</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom2</span><span class="p">],</span> <span class="n">tol</span><span class="p">)</span>
+
+                <span class="c"># Only keep reference atoms in the centre of the cell</span>
+                <span class="n">ref_plane1</span> <span class="o">=</span> <span class="n">discard_outliers</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_plane1</span><span class="p">,</span> <span class="n">other_dirs</span><span class="p">)</span>
+                <span class="n">ref_plane2</span> <span class="o">=</span> <span class="n">discard_outliers</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_plane2</span><span class="p">,</span> <span class="n">other_dirs</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref_plane1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref_plane2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="c"># Now we&#39;ve got two planes, both with more than two atoms in them</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Used up all atoms without finding two planes</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&#39;    No valid reference planes found.</span><span class="se">\n</span><span class="s">&#39;</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&#39;    Reference plane #1 through atom </span><span class="si">%d</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="n">ref_atom1</span>
+                <span class="k">print</span> <span class="s">&#39;    Reference plane #2 through atom </span><span class="si">%d</span><span class="s"> at distance </span><span class="si">%r</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ref_atom2</span><span class="p">,</span> <span class="n">ref_pos2</span> <span class="o">-</span> <span class="n">ref_pos1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
+                <span class="n">highlight</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+                <span class="n">highlight</span><span class="p">[</span><span class="n">ref_plane1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">highlight</span><span class="p">[</span><span class="n">ref_plane2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;highlight&#39;</span><span class="p">,</span> <span class="n">highlight</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s">&#39;highlight&#39;</span><span class="p">)</span>
+                <span class="n">viewer</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;continue&#39;</span><span class="p">)</span>
+
+            <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom2</span><span class="p">]</span> <span class="o">+</span> <span class="n">max_dist</span><span class="p">[</span><span class="nb">dir</span><span class="p">]</span> <span class="o">+</span> <span class="n">tol</span><span class="p">]</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="n">sort_by_distance</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_atom1</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="n">candidates</span><span class="p">)</span>
+
+            <span class="k">while</span> <span class="n">candidates</span><span class="p">:</span>
+                <span class="n">cand1</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="n">max_dist</span><span class="p">[</span><span class="nb">dir</span><span class="p">]</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand1</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom1</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&#39;    Trying plane through atom </span><span class="si">%d</span><span class="s"> distance </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">[</span><span class="nb">dir</span><span class="p">])</span>
+
+                <span class="n">cand_plane1</span> <span class="o">=</span> <span class="n">atoms_near_plane</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">xyz</span><span class="p">[:,</span><span class="nb">dir</span><span class="p">],</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand1</span><span class="p">],</span> <span class="n">tol</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">cand2</span> <span class="ow">in</span> <span class="n">sort_by_distance</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_atom1</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">cand_plane1</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">abs</span><span class="p">((</span><span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand1</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="k">print</span> <span class="s">&#39;    Found pair to plane, passing through atom </span><span class="si">%d</span><span class="s"> distance </span><span class="si">%r</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cand2</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom1</span><span class="p">])</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&#39;    Cannot find second candidate plane.</span><span class="se">\n</span><span class="s">&#39;</span>
+                    <span class="n">candidates</span> <span class="o">=</span> <span class="n">sort_by_distance</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_atom1</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">cand_plane1</span><span class="p">))</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
+                    <span class="n">highlight</span><span class="p">[</span><span class="n">cand_plane1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+                    <span class="n">box</span><span class="o">.</span><span class="n">highlight</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">highlight</span>
+                    <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s">&#39;highlight&#39;</span><span class="p">)</span>
+                    <span class="n">viewer</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+                <span class="n">cand_plane2</span> <span class="o">=</span> <span class="n">atoms_near_plane</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">xyz</span><span class="p">[:,</span><span class="nb">dir</span><span class="p">],</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand2</span><span class="p">],</span> <span class="n">tol</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
+                    <span class="n">highlight</span><span class="p">[</span><span class="n">cand_plane2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+                    <span class="n">box</span><span class="o">.</span><span class="n">highlight</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">highlight</span>                    
+                    <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s">&#39;highlight&#39;</span><span class="p">)</span>
+                    <span class="n">viewer</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+                    <span class="n">highlight</span><span class="p">[</span><span class="n">cand_plane1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">highlight</span><span class="p">[</span><span class="n">cand_plane2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+                <span class="c"># Remove cand_plane1 from list of candidates</span>
+                <span class="n">candidates</span> <span class="o">=</span> <span class="n">sort_by_distance</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_atom1</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">cand_plane1</span><span class="p">))</span>
+
+                <span class="c"># Check ref_plane1 against cand_plane1 and ref_plane2 against cand_plane2 in directions</span>
+                <span class="c"># listed in other_dirs</span>
+                <span class="n">match1</span> <span class="o">=</span> <span class="n">check_candidate_plane</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_plane1</span><span class="p">,</span> <span class="n">cand_plane1</span><span class="p">,</span> <span class="n">other_dirs</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="s">&#39;Plane #1:&#39;</span><span class="p">)</span>
+                <span class="n">match2</span> <span class="o">=</span> <span class="n">check_candidate_plane</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ref_plane2</span><span class="p">,</span> <span class="n">cand_plane2</span><span class="p">,</span> <span class="n">other_dirs</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="s">&#39;Plane #2:&#39;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">match1</span> <span class="ow">and</span> <span class="n">match2</span><span class="p">:</span>
+                    <span class="n">periodicity</span><span class="p">[</span><span class="nb">dir</span><span class="p">]</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand1</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">  Periodicity in direction </span><span class="si">%d</span><span class="s"> is </span><span class="si">%f</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">cand1</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="nb">dir</span><span class="p">,</span><span class="n">ref_atom1</span><span class="p">])</span>
+
+                    <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
+                        <span class="n">highlight</span><span class="p">[</span><span class="n">cand_plane1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+                        <span class="n">highlight</span><span class="p">[</span><span class="n">cand_plane2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+                        <span class="n">box</span><span class="o">.</span><span class="n">highlight</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">highlight</span>
+                        <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s">&#39;highlight&#39;</span><span class="p">)</span>
+                        <span class="n">viewer</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                        <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;continue...&#39;</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+                <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
+                    <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;continue...&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Failed to find match for direction dir</span>
+                <span class="k">continue</span>
+
+    <span class="c"># Finally, construct new cell by selecting atoms within first unit cell</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="n">periodicity</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">periodicity</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">periodicity</span><span class="p">[</span><span class="mi">3</span><span class="p">]]))</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
+
+    <span class="n">nrepx</span><span class="p">,</span> <span class="n">nrepy</span><span class="p">,</span> <span class="n">nrepz</span> <span class="o">=</span> <span class="n">fit_box_in_cell</span><span class="p">(</span><span class="n">periodicity</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">periodicity</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">periodicity</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
+
+    <span class="n">sup</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">nrepx</span><span class="p">,</span> <span class="n">nrepy</span><span class="p">,</span> <span class="n">nrepz</span><span class="p">)</span>
+    <span class="n">sup</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+
+    <span class="c"># small shift to avoid coincidental cell alignments</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">],</span> <span class="p">[</span><span class="n">sup</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">vacuum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="p">[</span><span class="n">sup</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">sup</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta</span>
+
+    <span class="n">orthorhombic</span> <span class="o">=</span> <span class="n">sup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">vacuum</span><span class="p">:</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">+</span> <span class="n">vacuum</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">vacuum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;Shifting positions by </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+        <span class="n">orthorhombic</span><span class="o">.</span><span class="n">pos</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">shift</span><span class="p">),</span> <span class="p">[</span><span class="n">orthorhombic</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">orthorhombic</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">orthorhombic</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">orthorhombic</span>
+
+
+</div>
+<span class="n">quartz_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;experiment&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mf">4.9160</span><span class="p">,</span>
+                                <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mf">5.4054</span><span class="p">,</span>
+                                <span class="s">&#39;u&#39;</span><span class="p">:</span> <span class="mf">0.4697</span><span class="p">,</span>
+                                <span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.4135</span><span class="p">,</span>
+                                <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.2669</span><span class="p">,</span>
+                                <span class="s">&#39;z&#39;</span><span class="p">:</span> <span class="mf">0.1191</span><span class="p">},</span>
+                 <span class="s">&#39;CASTEP_LDA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mf">4.87009</span><span class="p">,</span>
+                                <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mf">5.36255</span><span class="p">,</span>
+                                <span class="s">&#39;u&#39;</span><span class="p">:</span> <span class="mf">0.46699</span><span class="p">,</span>
+                                <span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.41289</span><span class="p">,</span>
+                                <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.27198</span><span class="p">,</span>
+                                <span class="s">&#39;z&#39;</span><span class="p">:</span> <span class="mf">0.11588</span><span class="p">},</span>
+                 <span class="s">&#39;CASTEP_GGA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mf">5.02836</span><span class="p">,</span>
+                                <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mf">5.51193</span><span class="p">,</span>
+                                <span class="s">&#39;u&#39;</span><span class="p">:</span> <span class="mf">0.48128</span><span class="p">,</span>
+                                <span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.41649</span><span class="p">,</span>
+                                <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.24661</span><span class="p">,</span>
+                                <span class="s">&#39;z&#39;</span><span class="p">:</span> <span class="mf">0.13594</span><span class="p">},</span>
+                 <span class="s">&#39;ASAP_JRK&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mf">4.8403809707320216</span><span class="p">,</span>
+                              <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mf">5.3285240037002248</span><span class="p">,</span>
+                              <span class="s">&#39;u&#39;</span><span class="p">:</span> <span class="mf">0.46417561617105912</span><span class="p">,</span>
+                              <span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.41174271054205958</span><span class="p">,</span>
+                              <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.27872745399831672</span><span class="p">,</span>
+                              <span class="s">&#39;z&#39;</span><span class="p">:</span> <span class="mf">0.10973603276909905</span><span class="p">}</span>
+                 <span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">get_quartz_params</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+    <span class="k">assert</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span> <span class="o">==</span> <span class="mi">9</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">14</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">6</span>
+
+    <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">get_lattice_params</span>
+
+    <span class="n">lat_params</span> <span class="o">=</span> <span class="n">get_lattice_params</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">lat_params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lat_params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s">&#39;a      = &#39;</span><span class="p">,</span> <span class="n">a</span>
+    <span class="k">print</span> <span class="s">&#39;c      = &#39;</span><span class="p">,</span> <span class="n">c</span>
+    <span class="k">print</span> <span class="s">&#39;c/a    = &#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">/</span><span class="n">a</span>
+    <span class="k">print</span> <span class="s">&#39;V      = &#39;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&#39;V/SiO2 = &#39;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">/</span><span class="mf">3.0</span>
+
+    <span class="n">frac_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">frac_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="o">=</span> <span class="n">frac_pos</span><span class="p">[:,</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">-=</span> <span class="mf">2.0</span><span class="o">/</span><span class="mf">3.0</span>
+    <span class="k">if</span> <span class="n">z</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span> <span class="n">z</span> <span class="o">+=</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="n">z</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span> <span class="n">z</span> <span class="o">--</span> <span class="mf">1.0</span>
+
+    <span class="k">print</span> <span class="s">&#39;u      = &#39;</span><span class="p">,</span> <span class="n">u</span>
+    <span class="k">print</span> <span class="s">&#39;x      = &#39;</span><span class="p">,</span> <span class="n">x</span>
+    <span class="k">print</span> <span class="s">&#39;y      = &#39;</span><span class="p">,</span> <span class="n">y</span>
+    <span class="k">print</span> <span class="s">&#39;z      = &#39;</span><span class="p">,</span> <span class="n">z</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span><span class="n">a</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span><span class="n">c</span><span class="p">,</span> <span class="s">&#39;u&#39;</span><span class="p">:</span><span class="n">u</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">:</span><span class="n">y</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">:</span><span class="n">z</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_bond_lengths"><a class="viewcode-back" href="../../structures.html#quippy.structures.get_bond_lengths">[docs]</a><span class="k">def</span> <span class="nf">get_bond_lengths</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a dictionary mapping tuples (Species1, Species2) to an farray of bond-lengths&quot;&quot;&quot;</span>
+    <span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+    <span class="n">r_ij</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n_neighbours</span><span class="p">(</span><span class="n">i</span><span class="p">)):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">neighbour</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">r_ij</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">r_ij</span>
+            <span class="n">minij</span><span class="p">,</span> <span class="n">maxij</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)),</span> <span class="nb">max</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">minij</span><span class="p">]</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">(),</span> <span class="n">at</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">maxij</span><span class="p">]</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_ij</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+    <span class="k">print</span> <span class="n">res</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="n">farray</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="get_bulk_params"><a class="viewcode-back" href="../../structures.html#quippy.structures.get_bulk_params">[docs]</a><span class="k">def</span> <span class="nf">get_bulk_params</span><span class="p">(</span><span class="n">bulk</span><span class="p">,</span> <span class="n">lat_type</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return 6-tuple of lattice parameters a, c, u, x, y, z for</span>
+<span class="sd">       cell `bulk` of lattice type `lat_type`&quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">get_lattice_params</span><span class="p">(</span><span class="n">bulk</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">b</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">lat_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;diamond&#39;</span><span class="p">,</span> <span class="s">&#39;bcc&#39;</span><span class="p">,</span> <span class="s">&#39;fcc&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> lattice, a=</span><span class="si">%.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lat_type</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">lat_type</span> <span class="o">==</span> <span class="s">&#39;anatase&#39;</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">bulk</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span><span class="o">/</span><span class="n">c</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;anatase lattice, a=</span><span class="si">%.3f</span><span class="s"> c=</span><span class="si">%.3f</span><span class="s"> u=</span><span class="si">%.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">lat_type</span> <span class="o">==</span> <span class="s">&#39;rutile&#39;</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">bulk</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="n">a</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;rutile lattice, a=</span><span class="si">%.3f</span><span class="s"> c=</span><span class="si">%.3f</span><span class="s"> u=</span><span class="si">%.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">lat_type</span> <span class="o">==</span> <span class="s">&#39;alpha_quartz&#39;</span><span class="p">:</span>
+        <span class="n">qz</span> <span class="o">=</span> <span class="n">get_quartz_params</span><span class="p">(</span><span class="n">bulk</span><span class="p">)</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">qz</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">],</span> <span class="n">qz</span><span class="p">[</span><span class="s">&#39;c&#39;</span><span class="p">],</span> <span class="n">qz</span><span class="p">[</span><span class="s">&#39;u&#39;</span><span class="p">],</span>
+                            <span class="n">qz</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">],</span> <span class="n">qz</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">],</span> <span class="n">qz</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;alpha_quartz lattice, &#39;</span><span class="p">,</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s">&#39;a=</span><span class="si">%.3f</span><span class="s"> c=</span><span class="si">%.3f</span><span class="s"> u=</span><span class="si">%.3f</span><span class="s"> x=</span><span class="si">%.3f</span><span class="s"> y=</span><span class="si">%.3f</span><span class="s"> z=</span><span class="si">%.3f</span><span class="s">&#39;</span>
+                   <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="p">,</span><span class="n">z</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unknown latttice type </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">lat_type</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Nelder and Mead minimisation algorithm &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/simplex.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.simplex">
+<span id="nelder-and-mead-minimisation-algorithm"></span><h1>Nelder and Mead minimisation algorithm<a class="headerlink" href="#module-quippy.simplex" title="Permalink to this headline">¶</a></h1>
+<p>Direct mimimisation and simulated annealing using the downhill simplex
+method of Nelder and Mead.</p>
+<p>Code adapted from chapter 10 of Numerical Recipes (3rd edition).</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.simplex" title="quippy.simplex: Nelder and Mead minimisation algorithm"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.simplex</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex" title="quippy.simplex.DownhillSimplex"><tt class="xref py py-obj docutils literal"><span class="pre">DownhillSimplex</span></tt></a>(func[,&nbsp;x0,&nbsp;deltas,&nbsp;p,&nbsp;args,&nbsp;...])</td>
+<td>Multidimensional minimisation using the downhill simplex method of Nelder and Mead.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.simplex.DownhillSimplex">
+<em class="property">class </em><tt class="descclassname">quippy.simplex.</tt><tt class="descname">DownhillSimplex</tt><big>(</big><em>func</em>, <em>x0=None</em>, <em>deltas=None</em>, <em>p=None</em>, <em>args=None</em>, <em>ftol=1e-06</em>, <em>nmax=5000</em>, <em>tiny=1e-10</em><big>)</big><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multidimensional minimisation using the downhill simplex method of
+Nelder and Mead.</p>
+<p>From Numerical Recipes, 3rd edition, section 10.5.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex.anneal_step" title="quippy.simplex.DownhillSimplex.anneal_step"><tt class="xref py py-obj docutils literal"><span class="pre">anneal_step</span></tt></a>(iter,&nbsp;temperature)</td>
+<td>Anneal for <em>iter</em> steps at temperature <em>temperature</em>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex.extrapolate" title="quippy.simplex.DownhillSimplex.extrapolate"><tt class="xref py py-obj docutils literal"><span class="pre">extrapolate</span></tt></a>(ihi,&nbsp;yhi,&nbsp;fac[,&nbsp;temperature])</td>
+<td>Extrapolate by a factor <em>fac</em> through the face of the simplex across from the high point <em>ihi</em>, try it, and replace the high point if the new point is better.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex.minimise" title="quippy.simplex.DownhillSimplex.minimise"><tt class="xref py py-obj docutils literal"><span class="pre">minimise</span></tt></a>()</td>
+<td>Run the downhill simplex minimiser.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.simplex.DownhillSimplex.anneal_step">
+<tt class="descname">anneal_step</tt><big>(</big><em>iter</em>, <em>temperature</em><big>)</big><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex.anneal_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex.anneal_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Anneal for <em>iter</em> steps at temperature <em>temperature</em>.</p>
+<p>Returns True if converged to global minimum, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.simplex.DownhillSimplex.extrapolate">
+<tt class="descname">extrapolate</tt><big>(</big><em>ihi</em>, <em>yhi</em>, <em>fac</em>, <em>temperature=None</em><big>)</big><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex.extrapolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex.extrapolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extrapolate by a factor <em>fac</em> through the face of the simplex
+across from the high point <em>ihi</em>, try it, and replace the
+high point if the new point is better. Returns result of
+evaluating function at new point.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.simplex.DownhillSimplex.minimise">
+<tt class="descname">minimise</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex.minimise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex.minimise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the downhill simplex minimiser.</p>
+<p>Returns coordinates at minimum as vector <em>x</em>. After minimisation,
+function value at minimum is available as <em>fmin</em> attribute,
+simplex as <em>p</em> attribute, and number of function evaluations as
+<em>nfunc</em> attribute.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

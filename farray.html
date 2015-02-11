@@ -1,0 +1,466 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>FortranArray objects for one-based array indexing &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" />
+    <link rel="prev" title="Fortran input/output" href="fortranio.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fortranio.html" title="Fortran input/output"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fortranio.html"
+                        title="previous chapter">Fortran input/output</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/farray.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.farray">
+<span id="fortranarray-objects-for-one-based-array-indexing"></span><h1>FortranArray objects for one-based array indexing<a class="headerlink" href="#module-quippy.farray" title="Permalink to this headline">¶</a></h1>
+<p>Contains <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> class and utility functions for handling one-based
+array indexing.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.farray" title="quippy.farray: Fortran one-based array indexing"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.farray</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-obj docutils literal"><span class="pre">FortranArray</span></tt></a></td>
+<td>Subclass of <tt class="xref py py-class docutils literal"><span class="pre">np.ndarray</span></tt> which uses Fortran-style one-based indexing.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.frange" title="quippy.farray.frange"><tt class="xref py py-obj docutils literal"><span class="pre">frange</span></tt></a>(min[,&nbsp;max,&nbsp;step])</td>
+<td>Fortran equivalent of <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#range" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt></a> builtin.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.fenumerate" title="quippy.farray.fenumerate"><tt class="xref py py-obj docutils literal"><span class="pre">fenumerate</span></tt></a>(seq)</td>
+<td>One-based equivalent of enumerate</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.fzeros" title="quippy.farray.fzeros"><tt class="xref py py-obj docutils literal"><span class="pre">fzeros</span></tt></a>(shape[,&nbsp;dtype])</td>
+<td>Create an empty <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> with Fortran ordering.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.farray" title="quippy.farray.farray"><tt class="xref py py-obj docutils literal"><span class="pre">farray</span></tt></a>(seq[,&nbsp;dtype])</td>
+<td>Convert <tt class="docutils literal"><span class="pre">seq</span></tt> to a <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> with Fortran ordering.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.fidentity" title="quippy.farray.fidentity"><tt class="xref py py-obj docutils literal"><span class="pre">fidentity</span></tt></a>(n)</td>
+<td>Return the <tt class="docutils literal"><span class="pre">n</span></tt> dimensional identity matrix as a <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.fvar" title="quippy.farray.fvar"><tt class="xref py py-obj docutils literal"><span class="pre">fvar</span></tt></a>(seq)</td>
+<td>Create one or more rank-0 instances of <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> and inject them into the global namespace.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.f2n" title="quippy.farray.f2n"><tt class="xref py py-obj docutils literal"><span class="pre">f2n</span></tt></a>(x)</td>
+<td>Return <tt class="docutils literal"><span class="pre">x.view(np.ndarray)</span></tt></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.n2f" title="quippy.farray.n2f"><tt class="xref py py-obj docutils literal"><span class="pre">n2f</span></tt></a>(x)</td>
+<td>Return <tt class="docutils literal"><span class="pre">x.view(FortranArray)</span></tt></td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">unravel_index</span></tt>(x,&nbsp;dims)</td>
+<td>1-based version of np.unravel_index</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">s2a</span></tt>(d[,&nbsp;pad])</td>
+<td>Convert from list of strings to array of shape (pad, len(d)).</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">a2s</span></tt>(a)</td>
+<td>Convert from array of shape (pad, len(d)) to list of strings d</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">loadcsv</span></tt>(filename)</td>
+<td>Read CSV formatted data file and return dictionary of farrays, using first row in file as column labels for dictionary keys.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">tilevec</span></tt>(vec,&nbsp;n)</td>
+<td>repeat 3-vector <cite>vec</cite> n times to give an array with shape (3,N)</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">gcd</span></tt>(a,&nbsp;b)</td>
+<td>Calculate the greatest common divisor of a and b</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.farray.FortranArray">
+<em class="property">class </em><tt class="descclassname">quippy.farray.</tt><tt class="descname">FortranArray</tt><a class="reference internal" href="_modules/quippy/farray.html#FortranArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <tt class="xref py py-class docutils literal"><span class="pre">np.ndarray</span></tt> which uses Fortran-style one-based indexing.</p>
+<p>The first element is numbered one rather than zero and
+trying to access element zero will raise an <tt class="xref py py-exc docutils literal"><span class="pre">IndexError</span></tt>
+exception. Negative indices are unchanged; -1 still refers to the
+highest index along a dimension. Slices are also Fortran-style,
+i.e. inclusive on the second element so 1:2 includes the one-based
+elements 1 and 2, equivalent to a C-style slice of 0:2. The <tt class="docutils literal"><span class="pre">self.flat</span></tt>
+iterator is still indexed from zero.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray.cols" title="quippy.farray.FortranArray.cols"><tt class="xref py py-obj docutils literal"><span class="pre">cols</span></tt></a></td>
+<td>Iterator for <tt class="docutils literal"><span class="pre">MxN</span></tt> arrays to return <tt class="docutils literal"><span class="pre">cols</span> <span class="pre">[...,i]</span></tt> for <tt class="docutils literal"><span class="pre">i=1,N</span></tt> one by one as <tt class="docutils literal"><span class="pre">Mx1</span></tt> arrays.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.FortranArray.rows" title="quippy.farray.FortranArray.rows"><tt class="xref py py-obj docutils literal"><span class="pre">rows</span></tt></a></td>
+<td>Iterate over this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> treating first dimension as fastest varying</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray.col_iter" title="quippy.farray.FortranArray.col_iter"><tt class="xref py py-obj docutils literal"><span class="pre">col_iter</span></tt></a>()</td>
+<td>Iterator for <tt class="docutils literal"><span class="pre">MxN</span></tt> arrays to return <tt class="docutils literal"><span class="pre">cols</span> <span class="pre">[...,i]</span></tt> for <tt class="docutils literal"><span class="pre">i=1,N</span></tt> one by one as <tt class="docutils literal"><span class="pre">Mx1</span></tt> arrays.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.FortranArray.hat" title="quippy.farray.FortranArray.hat"><tt class="xref py py-obj docutils literal"><span class="pre">hat</span></tt></a>()</td>
+<td>Return a normalised copy of this array</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray.mapindices" title="quippy.farray.FortranArray.mapindices"><tt class="xref py py-obj docutils literal"><span class="pre">mapindices</span></tt></a>(indx)</td>
+<td>Transform from Fortran-style one-based to C-style zero based indices.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.FortranArray.norm" title="quippy.farray.FortranArray.norm"><tt class="xref py py-obj docutils literal"><span class="pre">norm</span></tt></a>()</td>
+<td>Return <tt class="docutils literal"><span class="pre">sqrt(norm2(self))</span></tt></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray.norm2" title="quippy.farray.FortranArray.norm2"><tt class="xref py py-obj docutils literal"><span class="pre">norm2</span></tt></a>()</td>
+<td>Squared norm of a 1D or 2D array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.FortranArray.normalised" title="quippy.farray.FortranArray.normalised"><tt class="xref py py-obj docutils literal"><span class="pre">normalised</span></tt></a>()</td>
+<td>Return a normalised copy of this array</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray.row_iter" title="quippy.farray.FortranArray.row_iter"><tt class="xref py py-obj docutils literal"><span class="pre">row_iter</span></tt></a>()</td>
+<td>Iterate over this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> treating first dimension as fastest varying</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.FortranArray.stripstrings" title="quippy.farray.FortranArray.stripstrings"><tt class="xref py py-obj docutils literal"><span class="pre">stripstrings</span></tt></a>()</td>
+<td>Return contents as string (0- and 1-dimensional arrays) or array of strings with trailing spaces removed (2-dimensional arrays).</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.farray.FortranArray.all">
+<tt class="descname">all</tt><big>(</big><em>axis=None</em>, <em>out=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-based analogue of <tt class="xref py py-meth docutils literal"><span class="pre">np.ndarray.all()</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.any">
+<tt class="descname">any</tt><big>(</big><em>axis=None</em>, <em>out=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.any"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.any" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-based analogue of <tt class="xref py py-meth docutils literal"><span class="pre">np.ndarray.any()</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.argmax">
+<tt class="descname">argmax</tt><big>(</big><em>axis=None</em>, <em>out=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.argmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return one-based indices of the maximum values along the given axis of <cite>a</cite>.</p>
+<p>Refer to <cite>np.ndarray.argmax</cite> for detailed documentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.argmin">
+<tt class="descname">argmin</tt><big>(</big><em>axis=None</em>, <em>out=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.argmin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.argmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return one-based indices of the minimum values along the given  axis of <cite>a</cite>.</p>
+<p>Refer to <cite>np.ndarray.argmax</cite> for detailed documentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.argsort">
+<tt class="descname">argsort</tt><big>(</big><em>axis=None</em>, <em>kind='quicksort'</em>, <em>order=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.argsort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.argsort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the indices that would sort this array.</p>
+<p>Refer to <cite>np.argsort</cite> for full documentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.col_iter">
+<tt class="descname">col_iter</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.col_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.col_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator for <tt class="docutils literal"><span class="pre">MxN</span></tt> arrays to return <tt class="docutils literal"><span class="pre">cols</span> <span class="pre">[...,i]</span></tt> for <tt class="docutils literal"><span class="pre">i=1,N</span></tt> one by one as <tt class="docutils literal"><span class="pre">Mx1</span></tt> arrays.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.hat">
+<tt class="descname">hat</tt><big>(</big><big>)</big><a class="headerlink" href="#quippy.farray.FortranArray.hat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a normalised copy of this array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.mapindices">
+<tt class="descname">mapindices</tt><big>(</big><em>indx</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.mapindices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.mapindices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform from Fortran-style one-based to C-style zero based indices.</p>
+<p>indx can be any object that can be used to subscript
+an ndarray - scalar integer or slice, sequence of integers and
+slices or an ndarray of integer or boolean kind.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.mean">
+<tt class="descname">mean</tt><big>(</big><em>axis=None</em>, <em>dtype=None</em>, <em>out=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-based analogue of <tt class="xref py py-meth docutils literal"><span class="pre">np.ndarray.mean()</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.nonzero">
+<tt class="descname">nonzero</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.nonzero"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.nonzero" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the one-based indices of the elements of a which are not zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.norm">
+<tt class="descname">norm</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">sqrt(norm2(self))</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.norm2">
+<tt class="descname">norm2</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.norm2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.norm2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared norm of a 1D or 2D array.</p>
+<p>For a 1D array, returns dot(self,self)
+For a 2D array, must have shape (3,n). Returns array a where a[i] = dot(self[:,i],self[:,i])</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.normalised">
+<tt class="descname">normalised</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.normalised"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.normalised" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a normalised copy of this array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.put">
+<tt class="descname">put</tt><big>(</big><em>indices</em>, <em>values</em>, <em>mode='raise'</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.put"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a.flat[n] = values[n] for all n in indices.</p>
+<p>Refer to <cite>np.put</cite> for full documentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.row_iter">
+<tt class="descname">row_iter</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.row_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.row_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> treating first dimension as fastest varying</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.stripstrings">
+<tt class="descname">stripstrings</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.stripstrings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.stripstrings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return contents as string (0- and 1-dimensional arrays) or array of strings with
+trailing spaces removed (2-dimensional arrays).</p>
+<p>Raises <tt class="xref py py-exc docutils literal"><span class="pre">ValueError</span></tt> if this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> does not have a string datatype.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.sum">
+<tt class="descname">sum</tt><big>(</big><em>axis=None</em>, <em>dtype=None</em>, <em>out=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-based analogue of <tt class="xref py py-meth docutils literal"><span class="pre">np.ndarray.sum()</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.farray.FortranArray.take">
+<tt class="descname">take</tt><big>(</big><em>indices</em>, <em>axis=None</em>, <em>out=None</em>, <em>mode='raise'</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#FortranArray.take"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.FortranArray.take" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an array formed from the elements of a at the given
+one-based indices.</p>
+<p>Refer to <cite>np.take</cite> for full documentation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.farray.FortranArray.cols">
+<tt class="descname">cols</tt><a class="headerlink" href="#quippy.farray.FortranArray.cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator for <tt class="docutils literal"><span class="pre">MxN</span></tt> arrays to return <tt class="docutils literal"><span class="pre">cols</span> <span class="pre">[...,i]</span></tt> for <tt class="docutils literal"><span class="pre">i=1,N</span></tt> one by one as <tt class="docutils literal"><span class="pre">Mx1</span></tt> arrays.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.farray.FortranArray.rows">
+<tt class="descname">rows</tt><a class="headerlink" href="#quippy.farray.FortranArray.rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> treating first dimension as fastest varying</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>There are also some functions which operate on <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a>
+instances:</p>
+<dl class="function">
+<dt id="quippy.farray.farray">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">farray</tt><big>(</big><em>seq</em>, <em>dtype=None</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#farray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.farray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <tt class="docutils literal"><span class="pre">seq</span></tt> to a <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> with Fortran ordering.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">fa</span> <span class="o">=</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>A copy of the data in seq will be made if necessary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.fenumerate">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">fenumerate</tt><big>(</big><em>seq</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#fenumerate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.fenumerate" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-based equivalent of enumerate</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.fidentity">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">fidentity</tt><big>(</big><em>n</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#fidentity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.fidentity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <tt class="docutils literal"><span class="pre">n</span></tt> dimensional identity matrix as a <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.frange">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">frange</tt><big>(</big><em>min</em>, <em>max=None</em>, <em>step=1</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#frange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.frange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fortran equivalent of <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#range" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt></a> builtin.</p>
+<p>Returns an iterator for integers from <tt class="docutils literal"><span class="pre">min</span></tt> to <tt class="docutils literal"><span class="pre">max</span></tt> <strong>inclusive</strong>, increasing by
+<tt class="docutils literal"><span class="pre">step</span></tt> each time.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">[3, 5]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.fvar">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">fvar</tt><big>(</big><em>seq</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#fvar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.fvar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create one or more rank-0 instances of <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> and
+inject them into the global namespace.</p>
+<p>This is a convenience function useful for making arrays to use
+as intent(in,out) arguments to a Fortran function. A single
+string argument causes variables with one-letter names to be
+created. The new arrays are also returned.</p>
+<p>The following examples are equivalent:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">fvar</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">)</span>
+<span class="go">(FortranArray(0.0), FortranArray(0.0), FortranArray(0.0))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">fvar</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.fzeros">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">fzeros</tt><big>(</big><em>shape</em>, <em>dtype=&lt;type 'float'&gt;</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#fzeros"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.fzeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an empty <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> with Fortran ordering.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.padded_str_array">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">padded_str_array</tt><big>(</big><em>d</em>, <em>length</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#padded_str_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.padded_str_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a> with shape <tt class="docutils literal"><span class="pre">(length,</span> <span class="pre">len(d))</span></tt>,
+filled with rows from <tt class="docutils literal"><span class="pre">d</span></tt> padded with spaces</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.convert_farray_to_ndarray">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">convert_farray_to_ndarray</tt><big>(</big><em>func</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#convert_farray_to_ndarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.convert_farray_to_ndarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to convert all occurences of farray in arguments to ndarray.
+If result contains ndarray, they will be converted back to farray.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.convert_ndarray_to_farray">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">convert_ndarray_to_farray</tt><big>(</big><em>func</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#convert_ndarray_to_farray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.convert_ndarray_to_farray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to convert all occurences of ndarray in arguments to farray.
+If results contains farray, they will be converted back to ndarray.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.n2f">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">n2f</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#n2f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.n2f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">x.view(FortranArray)</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.farray.f2n">
+<tt class="descclassname">quippy.farray.</tt><tt class="descname">f2n</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/quippy/farray.html#f2n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.farray.f2n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">x.view(np.ndarray)</span></tt></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fortranio.html" title="Fortran input/output"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

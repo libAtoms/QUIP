@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cubic spline interpolation &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/spline.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.spline">
+<span id="cubic-spline-interpolation"></span><h1>Cubic spline interpolation<a class="headerlink" href="#module-quippy.spline" title="Permalink to this headline">¶</a></h1>
+<p>Defines derived type for a spline, and associated functions.
+Code partially based on Numerical Recipes.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.spline" title="quippy.spline: Cubic spline interpolation"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.spline</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline" title="quippy.spline.Spline"><tt class="xref py py-obj docutils literal"><span class="pre">Spline</span></tt></a>(x,y,yp1,ypn)</td>
+<td>Initialises a spline with given x and y values (and endpoint derivatives)</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.spline.Spline">
+<em class="property">class </em><tt class="descclassname">quippy.spline.</tt><tt class="descname">Spline</tt><big>(</big><em>x</em>, <em>y</em>, <em>yp1</em>, <em>ypn</em><big>)</big><a class="headerlink" href="#quippy.spline.Spline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises a spline with given x and y values (and endpoint derivatives)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<blockquote>
+<div><p>Knot points</p>
+</div></blockquote>
+<p><strong>y</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1)</p>
+<blockquote>
+<div><p>Values of spline at the knot points</p>
+</div></blockquote>
+<p><strong>yp1</strong> :  input float</p>
+<blockquote>
+<div><p>Derivative of the spline at <tt class="docutils literal"><span class="pre">x(1)</span></tt></p>
+</div></blockquote>
+<p><strong>ypn</strong> :  input float</p>
+<blockquote class="last">
+<div><p>Derivative of the spline at <tt class="docutils literal"><span class="pre">x(n)</span></tt></p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">__init__init</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.
+Class is wrapper around Fortran type <tt class="docutils literal"><span class="pre">Spline</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.n" title="quippy.spline.Spline.n"><tt class="xref py py-obj docutils literal"><span class="pre">n</span></tt></a></td>
+<td>Number of knot points</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.x" title="quippy.spline.Spline.x"><tt class="xref py py-obj docutils literal"><span class="pre">x</span></tt></a></td>
+<td>Knot positions</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.y" title="quippy.spline.Spline.y"><tt class="xref py py-obj docutils literal"><span class="pre">y</span></tt></a></td>
+<td>Function values</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.y2" title="quippy.spline.Spline.y2"><tt class="xref py py-obj docutils literal"><span class="pre">y2</span></tt></a></td>
+<td>Second derivative</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.yp1" title="quippy.spline.Spline.yp1"><tt class="xref py py-obj docutils literal"><span class="pre">yp1</span></tt></a></td>
+<td>Endpoint derivatives</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.ypn" title="quippy.spline.Spline.ypn"><tt class="xref py py-obj docutils literal"><span class="pre">ypn</span></tt></a></td>
+<td>Endpoint derivatives</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.deriv" title="quippy.spline.Spline.deriv"><tt class="xref py py-obj docutils literal"><span class="pre">deriv</span></tt></a>(x)</td>
+<td>Interpolate the derivative of the spline at the given <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> point</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.max_knot" title="quippy.spline.Spline.max_knot"><tt class="xref py py-obj docutils literal"><span class="pre">max_knot</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.min_knot" title="quippy.spline.Spline.min_knot"><tt class="xref py py-obj docutils literal"><span class="pre">min_knot</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.print_" title="quippy.spline.Spline.print_"><tt class="xref py py-obj docutils literal"><span class="pre">print_</span></tt></a>([file])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.value" title="quippy.spline.Spline.value"><tt class="xref py py-obj docutils literal"><span class="pre">value</span></tt></a>(x)</td>
+<td>Interpolate the spline for a given <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> point</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.spline.Spline.deriv">
+<tt class="descname">deriv</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#quippy.spline.Spline.deriv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate the derivative of the spline at the given <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> point</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> :  input float</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_dy</strong> :  float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">spline_deriv</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.spline.Spline.max_knot">
+<tt class="descname">max_knot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.spline.Spline.max_knot" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_max_knot</strong> :  float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">max_knot</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.spline.Spline.min_knot">
+<tt class="descname">min_knot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.spline.Spline.min_knot" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_min_knot</strong> :  float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">min_knot</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.spline.Spline.print_">
+<tt class="descname">print_</tt><big>(</big><span class="optional">[</span><em>file</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.spline.Spline.print_" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><tt class="xref py py-class docutils literal"><span class="pre">InOutput</span></tt></a> object, optional</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">print_</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.spline.Spline.value">
+<tt class="descname">value</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#quippy.spline.Spline.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate the spline for a given <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> point</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> :  input float</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_y</strong> :  float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">spline_value</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Spline.f95">libAtoms/Spline.f95</a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.spline.Spline.n">
+<tt class="descname">n</tt><a class="headerlink" href="#quippy.spline.Spline.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of knot points</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.spline.Spline.x">
+<tt class="descname">x</tt><a class="headerlink" href="#quippy.spline.Spline.x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Knot positions</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.spline.Spline.y">
+<tt class="descname">y</tt><a class="headerlink" href="#quippy.spline.Spline.y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.spline.Spline.y2">
+<tt class="descname">y2</tt><a class="headerlink" href="#quippy.spline.Spline.y2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Second derivative</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.spline.Spline.yp1">
+<tt class="descname">yp1</tt><a class="headerlink" href="#quippy.spline.Spline.yp1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Endpoint derivatives</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.spline.Spline.ypn">
+<tt class="descname">ypn</tt><a class="headerlink" href="#quippy.spline.Spline.ypn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Endpoint derivatives</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

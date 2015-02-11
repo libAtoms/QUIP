@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fortran input/output &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" />
+    <link rel="next" title="FortranArray objects for one-based array indexing" href="farray.html" />
+    <link rel="prev" title="Command line argument parser" href="paramreader.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="farray.html" title="FortranArray objects for one-based array indexing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="paramreader.html" title="Command line argument parser"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="paramreader.html"
+                        title="previous chapter">Command line argument parser</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="farray.html"
+                        title="next chapter">FortranArray objects for one-based array indexing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/fortranio.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.fortranio">
+<span id="fortran-input-output"></span><h1>Fortran input/output<a class="headerlink" href="#module-quippy.fortranio" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.fortranio" title="quippy.fortranio: Fortran input/output"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.fortranio</span></tt></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.fortranio.fortran_print" title="quippy.fortranio.fortran_print"><tt class="xref py py-obj docutils literal"><span class="pre">fortran_print</span></tt></a>(*args)</td>
+<td>Print <cite>args</cite> to mainlog using Fortran I/O routines.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.fortranio.fortran_print_error" title="quippy.fortranio.fortran_print_error"><tt class="xref py py-obj docutils literal"><span class="pre">fortran_print_error</span></tt></a>(*args)</td>
+<td>Print <cite>args</cite> to errorlog using Fortran I/O routines.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.fortranio.fortran_print">
+<tt class="descclassname">quippy.fortranio.</tt><tt class="descname">fortran_print</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print <cite>args</cite> to mainlog using Fortran I/O routines. Respects prefix and verbosity settings</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.fortranio.fortran_print_error">
+<tt class="descclassname">quippy.fortranio.</tt><tt class="descname">fortran_print_error</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print <cite>args</cite> to errorlog using Fortran I/O routines. Respects prefix and verbosity settings</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="farray.html" title="FortranArray objects for one-based array indexing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="paramreader.html" title="Command line argument parser"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

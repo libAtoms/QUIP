@@ -1,0 +1,656 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Tutorials" href="tutorials.html" />
+    <link rel="next" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
+    <link rel="prev" title="Introductory Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adaptive-qmmm.html" title="Adaptive QM/MM MD of Fracture in Silicon"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Introductory Tutorial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Molecular Dynamics Simulation of Fracture in Quartz</a><ul>
+<li><a class="reference internal" href="#setting-up-your-working-environment">Setting up your working environment</a></li>
+<li><a class="reference internal" href="#starting-a-fracture-simulation">Starting a fracture simulation</a></li>
+<li><a class="reference internal" href="#quartz-primitive-unit-cell">Quartz Primitive Unit Cell</a></li>
+<li><a class="reference internal" href="#calculating-elastic-properties">Calculating Elastic Properties</a><ul>
+<li><a class="reference internal" href="#young-s-modulus-and-poisson-ratio">Young&#8217;s Modulus and Poisson Ratio</a></li>
+<li><a class="reference internal" href="#surface-energy">Surface Energy</a></li>
+<li><a class="reference internal" href="#energy-release-rate-for-static-fracture">Energy Release Rate for Static Fracture</a></li>
+<li><a class="reference internal" href="#calculating-g-for-a-thin-strip">Calculating <cite>G</cite> for a thin strip</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#changing-the-loading-of-the-fracture-system">Changing the loading of the fracture system</a></li>
+<li><a class="reference internal" href="#energy-release-rate-for-dynamic-fracture">Energy Release Rate for Dynamic Fracture</a></li>
+<li><a class="reference internal" href="#extension-tasks">Extension tasks</a></li>
+<li><a class="reference internal" href="#input-files-and-solutions">Input files and Solutions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="previous chapter">Introductory Tutorial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="adaptive-qmmm.html"
+                        title="next chapter">Adaptive QM/MM MD of Fracture in Silicon</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/adglass.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="molecular-dynamics-simulation-of-fracture-in-quartz">
+<h1>Molecular Dynamics Simulation of Fracture in Quartz<a class="headerlink" href="#molecular-dynamics-simulation-of-fracture-in-quartz" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial was prepared for use at a hands-on session at the
+<a class="reference external" href="http://cdsagenda5.ictp.it/full_display.php?ida=a10139">Advanced Oxide Interfaces Workshop</a>, ICTP,
+Trieste, May 2011.</p>
+<div class="section" id="setting-up-your-working-environment">
+<h2>Setting up your working environment<a class="headerlink" href="#setting-up-your-working-environment" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial we are going to be using the <a class="reference external" href="http://www.libatoms.org">QUIP</a> (short for QUantum mechanics and
+Interatomic Potentials) code, which is a molecular dynamics code
+written in Fortran 95 and equipped with a Python interface named
+<a class="reference external" href="http://www.jrkermode.co.uk/quippy">quippy</a>.</p>
+<p>As well as working with the standard unix command line we&#8217;ll also be
+using <cite>ipython</cite>, an interactive Python shell. In the listings below,
+shell commands are prefixed by a <cite>$</cite> to identify them; everything else
+is a Python command which should be typed into the <cite>ipython</cite> shell. If
+you&#8217;re not familiar with Python don&#8217;t worry, it&#8217;s quite easy to pickup
+and the syntax is very similar to Fortran.</p>
+<p>This tutorial assumes you have installed <cite>QUIP</cite> and <cite>quippy</cite>; see the
+<a class="reference internal" href="install.html#installation"><em>Installation</em></a> section if you need some help on doing this.</p>
+</div>
+<div class="section" id="starting-a-fracture-simulation">
+<h2>Starting a fracture simulation<a class="headerlink" href="#starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
+<p>To maximise the amount of progress that we can make in the hands-on
+session, the first task is to get a fracture simulation running.</p>
+<p>We&#8217;re going to be modelling a crack in <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz opening
+on the basal plane <img class="math" src="_images/math/d19b97712e71e46bd0de6a1dac8ded4f5572b26e.png" alt="(0001)"/>, with the crack front parallel to
+the <img class="math" src="_images/math/17c8e44a8d70e5a91e2fc2fd260ca1d15b61cbd7.png" alt="[\bar{1}10]"/> direction. The input structure is an
+<a class="reference download internal" href="_downloads/quartz_crack.xyz"><tt class="xref download docutils literal"><span class="pre">XYZ</span> <span class="pre">file</span></tt></a> contains a <img class="math" src="_images/math/d1a2523b704eafd00a35e7b0f7a322de3f8f2227.png" alt="150~\AA
+\times 50 \AA"/> crack system with around 4000 atoms. The <cite>y</cite> axis is
+aligned with the <img class="math" src="_images/math/d19b97712e71e46bd0de6a1dac8ded4f5572b26e.png" alt="(0001)"/> plane, and the <cite>z</cite> axis with the
+<img class="math" src="_images/math/17c8e44a8d70e5a91e2fc2fd260ca1d15b61cbd7.png" alt="[\bar{1}10]"/> direction. The system contains a seed crack under
+uniaxial tension in the <cite>y</cite> direction with a strain of 23%.</p>
+<a class="reference internal image-reference" href="_images/quartz_seed_crack.png"><img alt="_images/quartz_seed_crack.png" class="align-center" src="_images/quartz_seed_crack.png" style="width: 600px;" /></a>
+<p>Download the following input files:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><a class="reference download internal" href="_downloads/quartz_crack.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></tt></a> - the input structure, pictured above</li>
+<li><a class="reference download internal" href="_downloads/quartz_crack.xml"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></tt></a> - parameters for potential and molecular dynamics</li>
+<li><a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></tt></a> - structure of the quartz primitive cell</li>
+</ol>
+</div></blockquote>
+<p>Before we begin, we need to make sure that the QUIP <cite>crack</cite> program is compiled
+by running the following commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ export QUIP_ARCH=linux_x86_64_gfortran # or whichever arch is relevant
+$ cd $QUIP_ROOT
+$ make QUIP_Programs/crack
+</pre></div>
+</div>
+<p>Then press <cite>enter</cite> to accept default settings.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The value you should assign to the variable <span class="target" id="index-0"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></tt> depends on your
+platform (see <a class="reference internal" href="install.html#installation"><em>Installation</em></a> for more details). <span class="target" id="index-1"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></tt>
+refers to the directory where the the QUIP source code is located.</p>
+</div>
+<p>To make the command <cite>crack</cite> availale, copy the executable
+<tt class="docutils literal"><span class="pre">${QUIP_ROOT}/build.${QUIP_ARCH}</span></tt> to a directory on your <span class="target" id="index-2"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.4.2)"><tt class="xref std std-envvar docutils literal"><span class="pre">PATH</span></tt></a>,
+e.g. <tt class="docutils literal"><span class="pre">~/bin</span></tt>.</p>
+<p>Similarly, to compile <cite>eval</cite> run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ make QUIP_Programs/eval
+</pre></div>
+</div>
+<p>It is highly recommended to change the name when copying the <cite>eval</cite> prgram to a
+directory on <span class="target" id="index-3"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.4.2)"><tt class="xref std std-envvar docutils literal"><span class="pre">PATH</span></tt></a> to avoid a clash with the builtin <tt class="docutils literal"><span class="pre">eval</span></tt> command.</p>
+<p>Start the simulation by running the <cite>crack</cite> program, which takes
+the &#8220;stem&#8221; of the input filenames as its only argument:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ crack quartz_crack &gt; quartz_crack.out &amp;
+</pre></div>
+</div>
+<p>Note that we&#8217;re redirecting the output to <cite>quartz_crack.out</cite> and
+running <cite>crack</cite> in the background. As well as outputting status
+information to <cite>quartz_crack.out</cite>, the simulation will periodically
+write the MD trajectory to a file named <cite>quartz_crack_movie_1.xyz</cite>.</p>
+<p>You can monitor the progress of the simulation by opening the
+trajectory file with my <a class="reference external" href="http://www.jrkermode.co.uk/AtomEye">modified version</a> of <cite>AtomEye</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ A quartz_crack_movie_1.xyz
+</pre></div>
+</div>
+<p>In <cite>AtomEye</cite>, you can move the system within the periodic boundaries
+to centre it in the middle of the cell by holding <cite>Shift</cite> and dragging
+with your left mouse button, or by pressing <cite>Shift+z</cite>. Zoom in and out
+by dragging with the right mouse button. Press <cite>b</cite> to toggle the
+display of bonds. You can use the <cite>Insert</cite> and <cite>Delete</cite> keys to move
+forwards or backwards through the trajectory - note the frame number
+in the title bar of the window. You can quit <cite>AtomEye</cite> by pressing <cite>q</cite>.</p>
+<p>For more help on <cite>AtomEye</cite> see its <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">web page</a> or my notes on this
+<a class="reference external" href="http://www.jrkermode.co.uk/AtomEye">modified version</a>. In
+particular, you might find this <a class="reference download internal" href="_downloads/atomeyerc"><tt class="xref download docutils literal"><span class="pre">startup</span> <span class="pre">file</span></tt></a>
+useful (copy to <cite>~/.A</cite> to use).</p>
+<p>Have a look at the output in <cite>quartz_crack.out</cite>. To see how the
+simulation is progressing, you can search this for lines starting with
+&#8220;D&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ grep &quot;^D &quot; quartz_crack.out
+</pre></div>
+</div>
+<p>The first number gives the time in femtoseconds (the integration
+timestep of 0.5 fs is chosen to accurately sample the highest
+frequency phonon mode in the system), and the second and third are the
+instantaneous and time-averaged temperatures in Kelvin. The average
+temperature is computed using an <a class="reference external" href="http://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">exponential moving average</a>.</p>
+<p>After a few hundred femtoseconds, you should see the crack start to
+propagate in a fairly steady way, similar to the snapshot shown below
+(as a rough guide you can expect the simulation to progress at a
+rate of about 2 picoseconds per hour).</p>
+<a class="reference internal image-reference" href="_images/quartz_running_crack.png"><img alt="_images/quartz_running_crack.png" class="align-center" src="_images/quartz_running_crack.png" style="width: 600px;" /></a>
+<p>The simulation is run in the <cite>NVT</cite> ensemble, where the number of atoms
+<cite>N</cite>, volume <cite>V</cite> and temperature <cite>T</cite> are kept constant. The system is
+relatively small so a thermostat is used to regulate the
+temperature. The accelerating crack gives out a lot of energy, and
+since the thermostat used here is relatively weak, to avoid unduly
+influencing the dynamics, the temperature will initially rise before
+settling down once the crack reaches its equilbirum velocity.</p>
+<p>Keep your crack simulation running as you proceed with the next parts
+of the tutorial (avoid closing the terminal in which you started the
+job!).</p>
+</div>
+<div class="section" id="quartz-primitive-unit-cell">
+<h2>Quartz Primitive Unit Cell<a class="headerlink" href="#quartz-primitive-unit-cell" title="Permalink to this headline">¶</a></h2>
+<p>While the fracture simulation is running, we will try to predict the
+expected behaviour of a crack in quartz according to continuum
+elasticity. We&#8217;ll start by performing some calculations on the quartz
+primitive cell using <cite>quippy</cite>.</p>
+<p>Start <cite>ipython</cite> and import all the <cite>quippy</cite> routines:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ipython
+...
+In [1]: from quippy import *
+</pre></div>
+</div>
+<p>Construct an <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz primitive unit cell and save it to
+an XYZ file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">aq</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.84038097073</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">5.3285240037</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="mf">0.464175616171</span><span class="p">,</span>
+  <span class="n">x</span><span class="o">=</span><span class="mf">0.411742710542</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.278727453998</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.109736032769</span><span class="p">)</span>
+<span class="n">aq</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;quartz.xyz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here <cite>a</cite> and <cite>c</cite> are the lattice parameters (in <img class="math" src="_images/math/427e2f652b16cec5fd40e796e49c926ae7a24190.png" alt="\AA"/>), <cite>u</cite> is
+the internal displacement of the silicon atoms and <cite>x</cite>, <cite>y</cite>, and <cite>z</cite>
+the internal coordinates of the oxygens (see image below).</p>
+<a class="reference internal image-reference" href="_images/quartz_unit_cell.png"><img alt="_images/quartz_unit_cell.png" class="align-center" src="_images/quartz_unit_cell.png" style="width: 300px;" /></a>
+<p>The variable <cite>aq</cite> is referred to as <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> object. It contains
+various attributes representing the system of interest which you can
+inspect from the <cite>ipython</cite> command line, e.g. to print out the lattice
+vectors, which are stored as columns in the <tt class="xref py py-attr docutils literal"><span class="pre">lattice</span></tt> matrix</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">lattice</span>
+</pre></div>
+</div>
+<p>Or to print the atomic number and position of the first atom</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">aq</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If you want to find out the syntax for a <cite>quippy</cite> function, type its
+name following by a question mark, e.g.</p>
+<div class="highlight-python"><div class="highlight"><pre>alpha_quartz ?
+</pre></div>
+</div>
+<p>will print out the function signature and list of parameter types, as
+well as a brief description of what <tt class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></tt> does. If
+you are interested in learning more about using <cite>QUIP</cite> and <cite>quippy</cite>,
+you could take a look at the online <a class="reference internal" href="tutorial.html#tutorial-intro"><em>Introductory Tutorial</em></a>.</p>
+<p>Keep your <cite>ipython</cite> session open as we&#8217;ll need it later. Open the
+<cite>quartz.xyz</cite> file you created with <cite>AtomEye</cite>. You should see something
+like this:</p>
+<a class="reference internal image-reference" href="_images/quartz.png"><img alt="_images/quartz.png" class="align-center" src="_images/quartz.png" style="width: 300px;" /></a>
+<p>You can also download <a class="reference download internal" href="_downloads/quartz.xyz"><tt class="xref download docutils literal"><span class="pre">quartz.xyz</span></tt></a> for comparison.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The main advantage of <cite>AtomEye</cite> is that it scales well to very
+larger systems, and does a pretty good job of understanding periodic
+boundary conditions. However, it can be a bit confusing for small
+cells like this. Since the quartz primitive cell contains only 9
+atoms, <cite>AtomEye</cite> doubles the unit cell along the short lattice
+vectors (<cite>a</cite> and <cite>b</cite>) resulting in 36 atoms.</p>
+</div>
+</div>
+<div class="section" id="calculating-elastic-properties">
+<h2>Calculating Elastic Properties<a class="headerlink" href="#calculating-elastic-properties" title="Permalink to this headline">¶</a></h2>
+<p>In order to predict the onset and velocity of fracture, we need to
+determine the values of the Young&#8217;s modulus <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/>, the Poisson
+ratio <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/>, surface energy density <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> and the
+Rayleigh Wave speed <img class="math" src="_images/math/c4428a54b0e184e3ceed64207cc5b35e8e78c360.png" alt="c_R"/>. These are all properties of the
+classical potential which in this case is a short-ranged version of
+the TS polarisable potential (see <a class="reference external" href="http://jcp.aip.org/resource/1/jcpsa6/v133/i9/p094102_s1">this paper</a> in
+<em>J. Chem. Phys.</em> for more about this potential).</p>
+<p>Apart from <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/>, all of these quantities can be obtained
+from the <img class="math" src="_images/math/a49b80c3c28c15d0119a35c44b6f4cd68a5e1452.png" alt="6 \times 6"/> matrix of elastic constants
+<img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/>, so we will start by calculating this.</p>
+<p><img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> is defined by <img class="math" src="_images/math/1f3923a57980ce53a8819e138e54b2c439728e62.png" alt="\bm\sigma = C\bm\epsilon"/> where <img class="math" src="_images/math/9d671144d430f2a45c1af8232be76c520c72557e.png" alt="\bm\sigma"/> and
+<img class="math" src="_images/math/4aa45545462ee0c2c40731b2e43340b24d08d57a.png" alt="\bm\epsilon"/> are six component stress and strain vectors following
+the Voigt convention:</p>
+<div class="math">
+<p><img src="_images/math/2e7b7aa93997f5c130f8ea41bc7b9d3756647efa.png" alt="\bm\sigma  = \left( \sigma_{xx}, \sigma_{yy}, \sigma_{zz},
+    \sigma_{yz}, \sigma_{xz}, \sigma_{xy} \right)
+
+\bm\epsilon = \left( \varepsilon_{xx}, \varepsilon_{yy}, \varepsilon_{zz},
+    2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)"/></p>
+</div><p>The simplest way to calculate <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> with <cite>QUIP</cite> is to use the
+command line QUIP <cite>eval</cite> program. You will need the file <cite>quartz.xyz</cite>
+you made earlier, as well as an <a class="reference download internal" href="_downloads/TS_params.xml"><tt class="xref download docutils literal"><span class="pre">XML</span> <span class="pre">file</span></tt></a>
+containing the parameters of the classical potential:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ eval init_args=&quot;IP TS&quot; at_file=quartz.xyz param_file=TS_params.xml cij
+</pre></div>
+</div>
+<p>Here <cite>init_args</cite> describes the kind of potential to use, <cite>at_file</cite> is
+the file containing the unit cell and <cite>param_file</cite> is the potential
+parameters. <cite>cij</cite> tells the <cite>eval</cite> program that we want it to
+calculate the elastic constants; this is done using the virial stress
+tensor. Have a look inside <cite>TS_params.xml</cite> to see the values which
+give the potential parameters controlling short range repsulsion,
+Yukawa-screened Coulomb interaction and dipole polarisability. For
+example you can see that oxygen (atomic number 8) is polarisable in
+this model and silicon (atomic number 14) is not.</p>
+<p>Make a file called <cite>cij.dat</cite> containing the matrix output by <cite>eval</cite>
+(remove the &#8220;CIJ&#8221; at the beginning of each line). You can load this
+matrix into <cite>quippy</cite> using the command</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">C</span> <span class="o">=</span> <span class="n">loadtxt</span><span class="p">(</span><span class="s">&quot;cij.dat&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Extension</strong>: For trigonal crystals like <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz, there
+are only actually 6 independent values in the <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> matrix:</p>
+<div class="math">
+<p><img src="_images/math/bac76078fb43cbcfe18713bfd0e834db59f705c1.png" alt="C = \left(
+\begin{array}{cccccc}
+C_{11} &amp; C_{12} &amp; C_{13} &amp; C_{14} &amp; 0 &amp; 0\\
+C_{12} &amp; C_{11} &amp; C_{13} &amp; -C_{14} &amp; 0 &amp; 0 \\
+C_{13} &amp; C_{13} &amp; C_{33} &amp; 0 &amp; 0 &amp; 0 \\
+C_{14} &amp; -C_{14} &amp; 0 &amp; C_{44} &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; C_{44} &amp; C_{14} \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; C_{14} &amp; C_{66}
+\end{array}
+\right)"/></p>
+</div><p>where <img class="math" src="_images/math/b18a647fb208314df9a0032eebead5f333bc5366.png" alt="C_{66}"/> is given by <img class="math" src="_images/math/958b1109a9784919e84aa309f30db1dd2cebefa1.png" alt="\frac{1}{2}(C_{11} -
+C_{12})"/>. We can exploit this symmetry to get all these values using
+only two strain patterns: <img class="math" src="_images/math/a212fa57386be89184093d1d3bc139e2798d26d9.png" alt="\epsilon_{xx}"/> and
+<img class="math" src="_images/math/d19ef4fbebeb0ffc852eeb5ef00f439763ed2401.png" alt="\epsilon_{yy}+\epsilon_{zz}"/>.</p>
+<p>If you like, you could try using the following <cite>quippy</cite> code to
+evaluate <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> taking the cystal symmetry into account to see how
+the results differ from those obtained with <cite>eval</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;IP TS&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s">&#39;TS_params.xml&#39;</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">elastic_constants</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">aq</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s">&#39;trigonal_low&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Which components are most different? Why do you think this is? Think
+about the effect of internal relaxation: compare with the values of
+the <img class="math" src="_images/math/9b4cf60a93dc0a6a47824138339d8d03b69ec3f7.png" alt="C^0_{ij}"/> tensor obtained if internal relaxation is not
+allowed (use the <cite>c0ij</cite> option to the <cite>eval</cite> program). Why do you
+think some components are particularily sensitive to internal
+relaxation?</p>
+<div class="section" id="young-s-modulus-and-poisson-ratio">
+<h3>Young&#8217;s Modulus and Poisson Ratio<a class="headerlink" href="#young-s-modulus-and-poisson-ratio" title="Permalink to this headline">¶</a></h3>
+<p>To calculate the effective Young&#8217;s modulus and Poisson ratio for our
+quartz fracture simulation, we need to rotate the elastic constant
+matrix to align it with the axes of our <img class="math" src="_images/math/7da6ecf59b395c1d977c37da2a5300a058469bb7.png" alt="(0001)[\bar{1}10]"/>
+fracture geometry. You can create the required rotation matrix using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">R</span>
+</pre></div>
+</div>
+<p>Next we transform <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> using the rotation matrix, and calculate
+the compliance matrix <img class="math" src="_images/math/dcf2cd37608c5aa18fe166dd81c3b4f2b5949203.png" alt="S = C^{-1}"/>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">C_eff</span> <span class="o">=</span> <span class="n">transform_elasticity</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">S_eff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">C_eff</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><cite>C</cite> transforms as a rank-4 tensor since the full relation between
+stress and strain is <img class="math" src="_images/math/5a54f777f53a7064ae6c3d1ebae97c067c5ca991.png" alt="\sigma_{ij} = c_{ijkl} \epsilon_{kl}"/>,
+meaning that the transformed tensor is</p>
+<div class="math">
+<p><img src="_images/math/17083885482f734fd2293110da96f33acbb1ca64.png" alt="c'_{ijkl} = \sum_{p,q,r,s = 1}^{3} R_{pi}R_{qj}R_{rk}R_{sl} c_{pqrs}"/></p>
+</div><p>Finally we can work out the values of the effective Young&#8217;s modulus
+and Poisson ratio in the standard way from the components of the
+compliance matrix:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">E</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="k">print</span> <span class="s">&quot;Young&#39;s modulus&quot;</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="s">&quot;GPa&quot;</span>
+
+<span class="n">nu</span> <span class="o">=</span> <span class="o">-</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="k">print</span> <span class="s">&quot;Poisson ratio&quot;</span><span class="p">,</span> <span class="n">nu</span>
+</pre></div>
+</div>
+<p><strong>Extension</strong>: Try rotating the quartz primitive cell directly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">aqr</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">aqr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;quartz_rotated.xyz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Open <cite>quartz_rotated.xyz</cite> in AtomEye and confirm that it is oriented
+so that the <img class="math" src="_images/math/d19b97712e71e46bd0de6a1dac8ded4f5572b26e.png" alt="(0001)"/> surface is aligned with the vertical (<cite>y</cite>)
+axis like the fracture system or <cite>quartz_0001.xyz</cite>, pictured
+below. Use <cite>eval</cite> to directly compute the elastic constant matrix
+of the rotated cell. How well does this matrix compare to <cite>C_eff</cite>?</p>
+</div>
+<div class="section" id="surface-energy">
+<h3>Surface Energy<a class="headerlink" href="#surface-energy" title="Permalink to this headline">¶</a></h3>
+<p>The file <a class="reference download internal" href="_downloads/quartz_0001.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></tt></a> contains a 54 atom unit cell for
+the (0001) surface of <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz (shown below). Use either
+the QUIP <cite>eval</cite> program or <cite>quippy</cite> to calculate the surface energy
+density <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> predicted by our classical potential for this
+surface.</p>
+<img alt="_images/quartz_0001.png" class="align-center" src="_images/quartz_0001.png" />
+<p>If you use <cite>eval</cite>, use the <cite>E</cite> command line option to get the program
+to calculate the potential energy of the input cell. If you use
+<cite>quippy</cite>, you should construct a <tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt> object using the
+XML parameters from the file <cite>TS_params.xml</cite> as shown above. You can
+then calculate the energy using the <tt class="xref py py-meth docutils literal"><span class="pre">calc()</span></tt>
+function - see the tutorial section on <a class="reference internal" href="tutorial.html#moleculardynamics"><em>Potentials and DynamicalSystems</em></a> for
+more details.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The energy unit of QUIP are electron volt (eV), and the distance
+units are Angstrom (<img class="math" src="_images/math/427e2f652b16cec5fd40e796e49c926ae7a24190.png" alt="\AA"/>).</p>
+</div>
+<p><strong>Hint</strong>: you can use the expression</p>
+<div class="math">
+<p><img src="_images/math/6f89b4b479560d9ff72ca8a9d0bc7e36fee36ba8.png" alt="\gamma = \frac{E_{surf} - E_{bulk}}{2A}"/></p>
+</div><p>where <img class="math" src="_images/math/db5f51d9706cdeb8d3a9b9315f85ae8016c90d45.png" alt="E_{surf}"/> and <img class="math" src="_images/math/c3b11d72a2bfa7b28c7b5b1d4acbb69bed6efd88.png" alt="E_{bulk}"/> are the energies of
+surface and bulk configurations containing the same number of atoms,
+and <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> is the area of the open surface (with a factor of two
+because there are two open surfaces in this unit cell).</p>
+<p>You should get a value for <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> of around 3.5 J/m<sup>2</sup>.</p>
+<p><strong>Extension</strong>: what effect does relaxing the atomic positions have on
+the surface energy? (use the <cite>relax</cite> argument to the <cite>eval</cite>
+program, or the <tt class="xref py py-meth docutils literal"><span class="pre">minim()</span></tt> function in <cite>quippy</cite>). What
+happens if you anneal the surface using the <cite>md</cite> program?</p>
+<div class="highlight-python"><div class="highlight"><pre>$ md pot_init_args=&quot;IP TS&quot; params_in_file=TS_params.xml \
+    atoms_in_file=quartz_0001.xyz dt=0.5 N_steps=1000
+</pre></div>
+</div>
+<p>Which surface energy do you think is more relevant for predicting the
+onset of fracture, relaxed or unrelaxed?</p>
+</div>
+<div class="section" id="energy-release-rate-for-static-fracture">
+<h3>Energy Release Rate for Static Fracture<a class="headerlink" href="#energy-release-rate-for-static-fracture" title="Permalink to this headline">¶</a></h3>
+<p>According to continuum elasticity, the strain energy release rate of an
+advancing crack is defined by</p>
+<div class="math">
+<p><img src="_images/math/29389354fd734a04b5dd7dd1c56445eec4482d17.png" alt="G = - \frac{\partial U_E}{\partial c}"/></p>
+</div><p>where <img class="math" src="_images/math/df59b75647a9ec45fbacbc17d914e92e51f54a25.png" alt="U_E"/> is the total strain energy and <img class="math" src="_images/math/65868d23a5bfe5b3b2d819386b19c14fa36af134.png" alt="c"/> is the crack length.
+The well-known Griffith criteria uses an energy-balance argument to
+equate the critical value of <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> at which fracture can first occur to
+the energy required to create two new surfaces.</p>
+<p>According to Griffith, we should expect crack propagation to become
+favourable for <img class="math" src="_images/math/219ff00b0cfb572a735a12448701772eec5ebfb2.png" alt="G &gt; 2\gamma"/>, where <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> is the
+surface energy density.</p>
+</div>
+<div class="section" id="calculating-g-for-a-thin-strip">
+<h3>Calculating <cite>G</cite> for a thin strip<a class="headerlink" href="#calculating-g-for-a-thin-strip" title="Permalink to this headline">¶</a></h3>
+<p>We are using the thin strip geometry illustrated below for our
+fracture simulations, with the top and bottom edges fixed.</p>
+<a class="reference internal image-reference" href="_images/thin-strip.png"><img alt="_images/thin-strip.png" class="align-center" src="_images/thin-strip.png" style="width: 600px;" /></a>
+<p>The advantage of this setup is that the energy release rate <cite>G</cite>
+does not depend on the crack length, and can be found analytically by
+considering the energetics of an advancing crack.</p>
+<p>The horizontal edges of the strip are given a uniform normal
+displacement <img class="math" src="_images/math/b35a9439ad8c8657b1b1d792ad5c2d77a52c0aef.png" alt="\delta"/>, so the applied strain is
+<img class="math" src="_images/math/d1562d406eb1fefc2bede7bf87fc51657051058d.png" alt="\epsilon_0 = \delta / h"/>.  Far ahead of the crack, the strip is
+in uniaxial tension: <img class="math" src="_images/math/70d80c184ea034973fcb9dde38711ab84f8288dc.png" alt="\epsilon_{yy} \to \epsilon_0"/> as <img class="math" src="_images/math/b244f764e7f56dc116f67e439808cfba68a2ed1e.png" alt="x
+\to \infty"/>.</p>
+<p>The stress far ahead of the crack is given by <img class="math" src="_images/math/8f1b5acdc4332aef01ca182660e459a5837e0389.png" alt="\sigma_{0} = E'
+\epsilon_{0}"/>, and therefore the elastic energy per unit length and
+per unit thickness far ahead of the crack tip is</p>
+<div class="math">
+<p><img src="_images/math/56d342dcb9ab91729bf01a75b99145cfa3a61dd3.png" alt="W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}"/></p>
+</div><p>where <img class="math" src="_images/math/fdbdb6243522f89db716f229b94be1c028a97b8a.png" alt="E'"/> is the effective Young&#8217;s modulus.</p>
+<p>Far behind the tip, the energy density is zero. Since no energy
+disappears through the clamped edges, if the crack is to advance by
+unit distance, a vertical strip of material with energy density
+<img class="math" src="_images/math/5ca8a622ad69b5462bad1ec1355fa2a93ec78a88.png" alt="W_\infty"/> is effectively replaced by a strip with energy
+density zero.</p>
+<p>The energy supplied to the crack tip is therefore equal to <img class="math" src="_images/math/5ca8a622ad69b5462bad1ec1355fa2a93ec78a88.png" alt="W_\infty"/>,
+so the energy release rate is simply</p>
+<div class="math">
+<p><img src="_images/math/9bbd47527e98f77ba1dead77cb7b1dfc33d4fef3.png" alt="G = W_\infty = \frac{\delta^2 E'}{h}"/></p>
+</div><p>In our simulations we will use periodic boundary conditions in the <img class="math" src="_images/math/84d7271dd9e78c1e05d6c3c6ecb60309ef7dfc73.png" alt="z"/>
+direction, so we have plane strain loading (<img class="math" src="_images/math/0a7ac706cf4f2bfe8044f6099706b6e942edb738.png" alt="\epsilon_{zz} = 0"/>),
+which means that the effective Young&#8217;s modulus <img class="math" src="_images/math/fdbdb6243522f89db716f229b94be1c028a97b8a.png" alt="E'"/> is given by
+<img class="math" src="_images/math/bbb0848717262dfd82509b0ce2fe4989a476690f.png" alt="E/(1-\nu^2)"/>, where <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> is the Young&#8217;s modulus in the <img class="math" src="_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> relevant
+direction and <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> is the Poisson ratio, so finally we have</p>
+<div class="math">
+<p><img src="_images/math/adff9677d1de9b2b56db6d17a8f76dbe4ea6397d.png" alt="G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}"/></p>
+</div><p>Use your values for the Young&#8217;s modulus, Poisson ratio and surface
+energy to calculate the value of <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> (in units of J/m<sup>2</sup>)
+and strain <img class="math" src="_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/> at which a sample of <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz
+with a height of 50 <img class="math" src="_images/math/427e2f652b16cec5fd40e796e49c926ae7a24190.png" alt="\AA"/> is expected to fracture according to
+the continuum Griffith criterium. How does this compare to the initial
+strain we applied to our fracture specimen?</p>
+</div>
+</div>
+<div class="section" id="changing-the-loading-of-the-fracture-system">
+<h2>Changing the loading of the fracture system<a class="headerlink" href="#changing-the-loading-of-the-fracture-system" title="Permalink to this headline">¶</a></h2>
+<p>Once your crack simulation should has run for a couple of picoseconds
+the crack should have reached its terminal velocity so you can stop
+the simulation (you can do this nicely creating an empty file named
+<cite>stop_run</cite>, or simply by killing the process).</p>
+<p>We are going to take the current state of the simulation and rescale
+it homogeneously to change the applied load. We will then continue the
+simulation starting from the rescaled system. In this way we will be
+able to investigate the relationship between the loading <cite>G</cite> and the
+equilibrium crack velocity <cite>V</cite>.</p>
+<p>You should find a file named <cite>quartz_crack_check.xyz</cite> in your job
+directory. This is a checkpoint file which contains a full snapshot
+of all the instantaneous positions and velocities of the atoms in the
+system. Load this file into <cite>quippy</cite> and rescale it as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s">&#39;quartz_crack_check.xyz&#39;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">CrackParams</span><span class="p">(</span><span class="s">&#39;quartz_crack.xml&#39;</span><span class="p">)</span>
+
+<span class="n">b</span> <span class="o">=</span> <span class="n">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">new_strain</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;quartz_crack_rescaled.xyz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Replace <cite>new_strain</cite> with the target strain which should be between
+0.15 and 0.30. If you inspect the new file <cite>quartz_crack_rescaled.xyz</cite>
+you should see it&#8217;s identical to the orignal apart from the rescaling
+in the <cite>x</cite> and <cite>y</cite> directions (not along <cite>z</cite> since the system is
+periodic in that direction). Copy the bulk cell and XML parameters and
+start a new crack simulation:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cp quartz_crack_bulk.xyz quartz_crack_rescaled_bulk.xyz
+$ cp quartz_crack.xml quartz_crack_rescaled.xml
+$ crack quartz_crack_rescaled &gt; quartz_crack_rescaled.out &amp;
+</pre></div>
+</div>
+<p>Wait for the restarted simulation to reach a steady state and then
+estimate the crack velocity from looking at the XYZ file (right-click
+on an atom in <cite>AtomEye</cite> to print out its position; the interval
+between frames is 10 fs) or by plotting the crack position as a
+function of time by extracting lines starting with <cite>CRACK_TIP</cite> from
+the output file (you might find this <a class="reference download internal" href="_downloads/crack-velo.sh"><tt class="xref download docutils literal"><span class="pre">crack-velo.sh</span></tt></a> script
+useful to do this; note however that the crack tip position is found
+using the atomic coordination numbers so if thre are defects in your
+cell it will not work correctly).</p>
+</div>
+<div class="section" id="energy-release-rate-for-dynamic-fracture">
+<h2>Energy Release Rate for Dynamic Fracture<a class="headerlink" href="#energy-release-rate-for-dynamic-fracture" title="Permalink to this headline">¶</a></h2>
+<p>Freund extended this approach to dynamic fracture by writing the total
+energy required to break bonds at the crack surface as the product of
+the static energy release rate <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> and a universal velocity-dependent
+function which he showed can be approximated as a linear
+function of the crack speed <img class="math" src="_images/math/c99df7a209495334da442b1ec998abaabfa320d8.png" alt="V"/></p>
+<div class="math">
+<p><img src="_images/math/819ed57208309321f9a0a243d66e791e955b707b.png" alt="2\gamma \sim G \left( 1 - \frac{V}{c_R} \right)"/></p>
+</div><p>The Rayleigh surface wave speed <img class="math" src="_images/math/c4428a54b0e184e3ceed64207cc5b35e8e78c360.png" alt="c_R"/> sets the ultimate limit for the
+crack propagation speed. The expected velocity as a function of the
+loading <img class="math" src="_images/math/6af785aa34f1f75d5bfdd70f0d647cbbfcc9bf0d.png" alt="G/2\gamma"/> is then</p>
+<div class="math">
+<p><img src="_images/math/d33403ff0289de39707f99d97af71970f828cac7.png" alt="\frac{V}{c_R} = 1 - \frac{2 \gamma}{G}"/></p>
+</div><p>This is the Freund equation of motion. Calculating the Rayleigh wave
+speed - the speed with which elastic waves travel on a free surface - is
+fairly straightforward for isotropic materials. For anisotropic
+materials like quartz the calculation is more involved since the speed
+will be different for wave propagation in different crystallographic
+directions. For our case, the value turns out to be <img class="math" src="_images/math/22b32f2092af87a603f4866a8208e1068a8f94d9.png" alt="c_R \sim
+9.3"/> km/s using the elastic constants calculated for the short-range
+TS classical potential.</p>
+<p>How does your measured value for the crack velocity compare to that
+predicted by the Freund equation of motion for the same <cite>G</cite>?</p>
+<p>At the end of the session we will try to combine everybody&#8217;s results
+to produce a plot of <img class="math" src="_images/math/8cb6ef727615dcba6cc4e3d9ac9cdf3b110bc3e7.png" alt="V(G)"/>.</p>
+</div>
+<div class="section" id="extension-tasks">
+<h2>Extension tasks<a class="headerlink" href="#extension-tasks" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Look carefully at the MD trajectory from your fracture simulation
+in <cite>AtomEye</cite>. Do you notice anything about the bond-breaking events
+at the crack tip? How would you calculate the amount of charge
+which ends up on each of the cleaved surfaces?</p>
+</li>
+<li><p class="first">What is the effect of changing the simulation temperature? Trying
+changing the value of <cite>sim_temp</cite> in the XML parameter file to
+something much larger, e.g. 1000 K. Is the fracture qualitatively
+different? What happens if you turn off the thermostat (change
+the <cite>ensemble</cite> setting from <cite>NVT</cite> to <cite>NVE</cite>).</p>
+</li>
+<li><p class="first">The expression <img class="math" src="_images/math/4049dd72d275cd041d63c4b43589667c6a41641e.png" alt="E_y = 1/S_{22}"/> is an approximation and is
+not strictly valid for hexagonal materials. Check this
+approximation by performing a tensile test: take the rotated
+configuration <cite>aqr</cite> apply a series of small strains in the <cite>y</cite>
+direction, and compute the stress using the classical potential,
+using code based on the following:</p>
+<div class="highlight-python"><div class="highlight"><pre>p = Potential(&#39;IP TS&#39;, param_filename=&#39;TS_params.xml&#39;)
+...
+T = numpy.diag([1., 1+.eps_yy, 1.])            # matrix for strain in y
+aqr_t = transform(aqr, T)                      # apply transformation
+p.calc(aqr_t, virial=True)                     # compute virial tensor
+sig_yy = -v[2,2]/aqr_t.cell_volume()*GPA       # convert to stress
+</pre></div>
+</div>
+<p>Calculate an improved estimate for <img class="math" src="_images/math/eed3f5a2f1fa5adc7148bc1c7ad93b0a0dcf37bb.png" alt="E_y"/> by fitting a straight line
+to <cite>sig_yy</cite> as function of <cite>eps_yy</cite>. How good is the approximation
+we used above?</p>
+</li>
+<li><p class="first">It&#8217;s important to bear in mind that what we&#8217;ve done here is
+necessarily very approximate for a number of reasons:</p>
+<ul class="simple">
+<li>This is a very small system</li>
+<li>The applied loading is very large</li>
+<li>The description of bond-breaking provided by classical potential is
+simplistic</li>
+</ul>
+<p>Which of these do you think is most important? How could these
+limitations be overcome in a more complete simulation?</p>
+</li>
+</ol>
+</div>
+<div class="section" id="input-files-and-solutions">
+<h2>Input files and Solutions<a class="headerlink" href="#input-files-and-solutions" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference download internal" href="_downloads/quartz_crack.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></tt></a>, <a class="reference download internal" href="_downloads/quartz_crack.xml"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></tt></a>, <a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></tt></a> - input files for crack simulation</li>
+<li><a class="reference download internal" href="_downloads/quartz.xyz"><tt class="xref download docutils literal"><span class="pre">quartz.xyz</span></tt></a> - quartz primitive cell</li>
+<li><a class="reference download internal" href="_downloads/quartz_0001.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></tt></a> - quartz (0001) surface cell</li>
+<li><a class="reference download internal" href="_downloads/TS_params.xml"><tt class="xref download docutils literal"><span class="pre">TS_params.xml</span></tt></a> - potential parameters</li>
+<li><a class="reference download internal" href="_downloads/elastic.sh"><tt class="xref download docutils literal"><span class="pre">elastic.sh</span></tt></a> - script to compute elastic constants</li>
+<li><a class="reference download internal" href="_downloads/cij.dat"><tt class="xref download docutils literal"><span class="pre">cij.dat</span></tt></a> - elastic constants obtained with <cite>eval</cite> program</li>
+<li><a class="reference download internal" href="_downloads/surface-energy.sh"><tt class="xref download docutils literal"><span class="pre">surface-energy.sh</span></tt></a> - script to compute surface energy</li>
+<li><a class="reference download internal" href="_downloads/surface-energy-relaxed.sh"><tt class="xref download docutils literal"><span class="pre">surface-energy-relaxed.sh</span></tt></a> - script to compute relaxed surface energy</li>
+<li><a class="reference download internal" href="_downloads/surface-energy-annealed.sh"><tt class="xref download docutils literal"><span class="pre">surface-energy-annealed.sh</span></tt></a> - script to compute annealed surface energy</li>
+<li><a class="reference download internal" href="_downloads/crack-velo.sh"><tt class="xref download docutils literal"><span class="pre">crack-velo.sh</span></tt></a> - script to crack velocity</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adaptive-qmmm.html" title="Adaptive QM/MM MD of Fracture in Silicon"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Introductory Tutorial"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

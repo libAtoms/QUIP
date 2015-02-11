@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>quippy.table &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for quippy.table</h1><div class="highlight"><pre>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   Copyright James Kermode 2010</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+
+<span class="kn">import</span> <span class="nn">weakref</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">quippy</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">_table</span>
+<span class="kn">from</span> <span class="nn">quippy._table</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">get_fortran_indexing</span><span class="p">,</span> <span class="n">set_fortran_indexing</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">FortranArray</span>
+
+<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">__all__</span>
+
+<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../table.html#quippy.table.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">(</span><span class="n">_table</span><span class="o">.</span><span class="n">Table</span><span class="p">):</span>
+    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="n">_cmp_skip_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;max_length&#39;</span><span class="p">,</span> <span class="s">&#39;increment&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s">&#39;Table(n=</span><span class="si">%d</span><span class="s">,intsize=</span><span class="si">%d</span><span class="s">,realsize=</span><span class="si">%d</span><span class="s">,strsize=</span><span class="si">%d</span><span class="s">,logicalsize=</span><span class="si">%d</span><span class="s">)&#39;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">realsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logicalsize</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">realsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logicalsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blank_rows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intsize</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">int</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">int</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">realsize</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strsize</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logicalsize</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">logical</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logical</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">t</span>
+
+    <span class="k">def</span> <span class="nf">_get_array_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;int&#39;</span><span class="p">,</span><span class="s">&#39;real&#39;</span><span class="p">,</span><span class="s">&#39;logical&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span><span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;str&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span><span class="nb">slice</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span><span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Table.from_atom_indices"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_indices">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_indices</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a new Table containing atomic indices from a list or mask</span>
+
+<span class="sd">        The new table will include 4 integer columns, for indices plus</span>
+<span class="sd">        shifts, and is suitable for passing to bfs_step,</span>
+<span class="sd">        construct_hysteretic_region, etc.</span>
+
+<span class="sd">        If force_fortran_indexing is True (the default), all atom indices</span>
+<span class="sd">        are converted to Fortran 1-based indexing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">orig_fortran_indexing</span> <span class="o">=</span> <span class="n">get_fortran_indexing</span><span class="p">()</span>
+        <span class="n">set_fortran_indexing</span><span class="p">(</span><span class="n">force_fortran_indexing</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">list</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Either mask or list must be present.&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">force_fortran_indexing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">orig_fortran_indexing</span><span class="p">:</span>
+                <span class="c"># we were given 0-based atom indices, convert to 1-based indices</span>
+                <span class="nb">list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;size of mask must equal number of atoms&#39;</span><span class="p">)</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+                <span class="c"># use indexing style given by force_fortran_indexing</span>
+                <span class="nb">list</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+            <span class="bp">self</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blank_rows</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">int</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
+                <span class="n">first_column</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">first_column</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">int</span><span class="p">[</span><span class="n">first_column</span><span class="p">,:]</span> <span class="o">=</span> <span class="nb">list</span>
+            
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">set_fortran_indexing</span><span class="p">(</span><span class="n">orig_fortran_indexing</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Table.from_atom_list"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_list">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_list</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a new Table from a list of atom indices</span>
+
+<span class="sd">        See Table.from_atom_indices for more details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_atom_indices</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
+                                     <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="n">force_fortran_indexing</span><span class="p">)</span>
+
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Table.from_atom_mask"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_mask">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_mask</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a new Table from an atom mask</span>
+
+<span class="sd">        See Table.from_atom_indices for more details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_atom_indices</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+                                     <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="n">force_fortran_indexing</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Table.to_atom_list"><a class="viewcode-back" href="../../table.html#quippy.table.Table.to_atom_list">[docs]</a>    <span class="k">def</span> <span class="nf">to_atom_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return list of atom indices that this Table represents.</span>
+
+<span class="sd">        Indices returns are 0-based or 1-based depending on value of</span>
+<span class="sd">        :func:`~quippy.get_fortran_indexing`.</span>
+
+<span class="sd">        If `atoms` is not present, the Atoms object passed to</span>
+<span class="sd">        Table.from_atom_indices is used, or an exception is raised if this</span>
+<span class="sd">        Table was not created in that way.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;atoms&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Table missing &quot;atoms&quot; attribute, probably&#39;</span><span class="o">+</span>
+                                     <span class="s">&#39; not created by Table.from_atom_indices()&#39;</span><span class="p">)</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;weakref to Table.atoms has expired&#39;</span><span class="p">)</span>
+                
+        <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
+            <span class="n">first_column</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">first_column</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">int</span><span class="p">[</span><span class="n">first_column</span><span class="p">,:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
+            <span class="n">indices</span><span class="p">[:]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Table.to_atom_mask"><a class="viewcode-back" href="../../table.html#quippy.table.Table.to_atom_mask">[docs]</a>    <span class="k">def</span> <span class="nf">to_atom_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return mask for atom indices that this Table represents</span>
+
+<span class="sd">        Result is either an array of an FortranArray, depending on</span>
+<span class="sd">        value of :func:`~quippy.get_fortran_indexing`.</span>
+
+<span class="sd">        If `atoms` is not present, the Atoms object passed to</span>
+<span class="sd">        Table.from_atom_indices is used, or an exception is raised if this</span>
+<span class="sd">        Table was not created in that way.        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FortranArray</span><span class="p">)</span>
+        <span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">to_atom_list</span><span class="p">(</span><span class="n">atoms</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="n">mask</span>
+        
+</div></div>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">FortranDerivedTypes</span>
+<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(table)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Table</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<params>
+
+<crack_params>
+  <crack structure="alpha_quartz" element="SiO" name="0001"
+    lattice_a="4.84086242514" lattice_c="5.32849768007"
+    lattice_u="0.464194114095" lattice_y="0.278756723092"
+    lattice_x="0.411820947129" lattice_z="0.10969484425" width="150.0"
+    height="50.0" num_layers="1" G="9.0"
+    loading="uniform" seed_length="20.0"
+    load_interp_length="20.0" strain_zone_width="20.0"
+    vacuum_size="100.0" relax_loading_field="F" 
+    fix_sides="T" />
+
+  <simulation task="md" classical="T" initial_state="MD_CONSTANT" />
+
+  <md time_step="0.5" sim_temp="300.0" avg_time="500.0" ensemble="NVT"
+  crust="2.0" extrapolate_steps="1" nneigh_tol="1.1"
+  crack_find_tip_interval="50.0" />
+
+  <classical args="IP TS" />
+
+  <selection method="static" />
+
+  <elastic 
+  read="T" 
+  c_11="87.448830"  c_12="16.680572"  c_13="7.284359"  c_14="-17.714316" c_15="0.000001"  c_16="0.000000"  
+  c_21="16.680572"  c_22="86.771977"  c_23="7.284412"  c_24="17.980307"  c_25="-0.000000"  c_26="0.000001"  
+  c_31="7.284359"  c_32="7.284412"  c_33="113.285403"  c_34="0.000192"   c_35="-0.000029"  c_36="-0.000039"  
+  c_41="-17.714316"  c_42="17.980307"  c_43="0.000192" c_44="59.136582" c_45="-0.000002"  c_46="-0.000000"  
+  c_51="0.000001"  c_52="-0.000000"  c_53="-0.000029"  c_54="-0.000002"  c_55="59.203067"  c_56="-17.837578"  
+  c_61="0.000000"  c_62="0.000001"  c_63="-0.000039"   c_64="-0.000000"  c_65="-17.837578"  c_66="41.656620"  
+   />
+
+</crack_params>
+
+<TS_params 
+    betapol="0.75" 
+    cutoff_coulomb="20.0" 
+    cutoff_ms="18.0" 
+    tolpol="0.01" 
+    yuksmoothlength="10.0" 
+    n_types="2"
+    pred_order="2"
+    maxipol="60"
+    tewald="F"
+    yukalpha="0.1" >
+
+   <per_type_data atomic_num="8" pol="14.131863" z="-1.4295594" type="1" />
+   <per_type_data atomic_num="14" pol="0.0" z="2.8591188" type="2" />
+
+   <per_pair_data C_pol="0.44302622" atnum_j="8" atnum_i="8" D_ms="0.00030700577" gamma_ms="12.165654" B_pol="1.1221903" R_ms="7.0252019" />
+   <per_pair_data C_pol="-1.5003213" atnum_j="8" atnum_i="14" D_ms="0.0020129372" gamma_ms="11.350477" B_pol="1.973181" R_ms="4.5780828" />
+   <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
+
+</TS_params>
+
+</params>

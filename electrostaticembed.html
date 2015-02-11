@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tools for electrostatic embedding &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" />
+    <link rel="next" title="Linear algebra routines" href="linearalgebra.html" />
+    <link rel="prev" title="Tools for polarizable potentials" href="polarization.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="linearalgebra.html" title="Linear algebra routines"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="polarization.html" title="Tools for polarizable potentials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="polarization.html"
+                        title="previous chapter">Tools for polarizable potentials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="linearalgebra.html"
+                        title="next chapter">Linear algebra routines</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/electrostaticembed.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.electrostaticembed">
+<span id="tools-for-electrostatic-embedding"></span><h1>Tools for electrostatic embedding<a class="headerlink" href="#module-quippy.electrostaticembed" title="Permalink to this headline">¶</a></h1>
+<p>ElectrostaticEmbed - tools for electrostatic embedding of potentials</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.electrostaticembed" title="quippy.electrostaticembed: Tools for electrostatic embedding"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.electrostaticembed</span></tt></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.electrostaticembed.extent_to_ngrid" title="quippy.electrostaticembed.extent_to_ngrid"><tt class="xref py py-obj docutils literal"><span class="pre">extent_to_ngrid</span></tt></a>(extent,fine_gmax)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.electrostaticembed.assign_grid_coordinates" title="quippy.electrostaticembed.assign_grid_coordinates"><tt class="xref py py-obj docutils literal"><span class="pre">assign_grid_coordinates</span></tt></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.electrostaticembed.extent_to_ngrid">
+<tt class="descclassname">quippy.electrostaticembed.</tt><tt class="descname">extent_to_ngrid</tt><big>(</big><em>extent</em>, <em>fine_gmax</em><big>)</big><a class="headerlink" href="#quippy.electrostaticembed.extent_to_ngrid" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>extent</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>fine_gmax</strong> :  input float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ngrid</strong> :  rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">extent_to_ngrid</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/ElectrostaticEmbed.f95">QUIP_Core/ElectrostaticEmbed.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.electrostaticembed.assign_grid_coordinates">
+<tt class="descclassname">quippy.electrostaticembed.</tt><tt class="descname">assign_grid_coordinates</tt><big>(</big><em>ngrid</em>, <em>origin</em>, <em>extent</em>, <em>n0</em>, <em>n1</em><big>)</big><a class="headerlink" href="#quippy.electrostaticembed.assign_grid_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ngrid</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>extent</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>grid_size</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>r_real_grid</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_r_real_grid,0)</p>
+</div></blockquote>
+<p><strong>n1</strong> :  input int</p>
+<blockquote class="last">
+<div><p>shape(qp_r_real_grid,1)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">assign_grid_coordinates</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/ElectrostaticEmbed.f95">QUIP_Core/ElectrostaticEmbed.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="linearalgebra.html" title="Linear algebra routines"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="polarization.html" title="Tools for polarizable potentials"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

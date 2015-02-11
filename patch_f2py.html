@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>patch_f2py — modify numpy.f2py at runtime &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Appendix: wrapping Fortran 90 Code" href="fortran_wrapper.html" />
+    <link rel="next" title="Fortran 90 derived-type support" href="oo_fortran.html" />
+    <link rel="prev" title="f2py_wrapper_gen — Fortran 90 source code wrapping" href="f2py_wrapper_gen.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="oo_fortran.html" title="Fortran 90 derived-type support"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="f2py_wrapper_gen.html" title="f2py_wrapper_gen — Fortran 90 source code wrapping"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="fortran_wrapper.html" accesskey="U">Appendix: wrapping Fortran 90 Code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="f2py_wrapper_gen.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">f2py_wrapper_gen</span></tt> &#8212; Fortran 90 source code wrapping</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="oo_fortran.html"
+                        title="next chapter">Fortran 90 derived-type support</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/patch_f2py.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-patch_f2py">
+<span id="patch-f2py-modify-numpy-f2py-at-runtime"></span><h1><a class="reference internal" href="#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><tt class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></tt></a> &#8212; modify <tt class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></tt> at runtime<a class="headerlink" href="#module-patch_f2py" title="Permalink to this headline">¶</a></h1>
+<p>This module patches <tt class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></tt> at runtime, to customise the C code that
+is generated. We make several changes to f2py:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Allow the Fortran <tt class="xref c c-func docutils literal"><span class="pre">present()</span></tt> function to work correctly with optional arguments.
+If an argument to an f2py wrapped function is optional and is not given, replace it
+with <tt class="docutils literal"><span class="pre">NULL</span></tt>.</li>
+<li>Allow Fortran routines to raise a <tt class="xref py py-exc docutils literal"><span class="pre">RuntimeError</span></tt> exception
+with a message by calling an external function
+<tt class="xref c c-func docutils literal"><span class="pre">quippy_error_abort()</span></tt>. This is implemented using a
+<tt class="xref c c-func docutils literal"><span class="pre">setjmp()</span></tt>/ <tt class="xref c c-func docutils literal"><span class="pre">longjmp()</span></tt> trap.</li>
+<li>Allow Fortran routines to be interrupted with <tt class="kbd docutils literal"><span class="pre">Ctrl+C</span></tt> by installing a custom
+interrupt handler before the call into Fortran is made. After the Fortran routine
+returns, the previous interrupt handler is restored.</li>
+</ol>
+</div></blockquote>
+<p>Module contents for <a class="reference internal" href="#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><tt class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></tt></a>:</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="oo_fortran.html" title="Fortran 90 derived-type support"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="f2py_wrapper_gen.html" title="f2py_wrapper_gen — Fortran 90 source code wrapping"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="fortran_wrapper.html" >Appendix: wrapping Fortran 90 Code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

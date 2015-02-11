@@ -1,0 +1,1540 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fortran Table for dynamically extendable arrays &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/table.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.table">
+<span id="fortran-table-for-dynamically-extendable-arrays"></span><h1>Fortran <tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt> for dynamically extendable arrays<a class="headerlink" href="#module-quippy.table" title="Permalink to this headline">¶</a></h1>
+<p>A <tt class="docutils literal"><span class="pre">Table</span></tt> is an extensible 2D array of integers, reals, strings and logicals.
+The lengths of all rows are the same and the number of rows will grow and shrink
+as datais appended or deleted. Extra columns can also be appended, although this
+is envisaged to be required less often. Any of the number of integers,
+number of reals, number of strings and number of logicals can be zero</p>
+<p>Integers are referenced by    <tt class="docutils literal"><span class="pre">table.int</span></tt></p>
+<p>Reals are referenced by       <tt class="docutils literal"><span class="pre">table.real</span></tt></p>
+<p>Strings are referenced by     <tt class="docutils literal"><span class="pre">table.str</span></tt></p>
+<p>Logicals are referenced by    <tt class="docutils literal"><span class="pre">table.logical</span></tt></p>
+<p>Appending to the table is through the <tt class="docutils literal"><span class="pre">append</span></tt> interface.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.table" title="quippy.table: Fortran type for dynamically extendable arrays"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.table</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><tt class="xref py py-obj docutils literal"><span class="pre">Table</span></tt></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="84%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">TABLE_STRING_LENGTH</span></tt></td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.table.Table">
+<em class="property">class </em><tt class="descclassname">quippy.table.</tt><tt class="descname">Table</tt><big>(</big><span class="optional">[</span><em>nint</em>, <em>nreal</em>, <em>nstr</em>, <em>nlogical</em>, <em>max_length</em>, <em>error</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/quippy/table.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.table.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">quippy._table.Table</span></tt></p>
+<p>Table([nint,nreal,nstr,nlogical,max_length,error])</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nint</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of integer columns</p>
+</div></blockquote>
+<p><strong>nreal</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of real columns</p>
+</div></blockquote>
+<p><strong>nstr</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of string columns</p>
+</div></blockquote>
+<p><strong>nlogical</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of logical columns</p>
+</div></blockquote>
+<p><strong>max_length</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of rows to initially allocate</p>
+</div></blockquote>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_allocate</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.
+Class is wrapper around Fortran type <tt class="docutils literal"><span class="pre">Table</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.increment" title="quippy.table.Table.increment"><tt class="xref py py-obj docutils literal"><span class="pre">increment</span></tt></a></td>
+<td>How many rows to grow the table by on reallocation (default 1000)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><tt class="xref py py-obj docutils literal"><span class="pre">int</span></tt></a></td>
+<td>(intsize,N) array of integer data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.intsize" title="quippy.table.Table.intsize"><tt class="xref py py-obj docutils literal"><span class="pre">intsize</span></tt></a></td>
+<td>Number of integer columns</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.logical" title="quippy.table.Table.logical"><tt class="xref py py-obj docutils literal"><span class="pre">logical</span></tt></a></td>
+<td>(logicalsize,N) array of logical data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.logicalsize" title="quippy.table.Table.logicalsize"><tt class="xref py py-obj docutils literal"><span class="pre">logicalsize</span></tt></a></td>
+<td>Number of logical columns</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.max_length" title="quippy.table.Table.max_length"><tt class="xref py py-obj docutils literal"><span class="pre">max_length</span></tt></a></td>
+<td>Initial maximum length of the table before the first reallocation (default 100)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.n" title="quippy.table.Table.n"><tt class="xref py py-obj docutils literal"><span class="pre">n</span></tt></a></td>
+<td>Number of rows</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.real" title="quippy.table.Table.real"><tt class="xref py py-obj docutils literal"><span class="pre">real</span></tt></a></td>
+<td>(realsize,N) array of real data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.realsize" title="quippy.table.Table.realsize"><tt class="xref py py-obj docutils literal"><span class="pre">realsize</span></tt></a></td>
+<td>Number of real columns</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.str" title="quippy.table.Table.str"><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></a></td>
+<td>(strsize,N) array of string data</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.strsize" title="quippy.table.Table.strsize"><tt class="xref py py-obj docutils literal"><span class="pre">strsize</span></tt></a></td>
+<td>Number of string columns</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.allocate" title="quippy.table.Table.allocate"><tt class="xref py py-obj docutils literal"><span class="pre">allocate</span></tt></a>(...)</td>
+<td>Allocate a <tt class="docutils literal"><span class="pre">Table</span></tt>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.append" title="quippy.table.Table.append"><tt class="xref py py-obj docutils literal"><span class="pre">append</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Append rows to a table.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.append_column" title="quippy.table.Table.append_column"><tt class="xref py py-obj docutils literal"><span class="pre">append_column</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Append 1 or more columns to a table.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.delete" title="quippy.table.Table.delete"><tt class="xref py py-obj docutils literal"><span class="pre">delete</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Delete a row by index or by value.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.delete_multiple" title="quippy.table.Table.delete_multiple"><tt class="xref py py-obj docutils literal"><span class="pre">delete_multiple</span></tt></a>(indices)</td>
+<td>Delete multiple rows from a Table.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.find" title="quippy.table.Table.find"><tt class="xref py py-obj docutils literal"><span class="pre">find</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Search the integer part of a table for a given element or array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_indices" title="quippy.table.Table.from_atom_indices"><tt class="xref py py-obj docutils literal"><span class="pre">from_atom_indices</span></tt></a>(atoms[,&nbsp;mask,&nbsp;list,&nbsp;...])</td>
+<td>Construct a new Table containing atomic indices from a list or mask</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.from_atom_list" title="quippy.table.Table.from_atom_list"><tt class="xref py py-obj docutils literal"><span class="pre">from_atom_list</span></tt></a>(atoms,&nbsp;list[,&nbsp;...])</td>
+<td>Construct a new Table from a list of atom indices</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_mask" title="quippy.table.Table.from_atom_mask"><tt class="xref py py-obj docutils literal"><span class="pre">from_atom_mask</span></tt></a>(atoms,&nbsp;mask[,&nbsp;...])</td>
+<td>Construct a new Table from an atom mask</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.insert" title="quippy.table.Table.insert"><tt class="xref py py-obj docutils literal"><span class="pre">insert</span></tt></a>(...)</td>
+<td>insert a row at a given position</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.int_part" title="quippy.table.Table.int_part"><tt class="xref py py-obj docutils literal"><span class="pre">int_part</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Utility function to return one or more columns from the integer part of a table.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.int_subtable" title="quippy.table.Table.int_subtable"><tt class="xref py py-obj docutils literal"><span class="pre">int_subtable</span></tt></a>(rows,cols)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></tt>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.logical_part" title="quippy.table.Table.logical_part"><tt class="xref py py-obj docutils literal"><span class="pre">logical_part</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">logical_part</span></tt> containing multiple routines:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.print_" title="quippy.table.Table.print_"><tt class="xref py py-obj docutils literal"><span class="pre">print_</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Print this table to the mainlog or to an inoutput object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.real_part" title="quippy.table.Table.real_part"><tt class="xref py py-obj docutils literal"><span class="pre">real_part</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Utility function to return one or more columns from the real part of a table.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.record_delete_multiple" title="quippy.table.Table.record_delete_multiple"><tt class="xref py py-obj docutils literal"><span class="pre">record_delete_multiple</span></tt></a>(indices)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.remove_columns" title="quippy.table.Table.remove_columns"><tt class="xref py py-obj docutils literal"><span class="pre">remove_columns</span></tt></a>(...)</td>
+<td>remove a range of columns from a table&#8217;s int or real parts</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.search" title="quippy.table.Table.search"><tt class="xref py py-obj docutils literal"><span class="pre">search</span></tt></a>(intpart)</td>
+<td>Do a binary search (faster than find) on a pre-sorted table</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.select" title="quippy.table.Table.select"><tt class="xref py py-obj docutils literal"><span class="pre">select</span></tt></a>(to,from,[row_mask,row_list])</td>
+<td>Select certains rows from a table based on a mask</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.set_increment" title="quippy.table.Table.set_increment"><tt class="xref py py-obj docutils literal"><span class="pre">set_increment</span></tt></a>(increment)</td>
+<td>Change the increment for this table.</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></tt>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></tt>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.sort" title="quippy.table.Table.sort"><tt class="xref py py-obj docutils literal"><span class="pre">sort</span></tt></a>([idx,int_cols])</td>
+<td>Sort a table according to its int part</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.str_part" title="quippy.table.Table.str_part"><tt class="xref py py-obj docutils literal"><span class="pre">str_part</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">str_part</span></tt> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.subtable" title="quippy.table.Table.subtable"><tt class="xref py py-obj docutils literal"><span class="pre">subtable</span></tt></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.to_atom_list" title="quippy.table.Table.to_atom_list"><tt class="xref py py-obj docutils literal"><span class="pre">to_atom_list</span></tt></a>([atoms])</td>
+<td>Return list of atom indices that this Table represents.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.to_atom_mask" title="quippy.table.Table.to_atom_mask"><tt class="xref py py-obj docutils literal"><span class="pre">to_atom_mask</span></tt></a>([atoms])</td>
+<td>Return mask for atom indices that this Table represents</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.wipe" title="quippy.table.Table.wipe"><tt class="xref py py-obj docutils literal"><span class="pre">wipe</span></tt></a>([zero])</td>
+<td>Clear this table, but keep the allocation.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.table.Table.allocate">
+<tt class="descname">allocate</tt><big>(</big><span class="optional">[</span><em>nint</em>, <em>nreal</em>, <em>nstr</em>, <em>nlogical</em>, <em>max_length</em>, <em>error</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.allocate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate a <tt class="docutils literal"><span class="pre">Table</span></tt>. When allocating a table, you can
+optionally specify the number of integer and real columns and the
+initial amount of space to allocate (<tt class="docutils literal"><span class="pre">max_length</span></tt>). If a table is
+unallocated when append is called for the first time it will be
+allocated accordingly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nint</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of integer columns</p>
+</div></blockquote>
+<p><strong>nreal</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of real columns</p>
+</div></blockquote>
+<p><strong>nstr</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of string columns</p>
+</div></blockquote>
+<p><strong>nlogical</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of logical columns</p>
+</div></blockquote>
+<p><strong>max_length</strong> :  input int, optional</p>
+<blockquote>
+<div><p>Number of rows to initially allocate</p>
+</div></blockquote>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">__init__allocate</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.append">
+<tt class="descname">append</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append rows to a table. Overloaded to be able to append single elements,
+arrays or other tables.</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">append</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>intpart</em>, <em>realpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>intpart</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>realpart</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_int_element_real_row</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>intpart</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>intpart</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_int_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>intpart</em>, <em>realpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>intpart</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>realpart</strong> (<em>input float</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_int_row_real_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>intpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> (<em>input rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_int_array</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>realpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realpart</strong> (<em>input float</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_real_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>other</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<tt class="xref py py-class docutils literal"><span class="pre">table</span></tt> object) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_table</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>strpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>strpart</strong> (<em>input rank-3 array(&#8216;S&#8217;) with bounds (qp_n0,qp_n1,(10))</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_str_array</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>logicalpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logicalpart</strong> (<em>input rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_logical_array</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>strpart</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>strpart</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_str_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>logicalpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logicalpart</strong> (<em>input int</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_logical_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>realpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realpart</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_real_array</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><span class="optional">[</span><em>intpart</em>, <em>realpart</em>, <em>strpart</em>, <em>logicalpart</em>, <em>intpart_2d</em>, <em>realpart_2d</em>, <em>strpart_2d</em>, <em>logicalpart_2d</em>, <em>blank_rows</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>intpart</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</em>) &#8211; </li>
+<li><strong>realpart</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1), optional</em>) &#8211; </li>
+<li><strong>strpart</strong> (<em>input rank-2 array(&#8216;S&#8217;) with bounds (qp_n2,(10)), optional</em>) &#8211; </li>
+<li><strong>logicalpart</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n3), optional</em>) &#8211; </li>
+<li><strong>intpart_2d</strong> (<em>input rank-2 array(&#8216;i&#8217;) with bounds (qp_n4,qp_n5), optional</em>) &#8211; </li>
+<li><strong>realpart_2d</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n6,qp_n7), optional</em>) &#8211; </li>
+<li><strong>strpart_2d</strong> (<em>input rank-3 array(&#8216;S&#8217;) with bounds (qp_n8,qp_n9,(10)), optional</em>) &#8211; </li>
+<li><strong>logicalpart_2d</strong> (<em>input rank-2 array(&#8216;i&#8217;) with bounds (qp_n10,qp_n11), optional</em>) &#8211; </li>
+<li><strong>blank_rows</strong> (<em>input int, optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_row_or_arrays</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append</tt><big>(</big><em>intpart</em>, <em>realpart</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>intpart</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>realpart</strong> (<em>input float</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_int_element_and_real_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.append_column">
+<tt class="descname">append_column</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.append_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append 1 or more columns to a table.  Overloaded to be able to append
+a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">append_column</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_i</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_l</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val</strong> (<em>input string(len=10)</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_s</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val</strong> (<em>input float</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_r</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val_a</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val_a</strong> (<em>input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(10))</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_s_a</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val_a</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val_a</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_i_a</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>other</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_table</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val_a</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val_a</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_r_a</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">append_column</tt><big>(</big><em>val_a</em><span class="optional">[</span>, <em>n_cols</em>, <em>cols</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>val_a</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n_cols</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (2), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_append_col_l_a</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.delete">
+<tt class="descname">delete</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a row by index or by value. If by value then the match
+is made by the integer part of the table. The last row is copied
+over the row to be deleted, so the order of rows is not maintained.</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">delete</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>n</em><span class="optional">[</span>, <em>keep_order</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>keep_order</strong> (<em>input int, optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_record_delete_by_index</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>n</em><span class="optional">[</span>, <em>keep_order</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (n0)</em>) &#8211; </li>
+<li><strong>keep_order</strong> (<em>input int, optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_record_delete_by_value</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.delete_multiple">
+<tt class="descname">delete_multiple</tt><big>(</big><em>indices</em><big>)</big><a class="headerlink" href="#quippy.table.Table.delete_multiple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete multiple rows from a Table. Beware, the order of rows
+is not maintained.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">record_delete_multiple</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.find">
+<tt class="descname">find</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the integer part of a table for a given element or array.</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">find</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">find</tt><big>(</big><em>n</em><span class="optional">[</span>, <em>mask</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (n0)</em>) &#8211; </li>
+<li><strong>mask</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_i</strong> &#8211;  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_find_row</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">find</tt><big>(</big><em>n</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>input int</em>) &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_i</strong> &#8211;  int</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_find_element</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="quippy.table.Table.from_atom_indices">
+<em class="property">classmethod </em><tt class="descname">from_atom_indices</tt><big>(</big><em>atoms</em>, <em>mask=None</em>, <em>list=None</em>, <em>force_fortran_indexing=True</em><big>)</big><a class="reference internal" href="_modules/quippy/table.html#Table.from_atom_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.table.Table.from_atom_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a new Table containing atomic indices from a list or mask</p>
+<p>The new table will include 4 integer columns, for indices plus
+shifts, and is suitable for passing to bfs_step,
+construct_hysteretic_region, etc.</p>
+<p>If force_fortran_indexing is True (the default), all atom indices
+are converted to Fortran 1-based indexing.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="quippy.table.Table.from_atom_list">
+<em class="property">classmethod </em><tt class="descname">from_atom_list</tt><big>(</big><em>atoms</em>, <em>list</em>, <em>force_fortran_indexing=True</em><big>)</big><a class="reference internal" href="_modules/quippy/table.html#Table.from_atom_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.table.Table.from_atom_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a new Table from a list of atom indices</p>
+<p>See Table.from_atom_indices for more details.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="quippy.table.Table.from_atom_mask">
+<em class="property">classmethod </em><tt class="descname">from_atom_mask</tt><big>(</big><em>atoms</em>, <em>mask</em>, <em>force_fortran_indexing=True</em><big>)</big><a class="reference internal" href="_modules/quippy/table.html#Table.from_atom_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.table.Table.from_atom_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a new Table from an atom mask</p>
+<p>See Table.from_atom_indices for more details.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.insert">
+<tt class="descname">insert</tt><big>(</big><em>pos</em><span class="optional">[</span>, <em>intpart</em>, <em>realpart</em>, <em>strpart</em>, <em>logicalpart</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>insert a row at a given position</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pos</strong> :  input int</p>
+<p><strong>intpart</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>realpart</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1), optional</p>
+<p><strong>strpart</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n2,(10)), optional</p>
+<p class="last"><strong>logicalpart</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n3), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">insert</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.int_part">
+<tt class="descname">int_part</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.int_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to return one or more columns from the integer part of a table.
+Since this is a function the array may be returned on the stack, so be careful
+when working with large tables &#8212; the same goes for the &#8216;real_part&#8217;
+interface below.</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">int_part</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">int_part</tt><big>(</big><em>column</em>, <em>n0</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_column,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_column</strong> &#8211;  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_int_column</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">int_part</tt><big>(</big><em>n0</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_part,1)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_part</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_int_part</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">int_part</tt><big>(</big><em>columns</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>columns</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_columns,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_columns</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (size(qp_columns),qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_int_columns</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.int_subtable">
+<tt class="descname">int_subtable</tt><big>(</big><em>rows</em>, <em>cols</em><big>)</big><a class="headerlink" href="#quippy.table.Table.int_subtable" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>cols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1)</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_int_subtable</strong> : <a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">int_subtable</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.logical_part">
+<tt class="descname">logical_part</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.logical_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">logical_part</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">logical_part</tt><big>(</big><em>n0</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_part,1)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_part</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_logical_part</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">logical_part</tt><big>(</big><em>columns</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>columns</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_columns,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_columns</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (size(qp_columns),qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_logical_columns</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">logical_part</tt><big>(</big><em>column</em>, <em>n0</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_column,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_column</strong> &#8211;  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_logical_column</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.print_">
+<tt class="descname">print_</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.print_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print this table to the mainlog or to an inoutput object.</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">print_</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt id="quippy.table.Table.print">
+<tt class="descname">print</tt><big>(</big><em>file</em><span class="optional">[</span>, <em>verbosity</em>, <em>real_format</em>, <em>int_format</em>, <em>str_format</em>, <em>logical_format</em>, <em>mask</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.print" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>file</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><tt class="xref py py-class docutils literal"><span class="pre">InOutput</span></tt></a> object) &#8211; </li>
+<li><strong>real_format</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
+<li><strong>int_format</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
+<li><strong>str_format</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
+<li><strong>logical_format</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
+<li><strong>mask</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_print</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">print</tt><big>(</big><span class="optional">[</span><em>verbosity</em><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_print_mainlog</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.real_part">
+<tt class="descname">real_part</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.real_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to return one or more columns from the real part of a table.</p>
+<p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">real_part</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">real_part</tt><big>(</big><em>columns</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>columns</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_columns,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_columns</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (size(qp_columns),qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_real_columns</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">real_part</tt><big>(</big><em>n0</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_part,1)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_part</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_real_part</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">real_part</tt><big>(</big><em>column</em>, <em>n0</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_column,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_column</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_real_column</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.record_delete_multiple">
+<tt class="descname">record_delete_multiple</tt><big>(</big><em>indices</em><big>)</big><a class="headerlink" href="#quippy.table.Table.record_delete_multiple" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_record_delete_multiple</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.remove_columns">
+<tt class="descname">remove_columns</tt><big>(</big><span class="optional">[</span><em>int_col_min</em>, <em>int_col_max</em>, <em>real_col_min</em>, <em>real_col_max</em>, <em>str_col_min</em>, <em>str_col_max</em>, <em>logical_col_min</em>, <em>logical_col_max</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.remove_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove a range of columns from a table&#8217;s int or real parts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>int_col_min</strong> :  input int, optional</p>
+<p><strong>int_col_max</strong> :  input int, optional</p>
+<p><strong>real_col_min</strong> :  input int, optional</p>
+<p><strong>real_col_max</strong> :  input int, optional</p>
+<p><strong>str_col_min</strong> :  input int, optional</p>
+<p><strong>str_col_max</strong> :  input int, optional</p>
+<p><strong>logical_col_min</strong> :  input int, optional</p>
+<p class="last"><strong>logical_col_max</strong> :  input int, optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">remove_columns</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.search">
+<tt class="descname">search</tt><big>(</big><em>intpart</em><big>)</big><a class="headerlink" href="#quippy.table.Table.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a binary search (faster than find) on a pre-sorted table</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_index</strong> :  int</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">search</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.select">
+<tt class="descname">select</tt><big>(</big><em>to</em>, <em>from</em><span class="optional">[</span>, <em>row_mask</em>, <em>row_list</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select certains rows from a table based on a mask</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <tt class="xref py py-class docutils literal"><span class="pre">table</span></tt> object</p>
+<p><strong>from</strong> : <tt class="xref py py-class docutils literal"><span class="pre">table</span></tt> object</p>
+<p><strong>row_mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p class="last"><strong>row_list</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">select</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.set_increment">
+<tt class="descname">set_increment</tt><big>(</big><em>increment</em><big>)</big><a class="headerlink" href="#quippy.table.Table.set_increment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the increment for this table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>increment</strong> :  input int</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">set_increment</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.sort">
+<tt class="descname">sort</tt><big>(</big><span class="optional">[</span><em>idx</em>, <em>int_cols</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort a table according to its int part</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>idx</strong> :  in/output rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p class="last"><strong>int_cols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">sort</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.str_part">
+<tt class="descname">str_part</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.table.Table.str_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">str_part</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">str_part</tt><big>(</big><em>column</em>, <em>n0</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_column,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_column</strong> &#8211;  rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(10))</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_str_column</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">str_part</tt><big>(</big><em>columns</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>columns</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_columns,0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_columns</strong> &#8211;  rank-3 array(&#8216;S&#8217;) with bounds (size(qp_columns),qp_n1,(10))</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_str_columns</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">str_part</tt><big>(</big><em>n0</em>, <em>n1</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_part,1)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_part</strong> &#8211;  rank-3 array(&#8216;S&#8217;) with bounds (qp_n0,qp_n1,(10))</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">table_str_part</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.subtable">
+<tt class="descname">subtable</tt><big>(</big><em>rows</em><span class="optional">[</span>, <em>intcols</em>, <em>realcols</em>, <em>strcols</em>, <em>logicalcols</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.subtable" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>intcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
+<p><strong>realcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n2), optional</p>
+<p><strong>strcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n3), optional</p>
+<p><strong>logicalcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n4), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_subtable</strong> : <a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">subtable</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.to_atom_list">
+<tt class="descname">to_atom_list</tt><big>(</big><em>atoms=None</em><big>)</big><a class="reference internal" href="_modules/quippy/table.html#Table.to_atom_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.table.Table.to_atom_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of atom indices that this Table represents.</p>
+<p>Indices returns are 0-based or 1-based depending on value of
+<tt class="xref py py-func docutils literal"><span class="pre">get_fortran_indexing()</span></tt>.</p>
+<p>If <cite>atoms</cite> is not present, the Atoms object passed to
+Table.from_atom_indices is used, or an exception is raised if this
+Table was not created in that way.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.to_atom_mask">
+<tt class="descname">to_atom_mask</tt><big>(</big><em>atoms=None</em><big>)</big><a class="reference internal" href="_modules/quippy/table.html#Table.to_atom_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.table.Table.to_atom_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return mask for atom indices that this Table represents</p>
+<p>Result is either an array of an FortranArray, depending on
+value of <tt class="xref py py-func docutils literal"><span class="pre">get_fortran_indexing()</span></tt>.</p>
+<p>If <cite>atoms</cite> is not present, the Atoms object passed to
+Table.from_atom_indices is used, or an exception is raised if this
+Table was not created in that way.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.table.Table.wipe">
+<tt class="descname">wipe</tt><big>(</big><span class="optional">[</span><em>zero</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.table.Table.wipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear this table, but keep the allocation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>zero</strong> :  input int, optional</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">wipe</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Table.f95">libAtoms/Table.f95</a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.increment">
+<tt class="descname">increment</tt><a class="headerlink" href="#quippy.table.Table.increment" title="Permalink to this definition">¶</a></dt>
+<dd><p>How many rows to grow the table by on reallocation (default 1000)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.int">
+<tt class="descname">int</tt><a class="headerlink" href="#quippy.table.Table.int" title="Permalink to this definition">¶</a></dt>
+<dd><p>(intsize,N) array of integer data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.intsize">
+<tt class="descname">intsize</tt><a class="headerlink" href="#quippy.table.Table.intsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of integer columns</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.logical">
+<tt class="descname">logical</tt><a class="headerlink" href="#quippy.table.Table.logical" title="Permalink to this definition">¶</a></dt>
+<dd><p>(logicalsize,N) array of logical data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.logicalsize">
+<tt class="descname">logicalsize</tt><a class="headerlink" href="#quippy.table.Table.logicalsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of logical columns</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.max_length">
+<tt class="descname">max_length</tt><a class="headerlink" href="#quippy.table.Table.max_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial maximum length of the table before the first reallocation (default 100)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.n">
+<tt class="descname">n</tt><a class="headerlink" href="#quippy.table.Table.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of rows</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.real">
+<tt class="descname">real</tt><a class="headerlink" href="#quippy.table.Table.real" title="Permalink to this definition">¶</a></dt>
+<dd><p>(realsize,N) array of real data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.realsize">
+<tt class="descname">realsize</tt><a class="headerlink" href="#quippy.table.Table.realsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of real columns</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.str">
+<tt class="descname">str</tt><a class="headerlink" href="#quippy.table.Table.str" title="Permalink to this definition">¶</a></dt>
+<dd><p>(strsize,N) array of string data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.table.Table.strsize">
+<tt class="descname">strsize</tt><a class="headerlink" href="#quippy.table.Table.strsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of string columns</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

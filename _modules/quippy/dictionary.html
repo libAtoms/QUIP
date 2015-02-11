@@ -1,0 +1,373 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>quippy.dictionary &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for quippy.dictionary</h1><div class="highlight"><pre>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   Copyright James Kermode 2010</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+
+<span class="kn">import</span> <span class="nn">weakref</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">_dictionary</span>
+<span class="kn">from</span> <span class="nn">quippy._dictionary</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">get_fortran_indexing</span>
+<span class="kn">from</span> <span class="nn">quippy.oo_fortran</span> <span class="kn">import</span> <span class="n">update_doc_string</span>
+<span class="kn">from</span> <span class="nn">quippy.dictmixin</span> <span class="kn">import</span> <span class="n">DictMixin</span><span class="p">,</span> <span class="n">ParamReaderMixin</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">__all__</span>
+
+<div class="viewcode-block" id="Dictionary"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary">[docs]</a><span class="k">class</span> <span class="nc">Dictionary</span><span class="p">(</span><span class="n">DictMixin</span><span class="p">,</span> <span class="n">ParamReaderMixin</span><span class="p">,</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="p">):</span>
+    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    The quippy Python :class:`Dictionary` class is designed to behave</span>
+<span class="s">    as much as possible like a true Python dictionary, but since it is</span>
+<span class="s">    implemented in Fortran it can only store a restricted range of</span>
+<span class="s">    data types.  Keys much be strings and values must be one of the</span>
+<span class="s">    types above.</span>
+
+<span class="s">    Trying to store any other type of data will raise a :exc:`ValueError`.</span>
+
+<span class="s">    For Atoms&#39; :attr:`~quippy.atoms.Atoms.params` entries, there are</span>
+<span class="s">    further restrictions imposed by the implementation of the XYZ and</span>
+<span class="s">    NetCDF I/O routines. The only types of data that can be stored here</span>
+<span class="s">    are:</span>
+
+<span class="s">    - Integer</span>
+<span class="s">    - Real</span>
+<span class="s">    - String</span>
+<span class="s">    - Integer 3-vector</span>
+<span class="s">    - Real 3-vector</span>
+<span class="s">    - Integer 3 x 3 matrix</span>
+<span class="s">    - Real 3 x 3 matrix</span>
+
+<span class="s">    A :class:`Dictionary` can be created from a standard Python dictionary,</span>
+<span class="s">    and easily converted back::</span>
+
+<span class="s">        &gt;&gt;&gt; py_dict = {&#39;a&#39;:1, &#39;b&#39;:2}</span>
+<span class="s">        &gt;&gt;&gt; fortran_dict = Dictionary(py_dict)</span>
+<span class="s">        &gt;&gt;&gt; py_dict == dict(fortran_dict)</span>
+<span class="s">        True</span>
+
+<span class="s">    It also supports all the standard dictionary operations and methods::</span>
+
+<span class="s">        &gt;&gt;&gt; fortran_dict[&#39;c&#39;] = 3</span>
+<span class="s">	&gt;&gt;&gt; fortran_dict.keys()</span>
+<span class="s">	[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+
+<span class="s">    An additional feature of the quippy :class:`Dictionary` is that it</span>
+<span class="s">    can read and write itself to a string in the format used within XYZ</span>
+<span class="s">    files::</span>
+
+<span class="s">        &gt;&gt;&gt; str(fortran_dict)</span>
+<span class="s">	&#39;a=1 b=2 c=3&#39;</span>
+<span class="s">	&gt;&gt;&gt; d2 = Dictionary(&#39;a=1 b=2 c=3&#39;)</span>
+<span class="s">	&gt;&gt;&gt; d2.keys(), d2.values()      </span>
+<span class="s">	([&#39;a&#39;, &#39;b&#39;, &#39;c&#39;], [1, 2, 3])</span>
+<span class="s">    &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">signature</span><span class="o">=</span><span class="s">&#39;Dictionary([D])&#39;</span><span class="p">)</span>
+
+    <span class="n">_interfaces</span> <span class="o">=</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">_interfaces</span>
+    <span class="n">_interfaces</span><span class="p">[</span><span class="s">&#39;set_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">_interfaces</span><span class="p">[</span><span class="s">&#39;set_value&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;set_value_s_a&#39;</span> <span class="p">]</span>
+
+    <span class="n">_scalar_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_INTEGER</span><span class="p">,</span> <span class="n">T_REAL</span><span class="p">,</span> <span class="n">T_COMPLEX</span><span class="p">,</span> <span class="n">T_LOGICAL</span><span class="p">,</span> <span class="n">T_CHAR</span><span class="p">,</span> <span class="n">T_DICT</span><span class="p">)</span>
+
+    <span class="n">_array_types</span>  <span class="o">=</span> <span class="p">(</span><span class="n">T_INTEGER_A</span><span class="p">,</span> <span class="n">T_REAL_A</span><span class="p">,</span> <span class="n">T_COMPLEX_A</span><span class="p">,</span> <span class="n">T_CHAR_A</span><span class="p">,</span>
+                     <span class="n">T_LOGICAL_A</span><span class="p">,</span> <span class="n">T_INTEGER_A2</span><span class="p">,</span> <span class="n">T_REAL_A2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys_lower</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">D</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c"># copy from D</span>
+
+    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="c"># HACK to solve shallow copy bug</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys_lower</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span>
+
+    <span class="k">def</span> <span class="nf">has_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="c"># ensure _keys_lower is up-to-date</span>
+        <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_lower</span>
+
+<div class="viewcode-block" id="Dictionary.get_value"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.get_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="s">&quot;Return a _copy_ of a value stored in Dictionary&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key &quot;</span><span class="si">%s</span><span class="s">&quot; not found &#39;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+
+        <span class="n">t</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_NONE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Key </span><span class="si">%s</span><span class="s"> has no associated value&#39;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_INTEGER</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_i</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_REAL</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_r</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_COMPLEX</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_c</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_CHAR</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_s</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_LOGICAL</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_l</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_INTEGER_A</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_i_a</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_REAL_A</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_r_a</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_COMPLEX_A</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_c_a</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_CHAR_A</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_s_a2</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># Last index is length of string, here fixed to 1</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">strides</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># Column-major storage</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_LOGICAL_A</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_l_a</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_INTEGER_A2</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_i_a2</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">s2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_REAL_A2</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_r_a2</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">s2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_DICT</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_dict</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unsupported dictionary entry type </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span>
+</div>
+<div class="viewcode-block" id="Dictionary.get_array"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.get_array">[docs]</a>    <span class="k">def</span> <span class="nf">get_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="s">&quot;Return a _reference_ to an array stored in this Dictionary&quot;&quot;&quot;</span>
+
+        <span class="kn">import</span> <span class="nn">_quippy</span><span class="o">,</span> <span class="nn">arraydata</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">Dictionary</span><span class="o">.</span><span class="n">_array_types</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">arraydata</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">,</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">qp_dictionary_get_array</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">a</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key &quot;</span><span class="si">%s</span><span class="s">&quot; does not correspond to an array entry&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Dictionary.get_type"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="s">&quot;Return an integer code for the type of the value associated with a key&quot;</span>
+
+        <span class="kn">import</span> <span class="nn">_quippy</span><span class="o">,</span> <span class="nn">arraydata</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key &quot;</span><span class="si">%s</span><span class="s">&quot; not found&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">is_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">Dictionary</span><span class="o">.</span><span class="n">_scalar_types</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key &quot;</span><span class="si">%s</span><span class="s">&quot; not found&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">Dictionary</span><span class="o">.</span><span class="n">_array_types</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key &quot;</span><span class="si">%s</span><span class="s">&quot; not found&#39;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_invalid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_invalid</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">KeyError</span>
+            <span class="k">return</span> <span class="n">v</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key &quot;</span><span class="si">%s</span><span class="s">&quot; not found &#39;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_NONE</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Key </span><span class="si">%s</span><span class="s"> has no associated value&#39;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">Dictionary</span><span class="o">.</span><span class="n">_scalar_types</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">Dictionary</span><span class="o">.</span><span class="n">_array_types</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">return</span> <span class="n">v</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unsupported dictionary entry type </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s2a</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">pad</span><span class="o">=</span><span class="bp">None</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&#39;Key </span><span class="si">%s</span><span class="s"> not found in Dictionary&#39;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_value</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ParamReaderMixin</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">logging</span>
+        <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;keys mismatch: </span><span class="si">%s</span><span class="s"> != </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">v1</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">v2</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="n">v1</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s">&#39;f&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">v1</span> <span class="o">!=</span> <span class="n">v2</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;mismatch key=</span><span class="si">%s</span><span class="s"> v1=</span><span class="si">%s</span><span class="s"> v2=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">))</span>
+                        <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v2</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmp_tol</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;mismatch key=</span><span class="si">%s</span><span class="s"> v1=</span><span class="si">%s</span><span class="s"> v2=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">))</span>
+                        <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v1</span> <span class="o">!=</span> <span class="n">v2</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;mismatch key=</span><span class="si">%s</span><span class="s"> v1=</span><span class="si">%s</span><span class="s"> v2=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ParamReaderMixin</span><span class="o">.</span><span class="n">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Dictionary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">out_no_initialise</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">out</span> <span class="o">=</span> <span class="n">Dictionary</span><span class="p">()</span>
+        <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="p">,</span> <span class="n">out_no_initialise</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+</div>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">FortranDerivedTypes</span>
+<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(dictionary)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Dictionary</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

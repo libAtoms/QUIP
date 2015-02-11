@@ -1,0 +1,1137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>AtomsList and AtomsReader objects for I/O &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">AtomsList and AtomsReader objects for I/O</a><ul>
+<li><a class="reference internal" href="#supported-file-formats">Supported File Formats</a></li>
+<li><a class="reference internal" href="#module-quippy.xyz">Extended XYZ</a></li>
+<li><a class="reference internal" href="#netcdf">NetCDF</a><ul>
+<li><a class="reference internal" href="#netcdf-convention">NetCDF Convention</a></li>
+<li><a class="reference internal" href="#dimensions">Dimensions</a></li>
+<li><a class="reference internal" href="#variables">Variables</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-quippy.cinoutput">CInOutput objects</a></li>
+<li><a class="reference internal" href="#module-quippy.asap">ASAP file format</a></li>
+<li><a class="reference internal" href="#module-quippy.atomeyewriter">AtomEye Image Writer</a></li>
+<li><a class="reference internal" href="#castep">CASTEP</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-quippy.cube">Gaussian CUBE</a></li>
+<li><a class="reference internal" href="#module-quippy.dan">DAN visualisation code</a></li>
+<li><a class="reference internal" href="#module-quippy.imd">IMD checkpoint</a></li>
+<li><a class="reference internal" href="#module-quippy.povray">POV-ray</a></li>
+<li><a class="reference internal" href="#vasp">VASP</a></li>
+<li><a class="reference internal" href="#ase-supported-files-types">ASE supported files types</a></li>
+<li><a class="reference internal" href="#adding-a-new-file-type">Adding a new file type</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.io">
+<span id="atomslist-and-atomsreader-objects-for-i-o"></span><h1>AtomsList and AtomsReader objects for I/O<a class="headerlink" href="#module-quippy.io" title="Permalink to this headline">¶</a></h1>
+<p>There are two classes for reading trajectories: <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a>
+and <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a>. Use an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> for quick
+read-only access to a trajectory or if you only want to access some of
+the frames. If you want to load the entire file into memory and
+manipulate it use an <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a>.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.io" title="quippy.io: Read and write atomic configurations"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.io</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-obj docutils literal"><span class="pre">AtomsReader</span></tt></a>(source[,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;...])</td>
+<td>An <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> reads a series of <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> objects</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-obj docutils literal"><span class="pre">AtomsList</span></tt></a>([source,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;...])</td>
+<td>An <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> is just like an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> except that all frames are read in on initialiased and then stored in memory.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.atoms_reader" title="quippy.io.atoms_reader"><tt class="xref py py-obj docutils literal"><span class="pre">atoms_reader</span></tt></a>(source)</td>
+<td>Decorator to mark a function as a reader for a particular file extension</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><tt class="xref py py-obj docutils literal"><span class="pre">AtomsWriter</span></tt></a>(dest[,&nbsp;format])</td>
+<td>Returns a file-like object for writing Atoms to <cite>dest</cite> which should be either a filename or an initiliased output object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read_dataset" title="quippy.io.read_dataset"><tt class="xref py py-obj docutils literal"><span class="pre">read_dataset</span></tt></a>(dirs,&nbsp;pattern,&nbsp;**kwargs)</td>
+<td>Read atomic configurations matching glob <cite>pattern</cite> from each of the directories in <cite>dir</cite> in turn.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.time_ordered_series" title="quippy.io.time_ordered_series"><tt class="xref py py-obj docutils literal"><span class="pre">time_ordered_series</span></tt></a>(source[,&nbsp;dt])</td>
+<td>Given a source of Atoms configurations, return a time ordered list of filename and frame references</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read" title="quippy.io.read"><tt class="xref py py-obj docutils literal"><span class="pre">read</span></tt></a>(filename,&nbsp;**readargs)</td>
+<td>Read Atoms from file <cite>filename</cite></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.write" title="quippy.io.write"><tt class="xref py py-obj docutils literal"><span class="pre">write</span></tt></a>(filename,&nbsp;atoms,&nbsp;**writeargs)</td>
+<td>Write <cite>atoms</cite> to the file <cite>filename</cite></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="80%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><tt class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></tt></a></td>
+<td>&#8212;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsWriters" title="quippy.io.AtomsWriters"><tt class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></tt></a></td>
+<td>&#8212;</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.io.AtomsReader">
+<em class="property">class </em><tt class="descclassname">quippy.io.</tt><tt class="descname">AtomsReader</tt><big>(</big><em>source</em>, <em>format=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>cache_mem_limit=-1</em>, <em>rename=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> reads a series of <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> objects
+from the trajectory <cite>source</cite> which should be one of the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a filename - in this case <cite>format</cite> is inferred from the file
+extension &#8211; see <a class="reference internal" href="#fileformats"><em>Supported File Formats</em></a></li>
+<li>a shell-style glob pattern e.g. <cite>&#8220;*.xyz&#8221;</cite></li>
+<li>a list of filenames or glob patterns e.g. <cite>[&#8220;foo*.xyz&#8221;,
+&#8220;bar*.xyz&#8221;]</cite></li>
+<li>an open file or file-like object (e.g. a <tt class="xref py py-class docutils literal"><span class="pre">CInOutput</span></tt>
+object)</li>
+<li>any Python <a class="reference external" href="http://docs.python.org/library/stdtypes.html#iterator-types">iterator</a>
+which yields a sequence of <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> objects</li>
+</ul>
+</div></blockquote>
+<p><cite>start</cite>, <cite>stop</cite> and <cite>step</cite> can be used to restrict the range of frames
+read from <cite>source</cite>. The first frame in the file has index zero.</p>
+<p><cite>cache_limit</cite> determines how many configurations will be stored in
+memory. If more than <cite>cache_limit</cite> configurations are read in, the
+least recently accessed configurations are thrown away. To store
+everything, use an <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> instead.</p>
+<p>Some <cite>sources</cite> understand additional keyword arguments from
+<cite>**kwargs</cite>. For example the CASTEP file reader can take an
+<cite>atoms_ref</cite> argument which is a reference <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> object
+which is used to fill in information which is missing from the
+input file.</p>
+<p>All <a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReaders</span></tt></a> support iteration, so you can loop over
+the contents using a <a class="reference external" href="http://docs.python.org/2.7/reference/compound_stmts.html#for" title="(in Python v2.7)"><tt class="xref std std-keyword docutils literal"><span class="pre">for</span></tt></a> loop:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">al</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="s">&#39;input-file.xyz&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">:</span>
+   <span class="c"># process Atoms object `at`</span>
+   <span class="k">print</span> <span class="n">at</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+<p>or using list comprehension:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>In addition to iteration, some sources allow random access. To find
+out if an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> supports random access, either try
+to get it&#8217;s length with <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#len" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt></a>, or check if the
+<a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><tt class="xref py py-attr docutils literal"><span class="pre">random_access</span></tt></a> property is true. If <cite>cache_limit</cite> is large
+enough to store all the frames in the file, all
+<a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReaders</span></tt></a> will allow random access once the entire
+trajectory has been loaded.</p>
+<p>If <tt class="xref py py-attr docutils literal"><span class="pre">randomaccess</span></tt> is true, you can access individual frames
+by indexing and slicing, e.g. <tt class="docutils literal"><span class="pre">al[i]</span></tt> is the i<sup>th</sup>
+<tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> object within <tt class="docutils literal"><span class="pre">al</span></tt> and <tt class="docutils literal"><span class="pre">al[i:j]</span></tt> returns objects
+from <cite>i</cite> upto but not including <cite>j</cite>. Like ordinary Python lists,
+indices start from 0 and run up to <tt class="docutils literal"><span class="pre">len(al)-1</span></tt>.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><tt class="xref py py-obj docutils literal"><span class="pre">random_access</span></tt></a></td>
+<td>Read only property: True if this source supports random access, False if it does not</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.close" title="quippy.io.AtomsReader.close"><tt class="xref py py-obj docutils literal"><span class="pre">close</span></tt></a>()</td>
+<td>Close any open files associated with this <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsReader.filter" title="quippy.io.AtomsReader.filter"><tt class="xref py py-obj docutils literal"><span class="pre">filter</span></tt></a>(at)</td>
+<td>Apply read-time filters to <cite>at</cite></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.iterframes" title="quippy.io.AtomsReader.iterframes"><tt class="xref py py-obj docutils literal"><span class="pre">iterframes</span></tt></a>([reverse])</td>
+<td>Return an interator over all the frames in this trajectory.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.io.AtomsReader.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close any open files associated with this <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.io.AtomsReader.filter">
+<tt class="descname">filter</tt><big>(</big><em>at</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply read-time filters to <cite>at</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.io.AtomsReader.iterframes">
+<tt class="descname">iterframes</tt><big>(</big><em>reverse=False</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.iterframes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.iterframes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an interator over all the frames in this trajectory. This
+is the default iterator for an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> instance
+<cite>al</cite>, and can be accessed with <tt class="docutils literal"><span class="pre">iter(al)</span></tt>.</p>
+<p>If <cite>reverse=True</cite> then the iteration starts with the last frame
+and goes backwards through the file. This is only possible if
+<a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><tt class="xref py py-attr docutils literal"><span class="pre">random_access</span></tt></a> is true.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.io.AtomsReader.random_access">
+<tt class="descname">random_access</tt><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.random_access"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.random_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read only property: True if this source supports random access, False if it does not</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="quippy.io.AtomsList">
+<em class="property">class </em><tt class="descclassname">quippy.io.</tt><tt class="descname">AtomsList</tt><big>(</big><em>source=[]</em>, <em>format=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>rename=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsList" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> is just like an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> except
+that all frames are read in on initialiased and then stored in
+memory. This is equivalent to an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> with a
+<cite>cache_limit</cite> of <cite>None</cite> so an <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> always
+supports random access.</p>
+<p>The <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> allows configurations to be added, removed
+or reordered using the standard Python methods for <a class="reference external" href="http://docs.python.org/library/stdtypes.html#mutable-sequence-types">mutable
+sequence types</a>
+(e.g. <tt class="xref py py-meth docutils literal"><span class="pre">append()</span></tt>, <tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt>, <tt class="xref py py-meth docutils literal"><span class="pre">index()</span></tt>, etc).</p>
+<p>The attributes of the component <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> can be accessed as a
+single array, using the frame number as the first array index. Note
+that the first index runs from 0 to <cite>len(al)-1</cite>, unlike the other
+indices which are one-based since the <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> attributes are
+stored in a <tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt>.</p>
+<p>For example the following statements are all true:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">al</span><span class="o">.</span><span class="n">energy</span>      <span class="o">==</span>  <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span> <span class="c"># energies of all atoms</span>
+<span class="n">al</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>   <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">energy</span>             <span class="c"># energy of first frame</span>
+<span class="nb">all</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span>              <span class="c"># velocities of all atoms in first frame</span>
+<span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>           <span class="c"># velocity of last atom in first frame</span>
+</pre></div>
+</div>
+<p>In addition to the standard Python list methods and those of
+<a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a>, <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> defined a couple of extras
+methods.</p>
+<dl class="method">
+<dt id="quippy.io.AtomsList.sort">
+<tt class="descname">sort</tt><big>(</big><em>cmp=None</em>, <em>key=None</em>, <em>reverse=False</em>, <em>attr=None</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsList.sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsList.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the AtomsList in place. This is the same as the standard
+<tt class="xref py py-meth docutils literal"><span class="pre">list.sort()</span></tt> method, except for the additional <cite>attr</cite>
+argument. If this is present then the sorted list will be
+ordered by the <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> attribute <cite>attr</cite>, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">al</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">attr</span><span class="o">=</span><span class="s">&#39;energy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will order the configurations by their <cite>energy</cite> (assuming that
+<tt class="xref py py-attr docutils literal"><span class="pre">Atoms.params</span></tt> contains an entry named <cite>energy</cite> for each
+configuration; otherwise an <tt class="xref py py-exc docutils literal"><span class="pre">AttributError</span></tt> will be raised).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.io.atoms_reader">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">atoms_reader</tt><big>(</big><em>source</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#atoms_reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.atoms_reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to mark a function as a reader for a particular file extension</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.io.AtomsWriter">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">AtomsWriter</tt><big>(</big><em>dest</em>, <em>format=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#AtomsWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a file-like object for writing Atoms to <cite>dest</cite> which
+should be either a filename or an initiliased output object.  If
+<cite>format</cite> is not given it is inferred from the file extension of
+<cite>dest</cite>. Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">out</span> <span class="o">=</span> <span class="n">AtomsWriter</span><span class="p">(</span><span class="s">&#39;out_file.xyz&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">:</span>
+   <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+<span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.io.read_dataset">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">read_dataset</tt><big>(</big><em>dirs</em>, <em>pattern</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#read_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.read_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read atomic configurations matching glob <cite>pattern</cite> from each of
+the directories in <cite>dir</cite> in turn. All kwargs are passed along
+to AtomsList constructor.</p>
+<p>Returns an dictionary mapping directories to AtomsList instances.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.io.time_ordered_series">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">time_ordered_series</tt><big>(</big><em>source</em>, <em>dt=None</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#time_ordered_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.time_ordered_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a source of Atoms configurations, return a time ordered list of filename and frame references</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.io.read">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">read</tt><big>(</big><em>filename</em>, <em>**readargs</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read Atoms from file <cite>filename</cite></p>
+<p>File format is inferred from file extension, see <a class="reference internal" href="#fileformats"><em>Supported File Formats</em></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.io.write">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">write</tt><big>(</big><em>filename</em>, <em>atoms</em>, <em>**writeargs</em><big>)</big><a class="reference internal" href="_modules/quippy/io.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write <cite>atoms</cite> to the file <cite>filename</cite></p>
+<p>File format is inferred from file extension, see <a class="reference internal" href="#fileformats"><em>Supported File Formats</em></a>.</p>
+</dd></dl>
+
+<div class="section" id="supported-file-formats">
+<span id="fileformats"></span><h2>Supported File Formats<a class="headerlink" href="#supported-file-formats" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><tt class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></tt></a> and <a class="reference internal" href="#quippy.io.AtomsWriters" title="quippy.io.AtomsWriters"><tt class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></tt></a> dictionaries are
+used by the <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> constructor, <tt class="xref py py-meth docutils literal"><span class="pre">Atoms.write()</span></tt>, the
+<a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> constructor and <tt class="xref py py-meth docutils literal"><span class="pre">AtomsList.write()</span></tt> to work out
+how to read or write a particular file type, based on the filename
+extension.</p>
+<p>The quippy native formats are <a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a> and <a class="reference internal" href="#netcdf"><em>NetCDF</em></a>.</p>
+<p>The standard implementation of both these formats is in C in the files
+<tt class="file docutils literal"><span class="pre">xyz.c</span></tt> and <tt class="file docutils literal"><span class="pre">netcdf.c</span></tt> in the <cite>libAtoms</cite> package. It is
+this version which is wrapped by the
+<tt class="xref py py-class docutils literal"><span class="pre">CInOutput</span></tt> class, which is used by
+<a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><tt class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></tt></a> and <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> when
+reading from or writing to XYZ or NetCDF files.</p>
+<dl class="attribute">
+<dt id="quippy.io.AtomsReaders">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">AtomsReaders</tt><a class="headerlink" href="#quippy.io.AtomsReaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Supported file formats for reading <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> objects from files.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File extension</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">castep</span></tt> or
+<tt class="docutils literal"><span class="pre">castep_log</span></tt></td>
+<td><a class="reference internal" href="#castep"><em>CASTEP</em></a> output</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">cell</span></tt></td>
+<td><a class="reference internal" href="#castep"><em>CASTEP</em></a> cell files</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">chkpt</span></tt></td>
+<td><a class="reference internal" href="#imd"><em>IMD checkpoint</em></a></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">cp2k_output</span></tt></td>
+<td><a class="reference internal" href="cp2k.html#cp2k"><em>CP2K I/O and driver</em></a></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">cube</span></tt></td>
+<td><a class="reference internal" href="#cube"><em>Gaussian CUBE</em></a></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">geom</span></tt></td>
+<td><a class="reference internal" href="#castep"><em>CASTEP</em></a> geometry</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">md</span></tt></td>
+<td><a class="reference internal" href="#castep"><em>CASTEP</em></a> MD file</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">nc</span></tt></td>
+<td><a class="reference internal" href="#netcdf"><em>NetCDF</em></a></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">pos</span></tt></td>
+<td><a class="reference internal" href="#asap"><em>ASAP file format</em></a></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">POSCAR</span></tt> or
+<tt class="docutils literal"><span class="pre">CONTCAR</span></tt>,</td>
+<td><a class="reference internal" href="#vasp"><em>VASP</em></a> coordinates</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">OUTCAR</span></tt>,</td>
+<td><a class="reference internal" href="#vasp"><em>VASP</em></a> output</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">stdin</span></tt></td>
+<td>Read from stdin in
+<a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a> format</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">string</span></tt></td>
+<td>Read from string in
+<a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a> format</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">xyz</span></tt></td>
+<td><a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.io.AtomsWriters">
+<tt class="descclassname">quippy.io.</tt><tt class="descname">AtomsWriters</tt><a class="headerlink" href="#quippy.io.AtomsWriters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Supported file formats for writing <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> objects to files.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File extension</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">cell</span></tt></td>
+<td><a class="reference internal" href="#castep"><em>CASTEP</em></a> cell file</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">cube</span></tt></td>
+<td><a class="reference internal" href="#cube"><em>Gaussian CUBE</em></a></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">dan</span></tt></td>
+<td><a class="reference internal" href="#dan"><em>DAN visualisation code</em></a></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">eps</span></tt>,
+<tt class="docutils literal"><span class="pre">jpg</span></tt>,
+<tt class="docutils literal"><span class="pre">png</span></tt>,</td>
+<td>Images
+(via:ref:<cite>atomeyewriter</cite>)</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">nc</span></tt></td>
+<td><a class="reference internal" href="#netcdf"><em>NetCDF</em></a></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">pos</span></tt></td>
+<td><a class="reference internal" href="#asap"><em>ASAP file format</em></a></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">pov</span></tt></td>
+<td><a class="reference internal" href="#povray"><em>POV-ray</em></a></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">POSCAR</span></tt></td>
+<td><a class="reference internal" href="#vasp"><em>VASP</em></a> coordinates</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">-</span></tt>,
+<tt class="docutils literal"><span class="pre">stdout</span></tt></td>
+<td>Write to stdout in
+<a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a> format</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">string</span></tt></td>
+<td>Write to string in
+<a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a> format</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">xyz</span></tt></td>
+<td><a class="reference internal" href="#extendedxyz"><em>Extended XYZ</em></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-quippy.xyz">
+<span id="extended-xyz"></span><span id="extendedxyz"></span><h2>Extended XYZ<a class="headerlink" href="#module-quippy.xyz" title="Permalink to this headline">¶</a></h2>
+<p>Extended XYZ format is a enhanced version of the <a class="reference external" href="http://en.wikipedia.org/wiki/XYZ_file_format">basic XYZ format</a> that allows extra
+columns to be present in the file for additonal per atom properties as
+well as standardising the format of the comment line to include the
+cell lattice and other per frame parameters.</p>
+<p>It&#8217;s  easiest to  describe  the  format with  an  example.  Here is  a
+standard XYZ file containing a bulk cubic 8 atom silicon cell</p>
+<div class="highlight-python"><div class="highlight"><pre>8
+Cubic bulk silicon cell
+Si        0.00000000      0.00000000      0.00000000
+Si        1.36000000      1.36000000      1.36000000
+Si        2.72000000      2.72000000      0.00000000
+Si        4.08000000      4.08000000      1.36000000
+Si        2.72000000      0.00000000      2.72000000
+Si        4.08000000      1.36000000      4.08000000
+Si        0.00000000      2.72000000      2.72000000
+Si        1.36000000      4.08000000      4.08000000
+</pre></div>
+</div>
+<p>The first line is the number of atoms, followed by a comment and
+then one line per atom, giving the element symbol and cartesian
+x y, and z coordinates in Angstroms.</p>
+<p>Here&#8217;s the same configuration in extended XYZ format</p>
+<div class="highlight-python"><div class="highlight"><pre>8
+Lattice=&quot;5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44&quot; Properties=species:S:1:pos:R:3 Time=0.0
+Si        0.00000000      0.00000000      0.00000000
+Si        1.36000000      1.36000000      1.36000000
+Si        2.72000000      2.72000000      0.00000000
+Si        4.08000000      4.08000000      1.36000000
+Si        2.72000000      0.00000000      2.72000000
+Si        4.08000000      1.36000000      4.08000000
+Si        0.00000000      2.72000000      2.72000000
+Si        1.36000000      4.08000000      4.08000000
+</pre></div>
+</div>
+<p>In extended XYZ format, the comment line is replaced by a series of
+key/value pairs.  The keys should be strings and values can be
+integers, reals, logicals (denoted by <cite>T</cite> and <cite>F</cite> for true and false)
+or strings. Quotes are required if a value contains any spaces (like
+<cite>Lattice</cite> above).  There are two mandatory parameters that any
+extended XYZ: <cite>Lattice</cite> and <cite>Properties</cite>. Other parameters &#8211;
+e.g. <cite>Time</cite> in the example above &#8212; can be added to the parameter line
+as needed.</p>
+<p><cite>Lattice</cite> is a Cartesian 3x3 matrix representation of the cell
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><tt class="xref py py-attr docutils literal"><span class="pre">lattice</span></tt></a> vectors, with each vector stored
+as a column and the 9 values listed in Fortran column-major order, i.e. in
+the form</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Lattice</span><span class="o">=</span><span class="s">&quot;R1x R1y R1z R2x R2y R2z R3x R3y R3z&quot;</span>
+</pre></div>
+</div>
+<p>where <cite>R1x R1y R1z</cite> are the Cartesian x-, y- and z-components of the
+first lattice vector (<img class="math" src="_images/math/a7ca8d225c064dae6b3c328bf7acd82b7d8933c9.png" alt="\mathbf{a}"/>), <cite>R2x R2y R2z</cite> those of the second
+lattice vector (<img class="math" src="_images/math/dd6a0c79ee7e76c8e6f1310a5d171d5b3848b685.png" alt="\mathbf{b}"/>) and <cite>R3x R3y R3z</cite> those of the
+third lattice vector (<img class="math" src="_images/math/c20b076757f2c84dbfba8d79beeb264442324609.png" alt="\mathbf{c}"/>).</p>
+<p>The list of properties in the file is described by the <cite>Properties</cite>
+parameter, which should take the form of a series of colon separated
+triplets giving the name, format (<cite>R</cite> for real, <cite>I</cite> for integer) and
+number of columns of each property. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Properties</span><span class="o">=</span><span class="s">&quot;species:S:1:pos:R:3:vel:R:3:select:I:1&quot;</span>
+</pre></div>
+</div>
+<p>indicates the first column represents atomic species, the next three
+columns represent atomic positions, the next three velcoities, and the
+last is an single integer called <cite>select</cite>. With this property
+definition, the line</p>
+<div class="highlight-python"><div class="highlight"><pre>Si        4.08000000      4.08000000      1.36000000   0.00000000      0.00000000      0.00000000       1
+</pre></div>
+</div>
+<p>would describe a silicon atom at position (4.08,4.08,1.36) with zero
+velocity and the <cite>select</cite> property set to 1.</p>
+<p>The extended XYZ format is now also supported by the
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/io.html#ase.io.read" title="(in ASE v3.9.0.4128)"><tt class="xref py py-func docutils literal"><span class="pre">ase.io.read()</span></tt></a> and <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/io.html#ase.io.write" title="(in ASE v3.9.0.4128)"><tt class="xref py py-func docutils literal"><span class="pre">ase.io.write()</span></tt></a> functions in the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase">Atomic
+Simulation Environment (ASE)</a>
+toolkit, and by the <a class="reference external" href="http://www.ovito.org">Ovito</a> visualisation tool
+(from <a class="reference external" href="http://www.ovito.org/index.php/component/content/article?id=25">v2.4 beta</a>
+onwards).</p>
+</div>
+<div class="section" id="netcdf">
+<span id="id1"></span><h2>NetCDF<a class="headerlink" href="#netcdf" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-quippy.netcdf"></span><p>We use the <a class="reference external" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF file format</a>, a flexible binary
+file format designed for scientific array data.</p>
+<p>We use a superset of the <a class="reference external" href="http://amber.scripps.edu/netcdf/nctraj.html">AMBER conventions</a>, so that our
+trajectory file can be read directly by VMD. An important distinction
+from the Extended XYZ format is the names of some properties:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="51%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Extended XYZ name</th>
+<th class="head">NetCDF name</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pos</td>
+<td>coordinates</td>
+</tr>
+<tr class="row-odd"><td>velo</td>
+<td>velocities</td>
+</tr>
+</tbody>
+</table>
+<p>This mapping is handled automatically by, but if you access the data
+directly you&#8217;ll need to be aware of it.</p>
+<p>NetCDF versions 3 and 4 are supported. If version 4 is used then it&#8217;s
+possible to use zlib compression, which greatly reduces the file size.</p>
+<div class="section" id="netcdf-convention">
+<h3>NetCDF Convention<a class="headerlink" href="#netcdf-convention" title="Permalink to this headline">¶</a></h3>
+<p>All data is either per-atom (referred to as a <cite>property</cite>) or per-frame (refereed to as a <cite>parameter</cite>).</p>
+</div>
+<div class="section" id="dimensions">
+<h3>Dimensions<a class="headerlink" href="#dimensions" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><cite>frame</cite> - number of frames (this is the unlimited dimension)</li>
+<li><cite>spatial</cite> - number of spatial dimensions (i.e. 3)</li>
+<li><cite>atom</cite> - number of atoms</li>
+<li><cite>cell_spatial</cite> - number of cell lengths (i.e. 3)</li>
+<li><cite>cell_angular</cite> - number of cell angles (i.e. 3)</li>
+<li><cite>label</cite> - length of string properies (per-atom character data, e.g. species, value is 10)</li>
+<li><cite>string</cite> - length of string parameters (per-frame string data, value is 1024)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="variables">
+<h3>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h3>
+<p>Global variables</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>spatial (spatial)</cite> - character, equal to <cite>(&#8216;x&#8217;,&#8217;y&#8217;,&#8217;z&#8217;)</cite></li>
+<li><cite>cell_spatial (cell_spatial)</cite> - character, equal to <cite>(&#8216;a&#8217;,&#8217;b&#8217;,&#8217;c&#8217;)</cite></li>
+<li><cite>cell_angular (cell_angular, label)</cite> - character, equal to <cite>(&#8216;alpha&#8217;, &#8216;beta&#8217;, &#8216;gamma&#8217;)</cite></li>
+</ul>
+</div></blockquote>
+<p>Parameters (per-frame variables)</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>cell_lengths (frame, cell_spatial)</cite> - double, cell lengths in Angstrom</li>
+<li><cite>cell_angles (frame, cell_angular)</cite> - double, cell angles in degrees</li>
+</ul>
+</div></blockquote>
+<p>Other parameters can be of type double, integer, logical or
+string. Integer, logical and double types can be vectors or scalars
+(i.e. dimension <cite>(frame)</cite> or <cite>(frame,spatial)</cite>), but string parameters
+must be scalar (i.e. dimension <cite>(frame,string)</cite>. Additionally, real and
+integer 3x3 matrices with dimension <cite>(frame,spatial,spatial)</cite> are
+supported (e.g. for the virial tensor). In order to distinguish
+between integer and logical variables, a special <cite>type</cite> attribute
+should be added to the variable, set to one of the following values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">T_INTEGER</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">T_REAL</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">T_LOGICAL</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">T_INTEGER_A</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">T_REAL_A</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">T_LOGICAL_A</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">T_CHAR</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">T_INTEGER_A2</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">T_REAL_A2</span> <span class="o">=</span> <span class="mi">13</span>
+</pre></div>
+</div>
+<p>Properties (per-atom variables)</p>
+<p>Properties can be of type integer, real, string or logical. As for parameters,
+integer, real and logical properties can be scalar
+(dimension <cite>(frame,atom)</cite>) or vector (dimension <cite>(frame,atom,spatial)</cite>), but
+string properties must be of dimension <cite>(frame,atom,label)</cite>. Again a <cite>type</cite>
+attribute must be added to the NetCDF variable, with one of the following values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PROPERTY_INT</span>     <span class="o">=</span> <span class="mi">1</span>
+<span class="n">PROPERTY_REAL</span>    <span class="o">=</span> <span class="mi">2</span>
+<span class="n">PROPERTY_STR</span>     <span class="o">=</span> <span class="mi">3</span>
+<span class="n">PROPERTY_LOGICAL</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#module-quippy.netcdf" title="quippy.netcdf: Python reference implementation of NetCDF I/O"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.netcdf</span></tt></a> module for a reference implementation of the
+NetCDF reading and writing routines, in pure Python.</p>
+</div>
+</div>
+<div class="section" id="module-quippy.cinoutput">
+<span id="cinoutput-objects"></span><h2>CInOutput objects<a class="headerlink" href="#module-quippy.cinoutput" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cinoutput" title="quippy.cinoutput: XYZ and NetCDF I/O using fast C routines"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.cinoutput</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.CInOutputReader" title="quippy.cinoutput.CInOutputReader"><tt class="xref py py-obj docutils literal"><span class="pre">CInOutputReader</span></tt></a>(source[,&nbsp;frame,&nbsp;range,&nbsp;...])</td>
+<td>Class to read atoms from a CInOutput.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.CInOutputWriter" title="quippy.cinoutput.CInOutputWriter"><tt class="xref py py-obj docutils literal"><span class="pre">CInOutputWriter</span></tt></a>(dest[,&nbsp;append,&nbsp;netcdf4,&nbsp;...])</td>
+<td>Class to write atoms sequentially to a CInOutput stream</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="81%" />
+<col width="19%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">NETCDF_FORMAT</span></tt></td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">LATTICE_TOL</span></tt></td>
+<td>1e-08</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">XYZ_FORMAT</span></tt></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.cinoutput.CInOutputReader">
+<em class="property">class </em><tt class="descclassname">quippy.cinoutput.</tt><tt class="descname">CInOutputReader</tt><big>(</big><em>source</em>, <em>frame=None</em>, <em>range=None</em>, <em>start=0</em>, <em>stop=None</em>, <em>step=1</em>, <em>no_compute_index=False</em>, <em>zero=False</em>, <em>one_frame_per_file=False</em>, <em>indices=None</em>, <em>string=False</em>, <em>format=None</em><big>)</big><a class="reference internal" href="_modules/quippy/cinoutput.html#CInOutputReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cinoutput.CInOutputReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
+<p>Class to read atoms from a CInOutput. Supports generator and random access via indexing.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="quippy.cinoutput.CInOutputWriter">
+<em class="property">class </em><tt class="descclassname">quippy.cinoutput.</tt><tt class="descname">CInOutputWriter</tt><big>(</big><em>dest</em>, <em>append=False</em>, <em>netcdf4=False</em>, <em>one_frame_per_file=False</em>, <em>string=False</em>, <em>**write_kwargs</em><big>)</big><a class="reference internal" href="_modules/quippy/cinoutput.html#CInOutputWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cinoutput.CInOutputWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
+<p>Class to write atoms sequentially to a CInOutput stream</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-quippy.asap">
+<span id="asap-file-format"></span><span id="asap"></span><h2>ASAP file format<a class="headerlink" href="#module-quippy.asap" title="Permalink to this headline">¶</a></h2>
+<p>This module contains utility functions for use with the ASAP code, which is developed
+by Paul Tangney and Sandro Scandolo.</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.asap" title="quippy.asap: ASAP file reader and writer"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.asap</span></tt></a>:</p>
+</div>
+<div class="section" id="module-quippy.atomeyewriter">
+<span id="atomeye-image-writer"></span><span id="atomeyewriter"></span><h2>AtomEye Image Writer<a class="headerlink" href="#module-quippy.atomeyewriter" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.atomeyewriter" title="quippy.atomeyewriter: AtomEye image writer"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.atomeyewriter</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atomeyewriter.AtomEyeWriter" title="quippy.atomeyewriter.AtomEyeWriter"><tt class="xref py py-obj docutils literal"><span class="pre">AtomEyeWriter</span></tt></a>(image[,&nbsp;width,&nbsp;height,&nbsp;...])</td>
+<td>Write atoms to image file (png/eps/jpg) using AtomEye</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.atomeyewriter.AtomEyeWriter">
+<em class="property">class </em><tt class="descclassname">quippy.atomeyewriter.</tt><tt class="descname">AtomEyeWriter</tt><big>(</big><em>image</em>, <em>width=None</em>, <em>height=None</em>, <em>aspect=0.75</em>, <em>shift=True</em>, <em>commands=None</em>, <em>script=None</em>, <em>nowindow=True</em>, <em>number_frames=False</em><big>)</big><a class="reference internal" href="_modules/quippy/atomeyewriter.html#AtomEyeWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atomeyewriter.AtomEyeWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write atoms to image file (png/eps/jpg) using AtomEye</p>
+</dd></dl>
+
+</div>
+<div class="section" id="castep">
+<span id="id2"></span><h2>CASTEP<a class="headerlink" href="#castep" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-quippy.castep"></span><p>Module contents for <a class="reference internal" href="#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell" title="quippy.castep.CastepCell"><tt class="xref py py-obj docutils literal"><span class="pre">CastepCell</span></tt></a>([cellfile,&nbsp;xml,&nbsp;atoms])</td>
+<td>Class to wrap a CASTEP cell (.cell) file</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam" title="quippy.castep.CastepParam"><tt class="xref py py-obj docutils literal"><span class="pre">CastepParam</span></tt></a>([paramfile,&nbsp;xml,&nbsp;atoms])</td>
+<td>Class to wrap a CASTEP parameter (.param) file</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.check_pspots" title="quippy.castep.check_pspots"><tt class="xref py py-obj docutils literal"><span class="pre">check_pspots</span></tt></a>(cluster,&nbsp;cell,&nbsp;param,&nbsp;orig_dir)</td>
+<td>Check pseudopotential files are present, and that we have one for each element present in cluster.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.run_castep" title="quippy.castep.run_castep"><tt class="xref py py-obj docutils literal"><span class="pre">run_castep</span></tt></a>(cell,&nbsp;param,&nbsp;stem,&nbsp;castep[,&nbsp;...])</td>
+<td>Invoke castep and return True if it completed successfully</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.read_formatted_potential" title="quippy.castep.read_formatted_potential"><tt class="xref py py-obj docutils literal"><span class="pre">read_formatted_potential</span></tt></a>(filename)</td>
+<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .cube file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.read_formatted_density" title="quippy.castep.read_formatted_density"><tt class="xref py py-obj docutils literal"><span class="pre">read_formatted_density</span></tt></a>(filename)</td>
+<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .cube file.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.castep.CastepCell">
+<em class="property">class </em><tt class="descclassname">quippy.castep.</tt><tt class="descname">CastepCell</tt><big>(</big><em>cellfile=None</em>, <em>xml=None</em>, <em>atoms=None</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepCell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to wrap a CASTEP cell (.cell) file</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell.read" title="quippy.castep.CastepCell.read"><tt class="xref py py-obj docutils literal"><span class="pre">read</span></tt></a>(cellfile)</td>
+<td>Read a CASTEP .cell file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepCell.write" title="quippy.castep.CastepCell.write"><tt class="xref py py-obj docutils literal"><span class="pre">write</span></tt></a>([cellfile])</td>
+<td>Write CASTEP .cell file.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.castep.CastepCell.read">
+<tt class="descname">read</tt><big>(</big><em>cellfile</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a CASTEP .cell file. cellfile can be a mapping type, filename or an open file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.castep.CastepCell.write">
+<tt class="descname">write</tt><big>(</big><em>cellfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x10686c150&gt;</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write CASTEP .cell file. cellfile can be a filename or an open file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="quippy.castep.CastepParam">
+<em class="property">class </em><tt class="descclassname">quippy.castep.</tt><tt class="descname">CastepParam</tt><big>(</big><em>paramfile=None</em>, <em>xml=None</em>, <em>atoms=None</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepParam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to wrap a CASTEP parameter (.param) file</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.read" title="quippy.castep.CastepParam.read"><tt class="xref py py-obj docutils literal"><span class="pre">read</span></tt></a>(paramfile)</td>
+<td>Read a CASTEP .param file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam.read_from_castep_output" title="quippy.castep.CastepParam.read_from_castep_output"><tt class="xref py py-obj docutils literal"><span class="pre">read_from_castep_output</span></tt></a>(castep_output)</td>
+<td>Read user parameters from .castep output.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.write" title="quippy.castep.CastepParam.write"><tt class="xref py py-obj docutils literal"><span class="pre">write</span></tt></a>([paramfile])</td>
+<td>Write CASTEP .param file</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.castep.CastepParam.read">
+<tt class="descname">read</tt><big>(</big><em>paramfile</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a CASTEP .param file. paramfile can be a filename or an open file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.castep.CastepParam.read_from_castep_output">
+<tt class="descname">read_from_castep_output</tt><big>(</big><em>castep_output</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.read_from_castep_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.read_from_castep_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read user parameters from .castep output. Input should be filename, file-like object or list of lines</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.castep.CastepParam.write">
+<tt class="descname">write</tt><big>(</big><em>paramfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x10686c150&gt;</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write CASTEP .param file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.castep.check_pspots">
+<tt class="descclassname">quippy.castep.</tt><tt class="descname">check_pspots</tt><big>(</big><em>cluster</em>, <em>cell</em>, <em>param</em>, <em>orig_dir</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#check_pspots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.check_pspots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check pseudopotential files are present, and that we have one for
+each element present in cluster. Also tries to check spin polarisation
+of system matches that specified in parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.castep.run_castep">
+<tt class="descclassname">quippy.castep.</tt><tt class="descname">run_castep</tt><big>(</big><em>cell</em>, <em>param</em>, <em>stem</em>, <em>castep</em>, <em>castep_log=None</em>, <em>save_all_check_files=False</em>, <em>save_all_input_files=False</em>, <em>test_mode=False</em>, <em>copy_in_files=None</em>, <em>subdir=None</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#run_castep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.run_castep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke castep and return True if it completed successfully</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.castep.read_formatted_potential">
+<tt class="descclassname">quippy.castep.</tt><tt class="descname">read_formatted_potential</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#read_formatted_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.read_formatted_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a potential write by CASTEP pot_write_formatted() routine, and convert
+to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.castep.read_formatted_density">
+<tt class="descclassname">quippy.castep.</tt><tt class="descname">read_formatted_density</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/quippy/castep.html#read_formatted_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.read_formatted_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a potential write by CASTEP pot_write_formatted() routine, and convert
+to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-quippy.cube">
+<span id="gaussian-cube"></span><span id="cube"></span><h2>Gaussian CUBE<a class="headerlink" href="#module-quippy.cube" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cube" title="quippy.cube: Gaussian CUBE I/O"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.cube</span></tt></a>:</p>
+</div>
+<div class="section" id="module-quippy.dan">
+<span id="dan-visualisation-code"></span><span id="dan"></span><h2>DAN visualisation code<a class="headerlink" href="#module-quippy.dan" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.dan" title="quippy.dan: DAN visualisation code writer"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.dan</span></tt></a>:</p>
+</div>
+<div class="section" id="module-quippy.imd">
+<span id="imd-checkpoint"></span><span id="imd"></span><h2>IMD checkpoint<a class="headerlink" href="#module-quippy.imd" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.imd" title="quippy.imd: IMD checkpoint reader"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.imd</span></tt></a>:</p>
+</div>
+<div class="section" id="module-quippy.povray">
+<span id="pov-ray"></span><span id="povray"></span><h2>POV-ray<a class="headerlink" href="#module-quippy.povray" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.povray" title="quippy.povray: POV-ray script writer"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.povray</span></tt></a>:</p>
+</div>
+<div class="section" id="vasp">
+<span id="id3"></span><h2>VASP<a class="headerlink" href="#vasp" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-quippy.vasp"></span><p>Module contents for <a class="reference internal" href="#module-quippy.vasp" title="quippy.vasp: VASP POSCAR and OUTCAR readers and writers"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.vasp</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">Atoms</span></tt>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;...)</td>
+<td>Representation of an atomic configuration and its associated properties</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.vasp.VASPWriter" title="quippy.vasp.VASPWriter"><tt class="xref py py-obj docutils literal"><span class="pre">VASPWriter</span></tt></a>(out[,&nbsp;species_list])</td>
+<td>Writer for VASP POSCAR format</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">ASEReader</span></tt>(source[,&nbsp;format])</td>
+<td>Helper routine to load from ASE trajectories</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.vasp.VASP_POSCAR_Reader" title="quippy.vasp.VASP_POSCAR_Reader"><tt class="xref py py-obj docutils literal"><span class="pre">VASP_POSCAR_Reader</span></tt></a>(outcar[,&nbsp;species,&nbsp;format])</td>
+<td>Read a configuration from a VASP OUTCAR file.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">atoms_reader</span></tt>(source)</td>
+<td>Decorator to mark a function as a reader for a particular file extension</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">frange</span></tt>(min[,&nbsp;max,&nbsp;step])</td>
+<td>Fortran equivalent of <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#range" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt></a> builtin.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">fzeros</span></tt>(shape[,&nbsp;dtype])</td>
+<td>Create an empty <tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt> with Fortran ordering.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></tt></td>
+<td>&#8212;</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></tt></td>
+<td>&#8212;</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">ase</span></tt></td>
+<td>&lt;module &#8216;ase&#8217; from &#8216;/Users/jameskermode/Code/ase/ase/__init__.pyc&#8217;&gt;</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">np</span></tt></td>
+<td>&#8212;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="index.html#module-quippy" title="quippy"><tt class="xref py py-attr docutils literal"><span class="pre">quippy</span></tt></a></td>
+<td>&lt;module &#8216;quippy&#8217; from &#8216;/Users/jameskermode/lib/python/quippy/__init__.pyc&#8217;&gt;</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">re</span></tt></td>
+<td>&#8212;</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">sys</span></tt></td>
+<td>&lt;module &#8216;sys&#8217; (built-in)&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.vasp.VASPWriter">
+<em class="property">class </em><tt class="descclassname">quippy.vasp.</tt><tt class="descname">VASPWriter</tt><big>(</big><em>out</em>, <em>species_list=None</em><big>)</big><a class="reference internal" href="_modules/quippy/vasp.html#VASPWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.vasp.VASPWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writer for VASP POSCAR format</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.vasp.VASP_POSCAR_Reader">
+<tt class="descclassname">quippy.vasp.</tt><tt class="descname">VASP_POSCAR_Reader</tt><big>(</big><em>outcar</em>, <em>species=None</em>, <em>format=None</em><big>)</big><a class="reference internal" href="_modules/quippy/vasp.html#VASP_POSCAR_Reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.vasp.VASP_POSCAR_Reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a configuration from a VASP OUTCAR file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="ase-supported-files-types">
+<h2>ASE supported files types<a class="headerlink" href="#ase-supported-files-types" title="Permalink to this headline">¶</a></h2>
+<p>Since <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">quippy.atoms.Atoms</span></tt></a> is a subclass of the ASE
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4128)"><tt class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></tt></a> class, all of the ASE I/O formats can also be
+used with quippy: see <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/io.html#ase.io.read" title="(in ASE v3.9.0.4128)"><tt class="xref py py-func docutils literal"><span class="pre">ase.io.read()</span></tt></a> for a list of supported
+formats. To convert from <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4128)"><tt class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></tt></a> to
+<tt class="xref py py-class docutils literal"><span class="pre">quippy.atoms,Atoms</span></tt>, simply pass the ASE Atoms object to the
+quippy Atoms constructor, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">QuippyAtoms</span>
+<span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">ASEAtoms</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+
+<span class="n">ase_atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">quippy_atoms</span> <span class="o">=</span> <span class="n">QuippyAtoms</span><span class="p">(</span><span class="n">ase_atoms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Similarily, to use one of the quippy file formats with other ASE
+tools:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="n">quippy_atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">ase_atoms</span> <span class="o">=</span> <span class="n">ASEAtoms</span><span class="p">(</span><span class="n">quippy_atoms</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-a-new-file-type">
+<h2>Adding a new file type<a class="headerlink" href="#adding-a-new-file-type" title="Permalink to this headline">¶</a></h2>
+<p>To add support for a new file format, implement routines which
+read from or write to files following the templates below.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="c"># insert code to open `filename` for reading</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+       <span class="c"># determine if more frame are available</span>
+       <span class="k">if</span> <span class="n">more_frames</span><span class="p">:</span>
+          <span class="c"># read next frame from `filename` into new Atoms object</span>
+          <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
+          <span class="k">yield</span> <span class="n">at</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="k">break</span>
+
+
+<span class="k">class</span> <span class="nc">sample_writer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+       <span class="c"># insert code to open `filename` for writing</span>
+       <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
+       <span class="c"># insert code to write `at` to `filename`</span>
+       <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+       <span class="c"># insert code to close `filename`</span>
+       <span class="k">pass</span>
+</pre></div>
+</div>
+<p><tt class="xref py py-func docutils literal"><span class="pre">sample_reader()</span></tt> is a generator which yields a succession of
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> objects, raising <tt class="xref py py-exc docutils literal"><span class="pre">StopIteration</span></tt> when there are no
+more available - for a file format which only permits one
+configuration per file, a simplified implementation template would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+   <span class="c"># insert code to open `filename` for reading</span>
+   <span class="c"># insert code to read from `filename` into new Atoms object</span>
+   <span class="k">yield</span> <span class="n">at</span>
+</pre></div>
+</div>
+<p>To register the new file format, you just need to set entries in
+<tt class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">AtomsReaders</span><span class="p">,</span> <span class="n">AtomsWriters</span>
+<span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;new_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_reader</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;new_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sameple_writer</span>
+</pre></div>
+</div>
+<p>For the case of reading, there is a generator <tt class="xref py py-func docutils literal"><span class="pre">atoms_reader()</span></tt>
+which can be used to simplify the registration process:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;new_format&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+   <span class="o">...</span>
+</pre></div>
+</div>
+<p>See the code in <a class="reference internal" href="#module-quippy.xyz" title="quippy.xyz: Python reference implementation of Extended XYZ I/O"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.xyz</span></tt></a> <a class="reference internal" href="#module-quippy.netcdf" title="quippy.netcdf: Python reference implementation of NetCDF I/O"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.netcdf</span></tt></a> and
+<a class="reference internal" href="#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></tt></a> for full examples.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

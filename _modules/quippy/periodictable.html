@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>quippy.periodictable &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for quippy.periodictable</h1><div class="highlight"><pre>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   Copyright James Kermode 2010</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c"># HQ X</span>
+<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">_periodictable</span>
+<span class="kn">from</span> <span class="nn">quippy._periodictable</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_periodictable</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">_periodictable</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;ElementColours&#39;</span><span class="p">]</span>
+
+<span class="n">ElementName</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ElementName</span><span class="p">]</span>
+
+<span class="c"># Element colours, copied from AtomEye</span>
+<span class="n">colours</span> <span class="o">=</span> <span class="p">[</span>
+   <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.8</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.7</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.35</span><span class="p">,</span><span class="mf">0.35</span><span class="p">,</span><span class="mf">0.35</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.8</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.85</span><span class="p">,</span><span class="mf">0.45</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.6</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.7</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6901960784</span><span class="p">,</span><span class="mf">0.768627451</span><span class="p">,</span><span class="mf">0.8705882353</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.3</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.15</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.7</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.5176470588</span><span class="p">,</span><span class="mf">0.5764705882</span><span class="p">,</span><span class="mf">0.6529411765</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.257254902</span><span class="p">,</span><span class="mf">0.2666666667</span><span class="p">,</span><span class="mf">0.271372549</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.7900735294</span><span class="p">,</span><span class="mf">0.01385869565</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.3</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.08</span><span class="p">,</span><span class="mf">0.12</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.8431372549</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.3</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.7</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">(</span><span class="mf">0.6431372549</span><span class="p">,</span><span class="mf">0.6666666667</span><span class="p">,</span><span class="mf">0.6784313725</span><span class="p">),</span>
+   <span class="p">]</span>
+
+<span class="n">ElementColours</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">ElementName</span><span class="p">,</span> <span class="n">colours</span><span class="p">))</span>
+
+<span class="c"># Also include z -&gt; colour</span>
+<span class="n">ElementColours</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">116</span><span class="p">),</span> <span class="n">colours</span><span class="p">)))</span>
+<span class="k">del</span> <span class="n">colours</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

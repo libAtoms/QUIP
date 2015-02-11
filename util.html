@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Utility functions &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" />
+    <link rel="next" title="Visualisation Tools" href="visualisation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="visualisation.html" title="Visualisation Tools"
+             accesskey="N">next</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="visualisation.html"
+                        title="next chapter">Visualisation Tools</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/util.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.util">
+<span id="utility-functions"></span><h1>Utility functions<a class="headerlink" href="#module-quippy.util" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions which will be imported into top-level quippy namespace</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.util" title="quippy.util: Python utility functions"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.util</span></tt></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.infer_format" title="quippy.util.infer_format"><tt class="xref py py-obj docutils literal"><span class="pre">infer_format</span></tt></a>(file,&nbsp;format,&nbsp;lookup)</td>
+<td>Infer the correct format to read from or write to <cite>file</cite></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.args_str" title="quippy.util.args_str"><tt class="xref py py-obj docutils literal"><span class="pre">args_str</span></tt></a>(D)</td>
+<td>Construct args string from file, string or mapping object</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.dict_to_args_str" title="quippy.util.dict_to_args_str"><tt class="xref py py-obj docutils literal"><span class="pre">dict_to_args_str</span></tt></a>(D)</td>
+<td>Construct args string from file, string or mapping object</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.parse_slice" title="quippy.util.parse_slice"><tt class="xref py py-obj docutils literal"><span class="pre">parse_slice</span></tt></a>(S)</td>
+<td>Parse string containing slice in form [start]:[stop]:[range] and return slice instance.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.parse_comma_colon_list" title="quippy.util.parse_comma_colon_list"><tt class="xref py py-obj docutils literal"><span class="pre">parse_comma_colon_list</span></tt></a>(L)</td>
+<td>Parse a comma or colon seperated string into a list, converting each entry to lower-case.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.quip_xml_parameters" title="quippy.util.quip_xml_parameters"><tt class="xref py py-obj docutils literal"><span class="pre">quip_xml_parameters</span></tt></a>(name[,&nbsp;label])</td>
+<td>Search for an QUIP XML parameter set matching <cite>name&#8217; and, optionally `label</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.is_interactive_shell" title="quippy.util.is_interactive_shell"><tt class="xref py py-obj docutils literal"><span class="pre">is_interactive_shell</span></tt></a>()</td>
+<td>Return True if we&#8217;re running in an interactive shell (including IPython)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.parse_params" title="quippy.util.parse_params"><tt class="xref py py-obj docutils literal"><span class="pre">parse_params</span></tt></a>(s)</td>
+<td>Read key=value pairs from a string or list of string and return a standard Python dictionary</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.args_str_to_dict" title="quippy.util.args_str_to_dict"><tt class="xref py py-obj docutils literal"><span class="pre">args_str_to_dict</span></tt></a>(s)</td>
+<td>Read key=value pairs from a string or list of string and return a standard Python dictionary</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.most_recent_file" title="quippy.util.most_recent_file"><tt class="xref py py-obj docutils literal"><span class="pre">most_recent_file</span></tt></a>(pattern)</td>
+<td>Find the most recent file matching glob <cite>pattern</cite></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.time_ordered_glob" title="quippy.util.time_ordered_glob"><tt class="xref py py-obj docutils literal"><span class="pre">time_ordered_glob</span></tt></a>(pattern)</td>
+<td>Return a list of files matching <cite>pattern</cite> sorted by modification time</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.most_recent_files" title="quippy.util.most_recent_files"><tt class="xref py py-obj docutils literal"><span class="pre">most_recent_files</span></tt></a>(dir_pattern,&nbsp;file_pattern)</td>
+<td>Find the most recent file matching file_pattern in each of the directories matching dir_pattern</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.util.analyse_timings" title="quippy.util.analyse_timings"><tt class="xref py py-obj docutils literal"><span class="pre">analyse_timings</span></tt></a>(lines)</td>
+<td>Analyse QUIP timing information.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.write_timings" title="quippy.util.write_timings"><tt class="xref py py-obj docutils literal"><span class="pre">write_timings</span></tt></a>(out,&nbsp;timings[,&nbsp;order,&nbsp;...])</td>
+<td>Write a formatted summary of QUIP <cite>timings</cite> data to <cite>out</cite>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.util.infer_format">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">infer_format</tt><big>(</big><em>file</em>, <em>format</em>, <em>lookup</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#infer_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.infer_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer the correct format to read from or write to <cite>file</cite></p>
+<p>If <cite>format</cite> is not None, there is nothing to do. Otherwise we
+look for file extension in <cite>lookup</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.args_str">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">args_str</tt><big>(</big><em>D</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#args_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.args_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct args string from file, string or mapping object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.dict_to_args_str">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">dict_to_args_str</tt><big>(</big><em>D</em><big>)</big><a class="headerlink" href="#quippy.util.dict_to_args_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct args string from file, string or mapping object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.parse_slice">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">parse_slice</tt><big>(</big><em>S</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#parse_slice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.parse_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse string containing slice in form [start]:[stop]:[range] and return slice instance.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.parse_comma_colon_list">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">parse_comma_colon_list</tt><big>(</big><em>L</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#parse_comma_colon_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.parse_comma_colon_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a comma or colon seperated string into a list, converting each entry to lower-case.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.quip_xml_parameters">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">quip_xml_parameters</tt><big>(</big><em>name</em>, <em>label=None</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#quip_xml_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.quip_xml_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for an QUIP XML parameter set matching <cite>name&#8217; and, optionally `label</cite>.</p>
+<p>Result is the XML stanza as a string. Looks under
+${QUIP_ROOT}/QUIP_Core/parameters for a file matching <cite>name</cite>,
+<cite>name</cite>.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If
+<cite>label</cite> is given, it should be a text string matching the label
+attribute of a QUIP &lt;params&gt; XML stanza. If a matching parameter
+set can&#8217;t be found, we raise an <tt class="xref py py-exc docutils literal"><span class="pre">IOError</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.is_interactive_shell">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">is_interactive_shell</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/quippy/util.html#is_interactive_shell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.is_interactive_shell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if we&#8217;re running in an interactive shell (including IPython)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.parse_params">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">parse_params</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#parse_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.parse_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read key=value pairs from a string or list of string and return a standard Python dictionary</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.args_str_to_dict">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">args_str_to_dict</tt><big>(</big><em>s</em><big>)</big><a class="headerlink" href="#quippy.util.args_str_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read key=value pairs from a string or list of string and return a standard Python dictionary</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.most_recent_file">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">most_recent_file</tt><big>(</big><em>pattern</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#most_recent_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.most_recent_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the most recent file matching glob <cite>pattern</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.time_ordered_glob">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">time_ordered_glob</tt><big>(</big><em>pattern</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#time_ordered_glob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.time_ordered_glob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of files matching <cite>pattern</cite> sorted by modification time</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.most_recent_files">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">most_recent_files</tt><big>(</big><em>dir_pattern</em>, <em>file_pattern</em>, <em>suffix=''</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#most_recent_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.most_recent_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the most recent file matching file_pattern in each of the directories matching dir_pattern</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.analyse_timings">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">analyse_timings</tt><big>(</big><em>lines</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#analyse_timings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.analyse_timings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyse QUIP timing information.</p>
+<p>Lines should be list of lines read from output file, with
+e.g. readlines().  Returns two dictionaries (timings,
+summary). <cite>timings</cite> contains entries for each TIMING line, with
+&#8220;wall&#8221; and &#8220;cpu&#8221; keys. <cite>summary</cite> collapses repeated entries and adds
+statistics for th enumber of calls (&#8220;len&#8221; key), total time (&#8220;sum&#8221;), and
+average time per call (&#8220;mean&#8221;).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.util.write_timings">
+<tt class="descclassname">quippy.util.</tt><tt class="descname">write_timings</tt><big>(</big><em>out</em>, <em>timings</em>, <em>order='calls'</em>, <em>wall_only=True</em>, <em>cpu_only=False</em>, <em>reverse=True</em><big>)</big><a class="reference internal" href="_modules/quippy/util.html#write_timings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.write_timings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a formatted summary of QUIP <cite>timings</cite> data to <cite>out</cite>.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="visualisation.html" title="Visualisation Tools"
+             >next</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

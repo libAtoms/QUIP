@@ -1,0 +1,433 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quaternions and rotation &mdash; quippy  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="up" title="Quippy library reference" href="quippy.html" />
+    <link rel="prev" title="Linear algebra routines" href="linearalgebra.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="linearalgebra.html" title="Linear algebra routines"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/hybrid.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="linearalgebra.html"
+                        title="previous chapter">Linear algebra routines</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/quaternions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-quippy.quaternions">
+<span id="quaternions-and-rotation"></span><h1>Quaternions and rotation<a class="headerlink" href="#module-quippy.quaternions" title="Permalink to this headline">¶</a></h1>
+<p>Implementation of quaternion algebra. Primarily for use with
+rigid body dynamics, although the <tt class="docutils literal"><span class="pre">Orientation</span></tt>, <tt class="docutils literal"><span class="pre">Rotation</span></tt>
+and <tt class="docutils literal"><span class="pre">Rotate</span></tt> routines can be useful in many other situations.</p>
+<div class="math">
+<p><img src="_images/math/566ae026bdbdea7bfd3dcd89c02cedfc2fd61806.png" alt="\begin{array}{c}
+i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
+\end{array}"/></p>
+</div><p>Module contents for <a class="reference internal" href="#module-quippy.quaternions" title="quippy.quaternions: Quaternions and rotation"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.quaternions</span></tt></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-obj docutils literal"><span class="pre">Quaternion</span></tt></a>([a,b,c,d])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.orientation" title="quippy.quaternions.orientation"><tt class="xref py py-obj docutils literal"><span class="pre">orientation</span></tt></a>(a1,b1,a2,b2,[correct_angle])</td>
+<td>Given two vectors (<tt class="docutils literal"><span class="pre">a1</span></tt> and <tt class="docutils literal"><span class="pre">b1</span></tt>), calculate the rotation quaternion that must be used to rotate them into two other vectors (<tt class="docutils literal"><span class="pre">a2</span></tt> and <tt class="docutils literal"><span class="pre">b2</span></tt>).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.rotation" title="quippy.quaternions.rotation"><tt class="xref py py-obj docutils literal"><span class="pre">rotation</span></tt></a>(axis,angle)</td>
+<td>Many rotations can be collapsed into one, e.g.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.rotate" title="quippy.quaternions.rotate"><tt class="xref py py-obj docutils literal"><span class="pre">rotate</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <tt class="docutils literal"><span class="pre">rotate</span></tt> containing multiple routines:</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.quaternions.Quaternion">
+<em class="property">class </em><tt class="descclassname">quippy.quaternions.</tt><tt class="descname">Quaternion</tt><big>(</big><span class="optional">[</span><em>a</em>, <em>b</em>, <em>c</em>, <em>d</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.quaternions.Quaternion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><tt class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></tt></a></p>
+<p>quaternion_initialise([a,b,c,d])</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float, optional</p>
+<p><strong>b</strong> :  input float, optional</p>
+<p><strong>c</strong> :  input float, optional</p>
+<p class="last"><strong>d</strong> :  input float, optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">__init__initialise</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.
+Class is wrapper around Fortran type <tt class="docutils literal"><span class="pre">Quaternion</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.assignment" title="quippy.quaternions.Quaternion.assignment"><tt class="xref py py-obj docutils literal"><span class="pre">assignment</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">assignment</span></tt> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></tt>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.print_" title="quippy.quaternions.Quaternion.print_"><tt class="xref py py-obj docutils literal"><span class="pre">print_</span></tt></a>([file])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotate" title="quippy.quaternions.Quaternion.rotate"><tt class="xref py py-obj docutils literal"><span class="pre">rotate</span></tt></a>(qv,qr)</td>
+<td>Rotate a vector represented as a quaternion (<tt class="docutils literal"><span class="pre">qv</span></tt>), using a given rotation quaternion (<tt class="docutils literal"><span class="pre">qr</span></tt>)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotate_quat" title="quippy.quaternions.Quaternion.rotate_quat"><tt class="xref py py-obj docutils literal"><span class="pre">rotate_quat</span></tt></a>(qv,qr)</td>
+<td>Rotate a vector represented as a quaternion (<tt class="docutils literal"><span class="pre">qv</span></tt>), using a given rotation quaternion (<tt class="docutils literal"><span class="pre">qr</span></tt>)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotation_matrix" title="quippy.quaternions.Quaternion.rotation_matrix"><tt class="xref py py-obj docutils literal"><span class="pre">rotation_matrix</span></tt></a>(q_in)</td>
+<td>Return the equivalent rotation matrix of a (unit) quaternion</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></tt>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></tt>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.quaternions.Quaternion.assignment">
+<tt class="descname">assignment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.quaternions.Quaternion.assignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around Fortran interface <tt class="docutils literal"><span class="pre">assignment</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descname">assignment</tt><big>(</big><em>=)(vect</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">quat_assign_vect</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">assignment</tt><big>(</big><em>=)(r</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>r</strong> (<em>input float</em>) &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>q</strong> &#8211; <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">quat_assign_real</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.quaternions.Quaternion.print_">
+<tt class="descname">print_</tt><big>(</big><span class="optional">[</span><em>file</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.quaternions.Quaternion.print_" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><tt class="xref py py-class docutils literal"><span class="pre">InOutput</span></tt></a> object, optional</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">print_</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.quaternions.Quaternion.rotate">
+<tt class="descname">rotate</tt><big>(</big><em>qv</em>, <em>qr</em><big>)</big><a class="headerlink" href="#quippy.quaternions.Quaternion.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate a vector represented as a quaternion (<tt class="docutils literal"><span class="pre">qv</span></tt>), using a given rotation quaternion (<tt class="docutils literal"><span class="pre">qr</span></tt>)
+This assumes that the rotation quaternion is properly normalised</p>
+<p><tt class="docutils literal"><span class="pre">qv</span> <span class="pre">=</span> <span class="pre">qr</span> <span class="pre">*</span> <span class="pre">qv</span> <span class="pre">*</span> <span class="pre">(.conj.qr)</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>qv</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</p>
+<p class="last"><strong>qr</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">rotate_quat</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.quaternions.Quaternion.rotate_quat">
+<tt class="descname">rotate_quat</tt><big>(</big><em>qv</em>, <em>qr</em><big>)</big><a class="headerlink" href="#quippy.quaternions.Quaternion.rotate_quat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate a vector represented as a quaternion (<tt class="docutils literal"><span class="pre">qv</span></tt>), using a given rotation quaternion (<tt class="docutils literal"><span class="pre">qr</span></tt>)
+This assumes that the rotation quaternion is properly normalised</p>
+<p><tt class="docutils literal"><span class="pre">qv</span> <span class="pre">=</span> <span class="pre">qr</span> <span class="pre">*</span> <span class="pre">qv</span> <span class="pre">*</span> <span class="pre">(.conj.qr)</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>qv</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</p>
+<p class="last"><strong>qr</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">rotate_quat</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.quaternions.Quaternion.rotation_matrix">
+<tt class="descname">rotation_matrix</tt><big>(</big><em>q_in</em><big>)</big><a class="headerlink" href="#quippy.quaternions.Quaternion.rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the equivalent rotation matrix of a (unit) quaternion</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q_in</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_a</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">rotation_matrix</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.quaternions.orientation">
+<tt class="descclassname">quippy.quaternions.</tt><tt class="descname">orientation</tt><big>(</big><em>a1</em>, <em>b1</em>, <em>a2</em>, <em>b2</em><span class="optional">[</span>, <em>correct_angle</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.quaternions.orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given two vectors (<tt class="docutils literal"><span class="pre">a1</span></tt> and <tt class="docutils literal"><span class="pre">b1</span></tt>), calculate the rotation quaternion
+that must be used to rotate them into two other vectors (<tt class="docutils literal"><span class="pre">a2</span></tt> and <tt class="docutils literal"><span class="pre">b2</span></tt>).
+The angle between <tt class="docutils literal"><span class="pre">a1</span></tt> and <tt class="docutils literal"><span class="pre">b1</span></tt> must be the same as <tt class="docutils literal"><span class="pre">a2</span></tt> and <tt class="docutils literal"><span class="pre">b2</span></tt>,
+unless <tt class="docutils literal"><span class="pre">correct_angle</span></tt> is present and true</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a1</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>b1</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>a2</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>b2</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>correct_angle</strong> :  input int, optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_orientation</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">orientation</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.quaternions.rotation">
+<tt class="descclassname">quippy.quaternions.</tt><tt class="descname">rotation</tt><big>(</big><em>axis</em>, <em>angle</em><big>)</big><a class="headerlink" href="#quippy.quaternions.rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Many rotations can be collapsed into one, e.g.
+to rotate using <img class="math" src="_images/math/e4feeb297bb489f045f92581743076177270fe14.png" alt="q_1"/> then <img class="math" src="_images/math/f98f26829ce9c2c98020d54ab2dd90ab8db316e7.png" alt="q_2"/> :
+rotate using <img class="math" src="_images/math/9cf62725bc004d5d7246bd73f9af42a7d4fe5753.png" alt="q_3 = q_2 \times q_1"/></p>
+<p>Construct a rotation quaternion from axis and angle (in a righthanded sense)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axis</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>angle</strong> :  input float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_res</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">rotation</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.quaternions.rotate">
+<tt class="descclassname">quippy.quaternions.</tt><tt class="descname">rotate</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.quaternions.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routine is wrapper around Fortran interface <tt class="docutils literal"><span class="pre">rotate</span></tt> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<tt class="descclassname">quippy.quaternions.</tt><tt class="descname">rotate</tt><big>(</big><em>v</em>, <em>qr</em><big>)</big></dt>
+<dd><p>Rotate a vector using the given quaternion</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;d&#8217;) with bounds (3)</em>) &#8211; </li>
+<li><strong>qr</strong> (<a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><tt class="xref py py-class docutils literal"><span class="pre">Quaternion</span></tt></a> object) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">rotate_vect</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Quaternions.f95">libAtoms/Quaternions.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">quippy.quaternions.</tt><tt class="descname">rotate</tt><big>(</big><em>field</em>, <em>axis</em>, <em>angle</em><span class="optional">[</span>, <em>origin</em><span class="optional">]</span><big>)</big></dt>
+<dd><p>Rotate <cite>field</cite>, which should be a vector field with shape <cite>(3, N)</cite>,
+e.g. atomic positions array around <cite>axis</cite> by <cite>angle</cite>, centering the
+rotation on <cite>origin</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>field</strong> (<em>in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>axis</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3)</em>) &#8211; </li>
+<li><strong>angle</strong> (<em>input float</em>) &#8211; </li>
+<li><strong>origin</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">ft_rotate</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/frametools.f95">libAtoms/frametools.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="linearalgebra.html" title="Linear algebra routines"
+             >previous</a> |</li>
+        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008-2013, James Kermode.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
