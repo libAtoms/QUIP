@@ -92,33 +92,28 @@ integer, parameter :: Screening_Yukawa = 1
 integer, parameter :: Screening_Erfc_Uniform = 2
 
 
-type Monomer_List
+type Monomers
   type(Multipole_Interactions_Site), dimension(:), allocatable :: site_types ! this just a dummy list of site types with no actual positions
-  type(Multipole_Interactions_Site), dimension(:,:), allocatable :: sites ! m x N array of sites, with m sites per monomer and N monomers 
-  integer, dimension(:,:), allocatable :: monomer_indices ! m x N array of atomic indices, with m atoms per monomer and N monomers 
   integer, dimension(:), allocatable :: signature
+  integer, dimension(:,:) allocatable :: excluded_pairs
   real(dp), dimension(:), allocatable :: masses
   real(dp) :: monomer_cutoff = 0.0_dp, step ! step size (Angstroms) used for finite difference gradient calculations
   real(dp) :: gammaM = 0.426706882_dp ! param for determining M-site position in water models
-  integer :: n_monomers
 end type Monomer_List
 
 public :: Multipole_Moments
 type Multipole_Moments
   real(dp) :: cutoff = 0.0_dp, dipole_tolerance=1e-7_dp, polarisation_cutoff=0.0_dp
-  type(Monomer_List), dimension(:), allocatable :: monomer_types 
+  type(Monomers), dimension(:), allocatable :: monomer_types 
   type(Multipole_Calc_Opts) :: calc_opts
-  logical :: topology_error_check, atom_ordercheck, intermolecular_only, initialised=.false.
+  type(Multipole_Interactions_Site), dimension(:), allocatable :: sites ! 1 to 1 correspondence w dummy atom sites
+  logical ::  strict=.true., initialised=.false.
   character(len=STRING_LENGTH) label
   integer :: n_monomer_types,polarisation
-  integer, dimension(:,:), allocatable :: dummy_map ! maps the atoms in a dummy Atoms type to sites in our Monomer_List type
   integer, dimension(:), allocatable :: polarisable_map
   logical, dimension(:), allocatable :: site_polarisable
 end type Multipole_Moments
 
-
-logical, private :: parse_in_ip, parse_matched_label
-type(Multipole_Moments), private, pointer :: parse_ip
 
 interface Finalise
   module procedure Multipole_Moments_Finalise
@@ -130,14 +125,10 @@ contains
 subroutine Multipole_Moments_Finalise(this)
 
   type(Multipole_Moments),intent(inout) :: this
-call print("finalising multipoles")
   this%label=''
   this%n_monomer_types = 0
-call print("still finalising multipoles")
-call print("allocated ? "//allocated(this%monomer_types))
   if (allocated(this%monomer_types)) deallocate(this%monomer_types)
-call print("still finalising multipoles")
-  if (allocated(this%dummy_map)) deallocate(this%dummy_map)
+  if (allocated(this%polarisable_map)) deallocate(this%polarisable_map)
   if (allocated(this%site_polarisable)) deallocate(this%site_polarisable)
   this%initialised = .False.
 
@@ -605,7 +596,7 @@ subroutine Multipole_Moments_Calc(at_in,multipoles,intermolecular_only, e, local
     pol_matrix = 0.0_dp
     do i_pol=1,N_pol
       do i_pos=3*i_pol-2,3*i_pol
-        pol_matrix(i_pos,i_pos) = 1.0_dp / alphas(i_pol)
+       pol_matrix(i_pos,i_pos) = 1.0_dp / alphas(i_pol)
       end do
     end do
   end if
