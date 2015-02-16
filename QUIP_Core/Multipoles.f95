@@ -134,38 +134,6 @@ subroutine Multipole_Moments_Finalise(this)
 
 end subroutine Multipole_Moments_Finalise 
 
-subroutine Monomer_List_Copy(from, to)
-  type(Monomer_list),intent(in) :: from
-  type(Monomer_list),intent(out) :: to
-
-  call Monomer_List_Finalise(to)
-
-  to%monomer_cutoff = from%monomer_cutoff
-  to%n_monomers = from%n_monomers
-
-  if (allocated(from%sites)) then
-    allocate(to%sites(size(from%sites,1),size(from%sites,2)))
-    to%sites = from%sites
-  end if
-  if (allocated(from%site_types)) then
-    allocate(to%site_types(size(from%site_types)))
-    to%site_types = from%site_types
-  end if
-  if (allocated(from%signature)) then
-    allocate(to%signature(size(from%signature)))
-    to%signature = from%signature
-  end if
-  if (allocated(from%masses)) then
-    allocate(to%masses(size(from%masses)))
-    to%masses = from%masses
-  end if
-  if (allocated(from%monomer_indices)) then
-    allocate(to%monomer_indices(size(from%monomer_indices,1),size(from%monomer_indices,2)))
-    to%monomer_indices = from%monomer_indices
-  end if  
-
-end subroutine Monomer_List_Copy
-
 subroutine Monomer_List_Finalise(this)
   type(Monomer_list),intent(inout) :: this
   this%monomer_cutoff = 0.0_dp
@@ -178,6 +146,47 @@ subroutine Monomer_List_Finalise(this)
 
 end subroutine Monomer_List_Finalise
 
+subroutine multipole_sites_setup(at,multipoles,dummy_atoms)
+  type(Atoms)             :: at,dummy_atoms
+  type(Multipole_Moments) :: multipoles
+  !
+  type(Monomers), dimension(:), allocatable :: monomer_lists
+  integer,dimension(:,:) allocatable :: idx
+  integer,dimension(:) allocatable :: associated_to_monomer
+  ! want to end up with:
+  !   a list of sites
+  !   dummy atoms object with correct connectivity
+  !   
+  ! Topology first
+  ! loop over monomer types
+  ! figure out number of total sites
+  ! allocate sites array
+  ! find all the monomers in the Atoms object and fill out the monomer lists in mono_lists
+  n_sites=0
+  do i=1,n_mono_types
+    if(allocated(monomer_lists(i)%monomer_indices))deallocate(monomer_lists(i)%monomer_indices)
+    call find_general_monomer(at,monomer_lists(i)%monomer_indices,monomer_lists(i)%signature,associated_to_monomer,monomer_lists(i)%monomer_cutoff,atom_ordercheck,use_smooth_cutoff,error)
+    n_sites = n_site + size(monomer_lists(i)%site_types) * size(monomer_lists(i)%monomer_indices,2)
+  end do
+
+  allocate(multipoles%sites(n_sites))
+  offset=0
+  do i=1,n_mono_types  
+    do j=1,size(monomer_lists(i)%monomer_indices,2)
+      call add_sites_for_monomer(at,multipoles%sites,exclude_list,offset,this%monomer_types(i),monomer_lists(i)%monomer_indices(:,j))
+    end do
+  end do
+  ! loop over monomer types
+  ! fill in sites w correct info
+  ! append to exclude list
+
+  ! loop over sites
+  ! create atoms in atoms object
+  
+  ! call calc_connect
+  ! loop over exclude list
+  ! delete bonds
+end subroutine multipole_sites_setup
 
 subroutine Multipole_Moments_Pre_Calc(at, this, intramolecular_factor, e, mpi, cutoff, error)
   type(Atoms), intent(inout) :: at

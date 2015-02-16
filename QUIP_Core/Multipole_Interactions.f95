@@ -101,7 +101,8 @@ type Multipole_Interactions_Site
   integer :: pos_type, charge_method, dipole_method, atomic_number, d ! d is the number of multipole components on this site, 1 if just a charge, 3 if dipole, 4 if charge+dipole
   real(dp) :: charge = 0.0_dp, potential=0.0_dp, alpha=0.0_dp , e_grad_charge , damp_rad=0.0_dp
   real(dp), dimension(3) :: position, dipole, e_grad_pos, e_field, e_grad_dipole
-  real(dp), dimension(3,3) :: quadrupole
+  ! real(dp), dimension(3,3) :: quadrupole ! no quadrupolar interactions implemented but could be straighforwardly added
+  integer, dimension(:), allocatable :: atom_indices
   real(dp), dimension(:,:,:), allocatable :: charge_grad_positions, dipole_grad_positions, pos_grad_positions ! are derivatives of the multipole position and components with respect to atomic positions
   logical :: initialised, polarisable,damped
 end type Multipole_Interactions_Site

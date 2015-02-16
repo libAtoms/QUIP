@@ -130,6 +130,16 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
+   type(Multipole_Moments) :: multipoles
+
+   if (this%pbc_method == PBC_Method_Ewald) then
+    ewald_precision = -log(my_ewald_error)
+    ewald_cutoff = sqrt(ewald_precision/PI) * reciprocal_time_by_real_time**(1.0_dp/6.0_dp) * &
+    & minval(sqrt( sum(at%lattice(:,:)**2,dim=1) )) / at%N**(1.0_dp/6.0_dp)
+    call print('Ewald cutoff = '//ewald_cutoff,PRINT_ANAL)
+    multipoles%cutoff = ewald_cutoff
+   end if
+
    call multipole_sites_setup(atoms,this,dummy_atoms,multipoles) ! multipoles includes exclude_list
 
    if (this%pbc_method == PBC_Method_Ewald) then
