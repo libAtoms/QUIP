@@ -51,6 +51,7 @@ THERMOSTAT_NPH_ANDERSEN = 6
 THERMOSTAT_NPH_PR = 7
 THERMOSTAT_LANGEVIN_OU = 8
 THERMOSTAT_LANGEVIN_NPT_NB = 9
+THERMOSTAT_ALL_PURPOSE = 10
 
 _thermostat_types = {
     'THERMOSTAT_NONE': 0,
@@ -62,7 +63,8 @@ _thermostat_types = {
     'THERMOSTAT_NPH_ANDERSEN': 6,
     'THERMOSTAT_NPH_PR': 7,
     'THERMOSTAT_LANGEVIN_OU': 8,
-    'THERMOSTAT_LANGEVIN_NPT_NB': 9
+    'THERMOSTAT_LANGEVIN_NPT_NB': 9,
+    'THERMOSTAT_ALL_PURPOSE': 10
 }
 
 BAROSTAT_NONE = 0
@@ -209,6 +211,9 @@ class Dynamics(object):
                 logfile = InOutput(logfile, OUTPUT)
             self.attach(self.print_status, loginterval, logfile)
 
+        self._calc_virial = False
+        self._virial = np.zeros((3,3))
+
 
     def get_timestep(self):
         return self._dt*fs
@@ -275,7 +280,7 @@ class Dynamics(object):
         # first half of the Velocity Verlet step for ds.atoms:
         #    p(t+dt/2) = p(t) + F(t) dt/2        ->   v(t+dt/2)  = v(t) + a(t) dt/2
         #    r(t+dt)   = r(t) + p(t+dt/2)/m dt   ->   r(t+dt)    = r(t) + v(t+dt/2) dt
-        self._ds.advance_verlet1(self._dt)
+        self._ds.advance_verlet1(self._dt, virial=self._virial)
         self.atoms.arrays['momenta'][...] = (self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T
 
         # now we have r(t+dt), v(t+1/2dt), p(t+1/2dt), a(t) in ds.atoms
@@ -311,9 +316,25 @@ class Dynamics(object):
         # modify the forces
         forces = self.atoms.get_forces()
 
+        # compute the virial if necessary, i.e. if we have a barostat or are doing NPT
+        if self._calc_virial:
+            stress = self.atoms.get_stress()
+            virial = -stress*self.atoms.get_volume()
+            self._virial = np.zeros((3,3))
+            if stress.shape == (3,3):
+                self._virial[:,:] = virial
+            else:
+                self._virial[0,0] = virial[0]
+                self._virial[1,1] = virial[1]
+                self._virial[2,2] = virial[2]
+                self._virial[1,2] = self._virial[2,1] = virial[3]
+                self._virial[0,2] = self._virial[2,0] = virial[4]
+                self._virial[0,1] = self._virial[1,0] = virial[5]
+            print 'Computed virial:', self._virial
+
         # Second half of the Velocity Verlet step
         #   p(t+dt) = p(t+dt/2) + F(t+dt)/2    ->    v(t+dt) = v(t+dt/2) + a(t+dt)/2
-        self._ds.advance_verlet2(self._dt, forces.T)
+        self._ds.advance_verlet2(self._dt, forces.T, virial=self._virial)
         self.atoms.arrays['momenta'][...] = (self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T
 
 
@@ -467,7 +488,7 @@ class Dynamics(object):
         :param type: string or integer giving thermostat type. The following types are supported::
            ``THERMOSTAT_NONE``, ``THERMOSTAT_LANGEVIN``, ``THERMOSTAT_NOSE_HOOVER``, ``THERMOSTAT_NOSE_HOOVER_LANGEVIN``,
            ``THERMOSTAT_LANGEVIN_NPT``, ``THERMOSTAT_LANGEVIN_PR``, ``THERMOSTAT_NPH_ANDERSEN``, ``THERMOSTAT_NPH_PR``,
-           ``THERMOSTAT_LANGEVIN_OU``, ``THERMOSTAT_LANGEVIN_NPT_NB``.
+           ``THERMOSTAT_LANGEVIN_OU``, ``THERMOSTAT_LANGEVIN_NPT_NB``, ``THERMOSTAT_ALL_PURPOSE``.
                    
         :param T:  target temperature for this thermostat, in K.
 
@@ -489,6 +510,8 @@ class Dynamics(object):
         """
 
         type = _thermostat_types.get(type, type)
+        if type in (THERMOSTAT_LANGEVIN_NPT, THERMOSTAT_LANGEVIN_NPT_NB):
+            self._calc_virial = True
         new_index = self._ds.n_thermostat()
         region_i = farray(0, dtype=np.int32)
 
@@ -581,10 +604,11 @@ class Dynamics(object):
         :param W_epsilon_factor:  Scaling factor for fictious cell mass
         """
 
+        self._calc_virial = True
         type = _barostat_types.get(type, type)
         self._ds.set_barostat(type, p_ext, hydrostatic_strain, diagonal_strain,
-                              finite_strain_formulation, tau_epsilon, w_epsilon,
-                              T, w_epsilon_factor)
+                              finite_strain_formulation, tau_epsilon, W_epsilon,
+                              T, W_epsilon_factor)
 
 
     def update_barostat(self, p, T):
