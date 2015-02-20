@@ -517,7 +517,7 @@ arithmetic:</p>
 <p>The <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.9)"><tt class="xref py py-func docutils literal"><span class="pre">array()</span></tt></a> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib&#8217;s
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.4.2)"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function. If you want to retain the
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.4.3)"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function. If you want to retain the
 one-based indexing, using <a class="reference internal" href="farray.html#quippy.farray.farray" title="quippy.farray.farray"><tt class="xref py py-func docutils literal"><span class="pre">farray()</span></tt></a> instead, which
 returns a <a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a>.</p>
 <p>Note the partial sums: the inner sum is over axis 1 of <tt class="docutils literal"><span class="pre">al.velo</span></tt>
@@ -560,9 +560,9 @@ temperature of 500K like this:</p>
 </pre></div>
 </div>
 <p>(If you want to clear the previous plot first, use the
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.clf" title="(in Matplotlib v1.4.2)"><tt class="xref py py-func docutils literal"><span class="pre">clf()</span></tt></a> matplotlib function). To add a
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.clf" title="(in Matplotlib v1.4.3)"><tt class="xref py py-func docutils literal"><span class="pre">clf()</span></tt></a> matplotlib function). To add a
 histogram of the speeds in the last frame of our <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> to
-the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist" title="(in Matplotlib v1.4.2)"><tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt></a> function:</p>
+the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist" title="(in Matplotlib v1.4.3)"><tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">al</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">(),</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -941,7 +941,7 @@ sequence <cite>params</cite> for the first four arguments to
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2008-2013, James Kermode.
+        &copy; Copyright 2008-2015, James Kermode.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>

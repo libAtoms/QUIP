@@ -216,11 +216,11 @@ the parameters for the SW potential (and also for DFTB, needed for
 <p>To find the Si equilibrium lattice constant <cite>a0</cite> with the SW potential,
 let&#8217;s first build the 8-atom diamond cubic cell for silicon, with an initial
 guess at lattice constant of 5.44 A. This can be done using the
-<tt class="xref py py-func docutils literal"><span class="pre">bulk()</span></tt> function from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/structure.html#module-ase.structure" title="(in ASE v3.9.0.4128)"><tt class="xref py py-mod docutils literal"><span class="pre">ase.structure</span></tt></a> module:</p>
+<tt class="xref py py-func docutils literal"><span class="pre">bulk()</span></tt> function from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/structure.html#module-ase.structure" title="(in ASE v3.9.0.4154)"><tt class="xref py py-mod docutils literal"><span class="pre">ase.structure</span></tt></a> module:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Build the 8-atom diamond cubic cell for Si</span>
 </pre></div>
 </div>
-<p>The variable <cite>si_bulk</cite> is an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4128)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object.  It
+<p>The variable <cite>si_bulk</cite> is an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4154)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object.  It
 has various attributes and methods that will be introduced as necessary
 during this tutorial.</p>
 <p>Once you have created your <cite>si_bulk</cite> object, run the <tt class="docutils literal"><span class="pre">make_crack.py</span></tt>
@@ -251,7 +251,7 @@ potential using quippy&#8217;s <a class="reference internal" href="potential.htm
 cell degrees of freedom with respect to the virial tensor calculated by the
 SW potential. First, we need to attach a calculator (i.e. the SW
 potential, <cite>mm_pot</cite> we just created) to the <cite>si_bulk</cite> object,
-using the method <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_calculator" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">set_calculator()</span></tt></a>:</p>
+using the method <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_calculator" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">set_calculator()</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span><span class="o">.</span> <span class="o">...</span>             <span class="c"># Attach the SW potential to si_bulk</span>
 </pre></div>
 </div>
@@ -365,10 +365,10 @@ into the unit cell:</p>
 <span class="n">unit_slab</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">unit_slab</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.positions" title="(in ASE v3.9.0.4128)"><tt class="xref py py-attr docutils literal"><span class="pre">positions</span></tt></a> is a <cite>(N,3)</cite> array containing
+<p>The <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.positions" title="(in ASE v3.9.0.4154)"><tt class="xref py py-attr docutils literal"><span class="pre">positions</span></tt></a> is a <cite>(N,3)</cite> array containing
 the Cartesian coordinates of the atoms, and
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_scaled_positions" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">set_scaled_positions()</span></tt></a> and
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_scaled_positions" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">get_scaled_positions()</span></tt></a> are necessary to ensure
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_scaled_positions" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">set_scaled_positions()</span></tt></a> and
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_scaled_positions" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">get_scaled_positions()</span></tt></a> are necessary to ensure
 all the atoms are mapped back inside the unit cell before we open
 up a surface. This is the result of applying the shift (do another
 <tt class="docutils literal"><span class="pre">view(unit_slab)</span></tt> to update your AtomEye viewer).</p>
@@ -378,7 +378,7 @@ glide planes, so that the cell boundary now corresponds to a shuffle
 plane as required.</p>
 <p>We now make a copy of the <cite>unit_slab</cite> and create a <cite>surface</cite> unit cell
 with surfaces parallel to the <cite>cleavage_plane</cite>. We can use the
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">ase.atoms.Atoms.center()</span></tt></a> method which, besides centring the
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">ase.atoms.Atoms.center()</span></tt></a> method which, besides centring the
 atoms in the unit cell, allows some vacuum to be added on both sides
 of the slab along a specified axis (use <tt class="docutils literal"><span class="pre">axis=0</span></tt> for the <cite>x</cite>-axis,
 or <tt class="docutils literal"><span class="pre">axis=1</span></tt> for the <cite>y</cite>-axis, etc.). The amount of vacuum you add is
@@ -395,13 +395,13 @@ key. The green atoms on the surfaces are three-fold coordinated.</p>
 <p>Now that we have both the bulk unit slab and the surface unit cell,
 the surface energy <cite>gamma</cite> for the cleavage plane can be calculated
 using the SW potential. Once a calculator (e.g. <cite>mm_pot</cite>) is attached
-to an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4128)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object, the potential energy of the
+to an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4154)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object, the potential energy of the
 atomic system can be calculated with
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_potential_energy" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">get_potential_energy()</span></tt></a>. It is useful to know
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_potential_energy" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">get_potential_energy()</span></tt></a>. It is useful to know
 that the number of atoms in an Atoms object can be obtained by the
 list-method <cite>len</cite> (e.g. <cite>len(si_bulk)</cite> gives the number of atoms in
 <cite>si_bulk</cite>), and that the volume of a cell can be calculated with
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_volume" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">get_volume()</span></tt></a>:</p>
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_volume" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">get_volume()</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">surface</span><span class="o">.</span> <span class="o">...</span>           <span class="c"># Attach SW potential to surface atoms</span>
 <span class="n">E_surf</span> <span class="o">=</span> <span class="o">...</span>           <span class="c"># Get potential energy of surface system</span>
 <span class="n">E_per_atom_bulk</span> <span class="o">=</span> <span class="o">...</span>  <span class="c"># Get potential energy per atom for bulk slab</span>
@@ -449,7 +449,7 @@ the number of units cell in this direction, <cite>ny</cite>,  must be even:</p>
 </pre></div>
 </div>
 <p>As we did before for the <cite>surface</cite> system, <cite>vacuum</cite> has to be introduced along
-the <cite>x</cite> and <cite>y</cite> axes (<em>Hint:</em> use the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">center()</span></tt></a>
+the <cite>x</cite> and <cite>y</cite> axes (<em>Hint:</em> use the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">center()</span></tt></a>
 method twice)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c"># Add vacuum along x</span>
 <span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c"># Add vacuum along y</span>
@@ -509,7 +509,7 @@ it is <cite>False</cite> in blue, like this:</p>
 <p>Now we can use the <tt class="xref py py-class docutils literal"><span class="pre">FixAtoms</span></tt> class to
 fix the positions of the atoms according to the mask <cite>fixed_mask</cite>, and
 then attach the constraint to <cite>crack_slab</cite> using
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_constraint" title="(in ASE v3.9.0.4128)"><tt class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></tt></a>:</p>
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_constraint" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">const</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Initialise the constraint</span>
 <span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>        <span class="c"># Attach the constraint to crack_slab</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Fixed </span><span class="si">%d</span><span class="s"> atoms</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
@@ -575,7 +575,7 @@ position.</p>
 <div class="section" id="saving-the-output-file">
 <h3>Saving the output file<a class="headerlink" href="#saving-the-output-file" title="Permalink to this headline">¶</a></h3>
 <p>Finally, we can save all the calculated materials properties inside the
-<cite>crack_slab</cite> <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4128)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object, before writing it to disk:</p>
+<cite>crack_slab</cite> <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4154)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object, before writing it to disk:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;nneightol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.30</span> <span class="c"># set nearest neighbour tolerance</span>
 <span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;LatticeConstant&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a0</span>
 <span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;C11&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
@@ -639,7 +639,7 @@ defined in the <a class="reference internal" href="#parameters"><em>parameters s
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2008-2013, James Kermode.
+        &copy; Copyright 2008-2015, James Kermode.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
