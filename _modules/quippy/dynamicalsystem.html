@@ -120,6 +120,7 @@
 <span class="n">THERMOSTAT_NPH_PR</span> <span class="o">=</span> <span class="mi">7</span>
 <span class="n">THERMOSTAT_LANGEVIN_OU</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="n">THERMOSTAT_LANGEVIN_NPT_NB</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">THERMOSTAT_ALL_PURPOSE</span> <span class="o">=</span> <span class="mi">10</span>
 
 <span class="n">_thermostat_types</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">&#39;THERMOSTAT_NONE&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
@@ -131,7 +132,8 @@
     <span class="s">&#39;THERMOSTAT_NPH_ANDERSEN&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
     <span class="s">&#39;THERMOSTAT_NPH_PR&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
     <span class="s">&#39;THERMOSTAT_LANGEVIN_OU&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
-    <span class="s">&#39;THERMOSTAT_LANGEVIN_NPT_NB&#39;</span><span class="p">:</span> <span class="mi">9</span>
+    <span class="s">&#39;THERMOSTAT_LANGEVIN_NPT_NB&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+    <span class="s">&#39;THERMOSTAT_ALL_PURPOSE&#39;</span><span class="p">:</span> <span class="mi">10</span>
 <span class="p">}</span>
 
 <span class="n">BAROSTAT_NONE</span> <span class="o">=</span> <span class="mi">0</span>
@@ -278,6 +280,9 @@
                 <span class="n">logfile</span> <span class="o">=</span> <span class="n">InOutput</span><span class="p">(</span><span class="n">logfile</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">print_status</span><span class="p">,</span> <span class="n">loginterval</span><span class="p">,</span> <span class="n">logfile</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_virial</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+
 
     <span class="k">def</span> <span class="nf">get_timestep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="o">*</span><span class="n">fs</span>
@@ -344,7 +349,7 @@
         <span class="c"># first half of the Velocity Verlet step for ds.atoms:</span>
         <span class="c">#    p(t+dt/2) = p(t) + F(t) dt/2        -&gt;   v(t+dt/2)  = v(t) + a(t) dt/2</span>
         <span class="c">#    r(t+dt)   = r(t) + p(t+dt/2)/m dt   -&gt;   r(t+dt)    = r(t) + v(t+dt/2) dt</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">advance_verlet1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">advance_verlet1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span> <span class="n">virial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;momenta&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
         <span class="c"># now we have r(t+dt), v(t+1/2dt), p(t+1/2dt), a(t) in ds.atoms</span>
@@ -380,9 +385,25 @@
         <span class="c"># modify the forces</span>
         <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
 
+        <span class="c"># compute the virial if necessary, i.e. if we have a barostat or are doing NPT</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_virial</span><span class="p">:</span>
+            <span class="n">stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_stress</span><span class="p">()</span>
+            <span class="n">virial</span> <span class="o">=</span> <span class="o">-</span><span class="n">stress</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stress</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">virial</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+            <span class="k">print</span> <span class="s">&#39;Computed virial:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span>
+
         <span class="c"># Second half of the Velocity Verlet step</span>
         <span class="c">#   p(t+dt) = p(t+dt/2) + F(t+dt)/2    -&gt;    v(t+dt) = v(t+dt/2) + a(t+dt)/2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">advance_verlet2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span> <span class="n">forces</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">advance_verlet2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span> <span class="n">forces</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">virial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;momenta&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
 
@@ -536,7 +557,7 @@
 <span class="sd">        :param type: string or integer giving thermostat type. The following types are supported::</span>
 <span class="sd">           ``THERMOSTAT_NONE``, ``THERMOSTAT_LANGEVIN``, ``THERMOSTAT_NOSE_HOOVER``, ``THERMOSTAT_NOSE_HOOVER_LANGEVIN``,</span>
 <span class="sd">           ``THERMOSTAT_LANGEVIN_NPT``, ``THERMOSTAT_LANGEVIN_PR``, ``THERMOSTAT_NPH_ANDERSEN``, ``THERMOSTAT_NPH_PR``,</span>
-<span class="sd">           ``THERMOSTAT_LANGEVIN_OU``, ``THERMOSTAT_LANGEVIN_NPT_NB``.</span>
+<span class="sd">           ``THERMOSTAT_LANGEVIN_OU``, ``THERMOSTAT_LANGEVIN_NPT_NB``, ``THERMOSTAT_ALL_PURPOSE``.</span>
 <span class="sd">                   </span>
 <span class="sd">        :param T:  target temperature for this thermostat, in K.</span>
 
@@ -558,6 +579,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nb">type</span> <span class="o">=</span> <span class="n">_thermostat_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">THERMOSTAT_LANGEVIN_NPT</span><span class="p">,</span> <span class="n">THERMOSTAT_LANGEVIN_NPT_NB</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calc_virial</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">new_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">n_thermostat</span><span class="p">()</span>
         <span class="n">region_i</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
@@ -650,10 +673,11 @@
 <span class="sd">        :param W_epsilon_factor:  Scaling factor for fictious cell mass</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_virial</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="nb">type</span> <span class="o">=</span> <span class="n">_barostat_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">set_barostat</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">p_ext</span><span class="p">,</span> <span class="n">hydrostatic_strain</span><span class="p">,</span> <span class="n">diagonal_strain</span><span class="p">,</span>
-                              <span class="n">finite_strain_formulation</span><span class="p">,</span> <span class="n">tau_epsilon</span><span class="p">,</span> <span class="n">w_epsilon</span><span class="p">,</span>
-                              <span class="n">T</span><span class="p">,</span> <span class="n">w_epsilon_factor</span><span class="p">)</span>
+                              <span class="n">finite_strain_formulation</span><span class="p">,</span> <span class="n">tau_epsilon</span><span class="p">,</span> <span class="n">W_epsilon</span><span class="p">,</span>
+                              <span class="n">T</span><span class="p">,</span> <span class="n">W_epsilon_factor</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="Dynamics.update_barostat"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.Dynamics.update_barostat">[docs]</a>    <span class="k">def</span> <span class="nf">update_barostat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>

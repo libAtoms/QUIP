@@ -191,37 +191,40 @@ for a time <tt class="docutils literal"><span class="pre">dt</span></tt>.</p>
 <tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_PR</span></tt></td>
 <td>5</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_NPT</span></tt></td>
-<td>4</td>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NOSE_HOOVER</span></tt></td>
+<td>2</td>
 </tr>
 <tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_OU</span></tt></td>
 <td>8</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NPH_PR</span></tt></td>
-<td>7</td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN</span></tt></td>
-<td>1</td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NOSE_HOOVER_LANGEVIN</span></tt></td>
-<td>3</td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NPH_ANDERSEN</span></tt></td>
-<td>6</td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NOSE_HOOVER</span></tt></td>
-<td>2</td>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_NPT</span></tt></td>
+<td>4</td>
 </tr>
 <tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NONE</span></tt></td>
 <td>0</td>
 </tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NPH_PR</span></tt></td>
+<td>7</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_ALL_PURPOSE</span></tt></td>
+<td>10</td>
+</tr>
 <tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_NPT_NB</span></tt></td>
 <td>9</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">BAROSTAT_NONE</span></tt></td>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_LANGEVIN</span></tt></td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NPH_ANDERSEN</span></tt></td>
+<td>6</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">THERMOSTAT_NOSE_HOOVER_LANGEVIN</span></tt></td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">BAROSTAT_NONE</span></tt></td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">BAROSTAT_HOOVER_LANGEVIN</span></tt></td>
+<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">BAROSTAT_HOOVER_LANGEVIN</span></tt></td>
 <td>1</td>
 </tr>
 </tbody>
@@ -1769,7 +1772,7 @@ of the required thermostat for each atom.</p>
 <li><strong>type</strong> &#8211; string or integer giving thermostat type. The following types are supported::
 <tt class="docutils literal"><span class="pre">THERMOSTAT_NONE</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_NOSE_HOOVER</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_NOSE_HOOVER_LANGEVIN</span></tt>,
 <tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_NPT</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_PR</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_NPH_ANDERSEN</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_NPH_PR</span></tt>,
-<tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_OU</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_NPT_NB</span></tt>.</li>
+<tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_OU</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_LANGEVIN_NPT_NB</span></tt>, <tt class="docutils literal"><span class="pre">THERMOSTAT_ALL_PURPOSE</span></tt>.</li>
 <li><strong>T</strong> &#8211; target temperature for this thermostat, in K.</li>
 <li><strong>gamma</strong> &#8211; decay constant, in units  of 1/fs</li>
 <li><strong>tau</strong> &#8211; time constant, in units of fs. tau == 1/gamma, and
