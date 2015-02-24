@@ -111,9 +111,10 @@ implicit none
 #ifdef HAVE_GAP
   type(descriptor) :: eval_descriptor
 #endif
-  real(dp), dimension(:,:), allocatable :: descriptor_array
+  real(dp), dimension(:,:), allocatable :: descriptor_array, grad_descriptor_array
+  integer, dimension(:,:), allocatable :: grad_descriptor_index
   character(STRING_LENGTH) :: descriptor_str
-  logical :: has_descriptor_str
+  logical :: has_descriptor_str, do_grad_descriptor
 
   logical do_calc, did_anything, did_help, param_file_exists, do_timing, do_print_pot
   logical test_ok
@@ -213,6 +214,7 @@ implicit none
   call param_register(cli_params, 'hack_restraint_r', '0.0', hack_restraint_r, help_string="mininum energy distance of restraint potential")
 
   call param_register(cli_params, 'descriptor_str', '', descriptor_str,  help_string="Descriptor initialisation string", has_value_target=has_descriptor_str)
+  call param_register(cli_params, 'do_grad_descriptor', 'F', do_grad_descriptor,  help_string="Evaluate derivative of descriptors?")
 
   call param_register(cli_params, 'EvsV', 'F', do_EvsV, help_string="compute energy vs volume curve")
   call param_register(cli_params, 'EvsV_dVfactor', '1.1', EvsV_dVfactor, help_string="multiplier to use when increasing the volume at each step of EvsV")
@@ -661,6 +663,11 @@ implicit none
      if (do_absorption) do_calc = .true.
 #endif
      if ( has_descriptor_str ) do_calc = .true.
+     if(do_grad_descriptor) then
+        mainlog%prefix = "GRAD_DSC"
+        call print("descriptor index | derivative w.r.t. atom index | derivative w.r.t. Cartesian dimension | descriptor derivative")
+        mainlog%prefix = ""
+     endif
 
      if ((.not. did_anything .or. do_calc) .and. (do_E .or. do_F .or. do_V .or. do_local)) then
 	did_anything = .true.
@@ -754,14 +761,30 @@ implicit none
 	did_anything = .true.
         call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
         allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
+        if(do_grad_descriptor) &
+           allocate(grad_descriptor_array(descriptor_dimensions(eval_descriptor),3*n_cross), &
+                    grad_descriptor_index(3, 3*n_cross) )
 
-        call calc(eval_descriptor,at,descriptor_array)
+        if(do_grad_descriptor) then
+           call calc(eval_descriptor,at,descriptor_array,&
+             grad_descriptor_out=grad_descriptor_array,grad_descriptor_index=grad_descriptor_index,args_str=trim(calc_args))
+        else
+           call calc(eval_descriptor,at,descriptor_array,args_str=trim(calc_args))
+        endif
         mainlog%prefix = "DESC"
         do i = 1, n_descriptors
            call print(""//descriptor_array(:,i), PRINT_ALWAYS, mainlog)
         end do
+        if(do_grad_descriptor) then
+           mainlog%prefix = "GRAD_DSC"
+           do i = 1, 3*n_cross
+              call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_array(:,i), PRINT_ALWAYS, mainlog)
+           enddo
+        endif
         mainlog%prefix = ""
         deallocate(descriptor_array)
+        if(allocated(grad_descriptor_array)) deallocate(grad_descriptor_array)
+        if(allocated(grad_descriptor_index)) deallocate(grad_descriptor_index)
      end if
 #endif
 
