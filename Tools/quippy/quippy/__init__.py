@@ -112,7 +112,11 @@ if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
     sys.setdlopenflags(flags | RTLD_GLOBAL)
     available_modules.append('mpi')
 
-import _quippy
+try:
+    import _quippy
+except ImportError as err:
+    raise ImportError(err.message +
+                    " - perhaps you are trying to import quippy from the source directory?")
 
 # Reference values of .true. and .false. from Fortran
 QUIPPY_TRUE = _quippy.qp_reference_true()
