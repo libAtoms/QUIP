@@ -112,6 +112,7 @@ implicit none
   type(descriptor) :: eval_descriptor
 #endif
   real(dp), dimension(:,:), allocatable :: descriptor_array, grad_descriptor_array
+  real(dp), dimension(:), allocatable :: grad_descriptor_pos
   integer, dimension(:,:), allocatable :: grad_descriptor_index
   character(STRING_LENGTH) :: descriptor_str
   logical :: has_descriptor_str, do_grad_descriptor
@@ -665,7 +666,7 @@ implicit none
      if ( has_descriptor_str ) do_calc = .true.
      if(do_grad_descriptor) then
         mainlog%prefix = "GRAD_DSC"
-        call print("descriptor index | derivative w.r.t. atom index | derivative w.r.t. Cartesian dimension | descriptor derivative")
+        call print("descriptor index | derivative w.r.t. atom index | derivative w.r.t. Cartesian dimension | difference vector component | descriptor derivative")
         mainlog%prefix = ""
      endif
 
@@ -763,11 +764,11 @@ implicit none
         allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
         if(do_grad_descriptor) &
            allocate(grad_descriptor_array(descriptor_dimensions(eval_descriptor),3*n_cross), &
-                    grad_descriptor_index(3, 3*n_cross) )
+                    grad_descriptor_index(3, 3*n_cross), grad_descriptor_pos(3*n_cross) )
 
         if(do_grad_descriptor) then
            call calc(eval_descriptor,at,descriptor_array,&
-             grad_descriptor_out=grad_descriptor_array,grad_descriptor_index=grad_descriptor_index,args_str=trim(calc_args))
+             grad_descriptor_out=grad_descriptor_array,grad_descriptor_index=grad_descriptor_index,grad_descriptor_pos=grad_descriptor_pos,args_str=trim(calc_args))
         else
            call calc(eval_descriptor,at,descriptor_array,args_str=trim(calc_args))
         endif
@@ -778,7 +779,7 @@ implicit none
         if(do_grad_descriptor) then
            mainlog%prefix = "GRAD_DSC"
            do i = 1, 3*n_cross
-              call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_array(:,i), PRINT_ALWAYS, mainlog)
+              call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_pos(i)//"  "//grad_descriptor_array(:,i), PRINT_ALWAYS, mainlog)
            enddo
         endif
         mainlog%prefix = ""
