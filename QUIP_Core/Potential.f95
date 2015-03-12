@@ -2264,9 +2264,9 @@ end subroutine pack_pos_dg
        if (my_summary_interval > 0 .and. mod(n, my_summary_interval) == 0) call ds_print_status(this, epot=e)
        call set_value(this%atoms%params, 'time', this%t)
 
-       if (mod(n,my_hook_interval) == 0) call hook()
-       if (present(trajectory) .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
-       if (mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
+       if (my_hook_interval > 0 .and. mod(n,my_hook_interval) == 0) call hook()
+       if (present(trajectory) .and. my_write_interval > 0 .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
+       if (my_connect_interval > 0 .and. mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
     end do
 
   end subroutine DynamicalSystem_run
