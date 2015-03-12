@@ -151,18 +151,18 @@ subroutine IPModel_Tether_Calc(this, at, e, local_e, f, virial, local_virial, ar
    do i=1,n_tethered
      i_teth = this%tether_indices(i)
 
-     ! energy
      r  = distance_min_image(at, i_teth , origin)
      disp = r - this%r0
-     energy = energy + this%kConf*disp**2
 
-     ! force
      if(r .fle. this%r0) then
-       dr = 0.0_dp
+       force(:,i_teth) = 0.0_dp
      else
+     ! energy
+       energy = energy + this%kConf*disp**2
+     ! force
        dr = diff_min_image(at, i_teth, origin)/r
+       force(:,i_teth) = ( 2.0_dp*this%kConf*disp ) * dr 
      end if
-     force(:,i_teth) = ( 2.0_dp*this%kConf*disp ) * dr 
    end do
 
    if (present(e)) e = energy
