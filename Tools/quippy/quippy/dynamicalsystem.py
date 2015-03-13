@@ -104,7 +104,7 @@ class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
             return traj
         else:
             _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval, 
-						 summary_interval=sumary_interval, write_interval=write_interval,
+						 summary_interval=summary_interval, write_interval=write_interval,
                                                  connect_interval=connect_interval, trajectory=trajectory,
                                                  args_str=args_str)
 
