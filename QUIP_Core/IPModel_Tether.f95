@@ -148,15 +148,14 @@ subroutine IPModel_Tether_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    ! Harmonic confining potential on tethered atoms
    energy = 0.0_dp
+   force = 0.0_dp
    do i=1,n_tethered
      i_teth = this%tether_indices(i)
 
      r  = distance_min_image(at, i_teth , origin)
-     disp = r - this%r0
 
-     if(r .fle. this%r0) then
-       force(:,i_teth) = 0.0_dp
-     else
+     if(r .fgt. this%r0) then
+       disp = r - this%r0
      ! energy
        energy = energy + this%kConf*disp**2
      ! force
