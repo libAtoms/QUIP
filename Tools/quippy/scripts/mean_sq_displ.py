@@ -37,6 +37,9 @@ for a in ar:
       a.add_property('orig_pos', a0.orig_pos)
    a.params['orig_CoM'] = orig_CoM
 
+   if not hasattr(a, 'mass'):
+      a.add_property('mass', a0.mass)
+
    if (not hasattr(a, 'msd_displ')):
       a0.add_property('msd_displ', 0.0, n_cols=3)
 
