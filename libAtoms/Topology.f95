@@ -3030,7 +3030,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      deallocate(pairs_one_three)
      deallocate(shifts_one_three)
      deallocate(diffs_one_three)
-     deallocate(triplets_shifts)
+     if(allocated(triplets_shifts)) deallocate(triplets_shifts)
 !call print("triplets diffs")
 !call print(triplets_diffs)
 end subroutine find_monomer_triplets  
