@@ -599,26 +599,6 @@ with `atoms` to the new :class:`Potential` instance, by calling
         return dict_to_args_str(self._calc_args)
 
 
-    def get_cutoff_skin(self):
-        return self._cutoff_skin
-
-    def set_cutoff_skin(self, cutoff_skin):
-        self._cutoff_skin = cutoff_skin
-        self._prev_atoms = None # force a recalculation
-
-    cutoff_skin = property(get_cutoff_skin, set_cutoff_skin,
-                           doc="""
-                           The `cutoff_skin` attribute is only relevant when the ASE-style
-                           interface to the Potential is used, via the :meth:`get_forces`,
-                           :meth:`get_potential_energy` etc. methods. In this case the
-                           connectivity of the :class:`~quippy.atoms.Atoms` object for which
-                           the calculation is requested is automatically kept up to date by
-                           using a neighbour cutoff of :meth:`cutoff` + `cutoff_skin`, and
-                           recalculating the neighbour lists whenever the maximum displacement
-                           since the last :meth:`Atoms.calc_connect` exceeds `cutoff_skin`.
-                           """)
-
-
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(potential)'] = Potential
 
@@ -737,7 +717,7 @@ class Minim(Optimizer):
             if self.do_lat:
                 self.atoms.set_cell(self._atoms.get_cell())
 
-        self.atoms.set_cutoff(self.potential.cutoff()+self.cutoff_skin)
+        self.atoms.set_cutoff(self.potential.cutoff(), cutoff_skin=self.cutoff_skin)
         self.atoms.calc_connect()
 
         # check for constraints, only FixAtoms is supported for now

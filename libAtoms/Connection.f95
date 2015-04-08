@@ -435,11 +435,10 @@ contains
   !% Test if atom $i$ is a neighbour of atom $j$ and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup, error)
+  subroutine test_form_bond(this, cutoff, Z, pos, lattice, i,j, shift, check_for_dup, error)
 
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff
-    logical, intent(in) :: use_uniform_cutoff
     integer, intent(in) :: Z(:)
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
@@ -449,7 +448,6 @@ contains
 
     integer                    :: index, m, k
     real(dp)                   :: d, dd(3)
-    real(dp)                   :: use_cutoff
 
     INIT_ERROR(error)
     if (i > j) return
@@ -459,16 +457,9 @@ contains
 #ifdef DEBUG
     if(current_verbosity() >= PRINT_ANAL) then
        call print('Entering test_form_bond, i = '//i//' j = '//j, PRINT_ANAL)
-       call print('use_uniform_cutoff = '//use_uniform_cutoff, PRINT_ANAL)
+       call print('cutoff = '//cutoff, PRINT_ANAL)
     end if
 #endif
-
-    !Determine what cutoff distance to use
-    if (use_uniform_cutoff) then
-       use_cutoff = cutoff
-    else
-       use_cutoff = bond_length(Z(i),Z(j)) * cutoff
-    end if
 
     !d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
     !OPTIM
@@ -479,7 +470,7 @@ contains
 
     if (.not. check_for_dup) then
        do m=1,3
-          if (dd(m) > use_cutoff) return
+          if (dd(m) > cutoff) return
        end do
     end if
 
@@ -503,7 +494,7 @@ contains
     if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d, PRINT_ANAL)
 #endif
 
-    if (d < use_cutoff) then
+    if (d < cutoff) then
        call add_bond(this, pos, lattice, i, j, shift, d, error=error)
        PASS_ERROR(error)
     end if
@@ -517,10 +508,9 @@ contains
   !% Test if atom $i$ is no longer neighbour of atom $j$ with shift $s$, and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  function test_break_bond(this,cutoff_break, use_uniform_cutoff, Z, pos, lattice, i,j, shift, error)
+  function test_break_bond(this, cutoff_break, Z, pos, lattice, i,j, shift, error)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff_break
-    logical, intent(in) :: use_uniform_cutoff
     integer, intent(in) :: Z(:)
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
@@ -529,7 +519,6 @@ contains
     integer, intent(out), optional :: error
 
     real(dp)                   :: d
-    real(dp)                   :: cutoff
 
     INIT_ERROR(error)
     test_break_bond = .false.
@@ -544,18 +533,11 @@ contains
     end if
 #endif
 
-    !Determine what cutoff distance to use
-    if (use_uniform_cutoff) then
-       cutoff = cutoff_break
-    else
-       cutoff = bond_length(Z(i),Z(j)) * cutoff_break
-    end if
-
     d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d//' cutoff = '//cutoff//' i = '//i//' j = '//j, PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d//' cutoff_break = '//cutoff_break//' i = '//i//' j = '//j, PRINT_ANAL)
 #endif
-    if (d > cutoff) then
+    if (d > cutoff_break) then
 #ifdef DEBUG
        if(current_verbosity() >= PRINT_ANAL) call print('removing bond from tables', PRINT_ANAL)
 #endif
@@ -744,7 +726,7 @@ contains
     integer  :: min_cell_image_Na
     integer  :: max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb
     integer  :: min_cell_image_Nc, max_cell_image_Nc
-    real(dp)  :: cutoff
+    real(dp)  :: cutoff, cutoff_break
     integer :: ji, s_ij(3), nn_guess
     logical my_own_neighbour, my_store_is_min_image
     logical :: change_i, change_j, change_k, broken
@@ -774,6 +756,7 @@ contains
     if (at%use_uniform_cutoff) then
        !The cutoff has been specified by the user, so use that value
        cutoff = at%cutoff
+       cutoff_break = at%cutoff_break       
     else
        !Otherwise, find the maximum covalent radius of all the atoms in the structure, double it
        !and multiple by cutoff. At makes sure we can deal with the worst case scenario of big atom 
@@ -782,10 +765,12 @@ contains
        do i = 1, at%N
           if (ElementCovRad(at%Z(i)) > cutoff) cutoff = ElementCovRad(at%Z(i))
        end do
+       cutoff_break = (2.0_dp * cutoff) * at%cutoff_break       
        cutoff = (2.0_dp * cutoff) * at%cutoff
     end if
 
-    call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_NERD)
+    call print("calc_connect_hysteretic: cutoff " // cutoff, PRINT_NERD)
+    call print("calc_connect_hysteretic: cutoff_break " // cutoff_break, PRINT_NERD)
 
     if (present(origin) .and. present(extent)) then
       cellsNa = 1
@@ -849,7 +834,7 @@ contains
       do
 	if (ji > n_neighbours(this, i)) exit
 	j = connection_neighbour(this, at, i, ji, shift = s_ij)
-        broken = test_break_bond(this, at%cutoff_break, at%use_uniform_cutoff, &
+        broken = test_break_bond(this, cutoff_break, &
              at%Z, at%pos, at%lattice, i, j, s_ij, error)
         PASS_ERROR(error)
 	if (.not. broken) then
@@ -931,7 +916,7 @@ contains
                                cycle atom2_loop
                             endif
 
-                            call test_form_bond(this, at%cutoff, at%use_uniform_cutoff, &
+                            call test_form_bond(this, cutoff, &
                                  at%Z, at%pos, at%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
 				 .true., error)
@@ -1242,7 +1227,7 @@ contains
                                atom2 = this%next_atom_in_cell(atom2)
                                cycle atom2_loop
                             endif
-			    call test_form_bond(this,at%cutoff, at%use_uniform_cutoff, &
+			    call test_form_bond(this, cutoff, &
 			      at%Z, at%pos, at%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
 				 .false., error)

@@ -288,6 +288,7 @@ class TestCluster_TerminateTrue(QuippyTestCase):
       si_n_neighb = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 14])
       self.assert_((si_n_neighb == 4).all())
 
+   @skip
    def test_cluster_coordination_h(self):
       # Check all H atoms have 1 neighbour
       h_n_neighb  = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 1])
@@ -336,6 +337,7 @@ class TestCluster_Periodic(QuippyTestCase):
       si_n_neighb = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 14])
       self.assert_((si_n_neighb == 4).all())
 
+   @skip
    def test_cluster_coordination_h(self):
       # Check all H atoms have 1 neighbour
       h_n_neighb  = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 1])

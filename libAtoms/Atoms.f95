@@ -1064,6 +1064,7 @@ contains
       endif
     endif
     this%use_uniform_cutoff = .false.
+    this%cutoff_skin = 0.0_dp ! relative cutoffs do not include a skin
 
   end subroutine atoms_set_cutoff_factor
 
