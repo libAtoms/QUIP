@@ -2252,6 +2252,11 @@ end subroutine pack_pos_dg
     call hook()
     if (present(trajectory)) call write(trajectory, this%atoms)
 
+    ! initialize accelerations from forces, so first call to verlet1 will be correct
+    this%atoms%acc(1,:) = f(1,:)/this%atoms%mass
+    this%atoms%acc(2,:) = f(2,:)/this%atoms%mass
+    this%atoms%acc(3,:) = f(3,:)/this%atoms%mass
+
     do n=1,n_steps
        call advance_verlet1(this, dt)
        call calc(pot, this%atoms, args_str=my_args_str, error=error)
