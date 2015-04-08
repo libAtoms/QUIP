@@ -47,6 +47,7 @@ module QUIP_LAMMPS_wrapper_module
       real(kind=c_double), intent(out), dimension(3,(nlocal+nghost)) :: quip_force  ! force
 
       integer :: i, j, n, nn, ni, i_n1n, j_n2n, error
+      integer, save :: nn_guess = 0
       type(atoms), save     :: at
       type(quip_lammps_potential) :: am
       type(Potential), pointer :: pot
@@ -63,11 +64,12 @@ module QUIP_LAMMPS_wrapper_module
       ! Initialise atoms object. If number of atoms does not change, keep the
       ! object. Allocate connection table, be generous with the number of
       ! neighbours.
-      if( .not. is_initialised(at) .or. at%N /= (nlocal+nghost) ) then
+      if( .not. is_initialised(at) .or. at%N /= (nlocal+nghost) .or. nn_guess < maxval(quip_num_neigh) ) then
          call finalise(at)
          call initialise(at,(nlocal+nghost),lattice)
          call set_cutoff(at,cutoff(pot))
-         call connection_fill(at%connect,at%N,at%N,nn_guess=2*maxval(quip_num_neigh)) 
+         nn_guess = 2*maxval(quip_num_neigh)
+         call connection_fill(at%connect,at%N,at%N,nn_guess=nn_guess) 
       endif
 
       ! Transport atomic numbers and positions.

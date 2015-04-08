@@ -540,6 +540,14 @@ contains
 
  end subroutine slab_nx_ny_nz
 
+ !% Cubic grapphene unit cell with lattice parameter 'a', this is the subroutine version
+ subroutine Graphene(cube, a)
+    type(Atoms), intent(out) :: cube
+    real(dp), intent(in) :: a
+
+    ! call the function below
+    cube = Graphene_Cubic(a)
+  end subroutine Graphene
 
  !% Cubic graphene unit cell with lattice parameter 'a'.
   function Graphene_Cubic(a) result(cube)

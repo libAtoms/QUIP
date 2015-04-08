@@ -2206,12 +2206,12 @@ end subroutine pack_pos_dg
   !% total, with snapshots saved every 'save_interval' steps. The
   !% connectivity is recalculated every 'connect_interval' steps.
   !% 'args_str' can be used to supply extra arguments to 'Potential%calc'.
-  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str, error)
+  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, summary_interval, write_interval, connect_interval, trajectory, args_str, error)
     type(DynamicalSystem), intent(inout), target :: this
     type(Potential), intent(inout) :: pot
     real(dp), intent(in) :: dt
     integer, intent(in) :: n_steps
-    integer, intent(in), optional :: hook_interval, write_interval, connect_interval
+    integer, intent(in), optional :: summary_interval, hook_interval, write_interval, connect_interval
     type(CInOutput), intent(inout), optional :: trajectory
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
@@ -2220,7 +2220,7 @@ end subroutine pack_pos_dg
        end subroutine hook
     end interface    
     
-    integer :: n, my_hook_interval, my_write_interval, my_connect_interval
+    integer :: n, my_summary_interval, my_hook_interval, my_write_interval, my_connect_interval
     real(dp) :: e
     real(dp), pointer, dimension(:,:) :: f
     character(len=STRING_LENGTH) :: my_args_str
@@ -2228,6 +2228,7 @@ end subroutine pack_pos_dg
 
     INIT_ERROR(error)
 
+    my_summary_interval = optional_default(1, summary_interval)
     my_hook_interval = optional_default(1, hook_interval)
     my_write_interval = optional_default(1, write_interval)
     my_connect_interval = optional_default(1, connect_interval)
@@ -2247,7 +2248,7 @@ end subroutine pack_pos_dg
          call system_abort("dynamicalsystem_run failed to get energy")
     if (.not. assign_pointer(this%atoms, 'force', f)) &
          call system_abort("dynamicalsystem_run failed to get forces")
-    call ds_print_status(this, epot=e)
+    if (my_summary_interval > 0) call ds_print_status(this, epot=e)
     call hook()
     if (present(trajectory)) call write(trajectory, this%atoms)
 
@@ -2260,12 +2261,12 @@ end subroutine pack_pos_dg
             call system_abort("dynamicalsystem_run failed to get energy")
        if (.not. assign_pointer(this%atoms, 'force', f)) &
             call system_abort("dynamicalsystem_run failed to get forces")
-       call ds_print_status(this, epot=e)
+       if (my_summary_interval > 0 .and. mod(n, my_summary_interval) == 0) call ds_print_status(this, epot=e)
        call set_value(this%atoms%params, 'time', this%t)
 
-       if (mod(n,my_hook_interval) == 0) call hook()
-       if (present(trajectory) .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
-       if (mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
+       if (my_hook_interval > 0 .and. mod(n,my_hook_interval) == 0) call hook()
+       if (present(trajectory) .and. my_write_interval > 0 .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
+       if (my_connect_interval > 0 .and. mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
     end do
 
   end subroutine DynamicalSystem_run
