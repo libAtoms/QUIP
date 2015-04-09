@@ -37,7 +37,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
 
       self.dia = diamond(5.44, 14)
       self.dia.pos[:] += np.random.uniform(-0.1,0.1,self.dia.n*3).reshape(3,self.dia.n)
-      self.dia.set_cutoff_factor(1.3)
+      self.dia.set_cutoff(3.0)
       self.dia.calc_connect()
 
    def test_connection_store_rij(self):
@@ -129,6 +129,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
       
    def test_copy_without_connect(self):
       at2 = Atoms()
+      self.at.set_cutoff(3.0)
       self.at.calc_connect()
       self.assert_(self.at.connect.initialised)
       at2.copy_without_connect(self.at)
@@ -152,43 +153,23 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.assert_(not self.at.has_property('pos_'))
 
    def test_set_cutoff(self):
-      self.at.set_cutoff(5.0, 6.0)
-      self.assertEqual((self.at.cutoff, self.at.cutoff_break, self.at.use_uniform_cutoff), (5.0, 6.0, True))
+      self.at.set_cutoff(5.0, 1.0)
+      self.assertEqual((self.at.cutoff, self.at.cutoff_skin), (5.0, 1.0))
       
-   def test_set_cutoff_factor(self):
-      self.at.set_cutoff_factor(1.3, 1.4)
-      self.assertEqual((self.at.cutoff, self.at.cutoff_break, self.at.use_uniform_cutoff), (1.3, 1.4, False))
-
-   def test_set_cutoff_factor_default(self):
-      self.at.set_cutoff_factor(0.0, 0.0)
-      self.assertEqual((self.at.cutoff, self.at.cutoff_break, self.at.use_uniform_cutoff), (DEFAULT_NNEIGHTOL, DEFAULT_NNEIGHTOL, False))
-
    def test_set_cutoff_minimum_1(self):
-      self.at.set_cutoff(5.0, 6.0)
-      self.at.set_cutoff_minimum(6.0, 7.0)
-      self.assertEqual((self.at.cutoff, self.at.cutoff_break, self.at.use_uniform_cutoff), (6.0, 7.0, True))      
+      self.at.set_cutoff(5.0, 1.0)
+      self.at.set_cutoff_minimum(6.0, 1.5)
+      self.assertEqual((self.at.cutoff, self.at.cutoff_skin), (6.0, 1.5))    
 
    def test_set_cutoff_minimum_2(self):
-      self.at.set_cutoff(5.0, 6.0)
-      self.at.set_cutoff_minimum(4.0, 5.0)
-      self.assertEqual((self.at.cutoff, self.at.cutoff_break, self.at.use_uniform_cutoff), (5.0, 6.0, True))      
+      self.at.set_cutoff(5.0, 1.0)
+      self.at.set_cutoff_minimum(4.0, 1.5)
+      self.assertEqual((self.at.cutoff, self.at.cutoff_skin), (5.0, 1.5))
 
    def test_cutoff_1(self):
       self.at.set_cutoff(5.0)
-      self.assertEqual(self.at.cutoff_(14, 14), 5.0)
-
-   def test_cutoff_2(self):
-      self.at.set_cutoff_factor(1.3)
-      self.assertEqual(self.at.cutoff_(14, 14), 1.3*bond_length(14, 14))
+      self.assertEqual(self.at.cutoff, 5.0)
       
-   def test_cutoff_break_1(self):
-      self.at.set_cutoff(5.0, 6.0)
-      self.assertEqual(self.at.cutoff_break_(14, 14), 6.0)
-
-   def test_cutoff_break_2(self):
-      self.at.set_cutoff_factor(1.3, 1.4)
-      self.assertEqual(self.at.cutoff_break_(14, 14), 1.4*bond_length(14, 14))
-
    def test_set_lattice_1(self):
       L = 5.0*fidentity(3)
       self.at.set_lattice(L, scale_positions=False)
@@ -769,7 +750,7 @@ class TestAtoms_Neighbour(QuippyTestCase):
       self.bond_length = self.a * sqrt(3.0)/4
       
       self.at = diamond(self.a, 14)
-      self.at.set_cutoff_factor(1.2)
+      self.at.set_cutoff(3.0)
       self.at.calc_connect()
 
    def test_n_neighbours(self):
@@ -904,12 +885,12 @@ Lattice="8.6535 0.0 0.0   0.0 8.6535 0.0   0.0 0.0 8.6535" Properties=Z:I:1:pos:
 class TestAtoms_CalcConnect_Hysteretic(QuippyTestCase):
    def setUp(self):
       self.at = supercell(diamond(5.44, 14), 3, 3, 3)
-      self.at.set_cutoff_factor(1.2)
+      self.at.set_cutoff(1.2*bond_length(14, 14))
       self.at.calc_connect()
 
    def test_equiv(self):
       at_h = self.at.copy()
-      at_h.calc_connect_hysteretic()
+      at_h.calc_connect_hysteretic(1.2, 1.2)
       self.assertEqual(self.at.neighbours, at_h.neighbours)
 
    def test_move_atom(self):
@@ -922,30 +903,24 @@ class TestAtoms_CalcConnect_Hysteretic(QuippyTestCase):
    def test_move_atom_hysteretic(self):
       move_atom = 66
       at_h = self.at.copy()
-      at_h.set_cutoff_factor(1.2, 1.4)
-      
-      at_h.calc_connect_hysteretic()
+      at_h.calc_connect_hysteretic(1.2, 1.4)
       at_h.pos[2,move_atom] -= 0.5
-      at_h.calc_connect_hysteretic()
-
+      at_h.calc_connect_hysteretic(1.2, 1.4)
       self.assertEqual(self.at.neighbours, at_h.neighbours)
 
 
    def test_move_atom_hysteretic_alt_connect(self):
       move_atom = 66
       at_h = self.at.copy()
-      at_h.set_cutoff_factor(1.2, 1.4)
-
-      at_h.calc_connect_hysteretic(at_h.hysteretic_connect)
+      at_h.calc_connect_hysteretic(1.2, 1.4, at_h.hysteretic_connect)
       at_h.pos[2,move_atom] -= 0.5
-      at_h.calc_connect_hysteretic(at_h.hysteretic_connect)
+      at_h.calc_connect_hysteretic(1.2, 1.4, at_h.hysteretic_connect)
 
       self.assertEqual(self.at.neighbours, at_h.hysteretic_neighbours)
 
    def test_move_atom_hysteretic_origin_extent(self):
       move_atom = 66
       at_h = self.at.copy()
-      at_h.set_cutoff_factor(1.2, 1.4)
 
       active_mask = fzeros(at_h.n, dtype=bool)
       active_mask[move_atom] = True
@@ -953,9 +928,9 @@ class TestAtoms_CalcConnect_Hysteretic(QuippyTestCase):
       origin, extent = estimate_origin_extent(at_h, active_mask, 3.0)
       extent_inv = linalg.inv(extent)
 
-      at_h.calc_connect_hysteretic(at_h.hysteretic_connect, origin=origin, extent=extent)
+      at_h.calc_connect_hysteretic(1.2, 1.4, at_h.hysteretic_connect, origin=origin, extent=extent)
       at_h.pos[2,move_atom] -= 0.5
-      at_h.calc_connect_hysteretic(at_h.hysteretic_connect, origin=origin, extent=extent)
+      at_h.calc_connect_hysteretic(1.2, 1.4, at_h.hysteretic_connect, origin=origin, extent=extent)
 
       self.assertEqual(sorted([n.j for n in self.at.neighbours[move_atom]]),
                        sorted([n.j for n in at_h.hysteretic_neighbours[move_atom]]))

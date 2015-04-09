@@ -943,15 +943,18 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% Set the cutoff (uniform or factor) to at least the requested value
+  !% Set the cutoff to at least the requested value
+  !% Optionally set 'cutoff_skin' at the same time.   
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_cutoff_minimum(this, cutoff)
+  subroutine atoms_set_cutoff_minimum(this, cutoff, cutoff_skin)
     type(Atoms),      intent(inout) :: this
     real(dp),         intent(in)    :: cutoff
+    real(dp), optional, intent(in)  :: cutoff_skin    
 
     this%cutoff = max(this%cutoff, cutoff)
+    this%cutoff_skin = max(this%cutoff_skin, cutoff_skin)
 
   end subroutine atoms_set_cutoff_minimum
 

@@ -1021,8 +1021,7 @@ contains
     end if
 
     if ((at%cutoff .feq. 0.0_dp)) then
-      call wipe(this)
-      return
+       RAISE_ERROR('calc_connect: at%cutoff==0.0. Call set_cutoff() first!', error)
     endif
     !Calculate the cutoff value we should use in dividing up the simulation cell
     cutoff = at%cutoff
