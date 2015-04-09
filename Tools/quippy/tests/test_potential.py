@@ -4926,7 +4926,7 @@ if hasattr(quippy, 'Potential'):
          self.p.set_callback(TestPotential_Callback.callback_1)
 
          self.a = diamond(5.44, 14)
-         self.a.set_cutoff(self.p.cutoff())
+         self.a.set_cutoff(1.0)
          self.a.calc_connect()
 
       def test_energy(self):

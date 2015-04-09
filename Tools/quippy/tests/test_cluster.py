@@ -239,8 +239,7 @@ class TestCluster_TerminateTrue(QuippyTestCase):
       self.term_atoms.sort()
 
       self.cluster = carve_cluster(self.at, cluster_info=self.t, args_str="")
-      self.cluster.set_cutoff(1.2*bond_length(14, 14))      
-      self.cluster.calc_connect()
+      self.cluster.calc_connect_hysteretic(1.2, 1.2)
 
    def test_i_shift(self):
       self.assertArrayAlmostEqual(self.t.int[1:4,1:self.embed.n], self.embed.int[1:4,1:self.embed.n])
@@ -288,7 +287,6 @@ class TestCluster_TerminateTrue(QuippyTestCase):
       si_n_neighb = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 14])
       self.assert_((si_n_neighb == 4).all())
 
-   @skip
    def test_cluster_coordination_h(self):
       # Check all H atoms have 1 neighbour
       h_n_neighb  = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 1])
@@ -329,15 +327,13 @@ class TestCluster_Periodic(QuippyTestCase):
 
       self.t = create_cluster_info_from_mark(self.at, "terminate=T cluster_allow_modification=F cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T")
       self.cluster = carve_cluster(self.at, cluster_info=self.t, cluster_periodic_z=True)
-      self.cluster.set_cutoff(1.2*bond_length(14, 14))
-      self.cluster.calc_connect()
+      self.cluster.calc_connect_hysteretic(1.2, 1.2)
       
    def test_cluster_coordination_si(self):
       # Check all Si atoms have 4 neighbours
       si_n_neighb = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 14])
       self.assert_((si_n_neighb == 4).all())
 
-   @skip
    def test_cluster_coordination_h(self):
       # Check all H atoms have 1 neighbour
       h_n_neighb  = farray([len(self.cluster.neighbours[i]) for i in frange(self.cluster.n) if self.cluster.z[i] == 1])

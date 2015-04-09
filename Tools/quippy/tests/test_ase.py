@@ -100,6 +100,7 @@ class TestCalculator_SW_Potential(QuippyTestCase):
 
       self.at = diamond(5.44, 14)
       randomise(self.at.pos, 0.1)
+      self.at.set_cutoff(self.pot.cutoff())
       self.at.calc_connect()
 
       self.e, = fvar('e')
