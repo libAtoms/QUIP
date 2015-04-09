@@ -61,7 +61,7 @@ class TestBFSStep(QuippyTestCase):
 
    def test_nneighb_only_true(self):
       # Recalc connectivity, only including nearest neighbours
-      self.at.set_cutoff_factor(1.2)
+      self.at.set_cutoff(3.0)
       self.at.calc_connect()
 
       crust = self.at.bfs_step(self.seed)
@@ -239,7 +239,7 @@ class TestCluster_TerminateTrue(QuippyTestCase):
       self.term_atoms.sort()
 
       self.cluster = carve_cluster(self.at, cluster_info=self.t, args_str="")
-      self.cluster.set_cutoff_factor(1.2)
+      self.cluster.set_cutoff(1.2*bond_length(14, 14))      
       self.cluster.calc_connect()
 
    def test_i_shift(self):
@@ -329,7 +329,7 @@ class TestCluster_Periodic(QuippyTestCase):
 
       self.t = create_cluster_info_from_mark(self.at, "terminate=T cluster_allow_modification=F cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T")
       self.cluster = carve_cluster(self.at, cluster_info=self.t, cluster_periodic_z=True)
-      self.cluster.set_cutoff_factor(1.2)
+      self.cluster.set_cutoff(1.2*bond_length(14, 14))
       self.cluster.calc_connect()
       
    def test_cluster_coordination_si(self):
@@ -353,6 +353,7 @@ class TestCluster_EvenElectrons(QuippyTestCase):
    def setUp(self):
       dia = diamond(5.44, 14)
       self.at = supercell(dia, 4, 4, 4)
+      self.at.set_cutoff(1.2*bond_length(14, 14))
       self.at.calc_connect()
 
       self.embedlist = Table()
@@ -676,6 +677,7 @@ class TestCluster_Surface_Dia(QuippyTestCase):
       lat = self.at.lattice
       lat[3,3] *= 2
       self.at.set_lattice(lat, scale_positions=False)
+      self.at.set_cutoff(1.2*bond_length(14, 14))
       self.at.calc_connect()
 
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
@@ -736,10 +738,10 @@ class TestCluster_Surface_FCC(QuippyTestCase):
       self.t = create_cluster_info_from_mark(self.at, "cluster_allow_modification=T reduce_n_cut_bonds=T cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=F")
       self.cluster2h = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
 
-      # self.at.print_xyz("tmp_at.xyz", all_properties=True)
-      # self.cluster1.print_xyz("tmp_cluster1.xyz", all_properties=True)
-      # self.cluster2.print_xyz("tmp_cluster2.xyz", all_properties=True)
-      # self.cluster2h.print_xyz("tmp_cluster2h.xyz", all_properties=True)
+      # self.at.write("tmp_at.xyz")
+      # self.cluster1.write("tmp_cluster1.xyz")
+      # self.cluster2.write("tmp_cluster2.xyz")
+      # self.cluster2h.write("tmp_cluster2h.xyz")
 
    def test_surface_1_hops(self):
       self.assertEqual(self.cluster1.n,10)
@@ -828,9 +830,9 @@ class TestCluster_HystereticConnect_Equiv(QuippyTestCase):
    def setUp(self):
       self.at = supercell(diamond(5.44, 14), 3, 3, 3)
 
-      self.at.set_cutoff_factor(1.2, 1.4)
+      self.at.set_cutoff(1.2*bond_length(14, 14))
       self.at.calc_connect()
-      self.at.calc_connect_hysteretic(self.at.hysteretic_connect)
+      self.at.calc_connect_hysteretic(1.2, 1.4, self.at.hysteretic_connect)
 
       mark_atoms(self.at)
 
@@ -859,15 +861,14 @@ class TestCluster_HystereticConnect_MoveAtom(QuippyTestCase):
 
    def setUp(self):
       self.at = supercell(diamond(5.44, 14), 3, 3, 3)
-      self.at.set_cutoff_factor(1.2)
+      self.at.set_cutoff(1.2*bond_length(14, 14))      
       self.at.calc_connect()
       mark_atoms(self.at)
 
       self.move_atom = 66
 
       self.at_hysteretic = self.at.copy()
-      self.at_hysteretic.set_cutoff_factor(1.2, 1.4)
-      self.at_hysteretic.calc_connect_hysteretic(self.at_hysteretic.hysteretic_connect)
+      self.at_hysteretic.calc_connect_hysteretic(1.2, 1.4, self.at_hysteretic.hysteretic_connect)
 
       self.at_move = self.at.copy()
       
@@ -887,7 +888,7 @@ class TestCluster_HystereticConnect_MoveAtom(QuippyTestCase):
       self.t_move = create_cluster_info_from_mark(self.at_move, args_str(self.args))
       self.cluster_move = carve_cluster(self.at_move, args_str(self.args), cluster_info=self.t)
 
-      self.at_hysteretic.calc_connect_hysteretic(self.at_hysteretic.hysteretic_connect)
+      self.at_hysteretic.calc_connect_hysteretic(1.2, 1.4, self.at_hysteretic.hysteretic_connect)
       mark_atoms(self.at_hysteretic, nneighb_only=False, alt_connect=self.at_hysteretic.hysteretic_connect)
 
       self.args_hysteretic = {'terminate' :True,
@@ -2555,6 +2556,7 @@ O             -11.93793632     -5.91471092     -0.72024568       8       8      
 O              -5.86370786     -4.04977494      2.05951281       8       7       2       2       0    1799       0       0       0
 O              -5.37614588     -6.61994820      1.11336788       8       4       2       2       1    1800       0       0       0""", format="string")
 
+            at.set_cutoff(1.2*bond_length(14, 14))
             at.calc_connect()
             embed = at.bfs_grow_single(2, n=4, nneighb_only=True, min_images_only=True)
             at.add_property('hybrid_mark', HYBRID_NO_MARK)
@@ -2648,6 +2650,7 @@ if hasattr(quippy, 'Potential'):
 
          self.at = supercell(diamond(5.44, 14), 4, 4, 4)
          randomise(self.at.pos, 0.1)
+         self.at.set_cutoff(1.2*bond_length(14, 14))
          self.at.calc_connect()
 
          self.embedlist = Table()
