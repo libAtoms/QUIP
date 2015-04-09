@@ -135,6 +135,7 @@ QUIP_Utils: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a
 QUIP_FilePot_Drivers: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils 
 QUIP_Programs: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
 Tests: libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils
+quippy: quippy/_quippy.so ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
 
 ifeq (${HAVE_GAP},1)
 GAP/%: libAtoms/libatoms.a ${FOX}
@@ -209,6 +210,11 @@ libquip.a: ThirdParty libAtoms ${FOX} ${GAP} QUIP_Core QUIP_Utils
 ${BUILDDIR}: arch
 	@if [ ! -d build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
+quippy/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
+	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile	
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/quippy -I${PWD} -I${PWD}/Makefiles $${targ#quippy/}
+	rm ${BUILDDIR}/Makefile
+
 
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
@@ -280,9 +286,6 @@ doc: quip-reference-manual.pdf
 
 quip-reference-manual.pdf:
 	./Tools/mkdoc
-
-quippy:
-	make -C Tools/quippy install QUIP_ROOT=${QUIP_ROOT}
 
 test:
 	${MAKE} -C Tests -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR}

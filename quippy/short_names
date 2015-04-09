@@ -1,0 +1,5 @@
+# dictionary mapping full names of derived types to abbreviations used when naming methods
+{
+ 'dynamicalsystem':'ds',
+ 'potential': 'pot'
+}
