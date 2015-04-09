@@ -842,11 +842,7 @@ contains
     lattice(:,2) = a%lattice(:,2)*n2
     lattice(:,3) = a%lattice(:,3)*n3
     call initialise(aa, a%N*n1*n2*n3, lattice)
-    if (a%use_uniform_cutoff) then
-       call set_cutoff(aa, a%cutoff)
-    else
-       call set_cutoff_factor(aa, a%cutoff)
-    end if
+    call set_cutoff(aa, a%cutoff)
 
     do n=1,a%properties%n
        select case(a%properties%entries(n)%type)

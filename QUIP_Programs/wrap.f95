@@ -36,22 +36,22 @@ implicit none
   type(Atoms) :: at
   type(Dictionary) :: cli_params
   integer :: seed
-  real(dp) :: cutoff_factor
+  real(dp) :: cutoff
 
   call system_initialise()
 
   call initialise(cli_params)
   call param_register(cli_params, 'seed', '1', seed, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, 'cutoff_factor', '1.0', cutoff_factor, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, 'cutoff', '2.0', cutoff, help_string="Cutoff in angstrom for neighbours")
   if (.not. param_read_args(cli_params)) then
-    call print("Usage: wrap [seed=1] [cutoff_factor=1.0]", PRINT_ALWAYS)
+    call print("Usage: wrap [seed=1] [cutoff=2.0]", PRINT_ALWAYS)
     call system_abort("Confused by CLI parameters")
   endif
   call finalise(cli_params)
 
   call read(at, "stdin")
 
-  call set_cutoff_factor(at, cutoff_factor)
+  call set_cutoff(at, cutoff)
   call calc_connect(at)
 
   call coalesce_in_one_periodic_image(at, seed)

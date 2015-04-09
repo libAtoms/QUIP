@@ -670,9 +670,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 other.__dict__[k] = v
 
         # from _atoms.Atoms
-        other.use_uniform_cutoff = self.use_uniform_cutoff
         other.cutoff = self.cutoff
-        other.cutoff_break = self.cutoff_break
+        other.cutoff_skin = self.cutoff_skin
         other.nneightol = self.nneightol
 
         # from ase.Atoms
@@ -688,9 +687,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             _atoms.Atoms.__init__(self, n=other.n, lattice=other.lattice,
                                   properties=other.properties, params=other.params)
 
-            self.use_uniform_cutoff = other.use_uniform_cutoff
             self.cutoff = other.cutoff
-            self.cutoff_break = other.cutoff_break
+            self.cutoff_skin = other.cutoff_skin
             self.nneightol = other.nneightol
             
         elif isinstance(other, ase.Atoms):

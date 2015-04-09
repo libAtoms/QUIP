@@ -793,7 +793,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp) :: r_scale, E_scale
     logical :: has_r_scale, has_E_scale
     integer i
-    real(dp) :: effective_cutoff
 
     INIT_ERROR(error)
 
@@ -806,23 +805,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
           call calc_connect(at)
        end if
 
-       if (at%use_uniform_cutoff) then
-          if (at%cutoff < cutoff(this)) then
-             RAISE_ERROR('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
-          end if
-       else
-          ! Find effective cutoff 
-          effective_cutoff = 0.0_dp
-          do i = 1, at%N
-             if (at%Z(i) < 1 .or. at%Z(i) > 116) then
-                RAISE_ERROR('Potential_calc: bad atomic number i='//i//' z='//at%z(i), error)
-             end if
-             if (ElementCovRad(at%Z(i)) > effective_cutoff) effective_cutoff = ElementCovRad(at%Z(i))
-          end do
-          effective_cutoff = (2.0_dp * effective_cutoff) * at%cutoff
-          if (effective_cutoff < cutoff(this)) then
-             RAISE_ERROR('Potential_calc: effective cutoff of Atoms object ('//effective_cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
-          end if
+       if (at%cutoff < cutoff(this)) then
+          RAISE_ERROR('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
        end if
     end if
     

@@ -240,14 +240,7 @@ class NetCDFWriter(object):
 
         params = at.params.copy()
         params['nneightol'] = at.nneightol
-        if at.use_uniform_cutoff:
-            params['cutoff'] = at.cutoff
-            if at.cutoff_break != at.cutoff:
-                params['cutoff_break'] = at.cutoff_break
-        else:
-            params['cutoff_factor'] = at.cutoff
-            if at.cutoff_break != at.cutoff:
-                params['cutoff_factor_break'] = at.cutoff_break
+        params['cutoff'] = at.cutoff
 
         for name in params.keys():
             t, s, shape, = params.get_type_and_size(name)
