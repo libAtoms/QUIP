@@ -195,13 +195,15 @@ module Potential_module
   !%      ...
   !%      call diamond(at, 5.44, 14)
   !%      call randomise(at%pos, 0.01)
-  !%      call set_cutoff(at, cutoff(pot))
-  !%      call calc_connect(at)
   !%      call calc(pot, at, force=force)
   !%
-  !%  Note how the 'Atoms%cutoff' attribute is set to the cutoff of
-  !%  this Potential, and then the neighbour lists are built with the
-  !%  :meth:`~quippy.atoms.Atoms.calc_connect` routine.
+  !%  Note that there is now no need to set the 'Atoms%cutoff' attribute to the
+  !%  cutoff of this Potential: if it is less than this it will be increased
+  !%  automatically and a warning will be printed.
+  !%  The neighbour lists are updated automatically with the
+  !%  :meth:`~quippy.atoms.Atoms.calc_connect` routine. For efficiency,
+  !%  it's a good idea to set at%cutoff_skin greater than zero to decrease
+  !%  the frequency at which the connectivity needs to be rebuilt.
   !%
   !%  A Potential can be used to optimise the geometry of an
   !%  :class:`~quippy.atoms.Atoms` structure, using the :meth:`minim` routine,
@@ -277,8 +279,10 @@ module Potential_module
   public :: Calc
 
   !% Apply this Potential to the Atoms object
-  !% 'at', which must have connectivity information
-  !% (i.e. 'Atoms%calc_connect' should have been called). The
+  !% 'at'. Atoms%calc_connect is automatically called to update the
+  !% connecticvity information -- if efficiency is important to you,
+  !% ensure that at%cutoff_skin is set to a non-zero value to decrease
+  !% the frequence of connectivity updates.
   !% optional arguments determine what should be calculated and how
   !% it will be returned. Each physical quantity has a
   !% corresponding optional argument, which can either be an 'True'
@@ -319,7 +323,6 @@ module Potential_module
   !% explanation)::
   !%
   !%>      at0 = diamond(5.44, 14)
-  !%>      at0.calc_connect()
   !%>      pot = Potential('IP SW', param_str='''<SW_params n_types="1">
   !%>              <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
   !%>              <per_type_data type="1" atomic_num="14" />
@@ -798,16 +801,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     if (cutoff(this) > 0.0_dp) then
        ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
-
-       if (.not. at%connect%initialised) then
-          call print('Potential_calc: setting Atoms cutoff to Potential cutoff ('//cutoff(this)//')', PRINT_VERBOSE)
-          call set_cutoff(at, cutoff(this))
-          call calc_connect(at)
-       end if
-
+       ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
+       ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
        if (at%cutoff < cutoff(this)) then
-          RAISE_ERROR('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
+          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          call set_cutoff(at, cutoff(this))
        end if
+       call calc_connect(at)
     end if
     
     calc_energy = ""
