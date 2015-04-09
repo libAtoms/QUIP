@@ -1956,6 +1956,10 @@ contains
 
     INIT_ERROR(error)
 
+    if (.not. this%initialised) then
+       RAISE_ERROR('connection_n_neighbours: Connection structure has no connectivity data. Call calc_connect first.', error)
+    end if
+
     if (.not. associated(this%neighbour1(i)%t)) then
       RAISE_ERROR("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table", error)
     endif
