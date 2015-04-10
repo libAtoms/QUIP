@@ -733,12 +733,12 @@ contains
   !%  neighbours, and then will remain connect until them move apart
   !%  further than 'cutoff_break'.
    subroutine connection_calc_connect_hysteretic(this, at, cutoff_factor, cutoff_break_factor, &
-        origin, extent, own_neighbour, store_is_min_image, error)
+        origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
     type(Connection), intent(inout)  :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(in) :: cutoff_factor, cutoff_break_factor
     real(dp), optional :: origin(3), extent(3,3)
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, store_n_neighb
     integer, intent(out), optional :: error
 
     integer  :: cellsNa,cellsNb,cellsNc
@@ -750,9 +750,9 @@ contains
     integer  :: min_cell_image_Nc, max_cell_image_Nc
     real(dp)  :: cutoff ! absolute cutoffs
     integer :: ji, s_ij(3), nn_guess
-    logical my_own_neighbour, my_store_is_min_image
+    logical my_own_neighbour, my_store_is_min_image, my_store_n_neighb
     logical :: change_i, change_j, change_k, broken
-    integer, pointer :: map_shift(:,:)
+    integer, pointer :: map_shift(:,:), n_neighb(:)
 
     INIT_ERROR(error)
 
@@ -760,6 +760,7 @@ contains
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
+    my_store_n_neighb = optional_default(.true., store_n_neighb)    
 
     !Find the maximum covalent radius of all the atoms in the structure, double it
     !and multiple by cutoff. At makes sure we can deal with the worst case scenario of big atom
@@ -944,6 +945,14 @@ contains
           end if
        end do
     end if
+
+    if (my_store_n_neighb) then
+       call add_property(at, 'n_neighb', 0, ptr=n_neighb, overwrite=.true.)
+       do i=1,at%n
+          n_neighb(i) = n_neighbours(this, i)
+       end do
+    end if
+
 
   end subroutine connection_calc_connect_hysteretic
 

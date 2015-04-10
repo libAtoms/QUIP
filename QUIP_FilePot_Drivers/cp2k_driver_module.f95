@@ -475,17 +475,17 @@ contains
     ! prepare CHARMM params if necessary
     if (use_MM) then
       if (have_silica_potential) then
-        call set_cutoff(at,SILICA_2body_CUTOFF)
+         call set_cutoff(at,SILICA_2body_CUTOFF)
+         call calc_connect(at)         
       elseif (have_titania_potential) then
-        call set_cutoff(at,TITANIA_2body_CUTOFF)
+         call set_cutoff(at,TITANIA_2body_CUTOFF)
+         call calc_connect(at)
       else
-        call set_cutoff(at,0._dp)
+         ! use hysteretic connect to get nearest neighbour cutoff
+         call calc_connect_hysteretic(at, DEFAULT_NNEIGHTOL, DEFAULT_NNEIGHTOL)
       endif
-      call calc_connect(at)
-
       call map_into_cell(at)
       call calc_dists(at)
-
     endif
     call system_timer('do_cp2k_calc/calc_connect')
 
@@ -524,7 +524,8 @@ contains
     end if
 
     call do_cp2k_atoms_sort(at, sort_index_p, rev_sort_index, psf_print, topology_suffix, &
-      tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error=error)
+         tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, &
+         use_MM, have_silica_potential, have_titania_potential, error=error)
     PASS_ERROR_WITH_INFO("Failed to sort atoms in do_cp2k_calc", error)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1088,7 +1089,8 @@ contains
   end subroutine do_cp2k_calc
 
   subroutine do_cp2k_atoms_sort(at, sort_index_p, rev_sort_index, psf_print, topology_suffix, &
-      tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, error)
+       tmp_run_dir, tmp_run_dir_i, form_bond, break_bond, intrares_impropers, &
+       use_MM, have_silica_potential, have_titania_potential, error)
     type(Atoms), intent(inout) :: at
     integer, intent(out), pointer :: sort_index_p(:)
     integer, intent(inout), allocatable :: rev_sort_index(:)
@@ -1098,6 +1100,7 @@ contains
     integer, intent(in) :: tmp_run_dir_i
     integer :: form_bond(2), break_bond(2)
     type(Table), intent(inout) :: intrares_impropers
+    logical, intent(in) :: use_MM, have_silica_potential, have_titania_potential
     integer, optional, intent(out) :: error
 
     logical :: sorted
@@ -1164,7 +1167,21 @@ contains
 	endif
       end do
       ! fix EVB bond forming/breaking indices for new sorted atom numbers
-      call calc_connect(at)
+      if (use_MM) then
+         if (have_silica_potential) then
+            call set_cutoff(at,SILICA_2body_CUTOFF)
+            call calc_connect(at)         
+         elseif (have_titania_potential) then
+            call set_cutoff(at,TITANIA_2body_CUTOFF)
+            call calc_connect(at)
+         else
+            ! use hysteretic connect to get nearest neighbour cutoff
+            call calc_connect_hysteretic(at, DEFAULT_NNEIGHTOL, DEFAULT_NNEIGHTOL)
+         endif
+         call map_into_cell(at)
+         call calc_dists(at)
+      endif
+
       if ((all(form_bond > 0) .and. all(form_bond <= at%N)) .or. (all(break_bond > 0) .and. all(break_bond <= at%N))) then
 	 if (all(form_bond > 0) .and. all(form_bond <= at%N)) form_bond(:) = rev_sort_index(form_bond(:))
 	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond(:) = rev_sort_index(break_bond(:))

@@ -3236,12 +3236,12 @@ contains
   !%  part of the entire system -- the 'estimate_origin_extent()'
   !%  routine in clusters.f95 can be used to guess suitable values.
   subroutine atoms_calc_connect_hysteretic(this, cutoff_factor, cutoff_break_factor, alt_connect, &
-       origin, extent, own_neighbour, store_is_min_image, error)
+       origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
     type(Atoms), intent(inout), target           :: this
     real(dp), intent(in) :: cutoff_factor, cutoff_break_factor
     type(Connection), intent(inout), target, optional :: alt_connect    
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, store_n_neighb
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
@@ -3250,11 +3250,11 @@ contains
 
     if (present(alt_connect)) then
        call calc_connect_hysteretic(alt_connect, this, cutoff_factor, cutoff_break_factor, &
-            origin, extent, own_neighbour, store_is_min_image, error)
+            origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
        PASS_ERROR(error)
     else
        call calc_connect_hysteretic(this%connect, this, cutoff_factor, cutoff_break_factor, &
-            origin, extent, own_neighbour, store_is_min_image, error)
+            origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
        PASS_ERROR(error)
     endif
 
