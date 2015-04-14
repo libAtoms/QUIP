@@ -65,7 +65,6 @@ type IPModel_Multipoles
   real(dp) :: ewald_error
   real(dp) :: smooth_coulomb_cutoff
 
-
 end type IPModel_Multipoles
 
 type :: Ewald_arrays
@@ -104,10 +103,10 @@ subroutine IPModel_Multipoles_Initialise_str(this, args_str, param_str, error)
   call Finalise(this)
 
   call initialise(params)
-  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on O atoms. potential is kconf*(rO)^2')
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_Multipoles_Initialise args_str')) then
      RAISE_ERROR("IPModel_Multipoles_Init failed to parse args_str='"//trim(args_str)//"'", error)
   end if
+
   call finalise(params)
 
 end subroutine IPModel_Multipoles_Initialise_str
@@ -130,9 +129,33 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
-   type(Multipole_Moments) :: multipoles
+   real(dp),dimension(:,:), allocatable   :: e_field
+   type(Ewald_arrays)                     :: ewald_arrays
+   type(Multipole_Moments)                :: multipoles
+   type(Dictionary)                       :: params
+   real(dp)                               :: r_scale, E_scale
+   logical                                :: do_rescale_r, do_rescale_E,do_e, do_f, intermolecular_only
 
-   if (this%pbc_method == PBC_Method_Ewald) then
+   INIT_ERROR(error)
+   do_f=present(f)
+   do_e=present(e)
+
+   if (present(args_str)) then
+      call initialise(params)
+      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Not supported in multipole calcs.")
+      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
+      call param_register(params, 'intermolecular_only', 'F',intermolecular_only, help_string="If true, ignore interactions between multipoles on the same molecule. Default F")
+
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Calc args_str')) then
+         RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
+      endif
+      call finalise(params)
+      if (do_rescale_r ) then
+         RAISE_ERROR("IPModel_Coulomb_Calc: rescaling of potential with r_scale not yet implemented!", error)
+      end if
+   endif
+
+   if (this%method == Method_Ewald) then
     ewald_precision = -log(my_ewald_error)
     ewald_cutoff = sqrt(ewald_precision/PI) * reciprocal_time_by_real_time**(1.0_dp/6.0_dp) * &
     & minval(sqrt( sum(at%lattice(:,:)**2,dim=1) )) / at%N**(1.0_dp/6.0_dp)
@@ -142,20 +165,20 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
 
    call multipole_sites_setup(atoms,this,dummy_atoms,multipoles) ! multipoles includes exclude_list
 
-   if (this%pbc_method == PBC_Method_Ewald) then
-     call ewald_setup(dummy_atoms,multipoles,ewald)
+   if (this%method == Multipoles_Method_Ewald) then
+     call ewald_setup(dummy_atoms,multipoles,ewald_arrays)
    end if
 
    if (this%polarisation_method /= Polarisation_None) then
-     call calc_permanent_e_field(dummy_atoms,multipoles,ewald,e_field)
+     call electrostatics_calc(dummy_atoms,multipoles,ewald,do_field=.true.)
      call build_polarisation_matrix(dummy_atoms,multipoles,ewald,pol_matrix) ! A^-1-T
-     call calc_induced_dipoles(pol_matrix,e_field,induced_dipoles) ! solve linear sys 
-     call update_dipoles(multipoles,induced_dipoles)
+     call calc_induced_dipoles(pol_matrix,multipoles,this%polarisation_method) ! this updates the dipoles on any polarisable sites
    end if
 
-   call calc_potentials_fields_grads(dummy_atoms,multipoles,ewald)
-   call calc_site_energies_forces(multipoles)
-   call sites_to_atoms(atoms,multipoles,e,f)
+   call electrostatics_calc(dummy_atoms,multipoles,ewald,e=e,do_force=.true.)
+   if (present(f)) then
+     call sites_to_atoms(atoms,multipoles,e,f)
+   end if
 
    ! clean up
 
@@ -168,7 +191,6 @@ subroutine IPModel_Multipoles_Print(this, file)
 
   call Print("IPModel_Multipoles : Multipoles Potential", file=file)
   call Print("IPModel_Multipoles : cutoff = " // this%cutoff, file=file)
-  call Print("IPModel_Multipoles : kconf = " // this%kconf, file=file)
 
 end subroutine IPModel_Multipoles_Print
 
