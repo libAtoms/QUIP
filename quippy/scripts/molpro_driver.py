@@ -34,7 +34,7 @@ from numpy import *
 # Quippy package
 from quippy import *
 from quippy import molpro
-from molpro import MolproDatafile
+from quippy.molpro import MolproDatafile
 from quippy.atoms import Atoms
 from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 
@@ -75,7 +75,9 @@ if len(sys.argv) > 3:
 calc_args_str = parse_params(args_str) #sits in util module, turns key=val pairs into dict
                                        # what if I made it so that you passed append_lines="hf;ccsd(t)-f12;angstrom etc etc separated by ';'"
                                        # then calc_args_str['append_lines'].split(';') makes a list of lines to be written.
- 
+
+print("Using calc args: {!s:}".format(calc_args_str))
+
 stem = os.path.basename(xyzfile)
 if stem[-4:] == '.xyz': # Remove extension
    stem = stem[:-4]
@@ -194,12 +196,6 @@ if not BATCH_READ:
    else:
       old_cluster = cluster
 
-   # Append given lines to template
-   if len(lines_to_append) > 0:
-       template_file = open(MOLPRO_TEMPLATE,'a')
-       for line in lines_to_append:
-          template_file.write(line+"\n")
-       template_file.close()
    # Read template into MolproDatafile object
    datafile = MolproDatafile(datafile=MOLPRO_TEMPLATE)
 
@@ -220,6 +216,11 @@ if not BATCH_READ:
       except:
           datafile['GEOMETRY'].append('='+geom)
 
+   # Append given lines to datafile
+   if len(lines_to_append) > 0:
+       for line in lines_to_append:
+           datafile.parse_line(line)
+
    # And write to the molpro input file
    #datafile.write(datafile=stem)
    # write an ordinary xyz file (i.e. just species and positions)
@@ -229,7 +230,6 @@ if not BATCH_READ:
    extract_forces=False
    if 'FORCE' in datafile._keys:
       extract_forces=True
-      
 
 # now invoke MolPro
 if not BATCH_READ and not BATCH_QUEUE:
