@@ -79,6 +79,7 @@ calc_args_str = parse_params(args_str) #sits in util module, turns key=val pairs
 print("Using calc args: {!s:}".format(calc_args_str))
 
 stem = os.path.basename(xyzfile)
+# os.path.splitext() does this as well - MV
 if stem[-4:] == '.xyz': # Remove extension
    stem = stem[:-4]
 logfile=stem+".log.xyz"
@@ -173,6 +174,7 @@ if os.path.exists(outfile):
 
 
 path = WORKING_DIR+'/'+stem
+# ...or use os.path.join() - MV
 
 # Make working directory if necessary
 if not os.path.isdir(path):
