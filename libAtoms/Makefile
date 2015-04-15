@@ -83,7 +83,6 @@ LIBATOMS_F95_FILES = \
   ringstat \
   histogram1d \
   find_surface_atoms \
-  gp_basic \
   k_means_clustering \
   SocketTools \
   partition \

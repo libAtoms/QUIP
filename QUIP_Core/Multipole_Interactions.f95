@@ -134,7 +134,6 @@ subroutine Multipole_Site_Assignment(to,from)
   to%atomic_number = from%atomic_number
   to%position = from%position
   to%dipole=from%dipole
-  to%quadrupole=from%quadrupole
   to%e_grad_pos = from%e_grad_pos
   to%charge_method = from%charge_method
   to%dipole_method = from%dipole_method
