@@ -1049,6 +1049,85 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
         if eof:
             break
 
+@atoms_reader('magres')
+def MagresReader(source, atoms_ref=None, format=None):
+    """Generator to read .magres files"""
+    
+    if type(source) == type(''):
+        source = open(source, 'r')
+    source = iter(source)
+    
+    if atoms_ref is not None and not atoms_ref.has_property('frac_pos'):
+        atoms_ref.add_property('frac_pos',0.0,n_cols=3)
+        atoms_ref.frac_pos[:] = np.dot(atoms_ref.g,atoms_ref.pos)
+        
+    block = ""
+    atom_line = []
+    ms_line = []
+    efg_line = []
+    while True:
+        try:
+            line=source.next()
+        except StopIteration:
+            eof = True
+            break
+        
+        if re.match("\[[^/].*\]",line):
+            block = line.replace("[","").replace("]","")
+            continue
+        elif re.match("\[\/.*\]",line):
+            block = ""
+            continue
+
+        if "atoms" in block:
+            if line.startswith("lattice"):
+                lattice_line = line.split()[1:10]
+            elif line.startswith("atom"):
+                atom_line.append(line.split())
+        if "magres" in block:
+            if line.startswith("ms"):
+                ms_line.append(line.split())
+            if line.startswith("efg"):
+                efg_line.append(line.split())
+                
+    lattice = fzeros((3,3))
+    lattice[:,:] = np.reshape(map(float,lattice_line),(3,3))
+    
+    n_atoms=len(atom_line)
+    atoms = Atoms(n=n_atoms,lattice=lattice)
+    lookup = {}
+    
+    for i, line in fenumerate(atom_line):
+        label, atom_type, species_label, number_in_species_label, x, y, z = line
+        if not (species_label, number_in_species_label) in lookup:
+            lookup[(species_label, number_in_species_label)] = i
+        atoms.z[lookup[(species_label, number_in_species_label)]] = atomic_number(atom_type)
+        atoms.pos[:,lookup[(species_label, number_in_species_label)]] = map(float,(x,y,z))
+    
+    atoms.set_atoms(atoms.z) # set at.species from at.z
+
+    if n_atoms == len(ms_line):
+        atoms.add_property('ms',0.0,n_cols=9)
+        for i, line in fenumerate(ms_line):
+            (label, species_label, number_in_species_label,
+             ms_xx, ms_xy, ms_xz,
+             ms_yx, ms_yy, ms_yz,
+             ms_zx, ms_zy, ms_zz) = line
+            atoms.ms[:,lookup[(species_label, number_in_species_label)]] = map(float,(ms_xx, ms_xy, ms_xz,
+                                                                                      ms_yx, ms_yy, ms_yz,
+                                                                                      ms_zx, ms_zy, ms_zz))
+    if n_atoms == len(efg_line):
+        atoms.add_property('efg',0.0,n_cols=9)
+        for i, line in fenumerate(efg_line):
+            (label, species_label, number_in_species_label,
+             efg_xx, efg_xy, efg_xz,
+             efg_yx, efg_yy, efg_yz,
+             efg_zx, efg_zy, efg_zz) = line
+            atoms.efg[:,lookup[(species_label, number_in_species_label)]] = map(float,(efg_xx, efg_xy, efg_xz,
+                                                                                      efg_yx, efg_yy, efg_yz,
+                                                                                      efg_zx, efg_zy, efg_zz))
+    
+    yield atoms
 
 def get_valid_keywords(castep):
     """Determines valid cell and parameter keyword by invoking castep with -help parameter.
