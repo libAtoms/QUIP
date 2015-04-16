@@ -41,7 +41,8 @@
 module IPModel_Multipoles_module
 
 use error_module
-use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int,PRINT_ANAL
+!use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int,PRINT_ANAL,reallocate
+use system_module
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -95,7 +96,7 @@ type IPModel_Multipoles
   type(Multipole_Moments) :: multipoles
 
   integer :: n_monomer_types = 0
-  real(dp), dimension(:), allocatable :: charge
+
   integer :: method = 0
   integer :: damping = 0
   integer :: screening = 0
@@ -157,6 +158,7 @@ subroutine IPModel_Multipoles_Finalise(this)
   type(IPModel_Multipoles), intent(inout) :: this
 
   ! Add finalisation code here
+  call finalise(this%multipoles)
 
 end subroutine IPModel_Multipoles_Finalise
 
@@ -175,16 +177,19 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
    real(dp),dimension(:,:), allocatable   :: pol_matrix
    type(Ewald_arrays)                     :: ewald
    type(Dictionary)                       :: params
-   real(dp)                               :: r_scale, E_scale
+   real(dp)                               :: r_scale, E_scale, pol_energy
    logical                                :: do_rescale_r, do_rescale_E,do_e, do_f, strict
 
    logical :: my_use_ewald_cutoff
 
-
    INIT_ERROR(error)
    do_f=present(f)
    do_e=present(e)
-
+   if(do_e)e=0.0_dp
+   if (do_f) then
+      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
+      f = 0.0_dp
+   end if
    if (present(args_str)) then
       call initialise(params)
       call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Not supported in multipole calcs.")
@@ -200,10 +205,6 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
       end if
    endif
 
-   if (do_rescale_r ) then
-      RAISE_ERROR("IPModel_Multipoles_Calc: yukawa not fully implemented!", error)
-   end if
-
    call multipole_sites_setup(at,this%multipoles,dummy_atoms,do_f,strict) ! multipoles includes exclude_list
 
    if (this%method == IPMultipoles_Method_Ewald) then
@@ -213,7 +214,8 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
    if (this%polarisation /= Polarisation_Method_None) then
      call electrostatics_calc(dummy_atoms,this%multipoles,ewald,do_field=.true.)
      call build_polarisation_matrix(dummy_atoms,this%multipoles,pol_matrix,ewald) ! A^-1-T
-     call calc_induced_dipoles(pol_matrix,this%multipoles,this%polarisation) ! this updates the dipoles on any polarisable sites
+     call calc_induced_dipoles(pol_matrix,this%multipoles,this%polarisation,pol_energy) ! this updates the dipoles on any polarisable sites
+     if(do_e) e = pol_energy
    end if
 
    call electrostatics_calc(dummy_atoms,this%multipoles,ewald,e=e,do_force=.true.)
@@ -222,6 +224,8 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
    end if
 
    ! clean up
+   if(allocated(pol_matrix)) deallocate(pol_matrix)
+   call finalise(dummy_atoms)
 
 end subroutine IPModel_Multipoles_Calc
 
@@ -325,7 +329,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=STRING_LENGTH), dimension(99) :: signature_fields
 
   logical :: energy_shift, linear_force_shift
-  integer :: ti, tj, i ,n_atoms
+  integer :: ti, tj, i , j, n_atoms,n_sites, n_pairs,cursor
   real(dp) :: alpha_au
 
   if (name == 'Multipoles_params') then ! new Multipoles stanza
@@ -336,8 +340,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) value = ''
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
-write(*,*) "passed nonempty label"
-write(*,*) trim(parse_ip%label)
       if (value == parse_ip%label) then ! exact match
         parse_matched_label = .true.
         parse_in_ip = .true.
@@ -349,30 +351,23 @@ write(*,*) trim(parse_ip%label)
     endif
 
     if (parse_in_ip) then
-write(*,*) "going to parse IP "
+
       if (parse_ip%n_monomer_types /= 0) then
         call finalise(parse_ip)
       endif
-write(*,*) "going to read n monomer types"
+
       call QUIP_FoX_get_value(attributes, 'n_monomer_types', value, status)
       if (status /= 0) then
         value='0'
       endif
       read (value, *), parse_ip%n_monomer_types
-write(*,*) "n monomer types"
 
       allocate(parse_ip%multipoles%monomer_types(parse_ip%n_monomer_types))
 
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_Multipoles_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
-
-      call QUIP_FoX_get_value(attributes, 'polarisation_cutoff', value, status)
-      if (status /= 0) then
-        parse_ip%multipoles%polarisation_cutoff = parse_ip%cutoff
-      else
-        read (value, *), parse_ip%multipoles%polarisation_cutoff
-      end if
+      parse_ip%multipoles%cutoff = parse_ip%cutoff
 
       call QUIP_FoX_get_value(attributes, 'dipole_tolerance', value, status)
       if (status /= 0) then
@@ -388,10 +383,8 @@ write(*,*) "n monomer types"
 
       call QUIP_FoX_get_value(attributes, "method", value, status)
       if (status /= 0) call system_abort ("IPModel_Multipoles_read_params_xml cannot find method")
-write(*,*) "found method in xml"
       select case(lower_case(trim(value)))
       case("direct")
-write(*,*) "direct"
          parse_ip%method = IPMultipoles_Method_Direct
       case("yukawa")
          parse_ip%method = IPMultipoles_Method_Yukawa
@@ -504,6 +497,8 @@ write(*,*) "direct"
       parse_ip%multipoles%monomer_types(ti)%signature(i) = string_to_int(signature_fields(i)) ! pass it to the monomer type
     end do
 
+    !call QUIP_FoX_get_value(attributes, "exclude_pairs", value, status)
+
     call QUIP_FoX_get_value(attributes, "monomer_cutoff", value, status)
     if (size(parse_ip%multipoles%monomer_types(ti)%signature) > 1) then
       if (status /= 0 ) then
@@ -517,8 +512,21 @@ write(*,*) "direct"
 
     call QUIP_FoX_get_value(attributes, "n_sites", value, status)
     if (status /= 0) call system_abort ("IPModel_Multipoles_read_params_xml cannot find number of sites")
-    allocate(parse_ip%multipoles%monomer_types(ti)%site_types(string_to_int(value)))
-
+    n_sites=string_to_int(value)
+    allocate(parse_ip%multipoles%monomer_types(ti)%site_types(n_sites))    
+    if(parse_ip%multipoles%intermolecular_only) then
+      n_pairs=(n_sites*(n_sites-1))/2
+      call reallocate(parse_ip%multipoles%monomer_types(ti)%excluded_pairs,2,n_pairs,zero=.true.)
+      cursor=0
+      do i=1,n_sites-1
+        do j=i+1,n_sites
+          cursor=cursor+1
+          parse_ip%multipoles%monomer_types(ti)%excluded_pairs(1,cursor)=i
+          parse_ip%multipoles%monomer_types(ti)%excluded_pairs(2,cursor)=j
+        end do
+      end do          
+    end if
+      
     call QUIP_FoX_get_value(attributes, "step", value, status)
     if (status /= 0) value = '1D-08'  
     read (value, *) parse_ip%multipoles%monomer_types(ti)%step
@@ -540,7 +548,7 @@ write(*,*) "direct"
 
     read (value, *) tj
 
-    if (tj < 1) call system_abort("IPModel_Multipoles_read_params_xml got monomer type="//tj//" < 1")
+    if (tj < 1) call system_abort("IPModel_Multipoles_read_params_xml got site type="//tj//" < 1")
     if (tj > size(parse_ip%multipoles%monomer_types(ti)%site_types)) call system_abort("IPModel_Multipoles_read_params_xml got site type="//tj//" > n_sites="//size(parse_ip%multipoles%monomer_types(ti)%site_types))
     call QUIP_FoX_get_value(attributes, "charge", value, status)
     if (status == 0) then
@@ -618,7 +626,7 @@ write(*,*) "direct"
       value='0.0D0'    
     else
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.true.
-      if (parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d == 1 ) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = 4
+      if (parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d .lt. 3 ) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 3
     end if
     read (value, *) alpha_au
     parse_ip%multipoles%monomer_types(ti)%site_types(tj)%alpha=alpha_au*CUBIC_BOHR
@@ -644,7 +652,7 @@ write(*,*) "direct"
     end if
 
     if (.not. parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped .and. parse_ip%multipoles%calc_opts%damping/=Damping_None ) then
-      call system_abort ("IPModel_Multipoles_read_params_xml: damping requested but no radii specified for non-polarisable sites "//trim(value)//" unknown")
+      call system_abort ("IPModel_Multipoles_read_params_xml: damping requested but no radii specified for non-polarisable sites ")
     end if
 
     parse_ip%multipoles%monomer_types(ti)%site_types(tj)%initialised = .true.

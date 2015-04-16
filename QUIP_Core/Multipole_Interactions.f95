@@ -99,8 +99,8 @@ public :: Multipole_Interactions_Site
 type Multipole_Interactions_Site
   ! alpha is scalar polarisability
   integer :: pos_type, charge_method, dipole_method, atomic_number, d ! d is the number of multipole components on this site, 1 if just a charge, 3 if dipole, 4 if charge+dipole
-  real(dp) :: charge = 0.0_dp, potential=0.0_dp, alpha=0.0_dp , e_grad_charge , damp_rad=0.0_dp
-  real(dp), dimension(3) :: position, dipole, e_grad_pos, e_field, e_grad_dipole
+  real(dp) :: charge = 0.0_dp, potential=0.0_dp, alpha=0.0_dp , e_grad_charge=0.0_dp , damp_rad=0.0_dp
+  real(dp), dimension(3) :: position, dipole, e_grad_pos=(/0.0_dp,0.0_dp,0.0_dp/), e_field=(/0.0_dp,0.0_dp,0.0_dp/), e_grad_dipole=(/0.0_dp,0.0_dp,0.0_dp/)
   ! real(dp), dimension(3,3) :: quadrupole ! no quadrupolar interactions implemented but could be straighforwardly added
   integer, dimension(:), allocatable :: atom_indices
   real(dp), dimension(:,:,:), allocatable :: charge_grad_positions, dipole_grad_positions, pos_grad_positions ! are derivatives of the multipole position and components with respect to atomic positions
@@ -112,6 +112,10 @@ private :: Multipole_Site_Assignment
 interface assignment(=)
    module procedure Multipole_Site_Assignment
 end interface assignment(=)
+
+interface finalise
+   module procedure Multipole_Site_Finalise
+end interface finalise
 
 contains
 
@@ -228,7 +232,7 @@ recursive subroutine Multipole_Moments_Site_Site_Interaction(energy,site_one,sit
   do_test=optional_default(.false.,test)
 
   if (calc_opts%do_energy)  energy=0.0_dp
-call print("do energy ? "//calc_opts%do_energy)
+!call print("do energy ? "//calc_opts%do_energy)
   if (calc_opts%do_force) then
     site_one%e_grad_pos = 0.0_dp
     site_one%e_grad_charge = 0.0_dp
@@ -280,23 +284,7 @@ call print("do energy ? "//calc_opts%do_energy)
   end if
 
 
-  call print("site site interaction energy is "//energy)
-!!$  if (calc_opts%do_field) then ! we will have double counted the field contributions
-!!$    if (has_charge(1) .and. has_dipole(1)) then 
-!!$      site_one%e_field = 0.5_dp * site_one%e_field 
-!!$    end if
-!!$    if (has_charge(2) .and. has_dipole(2)) then
-!!$      site_two%e_field = 0.5_dp * site_two%e_field 
-!!$    end if
-!!$  end if
-!!$  if (calc_opts%do_pot) then ! we will have double counted the pot contributions
-!!$    if (has_charge(1) .and. has_dipole(1)) then 
-!!$      site_one%potential = 0.5_dp * site_one%potential
-!!$    end if
-!!$    if (has_charge(2) .and. has_dipole(2)) then
-!!$      site_two%potential = 0.5_dp * site_two%potential 
-!!$    end if
-!!$  end if
+!  call print("site site interaction energy is "//energy)
 
 
   if (do_test) then
