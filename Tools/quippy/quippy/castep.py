@@ -1051,7 +1051,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
 
 @atoms_reader('magres')
 def MagresReader(source, atoms_ref=None, format=None):
-    """Generator to read .magres files"""
+    """Generator to read .magres files. The specification of the format my be found at http://www.ccpnc.ac.uk/"""
     
     if type(source) == type(''):
         source = open(source, 'r')
