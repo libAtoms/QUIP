@@ -623,7 +623,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "pol_alpha", value, status)
     if (status /= 0) then 
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.false.
-      value='0.0D0'    
     else
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.true.
       if (parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d .lt. 3 ) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 3

@@ -514,13 +514,14 @@ subroutine build_polarisation_matrix(at,multipoles,pol_matrix,ewald)
   real(dp), dimension(:,:),allocatable :: pol_matrix 
   type(Ewald_arrays) :: ewald
 
-  integer :: N_pol=0,i,i_pol,j_pol,i_site,j_site,n,ii
+  integer :: N_pol,i,i_pol,j_pol,i_site,j_site,n,ii
   type(Multipole_Interactions_Site) :: site1,site2
 
   real(dp), dimension(3,3) :: prop_mat ! temporary storage of dipole field tensor  
   real(dp), dimension(3) :: diff
   real(dp)               :: r_ij
 
+  N_pol=0
   call reallocate(multipoles%pol_idx,at%N,zero=.true.)
   do i_site=1,at%N
     if(multipoles%sites(i_site)%polarisable) then
@@ -535,7 +536,7 @@ subroutine build_polarisation_matrix(at,multipoles,pol_matrix,ewald)
     i_pol=multipoles%pol_idx(i_site)
     if(i_pol .eq. 0) cycle
     do ii=3*i_pol-2,3*i_pol
-      pol_matrix(ii,ii) = 1.0_dp / multipoles%sites(i_site)%alpha      
+      pol_matrix(ii,ii) = 1.0_dp / multipoles%sites(i_site)%alpha
     end do
   end do
 
@@ -548,7 +549,9 @@ subroutine build_polarisation_matrix(at,multipoles,pol_matrix,ewald)
       j_site = neighbour(at,i_site,n,distance=r_ij,diff=diff)
       j_pol = multipoles%pol_idx(j_site)
       if( r_ij > multipoles%cutoff .or. j_pol .eq. 0)  cycle
-      pol_matrix(i_pol:i_pol+2,j_pol:j_pol+2) =  - T_rank_two(diff,multipoles%calc_opts,site1%damp_rad,site2%damp_rad,cutoff=multipoles%cutoff)
+!prop_mat=T_rank_two(diff,multipoles%calc_opts,site1%damp_rad,site2%damp_rad,cutoff=multipoles%cutoff)
+!call print(prop_mat)
+      pol_matrix(3*i_pol-2:3*i_pol,3*j_pol-2:3*j_pol) =  - T_rank_two(diff,multipoles%calc_opts,site1%damp_rad,site2%damp_rad,cutoff=multipoles%cutoff)
     end do
 
   end do
@@ -579,8 +582,8 @@ subroutine  calc_induced_dipoles(pol_matrix,multipoles,polarisation,pol_energy)
     ii=3*i_pol-2
     perm_field(ii:ii+2) = multipoles%sites(i_site)%e_field
   end do
-call print("perm_field")
-call print(perm_field)
+!call print("perm_field")
+!call print(perm_field)
 
   ! solve system with QR or GMRES                                                                                                                            
   if ( polarisation == Polarisation_Method_QR) then
@@ -598,8 +601,8 @@ call print(perm_field)
     pol_energy = pol_energy + 0.5_dp*(normsq(induced_dipoles(ii:ii+2))/multipoles%sites(i_site)%alpha)
   end do
 
-call print("dipoles")
-call print(induced_dipoles)
+!call print("dipoles")
+!call print(induced_dipoles)
 
 
 end subroutine  calc_induced_dipoles

@@ -63,7 +63,7 @@ integer, parameter :: Screening_Erfc_Uniform = 2
 
 
 
-public :: Multipole_Moments_Site_Site_Interaction, assignment(=),  T_rank_zero, T_rank_one, T_rank_two, T_rank_three
+public :: Multipole_Moments_Site_Site_Interaction, assignment(=),  T_rank_zero, T_rank_one, T_rank_two, T_rank_three, finalise
 
 public :: Multipole_Calc_Opts
 type Multipole_Calc_Opts
