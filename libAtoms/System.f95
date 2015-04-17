@@ -1795,8 +1795,8 @@ contains
 
   pure function real_sci_format_length() result(len)
     integer::len
-    !  space sign 0.   fractional part                    E+00
-    len = 1 + 1 + 2 + max(0,mainlog%default_real_precision)+4
+    !  space sign 0.   fractional part                    E+000
+    len = 1 + 1 + 2 + max(0,mainlog%default_real_precision)+5
   end function real_sci_format_length
 
 
@@ -1809,7 +1809,7 @@ contains
 
     if (size(values)>0) then
        ! replaced concatenation with write... for PGI bug, NB 22/6/2007
-       write(format,'("(a,",I0,"e",I0,".",I0,")")') size(values), real_sci_format_length(), &
+       write(format,'("(a,",I0,"e",I0,".",I0,"e3)")') size(values), real_sci_format_length(), &
             mainlog%default_real_precision
        write(string_cat_real_array, format) string, values 
     else
@@ -1827,7 +1827,7 @@ contains
 
     if (size(values)>0) then
        ! replaced concatenation with write... for PGI bug, NB 22/6/2007
-       write(format,'("(a,",I0,"e",I0,".",I0,")")') 2*size(values), real_sci_format_length(), &
+       write(format,'("(a,",I0,"e",I0,".",I0,"e3)")') 2*size(values), real_sci_format_length(), &
             mainlog%default_real_precision
        write(string_cat_complex_array, format) string, values 
     else
@@ -1862,7 +1862,7 @@ contains
 
     if (size(values)>0) then
        ! replaced concatenation with write... for PGI bug, NB 22/6/2007
-       write(format,'("(",I0,"e",I0,".",I0,",a)")') size(values), real_sci_format_length(), &
+       write(format,'("(",I0,"e",I0,".",I0,"e3,a)")') size(values), real_sci_format_length(), &
             mainlog%default_real_precision
        write(real_array_cat_string, format) values, string
     else

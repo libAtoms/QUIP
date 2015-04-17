@@ -53,7 +53,7 @@ AR_ADD = src
 ATOMEYE_LIBS = -L/usr/lib -Wl,-Bstatic  -lm \
    -lutil -Wl,-Bdynamic -lXpm -lXext -lX11 -ljpeg -lpthread  -Wl,-Bstatic   \
    -lreadline -lpng  -lncurses -lz -lnetcdf  -lhdf5_hl -lhdf5  \
-   -llapack -lf77blas -lcblas -latlas -Wl,-Bdynamic
+   -llapack -lblas -Wl,-Bdynamic
 
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
@@ -61,6 +61,6 @@ QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
 QUIPPY_DEBUG = 0
 
-export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
+export DEFAULT_MATH_LINKOPTS = -llapack -lblas
 
 FPP_PRE_TARGET_STRING = -o

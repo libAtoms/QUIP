@@ -280,38 +280,35 @@ def VASP_POSCAR_Reader(outcar, species=None, format=None):
                 at.set_zs()
         else:
             # parse per-config lattice/pos/force
-            if (l.find("direct lattice vectors") >= 0):
+            if (l.find("direct lattice vectors") >= 0): # get ready to read lattice vectors
                 at_cur = at.copy()
                 lat_cur=fzeros( (3,3) )
                 lat_i=1
-            elif (lat_i >= 1 and lat_i <= 3):
+            elif (lat_i >= 1 and lat_i <= 3): # read lattice vectors
                 lat_cur[:,lat_i] = [ float(r) for r in l.replace("-"," -").split()[0:3] ]
                 lat_i += 1
-            elif (l.find("TOTAL-FORCE (eV/Angst)") >= 0):
+            elif (l.find("TOTAL-FORCE (eV/Angst)") >= 0): # get ready to read atomic positions and forces
                 if (not hasattr(at_cur, "force")):
                     at_cur.add_property("force", 0.0, n_cols=3)
                 at_i=1
                 p.next()
-            elif (at_i >= 1 and at_i <= at_cur.n):
+            elif (at_i >= 1 and at_i <= at_cur.n): # read atomic positions and forces
                 pos_force = [ float(r) for r in l.replace("-"," -").split()[0:6] ]
                 at_cur.pos[:,at_i] = pos_force[0:3]
                 at_cur.force[:,at_i] = pos_force[3:6]
                 at_i += 1
-            elif (l.find("free  energy") >= 0):
+            elif (l.find("free  energy") >= 0): # get ready to read energy
                 at_cur.params['Energy'] = float(l.split()[4])
                 energy_i = 1
                 p.next()
-            elif (energy_i == 1):
+            elif (energy_i == 1): # read energy
                 # print "energy(sigma->0) line"
                 # print l.split()
                 at_cur.params['Energy_sigma_to_zero'] = float(l.split()[6])
                 energy_i += 1
                 yield at_cur
-            if (at_cur is not None and at_i == at_cur.n):
+            if (at_cur is not None and at_i == at_cur.n): # at end of configuration, set lattice
                 at_cur.set_lattice(lat_cur, False)
-                for i in frange(at_cur.n):
-                    dr = at_cur.diff_min_image(i, at.pos[:,i])
-                    at_cur.pos[:,i] = at.pos[:,i] - dr
 
     __all__ = ['VASP_POSCAR_Reader', 'VASP_OUTCAR_Reader', 'VASPWriter']
 

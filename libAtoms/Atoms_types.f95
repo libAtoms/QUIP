@@ -244,14 +244,8 @@ module Atoms_types_module
      integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
      integer                               :: Nbuffer = 0 !% The number of atoms that can be stored in the buffers of this Atoms object
 
-     logical                               :: use_uniform_cutoff = .false. !% Rather than covalent radii --- 
-                                                                           !% default is variable cutoff.
-     real(dp)                              :: cutoff = DEFAULT_NNEIGHTOL   !% if 'use_uniform_cutoff' is true, cutoff
-                                                                           !% is the cutoff distance in $\mathrm{\AA}$
-                                                                           !% Otherwise, cutoff is a multiplier
-                                                                           !% for 'bond_length(Zi,Zj)'.
-     real(dp)                              :: cutoff_break = DEFAULT_NNEIGHTOL  !% Cutoff length for bonds to be considered broken with hysteretic connectivity
-     real(dp)                              :: cutoff_skin = 0.0_dp !% If non-zero, increase cutoff by this amount to reduce calc_connect() frequency
+     real(dp)                              :: cutoff = 0.0_dp !% Cutoff distance for neighbour calculations. Default 0.0 (unset).
+     real(dp)                              :: cutoff_skin = 0.0_dp !% If set, increase cutoff by this amount to reduce calc_connect() frequency
      logical                               :: pot_should_do_nn = .false., pot_needs_new_connect = .false., pot_needs_new_dists = .false.
      real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL 
                                               !% Count as nearest neighbour if sum of covalent radii

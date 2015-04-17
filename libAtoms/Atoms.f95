@@ -69,7 +69,7 @@ module  atoms_module
   implicit none
   private
   public :: atoms, initialise, initialise_ptr, is_initialised, is_domain_decomposed, shallowcopy, finalise
-  public :: finalise_ptr, zero, assignment(=), deepcopy, set_cutoff_minimum, set_cutoff, set_cutoff_factor, cutoff, cutoff_break
+  public :: finalise_ptr, zero, assignment(=), deepcopy, set_cutoff_minimum, set_cutoff
   public :: add_atoms, remove_atoms, get_param_value, set_param_value, has_property, remove_property
   public :: print, set_lattice, select, cell_volume, map_into_cell, unskew_cell
   public :: bcast, copy_properties, transform_basis, rotate, index_to_z_index, z_index_to_index
@@ -163,29 +163,11 @@ module  atoms_module
      module procedure atoms_set_cutoff_minimum
   end interface
 
-  !% set (a uniform) cutoff
+  !% set a uniform cutoff
   private :: atoms_set_cutoff
   interface set_cutoff
      module procedure atoms_set_cutoff
   end interface
-
-  !% set cutoff factor
-  private :: atoms_set_cutoff_factor
-  interface set_cutoff_factor
-     module procedure atoms_set_cutoff_factor
-  end interface
-
-  !% Return cutoff used for bonds of type Z1--Z2
-  private :: atoms_cutoff
-  interface cutoff
-     module procedure atoms_cutoff
-  end interface cutoff
-
-  !% Return cutoff_break used for bonds of type Z1--Z2
-  private :: atoms_cutoff_break
-  interface cutoff_break
-     module procedure atoms_cutoff_break
-  end interface cutoff_break
 
   !% Add one or more atoms to an Atoms object.
   !% To add a single atom, 'pos' should be an array of size 3 and 'z a
@@ -627,10 +609,9 @@ contains
     
     call atoms_initialise(to, from%N, from%lattice, from%properties, from%params, from%fixed_size, from%Nbuffer)
 
-    to%use_uniform_cutoff = from%use_uniform_cutoff
-    to%cutoff      = from%cutoff
-    to%cutoff_break      = from%cutoff_break
-    to%nneightol   = from%nneightol
+    to%cutoff       = from%cutoff
+    to%cutoff_skin  = from%cutoff_skin
+    to%nneightol    = from%nneightol
     to%is_orthorhombic = from%is_orthorhombic
     to%is_periodic = from%is_periodic
     to%fixed_size = from%fixed_size
@@ -692,9 +673,8 @@ contains
     endif
     to%params = from%params
     to%fixed_size = from%fixed_size
-    to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff = from%cutoff
-    to%cutoff_break = from%cutoff_break
+    to%cutoff_skin = from%cutoff_skin
     to%nneightol = from%nneightol
     to%is_orthorhombic = from%is_orthorhombic
     to%is_periodic = from%is_periodic
@@ -740,9 +720,8 @@ contains
     call finalise(to%params)
     to%params = from%params
     to%fixed_size = from%fixed_size
-    to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff = from%cutoff
-    to%cutoff_break = from%cutoff_break
+    to%cutoff_skin = from%cutoff_skin
     to%nneightol = from%nneightol
 
     if(present(mask)) then
@@ -964,153 +943,39 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% Set the cutoff (uniform or factor) to at least the requested value
+  !% Set the cutoff to at least the requested value
+  !% Optionally set 'cutoff_skin' at the same time.   
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_cutoff_minimum(this, cutoff, cutoff_break)
+  subroutine atoms_set_cutoff_minimum(this, cutoff, cutoff_skin)
     type(Atoms),      intent(inout) :: this
     real(dp),         intent(in)    :: cutoff
-    real(dp), optional, intent(in)    :: cutoff_break
+    real(dp), optional, intent(in)  :: cutoff_skin    
 
-    if (present(cutoff_break)) then
-      this%cutoff_break = max(this%cutoff_break, cutoff_break)
-      this%cutoff = max(this%cutoff, cutoff)
-    else
-      this%cutoff_break = max(this%cutoff_break, cutoff)
-      this%cutoff = max(this%cutoff, cutoff)
-    endif
+    this%cutoff = max(this%cutoff, cutoff)
+    this%cutoff_skin = max(this%cutoff_skin, cutoff_skin)
 
   end subroutine atoms_set_cutoff_minimum
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Specify a uniform neighbour cutoff throughout the system.
-  !% If zero, revert to default (uniform_cutoff=false, factor=DEFAULT_NNEIGHTOL)
-  !% Optionally set 'cutoff_break' for 'calc_connect_hysteretic' at the same time.
+  !% Optionally set 'cutoff_skin' at the same time.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_cutoff(this, cutoff, cutoff_break, cutoff_skin)
+  subroutine atoms_set_cutoff(this, cutoff, cutoff_skin)
     type(Atoms),      intent(inout) :: this
     real(dp),         intent(in)    :: cutoff
-    real(dp), optional, intent(in)    :: cutoff_break, cutoff_skin
+    real(dp), optional, intent(in)  :: cutoff_skin
 
-    if (present(cutoff_break)) then
-      if (cutoff .feq. 0.0_dp) then
-	this%cutoff = DEFAULT_NNEIGHTOL
-      else
-	this%cutoff = cutoff
-      endif
-      if (cutoff_break .feq. 0.0_dp) then
-	this%cutoff_break = DEFAULT_NNEIGHTOL
-      else
-	this%cutoff_break = cutoff_break
-      endif
-    else
-      if (cutoff .feq. 0.0_dp) then
-	this%cutoff = DEFAULT_NNEIGHTOL
-	this%cutoff_break = DEFAULT_NNEIGHTOL
-      else
-	this%cutoff = cutoff
-	this%cutoff_break = cutoff
-      endif
-    endif
-
-    if (cutoff .feq. 0.0_dp) then
-      this%use_uniform_cutoff = .false.
-    else
-      this%use_uniform_cutoff = .true.
-    endif
-
+    this%cutoff = cutoff
     if (present(cutoff_skin)) then
        this%cutoff_skin = cutoff_skin
     end if
 
   end subroutine atoms_set_cutoff
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !
-  !% Specify the neighbour cutoff to be a mulitple of the bond length
-  !% of the two atoms' types.
-  !% If zero, revert to default ('DEFAULT_NNEIGHTOL').
-  !% Optional argument `factor_break` is used by 'calc_connect_hysteretic'.
-  !
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  subroutine atoms_set_cutoff_factor(this, factor, factor_break)
-    type(Atoms),      intent(inout) :: this
-    real(dp),         intent(in)    :: factor
-    real(dp), optional, intent(in)    :: factor_break
-
-    if (present(factor_break)) then
-      if (factor .feq. 0.0_dp) then
-	this%cutoff = DEFAULT_NNEIGHTOL
-      else
-	this%cutoff = factor
-      endif
-      if (factor_break .feq. 0.0_dp) then
-	this%cutoff_break = DEFAULT_NNEIGHTOL
-      else
-	this%cutoff_break = factor_break
-      endif
-    else
-      if (factor .feq. 0.0_dp) then
-	this%cutoff = DEFAULT_NNEIGHTOL
-	this%cutoff_break = DEFAULT_NNEIGHTOL
-      else
-	this%cutoff = factor
-	this%cutoff_break = factor
-      endif
-    endif
-    this%use_uniform_cutoff = .false.
-
-  end subroutine atoms_set_cutoff_factor
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !
-  !% Return the actual cutoff in \AA{} used by this atoms object
-  !% used to form 'Z1---Z2' bonds. If 'this%use_uniform_cutoff' is
-  !% true, then this is simply 'this%cutoff', otherwise the
-  !% cutoff is used multiplied by the 'Z1---Z2' bond-length.
-  !
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  function atoms_cutoff(this, Z1, Z2)
-    type(Atoms), intent(in) :: this
-    integer, intent(in) :: Z1, Z2
-    real(dp) :: atoms_cutoff
-
-    if (this%use_uniform_cutoff) then
-       atoms_cutoff = this%cutoff
-    else
-       atoms_cutoff = this%cutoff*bond_length(Z1, Z2)
-    end if
-
-  end function atoms_cutoff
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !
-  !% Return the actual cutoff in \AA{} used by this atoms object
-  !% used to break 'Z1---Z2' bonds. If 'this%use_uniform_cutoff' is
-  !% true, then this is simply 'this%cutoff', otherwise the
-  !% cutoff is used multiplied by the 'Z1---Z2' bond-length.
-  !
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  function atoms_cutoff_break(this, Z1, Z2)
-    type(Atoms), intent(in) :: this
-    integer, intent(in) :: Z1, Z2
-    real(dp) :: atoms_cutoff_break
-
-    if (this%use_uniform_cutoff) then
-       atoms_cutoff_break = this%cutoff_break
-    else
-       atoms_cutoff_break = this%cutoff_break*bond_length(Z1, Z2)
-    end if
-
-  end function atoms_cutoff_break
-
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -2458,13 +2323,7 @@ contains
       call print('Atoms Structure: ', PRINT_NORMAL, my_out)
       call print('Number of atoms = '//this%N, PRINT_NORMAL, my_out)
 
-      if(this%use_uniform_cutoff) then
-         call print('Bond-formation cutoff radius = '//this%cutoff//' Angstroms', PRINT_NORMAL, my_out)
-         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' Angstroms', PRINT_NORMAL, my_out)
-      else
-         call print('Bond-formation cutoff radius = '//this%cutoff//' *bond_length', PRINT_NORMAL, my_out)
-         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' *bond_length', PRINT_NORMAL, my_out)
-      end if
+      call print('Cutoff radius = '//this%cutoff//' Angstroms', PRINT_NORMAL, my_out)
 
       call print('Lattice vectors:', PRINT_NORMAL, my_out)
       call print('a = ('//this%lattice(:,1)//')', PRINT_NORMAL, my_out)
@@ -3036,9 +2895,8 @@ contains
        test_out%n = at%n
        test_out%ndomain = at%ndomain
        test_out%nbuffer = at%nbuffer
-       test_out%use_uniform_cutoff = at%use_uniform_cutoff
        test_out%cutoff = at%cutoff
-       test_out%cutoff_break = at%cutoff_break
+       test_out%cutoff_skin = at%cutoff_skin
        test_out%nneightol = at%nneightol
        test_out%lattice = at%lattice
        test_out%is_orthorhombic = at%is_orthorhombic
@@ -3058,9 +2916,8 @@ contains
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
-       call bcast(mpi, at%use_uniform_cutoff)
        call bcast(mpi, at%cutoff)
-       call bcast(mpi, at%cutoff_break)
+       call bcast(mpi, at%cutoff_skin)
        call bcast(mpi, at%nneightol)
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%is_orthorhombic)
@@ -3074,9 +2931,8 @@ contains
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
-       call bcast(mpi, at%use_uniform_cutoff)
        call bcast(mpi, at%cutoff)
-       call bcast(mpi, at%cutoff_break)
+       call bcast(mpi, at%cutoff_skin)
        call bcast(mpi, at%nneightol)
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%is_orthorhombic)
@@ -3368,20 +3224,24 @@ contains
 
 
   !%  As for 'calc_connect', but perform the connectivity update
-  !%  hystertically: atoms must come within 'cutoff' to be considered
-  !%  neighbours, and then will remain connect until them move apart
-  !%  further than 'cutoff_break'.
+  !%  hystertically: atoms must come within a relative distance of
+  !% 'cutoff_factor' to be considered neighbours, and then will remain
+  !%  connected until them move apart further than a relative distance
+  !%  of 'cutoff_break_factor' (all cutoff factors are relative
+  !%  to covalent radii).
   !%
   !%  Typically 'alt_connect' should be set to the
   !%  'hysteretic_connect' attribute. 'origin' and 'extent'
   !%  vectors can be used to restrict the hysteretic region to only
   !%  part of the entire system -- the 'estimate_origin_extent()'
   !%  routine in clusters.f95 can be used to guess suitable values.
-  subroutine atoms_calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour, store_is_min_image, error)
+  subroutine atoms_calc_connect_hysteretic(this, cutoff_factor, cutoff_break_factor, alt_connect, &
+       origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
     type(Atoms), intent(inout), target           :: this
-    type(Connection), intent(inout), target, optional :: alt_connect
-    real(dp), optional :: origin(3), extent(3,3)
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    real(dp), intent(in) :: cutoff_factor, cutoff_break_factor
+    type(Connection), intent(inout), target, optional :: alt_connect    
+    real(dp), optional, intent(in) :: origin(3), extent(3,3)
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, store_n_neighb
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
@@ -3389,12 +3249,12 @@ contains
     if (this%pot_should_do_nn) this%pot_needs_new_connect = .true.
 
     if (present(alt_connect)) then
-       call calc_connect_hysteretic(alt_connect, this, &
-            origin, extent, own_neighbour, store_is_min_image, error)
+       call calc_connect_hysteretic(alt_connect, this, cutoff_factor, cutoff_break_factor, &
+            origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
        PASS_ERROR(error)
     else
-       call calc_connect_hysteretic(this%connect, this, &
-            origin, extent, own_neighbour, store_is_min_image, error)
+       call calc_connect_hysteretic(this%connect, this, cutoff_factor, cutoff_break_factor, &
+            origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
        PASS_ERROR(error)
     endif
 

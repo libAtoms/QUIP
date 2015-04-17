@@ -62,6 +62,7 @@ include 'IPModel_interface.h'
 public :: IPModel_Tether
 type IPModel_Tether
   real(dp) :: cutoff = 0.0_dp
+  real(dp) :: r0 = 0.0_dp
   real(dp) :: kconf = 0.0_dp
   integer,allocatable,dimension(:) :: tether_indices
 end type IPModel_Tether
@@ -100,7 +101,8 @@ subroutine IPModel_Tether_Initialise_str(this, args_str, param_str, error)
   call Finalise(this)
 
   call initialise(params)
-  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on atoms. potential is kconf*(rO)^2')
+  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on atoms. potential is kconf*(r - r0)^2')
+  call param_register(params, 'r0', '0.0', this%r0, help_string='distance at which quadratic confinement potential on atoms begins. potential is kconf*(r - r0)^2')
   call param_register(params, 'indices', PARAM_MANDATORY, indices_string, help_string="Indices (1-based) of the atoms you wish to tether, format {i1 i2 i3 ...}")
 
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_Tether_Initialise args_str')) then
@@ -137,7 +139,7 @@ subroutine IPModel_Tether_Calc(this, at, e, local_e, f, virial, local_virial, ar
    integer, intent(out), optional :: error
 
 
-   real(dp) :: energy, force(3,at%N), r, dr(3), origin(3)=0.0_dp
+   real(dp) :: energy, force(3,at%N), r, disp, dr(3), origin(3)=0.0_dp
    integer :: i , n_tethered, i_teth
   
    n_tethered=size(this%tether_indices)
@@ -146,20 +148,20 @@ subroutine IPModel_Tether_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    ! Harmonic confining potential on tethered atoms
    energy = 0.0_dp
+   force = 0.0_dp
    do i=1,n_tethered
      i_teth = this%tether_indices(i)
 
-     ! energy
      r  = distance_min_image(at, i_teth , origin)
-     energy = energy + this%kConf*r**2
 
+     if(r .fgt. this%r0) then
+       disp = r - this%r0
+     ! energy
+       energy = energy + this%kConf*disp**2
      ! force
-     if(r .feq. 0.0_dp) then
-       dr = 0.0_dp
-     else
        dr = diff_min_image(at, i_teth, origin)/r
+       force(:,i_teth) = ( 2.0_dp*this%kConf*disp ) * dr 
      end if
-     force(:,i_teth) = ( 2.0_dp*this%kConf*r ) * dr 
    end do
 
    if (present(e)) e = energy

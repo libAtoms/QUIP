@@ -1332,13 +1332,14 @@ contains
     end if
 
     call print('Recalculating nearest neighbour table')
-    call set_cutoff_factor(nn_atoms, params%md(params%md_stanza)%nneigh_tol)
     if (trim(params%simulation_task) == 'md' .and. associated(at%avgpos)) then
        nn_atoms%pos = at%avgpos
     else
        nn_atoms%pos = at%pos
     end if
-    call calc_connect(nn_atoms)
+    !% Use hysteretic version of calc_connect() so we can use relative cutoffs
+    call calc_connect_hysteretic(nn_atoms, cutoff_factor=params%md(params%md_stanza)%nneigh_tol, &
+         cutoff_break_factor=params%md(params%md_stanza)%nneigh_tol)
 
     ! fix pointers - calc_connect() may have called map_into_cell() which adds properties
     if (.not. assign_pointer(at, 'nn', nn)) &
