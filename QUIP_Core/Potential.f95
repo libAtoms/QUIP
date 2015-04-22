@@ -132,7 +132,7 @@ module Potential_module
   use connection_module, only : connection
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer, diff_min_image, distance_min_image
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, set_lattice, is_nearest_neighbour, &
-   get_param_value, remove_property, calc_connect, set_cutoff, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
+   get_param_value, remove_property, calc_connect, set_cutoff, set_cutoff_minimum, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
   use cinoutput_module, only : cinoutput, write
   use dynamicalsystem_module, only : dynamicalsystem, ds_print_status, advance_verlet1, advance_verlet2
   use clusters_module, only : HYBRID_ACTIVE_MARK, HYBRID_NO_MARK, HYBRID_BUFFER_MARK, create_embed_and_fit_lists_from_cluster_mark, create_embed_and_fit_lists, &
@@ -2190,12 +2190,12 @@ end subroutine pack_pos_dg
   !% total, with snapshots saved every 'save_interval' steps. The
   !% connectivity is recalculated every 'connect_interval' steps.
   !% 'args_str' can be used to supply extra arguments to 'Potential%calc'.
-  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, summary_interval, write_interval, connect_interval, trajectory, args_str, error)
+  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, summary_interval, write_interval, trajectory, args_str, error)
     type(DynamicalSystem), intent(inout), target :: this
     type(Potential), intent(inout) :: pot
     real(dp), intent(in) :: dt
     integer, intent(in) :: n_steps
-    integer, intent(in), optional :: summary_interval, hook_interval, write_interval, connect_interval
+    integer, intent(in), optional :: summary_interval, hook_interval, write_interval
     type(CInOutput), intent(inout), optional :: trajectory
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
@@ -2204,7 +2204,7 @@ end subroutine pack_pos_dg
        end subroutine hook
     end interface    
     
-    integer :: n, my_summary_interval, my_hook_interval, my_write_interval, my_connect_interval
+    integer :: n, my_summary_interval, my_hook_interval, my_write_interval
     real(dp) :: e
     real(dp), pointer, dimension(:,:) :: f
     character(len=STRING_LENGTH) :: my_args_str
@@ -2215,7 +2215,6 @@ end subroutine pack_pos_dg
     my_summary_interval = optional_default(1, summary_interval)
     my_hook_interval = optional_default(1, hook_interval)
     my_write_interval = optional_default(1, write_interval)
-    my_connect_interval = optional_default(1, connect_interval)
     my_args_str = optional_default("", args_str)
     call initialise(params)
     call read_string(params, my_args_str)
@@ -2224,7 +2223,6 @@ end subroutine pack_pos_dg
     my_args_str = write_string(params)
     call finalise(params)
 
-    call calc_connect(this%atoms)
     call calc(pot, this%atoms, args_str=my_args_str, error=error)
     PASS_ERROR(error)
     call set_value(this%atoms%params, 'time', this%t)
@@ -2255,7 +2253,7 @@ end subroutine pack_pos_dg
 
        if (my_hook_interval > 0 .and. mod(n,my_hook_interval) == 0) call hook()
        if (present(trajectory) .and. my_write_interval > 0 .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
-       if (my_connect_interval > 0 .and. mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
+       if (cutoff(pot) > 0.0_dp) call calc_connect(this%atoms)
     end do
 
   end subroutine DynamicalSystem_run
