@@ -274,8 +274,8 @@ class Dynamics(object):
         # (and may add thermostat forces to acceleration, which we don't
         # want to overwrite)
 
-        #if self._ds.nsteps == 0:
-        #    self.atoms.acc[...] = (forces.T)/self.atoms.mass
+        if self._ds.nsteps == 0:
+            self.atoms.acc[...] = (forces.T)/self.atoms.mass
 
         # first half of the Velocity Verlet step for ds.atoms:
         #    p(t+dt/2) = p(t) + F(t) dt/2        ->   v(t+dt/2)  = v(t) + a(t) dt/2
