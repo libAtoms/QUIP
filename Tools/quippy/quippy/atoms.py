@@ -28,6 +28,9 @@ import numpy as np
 from quippy import _atoms
 from quippy._atoms import *
 
+from quippy.dictionary import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
+                               T_INTEGER_A2, T_REAL_A2)
+from quippy.table import TABLE_STRING_LENGTH
 from quippy.oo_fortran import update_doc_string
 from quippy.farray import frange, farray, fzeros, fvar
 from quippy.dictmixin import DictMixin
@@ -313,7 +316,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                  momenta=None, masses=None, magmoms=None, charges=None,
                  scaled_positions=None, cell=None, pbc=None, constraint=None,
                  calculator=None, info=None, n=None, lattice=None,
-                 properties=None, params=None, fixed_size=None,
+                 properties=None, params=None, fixed_size=None, set_species=True,
                  fpointer=None, finalise=True,
                  **readargs):
 
@@ -403,9 +406,10 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         ## end ASE compatibility
 
-        if self.has_property('z') and not self.has_property('species'):
-            self.add_property('species', ' '*10)
-            if self.n != 0 and not (self.z == 0).all():
+        if set_species:
+            if not self.has_property('species'):
+                self.add_property('species', ' '*TABLE_STRING_LENGTH)
+            if self.n != 0:
                 self.set_atoms(self.z) # initialise species from z
 
         if info is not None:
@@ -418,6 +422,26 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         self.hysteretic_neighbours = self.hysteretic_connect
         
 
+    def set_atomic_numbers(self, numbers, set_species=True):
+        """Set atomic numbers and optionally also species property (default True)"""
+        # override ase.Atoms.set_atomic_numbers() to keep QUIP Z and species in sync
+        ase.Atoms.set_atomic_numbers(self, numbers)
+        if set_species:
+            if not self.has_property('species'):
+                self.add_property('species', ' '*TABLE_STRING_LENGTH)
+            if self.n != 0:
+                self.set_atoms(self.z) # set species from Z
+
+    def set_chemical_symbols(self, symbols, set_species=True):
+        """Set chemical symbols - sets Z and optionally also species properties (default True)"""
+        # override ase.Atoms.set_chemical_symbols() to keep QUIP Z and species in sync
+        ase.Atoms.set_chemical_symbols(self, symbols)
+        if set_species:
+            if not self.has_property('species'):
+                self.add_property('species', ' '*TABLE_STRING_LENGTH)
+            if self.n != 0:
+                self.set_atoms(self.z) # set species from Z
+        
     def new_array(self, name, a, dtype=None, shape=None):
         # we overrride ase.Atoms.new_array() to allow "special" arrays
         # like "numbers", "positions" to be added more than once without
@@ -897,9 +921,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         else:
             # override value_ref if property_type is specified
-
-            from quippy import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
-                                T_INTEGER_A2, T_REAL_A2, TABLE_STRING_LENGTH)
 
             new_property = not self.has_property(name)
 
