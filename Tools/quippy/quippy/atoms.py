@@ -406,10 +406,10 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         ## end ASE compatibility
 
-        if set_species:
+        if set_species and self.has_property('Z'):
             if not self.has_property('species'):
                 self.add_property('species', ' '*TABLE_STRING_LENGTH)
-            if self.n != 0:
+            if self.n != 0 and not (self.z == 0).all():
                 self.set_atoms(self.z) # initialise species from z
 
         if info is not None:
@@ -429,7 +429,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         if set_species:
             if not self.has_property('species'):
                 self.add_property('species', ' '*TABLE_STRING_LENGTH)
-            if self.n != 0:
+            if self.n != 0 and not (self.z == 0).all():
                 self.set_atoms(self.z) # set species from Z
 
     def set_chemical_symbols(self, symbols, set_species=True):
@@ -439,7 +439,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         if set_species:
             if not self.has_property('species'):
                 self.add_property('species', ' '*TABLE_STRING_LENGTH)
-            if self.n != 0:
+            if self.n != 0 and not (self.z == 0).all():
                 self.set_atoms(self.z) # set species from Z
         
     def new_array(self, name, a, dtype=None, shape=None):
