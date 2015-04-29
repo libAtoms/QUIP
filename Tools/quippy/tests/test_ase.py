@@ -100,6 +100,7 @@ class TestCalculator_SW_Potential(QuippyTestCase):
 
       self.at = diamond(5.44, 14)
       randomise(self.at.pos, 0.1)
+      self.at.set_cutoff(self.pot.cutoff())
       self.at.calc_connect()
 
       self.e, = fvar('e')
@@ -137,6 +138,65 @@ class TestCalculator_SW_Potential(QuippyTestCase):
 
    def test_numeric_forces(self):
       self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.ase_at), self.f_ref.T, tol=1e-4)
+
+
+class TestNumbersSpecies(QuippyTestCase):
+    def setUp(self):
+        self.ase_at = ase.Atoms(numbers=[1,2,3], positions=np.zeros((3,3)))
+        self.at = Atoms(numbers=[1,2,3], positions=np.zeros((3,3)))
+
+    def test_get_atomic_numbers_ase(self):
+        self.assertEqual(list(self.ase_at.get_atomic_numbers()), [1,2,3])
+
+    def test_get_atomic_numbers_quippy(self):
+        self.assertEqual(list(self.at.get_atomic_numbers()), [1,2,3])
+
+    def test_get_chemical_symbols_ase(self):
+        self.assertEqual(self.ase_at.get_chemical_symbols(), ['H', 'He', 'Li'])
+
+    def test_get_chemical_symbols_quippy(self):
+        self.assertEqual(self.at.get_chemical_symbols(), ['H', 'He', 'Li'])
+
+    def test_get_species(self):
+        sp = list([''.join(s).strip() for s in self.at.species])
+        self.assertEqual(sp, ['H', 'He', 'Li'])
+
+    def test_set_atomic_numbers(self):
+        self.at.set_atomic_numbers([4,5,6])
+        self.assertEqual(list(self.at.z), [4,5,6])
+        self.assertEqual(list(self.at.get_atomic_numbers()), [4,5,6])
+        self.assertEqual(list(self.at.get_chemical_symbols()), ['Be', 'B', 'C'])
+        sp = list([''.join(s).strip() for s in self.at.species])        
+        self.assertEqual(sp, ['Be', 'B', 'C'])
+
+    def test_set_chemical_symbols(self):
+        self.at.set_chemical_symbols(['Be', 'B', 'C'])
+        self.assertEqual(list(self.at.z), [4,5,6])        
+        self.assertEqual(list(self.at.get_atomic_numbers()), [4,5,6])
+        self.assertEqual(list(self.at.get_chemical_symbols()), ['Be', 'B', 'C'])
+        sp = list([''.join(s).strip() for s in self.at.species])        
+        self.assertEqual(sp, ['Be', 'B', 'C'])
+
+    def test_set_atomic_numbers_set_species_false(self):
+        self.at.set_atomic_numbers([4,5,6], set_species=False)
+        self.assertEqual(list(self.at.z), [4,5,6])
+        self.assertEqual(list(self.at.get_atomic_numbers()), [4,5,6])
+        self.assertEqual(list(self.at.get_chemical_symbols()), ['Be', 'B', 'C'])
+        sp = list([''.join(s).strip() for s in self.at.species])        
+        self.assertEqual(sp, ['H', 'He', 'Li']) # still previous value
+
+    def test_set_chemical_symbols_set_species_false(self):
+        self.at.set_chemical_symbols(['Be', 'B', 'C'], set_species=False)
+        self.assertEqual(list(self.at.z), [4,5,6])        
+        self.assertEqual(list(self.at.get_atomic_numbers()), [4,5,6])
+        self.assertEqual(list(self.at.get_chemical_symbols()), ['Be', 'B', 'C'])
+        sp = list([''.join(s).strip() for s in self.at.species])
+        self.assertEqual(sp, ['H', 'He', 'Li']) # still previous value
+
+    def test_constructor_set_species_false(self):
+        at = Atoms(self.ase_at, set_species=False)
+        self.assert_(not at.has_property('species'))
+        
 
 
 

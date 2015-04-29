@@ -23,8 +23,8 @@ import sys
 def oxygenate(at, edge_only=False):
    """Add oxygen atoms to undercoorindated silicons to complete tetrahedra."""
    
-   saved_cutoff, saved_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
-   at.set_cutoff_factor(1.2)
+   saved_cutoff = at.cutoff
+   at.set_cutoff(1.2*bond_length(14, 14))
    at.calc_connect()
 
    add_pos = []
@@ -117,7 +117,7 @@ def oxygenate(at, edge_only=False):
       print 'Removing %r' % rem_list
       at.remove_atoms(rem_list)
       
-   at.cutoff, at.use_uniform_cutoff = saved_cutoff, saved_use_uniform_cutoff
+   at.cutoff = saved_cutoff
 
 
 if __name__ == '__main__':

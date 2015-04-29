@@ -175,13 +175,17 @@ contains
     !NB don't do if use_pos => pos
     if (.not. use_pos_is_pos) at_copy%pos = use_pos
     if (do_find_silica_residue) then
-      call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
+       call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
+       call calc_connect(at_copy, alt_connect=t_connect)       
     elseif (do_have_titania_potential) then
-      call set_cutoff(at_copy,1.3*bond_length(22, 8))
+       call set_cutoff(at_copy,1.3*bond_length(22, 8))
+       call calc_connect(at_copy, alt_connect=t_connect)
     else
-      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
+       ! use hysteretic connect to get nearest neighbour cutoff
+       ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
+       call calc_connect_hysteretic(at, DEFAULT_NNEIGHTOL, DEFAULT_NNEIGHTOL, alt_connect=t_connect)
     endif
-    call calc_connect(at_copy, alt_connect=t_connect)
+
 
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
@@ -288,7 +292,7 @@ integer :: j,atom_i, ji
       use_connect => at%connect
     endif
     if (.not.use_connect%initialised) then
-      RAISE_ERROR(me//'No connectivity data present in atoms structure', error)
+       RAISE_ERROR(me//'No connectivity data present in atoms structure', error)
     endif
 !    use_hysteretic_neighbours = optional_default(.false.,hysteretic_neighbours)
 
@@ -1228,12 +1232,16 @@ integer :: j,atom_i, ji
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
     if (.not. use_pos_is_pos) at_copy%pos = use_pos
+
     if (do_add_silica_23body) then
-      call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
+       call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
+       call calc_connect(at_copy, alt_connect=t_connect)       
     else
-      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
+       ! use hysteretic connect to get nearest neighbour cutoff
+       ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
+       call calc_connect_hysteretic(at, DEFAULT_NNEIGHTOL, DEFAULT_NNEIGHTOL, alt_connect=t_connect)
     endif
-    call calc_connect(at_copy, alt_connect=t_connect)
+    
 
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
@@ -3030,7 +3038,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      deallocate(pairs_one_three)
      deallocate(shifts_one_three)
      deallocate(diffs_one_three)
-     deallocate(triplets_shifts)
+     if(allocated(triplets_shifts)) deallocate(triplets_shifts)
 !call print("triplets diffs")
 !call print(triplets_diffs)
 end subroutine find_monomer_triplets  

@@ -125,13 +125,14 @@ with `atoms` to the new :class:`Potential` instance, by calling
     array in :attr:`.Atoms.arrays` containing volumes for each atom.
 
 """,
-    signature='Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms])')
+    signature='Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms, calculation_always_required])')
 
     callback_map = {}
 
     def __init__(self, init_args=None, pot1=None, pot2=None, param_str=None,
                  param_filename=None, bulk_scale=None, mpi_obj=None,
                  callback=None, calculator=None, cutoff_skin=1.0, atoms=None,
+		 calculation_always_required=False,
                  fpointer=None, finalise=True,
                  error=None, **kwargs):
 
@@ -148,6 +149,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
         self._calc_args = {}
         self._default_quantities = []
         self.cutoff_skin = cutoff_skin
+        self.calculation_always_required = calculation_always_required
 
         if callback is not None or calculator is not None:
             if init_args is None:
@@ -332,22 +334,24 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self.atoms = Atoms(atoms)
 
         # check if atoms has changed since last call
-        if self._prev_atoms is not None and self._prev_atoms.equivalent(self.atoms):
-            return
+	if not self.calculation_always_required:
+	    if self._prev_atoms is not None and self._prev_atoms.equivalent(self.atoms):
+		return
 
         # Mark all quantities as needing to be recalculated
         self.wipe()
 
         # do we need to reinitialise _prev_atoms?
-        if self._prev_atoms is None or len(self._prev_atoms) != len(self.atoms) or not self.atoms.connect.initialised:
-            self._prev_atoms = Atoms()
-            self._prev_atoms.copy_without_connect(self.atoms)
-            self._prev_atoms.add_property('orig_pos', self.atoms.pos)
-        else:
-            # _prev_atoms is OK, update it in place
-            self._prev_atoms.z[...] = self.atoms.z
-            self._prev_atoms.pos[...] = self.atoms.pos
-            self._prev_atoms.lattice[...] = self.atoms.lattice
+	if not self.calculation_always_required:
+	    if self._prev_atoms is None or len(self._prev_atoms) != len(self.atoms) or not self.atoms.connect.initialised:
+		self._prev_atoms = Atoms()
+		self._prev_atoms.copy_without_connect(self.atoms)
+		self._prev_atoms.add_property('orig_pos', self.atoms.pos)
+	    else:
+		# _prev_atoms is OK, update it in place
+		self._prev_atoms.z[...] = self.atoms.z
+		self._prev_atoms.pos[...] = self.atoms.pos
+		self._prev_atoms.lattice[...] = self.atoms.lattice
 
         # do a calc_connect(), setting cutoff_skin so full reconnect will only be done when necessary
         self.atoms.set_cutoff(self.cutoff(), cutoff_skin=self.cutoff_skin)
@@ -599,26 +603,6 @@ with `atoms` to the new :class:`Potential` instance, by calling
         return dict_to_args_str(self._calc_args)
 
 
-    def get_cutoff_skin(self):
-        return self._cutoff_skin
-
-    def set_cutoff_skin(self, cutoff_skin):
-        self._cutoff_skin = cutoff_skin
-        self._prev_atoms = None # force a recalculation
-
-    cutoff_skin = property(get_cutoff_skin, set_cutoff_skin,
-                           doc="""
-                           The `cutoff_skin` attribute is only relevant when the ASE-style
-                           interface to the Potential is used, via the :meth:`get_forces`,
-                           :meth:`get_potential_energy` etc. methods. In this case the
-                           connectivity of the :class:`~quippy.atoms.Atoms` object for which
-                           the calculation is requested is automatically kept up to date by
-                           using a neighbour cutoff of :meth:`cutoff` + `cutoff_skin`, and
-                           recalculating the neighbour lists whenever the maximum displacement
-                           since the last :meth:`Atoms.calc_connect` exceeds `cutoff_skin`.
-                           """)
-
-
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(potential)'] = Potential
 
@@ -737,7 +721,7 @@ class Minim(Optimizer):
             if self.do_lat:
                 self.atoms.set_cell(self._atoms.get_cell())
 
-        self.atoms.set_cutoff(self.potential.cutoff()+self.cutoff_skin)
+        self.atoms.set_cutoff(self.potential.cutoff(), cutoff_skin=self.cutoff_skin)
         self.atoms.calc_connect()
 
         # check for constraints, only FixAtoms is supported for now

@@ -84,8 +84,8 @@ class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
 
     __doc__ = _dynamicalsystem.DynamicalSystem.__doc__
 
-    def run(self, pot, dt, n_steps, hook_interval=None, write_interval=None,
-            connect_interval=None, trajectory=None, args_str=None, hook=None,
+    def run(self, pot, dt, n_steps, summary_interval=None, hook_interval=None, write_interval=None,
+            trajectory=None, args_str=None, hook=None,
             save_interval=None):
 
         if hook is None and hook_interval is not None:
@@ -95,18 +95,16 @@ class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
             traj = []
             save_hook = lambda: traj.append(self.atoms.copy())
             _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps,
-                                                 save_hook,
-                                                 hook_interval=save_interval,
+                                                 save_hook, hook_interval=save_interval,
+						 summary_interval=summary_interval,
                                                  write_interval=write_interval,
-                                                 connect_interval=connect_interval,
                                                  trajectory=trajectory,
                                                  args_str=args_str)
             return traj
         else:
-            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook,
-                                                 hook_interval, write_interval,
-                                                 connect_interval, trajectory,
-                                                 args_str)
+            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval, 
+						 summary_interval=summary_interval, write_interval=write_interval,
+                                                 trajectory=trajectory, args_str=args_str)
 
     run.__doc__ = _dynamicalsystem.DynamicalSystem.run.__doc__
 
@@ -274,8 +272,8 @@ class Dynamics(object):
         # (and may add thermostat forces to acceleration, which we don't
         # want to overwrite)
 
-        #if self._ds.nsteps == 0:
-        #    self.atoms.acc[...] = (forces.T)/self.atoms.mass
+        if self._ds.nsteps == 0:
+            self.atoms.acc[...] = (forces.T)/self.atoms.mass
 
         # first half of the Velocity Verlet step for ds.atoms:
         #    p(t+dt/2) = p(t) + F(t) dt/2        ->   v(t+dt/2)  = v(t) + a(t) dt/2

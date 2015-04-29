@@ -122,8 +122,8 @@ contains
 
     call atoms_copy_without_connect(at_copy, at) 
     at_copy%nneightol = nneightol
-    call set_cutoff_factor(at_copy, at_copy%nneightol)
-    call calc_connect(at_copy)
+    !% Use hysteretic connect so we can work with relative cutoffs
+    call calc_connect_hysteretic(at_copy, at_copy%nneightol, at_copy%nneightol)
 
     nedges = 0
     do i = 1, at%N

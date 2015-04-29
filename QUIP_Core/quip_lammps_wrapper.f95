@@ -47,6 +47,7 @@ module QUIP_LAMMPS_wrapper_module
       real(kind=c_double), intent(out), dimension(3,(nlocal+nghost)) :: quip_force  ! force
 
       integer :: i, j, n, nn, ni, i_n1n, j_n2n, error
+      integer, save :: nn_guess = 0
       type(atoms), save     :: at
       type(quip_lammps_potential) :: am
       type(Potential), pointer :: pot
@@ -59,66 +60,70 @@ module QUIP_LAMMPS_wrapper_module
          pot => am%pot
       endif
 
+      ! if this region is vacuum, don't do anything.
+      if(nlocal > 0) then
 
-      ! Initialise atoms object. If number of atoms does not change, keep the
-      ! object. Allocate connection table, be generous with the number of
-      ! neighbours.
-      if( .not. is_initialised(at) .or. at%N /= (nlocal+nghost) ) then
-         call finalise(at)
-         call initialise(at,(nlocal+nghost),lattice)
-         call set_cutoff(at,cutoff(pot))
-         call connection_fill(at%connect,at%N,at%N,nn_guess=2*maxval(quip_num_neigh)) 
-      endif
+         ! Initialise atoms object. If number of atoms does not change, keep the
+         ! object. Allocate connection table, be generous with the number of
+         ! neighbours.
+         if( .not. is_initialised(at) .or. at%N /= (nlocal+nghost) .or. nn_guess < maxval(quip_num_neigh) ) then
+            call finalise(at)
+            call initialise(at,(nlocal+nghost),lattice)
+            call set_cutoff(at,cutoff(pot))
+            nn_guess = 2*maxval(quip_num_neigh)
+            call connection_fill(at%connect,at%N,at%N,nn_guess=nn_guess) 
+         endif
 
-      ! Transport atomic numbers and positions.
-      at%Z = atomic_numbers
-      at%pos = quip_x
+         ! Transport atomic numbers and positions.
+         at%Z = atomic_numbers
+         at%pos = quip_x
 
-      ! Add atom mask to atoms object. Potentials will only include these atoms
-      ! in the calculation.
-      call add_property(at,'local',.false.,ptr = local, overwrite=.true., error=error) 
+         ! Add atom mask to atoms object. Potentials will only include these atoms
+         ! in the calculation.
+         call add_property(at,'local',.false.,ptr = local, overwrite=.true., error=error) 
 
-      ! Zero all connections.
-      do i = 1, at%N
-         at%connect%neighbour1(i)%t%N = 0
-         at%connect%neighbour2(i)%t%N = 0
-      enddo
-
-      ! Fill connection table.
-      nn = 0
-      do ni = 1, inum
-         ! Look up ni-th atom as atom i.
-         i = ilist(ni) + 1
-         ! Set local flag - include in potential calculation.
-         local(i) = .true.
-
-         i_n1n = 0
-         do n = 1, quip_num_neigh(ni)
-            nn = nn + 1;
-            j = quip_neigh(nn)
-
-            ! j is atom i's n-th neighbour. Fill the connection table for both i
-            ! and j at the same time. As LAMMPS repeats periodic images
-            ! explicitly, shift is set to 0. For the same reason, the lattice
-            ! variable is not really important, except in calculating the
-            ! virial.
-            if( i <= j ) then
-               i_n1n = i_n1n + 1
-               at%connect%neighbour1(i)%t%N = at%connect%neighbour1(i)%t%N + 1    ! Increase size of neighbour list by one
-               at%connect%neighbour1(i)%t%int(1,i_n1n) = j                        ! The last neighbour is j
-               at%connect%neighbour1(i)%t%int(2:4,i_n1n) = 0                      ! Set the shift to zero
-               at%connect%neighbour1(i)%t%real(1,i_n1n) = norm(at%pos(:,i) - at%pos(:,j))
-
-               at%connect%neighbour2(j)%t%N = at%connect%neighbour2(j)%t%N + 1 ! Fill the connection for the other atom in the pair.
-               j_n2n = at%connect%neighbour2(j)%t%N
-               at%connect%neighbour2(j)%t%int(1,j_n2n) = i
-               at%connect%neighbour2(j)%t%int(2,j_n2n) = i_n1n
-            endif
+         ! Zero all connections.
+         do i = 1, at%N
+            at%connect%neighbour1(i)%t%N = 0
+            at%connect%neighbour2(i)%t%N = 0
          enddo
-      enddo
 
-      ! Call the QUIP potential.
-      call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local lammps")
+         ! Fill connection table.
+         nn = 0
+         do ni = 1, inum
+            ! Look up ni-th atom as atom i.
+            i = ilist(ni) + 1
+            ! Set local flag - include in potential calculation.
+            local(i) = .true.
+
+            i_n1n = 0
+            do n = 1, quip_num_neigh(ni)
+               nn = nn + 1;
+               j = quip_neigh(nn)
+
+               ! j is atom i's n-th neighbour. Fill the connection table for both i
+               ! and j at the same time. As LAMMPS repeats periodic images
+               ! explicitly, shift is set to 0. For the same reason, the lattice
+               ! variable is not really important, except in calculating the
+               ! virial.
+               if( i <= j ) then
+                  i_n1n = i_n1n + 1
+                  at%connect%neighbour1(i)%t%N = at%connect%neighbour1(i)%t%N + 1    ! Increase size of neighbour list by one
+                  at%connect%neighbour1(i)%t%int(1,i_n1n) = j                        ! The last neighbour is j
+                  at%connect%neighbour1(i)%t%int(2:4,i_n1n) = 0                      ! Set the shift to zero
+                  at%connect%neighbour1(i)%t%real(1,i_n1n) = norm(at%pos(:,i) - at%pos(:,j))
+
+                  at%connect%neighbour2(j)%t%N = at%connect%neighbour2(j)%t%N + 1 ! Fill the connection for the other atom in the pair.
+                  j_n2n = at%connect%neighbour2(j)%t%N
+                  at%connect%neighbour2(j)%t%int(1,j_n2n) = i
+                  at%connect%neighbour2(j)%t%int(2,j_n2n) = i_n1n
+               endif
+            enddo
+         enddo
+
+         ! Call the QUIP potential.
+         call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local lammps")
+      endif
 
    endsubroutine quip_lammps_wrapper
 

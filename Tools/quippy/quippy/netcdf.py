@@ -108,13 +108,9 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1, format=None):
                         at.params[name] = ''.join(var[frame]).strip()
                     else:
                         if name == 'cutoff':
-                            at.set_cutoff(var[frame], at.cutoff_break)
-                        elif name == 'cutoff_factor':
-                            at.set_cutoff_factor(var[frame], at.cutoff_break)
-                        elif name == 'cutoff_break':
-                            at.set_cutoff(at.cutoff, var[frame])
-                        elif name == 'cutoff_factor_break':
-                            at.set_cutoff_factor(var[frame], at.cutoff_break)
+                            at.cutoff = var[frame]
+                        elif name == 'cutoff_skin':
+                            at.cutoff_skin = var[frame]
                         elif name == 'nneightol':
                             at.nneightol = var[frame]
                         else:
@@ -240,14 +236,7 @@ class NetCDFWriter(object):
 
         params = at.params.copy()
         params['nneightol'] = at.nneightol
-        if at.use_uniform_cutoff:
-            params['cutoff'] = at.cutoff
-            if at.cutoff_break != at.cutoff:
-                params['cutoff_break'] = at.cutoff_break
-        else:
-            params['cutoff_factor'] = at.cutoff
-            if at.cutoff_break != at.cutoff:
-                params['cutoff_factor_break'] = at.cutoff_break
+        params['cutoff'] = at.cutoff
 
         for name in params.keys():
             t, s, shape, = params.get_type_and_size(name)

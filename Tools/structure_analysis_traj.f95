@@ -188,42 +188,82 @@ subroutine analysis_read(this, prev, args_str)
 
   call initialise(params)
   ! dummy parameters required for some (undocumented) reason...
-  call param_register(params, 'infile', '', dummy_c_1, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'commandfile', '', dummy_c_2, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'decimation', '0', dummy_i_1, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'infile_is_list', 'F', dummy_l_1, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'quiet', 'F', dummy_l_2, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'infile', '', dummy_c_1, help_string="(Dummy parameter)")
+  call param_register(params, 'commandfile', '', dummy_c_2, help_string="(Dummy parameter)")
+  call param_register(params, 'decimation', '0', dummy_i_1, help_string="(Dummy parameter)")
+  call param_register(params, 'infile_is_list', 'F', dummy_l_1, help_string="(Dummy parameter)")
+  call param_register(params, 'quiet', 'F', dummy_l_2, help_string="(Dummy parameter)")
 
   if (.not. present(prev)) then
     ! general
-    call param_register(params, 'outfile', 'stdout', this%outfilename, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'outfile', 'stdout', this%outfilename, help_string="Output file name (default: stdout)")
     call param_register(params, 'AtomMask', '', this%mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'min_time', '-1.0', this%min_time, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'max_time', '-1.0', this%max_time, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'min_frame', '-1', this%min_frame, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'max_frame', '-1', this%max_frame, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'min_time', '-1.0', this%min_time, help_string="Only include frames with Time >= min_time")
+    call param_register(params, 'max_time', '-1.0', this%max_time, help_string="Only include frames with Time <= max_time")
+    call param_register(params, 'min_frame', '-1', this%min_frame, help_string="Only include frames with number (not counting skipped) >= min_frame")
+    call param_register(params, 'max_frame', '-1', this%max_frame, help_string="Only include frames with number (not counting skipped) <= max_frame")
     call param_register(params, 'type', '', this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
+  else
+    ! general
+    call param_register(params, 'outfile', trim(prev%outfilename), this%outfilename, help_string="")
+    call param_register(params, 'AtomMask', trim(prev%mask_str), this%mask_str, help_string="")
+    call param_register(params, 'min_time', ''//prev%min_time, this%min_time, help_string="")
+    call param_register(params, 'max_time', ''//prev%max_time, this%max_time, help_string="")
+    call param_register(params, 'min_frame', ''//prev%min_frame, this%min_frame, help_string="")
+    call param_register(params, 'max_frame', ''//prev%max_frame, this%max_frame, help_string="")
+    call param_register(params, 'type', ''//trim(prev%type), this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
+  endif
+
+  if (.not. present(prev)) then
     ! radial density
     call param_register(params, 'density_radial_bin_width', '-1.0', this%density_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_radial_n_bins', '-1', this%density_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_radial_center', '0.0 0.0 0.0', this%density_radial_center, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_radial_center_at', '-1', this%density_radial_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_radial_sigma', '1.0', this%density_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! radial density
+    call param_register(params, 'density_radial_bin_width', ''//this%density_radial_bin_width, this%density_radial_bin_width, help_string="")
+    call param_register(params, 'density_radial_n_bins', ''//this%density_radial_n_bins, this%density_radial_n_bins, help_string="")
+    call param_register(params, 'density_radial_center', ''//prev%density_radial_center, this%density_radial_center, help_string="")
+    call param_register(params, 'density_radial_center_at', ''//prev%density_radial_center_at, this%density_radial_center_at, help_string="")
+    call param_register(params, 'density_radial_sigma', ''//prev%density_radial_gaussian_sigma, this%density_radial_gaussian_sigma, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! grid density
     call param_register(params, 'density_grid_min_p', '0.0 0.0 0.0', this%density_grid_min_p, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_grid_bin_width', '-1.0 -1.0 -1.0', this%density_grid_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_grid_n_bins', '-1 -1 -1', this%density_grid_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_grid_gaussian', 'F', this%density_grid_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_grid_sigma', '1.0', this%density_grid_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! grid density
+    call param_register(params, 'density_grid_min_p', ''//prev%density_grid_min_p, this%density_grid_min_p, help_string="")
+    call param_register(params, 'density_grid_bin_width', ''//prev%density_grid_bin_width, this%density_grid_bin_width, help_string="")
+    call param_register(params, 'density_grid_n_bins', ''//prev%density_grid_n_bins, this%density_grid_n_bins, help_string="")
+    call param_register(params, 'density_grid_gaussian', ''//prev%density_grid_gaussian_smoothing, this%density_grid_gaussian_smoothing, help_string="")
+    call param_register(params, 'density_grid_sigma', ''//prev%density_grid_gaussian_sigma, this%density_grid_gaussian_sigma, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! radial KE density
     call param_register(params, 'KE_density_radial_bin_width', '-1.0', this%KE_density_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KE_density_radial_n_bins', '-1', this%KE_density_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KE_density_radial_center', '0.0 0.0 0.0', this%KE_density_radial_center, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KE_density_radial_center_at', '-1', this%KE_density_radial_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KE_density_radial_sigma', '1.0', this%KE_density_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! radial KE_density
+    !TODO why do these use 'this' for the default?
+    call param_register(params, 'KE_density_radial_bin_width', ''//this%KE_density_radial_bin_width, this%KE_density_radial_bin_width, help_string="")
+    call param_register(params, 'KE_density_radial_n_bins', ''//this%KE_density_radial_n_bins, this%KE_density_radial_n_bins, help_string="")
+    !TODO why is KE_density_radial_center missing?
+    call param_register(params, 'KE_density_radial_center_at', ''//prev%KE_density_radial_center_at, this%KE_density_radial_center_at, help_string="")
+    call param_register(params, 'KE_density_radial_sigma', ''//prev%KE_density_radial_gaussian_sigma, this%KE_density_radial_gaussian_sigma, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! rdfd
     call param_register(params, 'rdfd_zone_center', '0.0 0.0 0.0', this%rdfd_zone_center, help_string="Cartesian position to center zones for rdfd (ignored in rdfd_zone_center is usable)")
     call param_register(params, 'rdfd_zone_atom_center', '0', this%rdfd_zone_atom_center, help_string="If > 0, atom to center zones for rdfd")
@@ -235,7 +275,21 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'rdfd_neighbour_mask', '', this%rdfd_neighbour_mask_str, help_string="Mask for atoms that are considered for rdfd neighbours")
     call param_register(params, 'rdfd_gaussian', 'F', this%rdfd_gaussian_smoothing, help_string="If true, use Gaussians to smear mass distributions being integrated for rdfd")
     call param_register(params, 'rdfd_sigma', '0.1', this%rdfd_gaussian_sigma, help_string="Width of Gaussians used to smear mass distributions for rdfd")
+  else
+    ! rdfd
+    call param_register(params, 'rdfd_zone_center', ''//prev%rdfd_zone_center, this%rdfd_zone_center, help_string="")
+    call param_register(params, 'rdfd_zone_atom_center', ''//prev%rdfd_zone_atom_center, this%rdfd_zone_atom_center, help_string="")
+    call param_register(params, 'rdfd_zone_width', ''//prev%rdfd_zone_width, this%rdfd_zone_width, help_string="")
+    call param_register(params, 'rdfd_n_zones', ''//prev%rdfd_n_zones, this%rdfd_n_zones, help_string="")
+    call param_register(params, 'rdfd_bin_width', ''//prev%rdfd_bin_width, this%rdfd_bin_width, help_string="")
+    call param_register(params, 'rdfd_n_bins', ''//prev%rdfd_n_bins, this%rdfd_n_bins, help_string="")
+    call param_register(params, 'rdfd_center_mask', trim(prev%rdfd_center_mask_str), this%rdfd_center_mask_str, help_string="")
+    call param_register(params, 'rdfd_neighbour_mask', trim(prev%rdfd_neighbour_mask_str), this%rdfd_neighbour_mask_str, help_string="")
+    call param_register(params, 'rdfd_gaussian', ''//prev%rdfd_gaussian_smoothing, this%rdfd_gaussian_smoothing, help_string="")
+    call param_register(params, 'rdfd_sigma', ''//prev%rdfd_gaussian_sigma, this%rdfd_gaussian_sigma, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! adfd
     call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_zone_width', '-1.0', this%adfd_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -248,7 +302,22 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'adfd_neighbour_1_max_dist', '-1.0', this%adfd_neighbour_1_max_dist, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_neighbour_2_mask', '', this%adfd_neighbour_2_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'adfd_dist_bin_rc2', '', this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbor2, otherwise to r_neighbor1-neighbor2")
+  else
+    ! adfd
+    call param_register(params, 'adfd_zone_center', ''//prev%adfd_zone_center, this%adfd_zone_center, help_string="")
+    call param_register(params, 'adfd_zone_width', ''//prev%adfd_zone_width, this%adfd_zone_width, help_string="")
+    call param_register(params, 'adfd_n_zones', ''//prev%adfd_n_zones, this%adfd_n_zones, help_string="")
+    call param_register(params, 'adfd_dist_bin_width', ''//prev%adfd_dist_bin_width, this%adfd_dist_bin_width, help_string="")
+    call param_register(params, 'adfd_n_dist_bins', ''//prev%adfd_n_dist_bins, this%adfd_n_dist_bins, help_string="")
+    call param_register(params, 'adfd_n_angle_bins', ''//prev%adfd_n_angle_bins, this%adfd_n_angle_bins, help_string="")
+    call param_register(params, 'adfd_center_mask', trim(prev%adfd_center_mask_str), this%adfd_center_mask_str, help_string="")
+    call param_register(params, 'adfd_neighbour_1_mask', trim(prev%adfd_neighbour_1_mask_str), this%adfd_neighbour_1_mask_str, help_string="")
+    call param_register(params, 'adfd_neighbour_1_max_dist', ''//prev%adfd_neighbour_1_max_dist, this%adfd_neighbour_1_max_dist, help_string="")
+    call param_register(params, 'adfd_neighbour_2_mask', trim(prev%adfd_neighbour_2_mask_str), this%adfd_neighbour_2_mask_str, help_string="")
+    call param_register(params, 'adfd_dist_bin_rc2', ''//prev%adfd_dist_bin_rc2, this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbor2, otherwise to r_neighbor1-neighbor2")
+  endif
 
+  if (.not. present(prev)) then
     ! r-dep KE distribution
     call param_register(params, 'KEdf_radial_zone_center', '0.0 0.0 0.0', this%KEdf_radial_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KEdf_radial_zone_center_at', '-1', this%KEdf_radial_zone_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -258,7 +327,19 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'KEdf_radial_n_zones', '1', this%KEdf_radial_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KEdf_radial_gaussian_sigma', '0.005', this%KEdf_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'KEdf_radial_mask', '', this%KEdf_radial_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! r-dep KE distribution
+    call param_register(params, 'KEdf_radial_zone_center', ''//prev%KEdf_radial_zone_center, this%KEdf_radial_zone_center, help_string="")
+    call param_register(params, 'KEdf_radial_zone_center_at', ''//prev%KEdf_radial_zone_center_at, this%KEdf_radial_zone_center_at, help_string="")
+    call param_register(params, 'KEdf_radial_zone_width', ''//prev%KEdf_radial_zone_width, this%KEdf_radial_zone_width, help_string="")
+    call param_register(params, 'KEdf_radial_bin_width', ''//prev%KEdf_radial_bin_width, this%KEdf_radial_bin_width, help_string="")
+    call param_register(params, 'KEdf_radial_n_bins', ''//prev%KEdf_radial_n_bins, this%KEdf_radial_n_bins, help_string="")
+    call param_register(params, 'KEdf_radial_n_zones', ''//prev%KEdf_radial_n_zones, this%KEdf_radial_n_zones, help_string="")
+    call param_register(params, 'KEdf_radial_gaussian_sigma', ''//prev%KEdf_radial_gaussian_sigma, this%KEdf_radial_gaussian_sigma, help_string="")
+    call param_register(params, 'KEdf_radial_mask', ''//trim(prev%KEdf_radial_mask_str), this%KEdf_radial_mask_str, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! r-dep |F| distribution
     call param_register(params, 'propdf_radial_zone_center', '0.0 0.0 0.0', this%propdf_radial_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'propdf_radial_zone_center_at', '-1', this%propdf_radial_zone_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -269,25 +350,62 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'propdf_radial_gaussian_sigma', '0.0', this%propdf_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'propdf_radial_mask', '', this%propdf_radial_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'propdf_radial_property', '', this%propdf_radial_property, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! r-dep |F| distribution
+    call param_register(params, 'propdf_radial_zone_center', ''//prev%propdf_radial_zone_center, this%propdf_radial_zone_center, help_string="")
+    call param_register(params, 'propdf_radial_zone_center_at', ''//prev%propdf_radial_zone_center_at, this%propdf_radial_zone_center_at, help_string="")
+    call param_register(params, 'propdf_radial_zone_width', ''//prev%propdf_radial_zone_width, this%propdf_radial_zone_width, help_string="")
+    call param_register(params, 'propdf_radial_n_zones', ''//prev%propdf_radial_n_zones, this%propdf_radial_n_zones, help_string="")
+    call param_register(params, 'propdf_radial_bin_width', ''//prev%propdf_radial_bin_width, this%propdf_radial_bin_width, help_string="")
+    call param_register(params, 'propdf_radial_n_bins', ''//prev%propdf_radial_n_bins, this%propdf_radial_n_bins, help_string="")
+    call param_register(params, 'propdf_radial_gaussian_sigma', ''//prev%propdf_radial_gaussian_sigma, this%propdf_radial_gaussian_sigma, help_string="")
+    call param_register(params, 'propdf_radial_mask', ''//trim(prev%propdf_radial_mask_str), this%propdf_radial_mask_str, help_string="")
+    call param_register(params, 'propdf_radial_property', ''//trim(prev%propdf_radial_property), this%propdf_radial_property, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! geometry
     call param_register(params, 'geometry_filename', '', this%geometry_filename, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'geometry_central_atom', '-1', this%geometry_central_atom, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! geometry
+    call param_register(params, 'geometry_filename', ''//trim(prev%geometry_filename), this%geometry_filename, help_string="")
+    call param_register(params, 'geometry_central_atom', ''//prev%geometry_central_atom, this%geometry_central_atom, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! uniaxial density silica
     call param_register(params, 'density_axial_n_bins', '-1', this%density_axial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_axial_axis', '-1', this%density_axial_axis, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_axial_silica_atoms', '-1', this%density_axial_silica_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_axial_gaussian', 'F', this%density_axial_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'density_axial_sigma', '1.0', this%density_axial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! uniaxial density silica
+    call param_register(params, 'density_axial_n_bins', ''//prev%density_axial_n_bins, this%density_axial_n_bins, help_string="")
+    call param_register(params, 'density_axial_axis', ''//prev%density_axial_axis, this%density_axial_axis, help_string="")
+    call param_register(params, 'density_axial_silica_atoms', ''//prev%density_axial_silica_atoms, this%density_axial_silica_atoms, help_string="")
+    call param_register(params, 'density_axial_gaussian', ''//prev%density_axial_gaussian_smoothing, this%density_axial_gaussian_smoothing, help_string="")
+    call param_register(params, 'density_axial_sigma', ''//prev%density_axial_gaussian_sigma, this%density_axial_gaussian_sigma, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! num_hbond_silica
     call param_register(params, 'num_hbond_n_bins', '-1', this%num_hbond_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'num_hbond_axis', '0', this%num_hbond_axis, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'num_hbond_silica_atoms', '0', this%num_hbond_silica_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'num_hbond_gaussian', 'F', this%num_hbond_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'num_hbond_sigma', '1.0', this%num_hbond_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
+  else
+    ! num_hbond_silica
+    call param_register(params, 'num_hbond_n_bins', ''//prev%num_hbond_n_bins, this%num_hbond_n_bins, help_string="")
+    call param_register(params, 'num_hbond_axis', ''//prev%num_hbond_axis, this%num_hbond_axis, help_string="")
+    call param_register(params, 'num_hbond_silica_atoms', ''//prev%num_hbond_silica_atoms, this%num_hbond_silica_atoms, help_string="")
+    call param_register(params, 'num_hbond_gaussian', ''//prev%num_hbond_gaussian_smoothing, this%num_hbond_gaussian_smoothing, help_string="")
+    call param_register(params, 'num_hbond_sigma', ''//prev%num_hbond_gaussian_sigma, this%num_hbond_gaussian_sigma, help_string="")
+  endif
 
+  if (.not. present(prev)) then
     ! water_orientation_silica
     call param_register(params, 'water_orientation_n_pos_bins', '-1', this%water_orientation_n_pos_bins, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'water_orientation_n_angle_bins', '-1', this%water_orientation_n_angle_bins, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -298,112 +416,17 @@ subroutine analysis_read(this, prev, args_str)
     !call param_register(params, 'water_orientation_angle_sigma', '1.0', this%water_orientation_angle_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'water_orientation_use_dipole', 'F', this%water_orientation_use_dipole, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'water_orientation_use_HOHangle_bisector', 'F', this%water_orientation_use_HOHangle_bisector, help_string="No help yet.  This source file was $LastChangedBy$")
-
   else
-    ! general
-    call param_register(params, 'outfile', trim(prev%outfilename), this%outfilename, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'AtomMask', trim(prev%mask_str), this%mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'min_time', ''//prev%min_time, this%min_time, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'max_time', ''//prev%max_time, this%max_time, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'min_frame', ''//prev%min_frame, this%min_frame, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'max_frame', ''//prev%max_frame, this%max_frame, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'type', ''//trim(prev%type), this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
-
-    ! radial density
-    call param_register(params, 'density_radial_bin_width', ''//this%density_radial_bin_width, this%density_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_radial_n_bins', ''//this%density_radial_n_bins, this%density_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_radial_center', ''//prev%density_radial_center, this%density_radial_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_radial_center_at', ''//prev%density_radial_center_at, this%density_radial_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_radial_sigma', ''//prev%density_radial_gaussian_sigma, this%density_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! grid density
-    call param_register(params, 'density_grid_min_p', ''//prev%density_grid_min_p, this%density_grid_min_p, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_grid_bin_width', ''//prev%density_grid_bin_width, this%density_grid_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_grid_n_bins', ''//prev%density_grid_n_bins, this%density_grid_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_grid_gaussian', ''//prev%density_grid_gaussian_smoothing, this%density_grid_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_grid_sigma', ''//prev%density_grid_gaussian_sigma, this%density_grid_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! radial KE_density
-    call param_register(params, 'KE_density_radial_bin_width', ''//this%KE_density_radial_bin_width, this%KE_density_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KE_density_radial_n_bins', ''//this%KE_density_radial_n_bins, this%KE_density_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KE_density_radial_center_at', ''//prev%KE_density_radial_center_at, this%KE_density_radial_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KE_density_radial_sigma', ''//prev%KE_density_radial_gaussian_sigma, this%KE_density_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! rdfd
-    call param_register(params, 'rdfd_zone_center', ''//prev%rdfd_zone_center, this%rdfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_zone_atom_center', ''//prev%rdfd_zone_atom_center, this%rdfd_zone_atom_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_zone_width', ''//prev%rdfd_zone_width, this%rdfd_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_n_zones', ''//prev%rdfd_n_zones, this%rdfd_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_bin_width', ''//prev%rdfd_bin_width, this%rdfd_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_n_bins', ''//prev%rdfd_n_bins, this%rdfd_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_center_mask', trim(prev%rdfd_center_mask_str), this%rdfd_center_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_neighbour_mask', trim(prev%rdfd_neighbour_mask_str), this%rdfd_neighbour_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_gaussian', ''//prev%rdfd_gaussian_smoothing, this%rdfd_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'rdfd_sigma', ''//prev%rdfd_gaussian_sigma, this%rdfd_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! r-dep KE distribution
-    call param_register(params, 'KEdf_radial_zone_center', ''//prev%KEdf_radial_zone_center, this%KEdf_radial_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_zone_center_at', ''//prev%KEdf_radial_zone_center_at, this%KEdf_radial_zone_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_zone_width', ''//prev%KEdf_radial_zone_width, this%KEdf_radial_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_bin_width', ''//prev%KEdf_radial_bin_width, this%KEdf_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_n_bins', ''//prev%KEdf_radial_n_bins, this%KEdf_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_n_zones', ''//prev%KEdf_radial_n_zones, this%KEdf_radial_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_gaussian_sigma', ''//prev%KEdf_radial_gaussian_sigma, this%KEdf_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'KEdf_radial_mask', ''//trim(prev%KEdf_radial_mask_str), this%KEdf_radial_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! r-dep |F| distribution
-    call param_register(params, 'propdf_radial_zone_center', ''//prev%propdf_radial_zone_center, this%propdf_radial_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_zone_center_at', ''//prev%propdf_radial_zone_center_at, this%propdf_radial_zone_center_at, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_zone_width', ''//prev%propdf_radial_zone_width, this%propdf_radial_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_n_zones', ''//prev%propdf_radial_n_zones, this%propdf_radial_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_bin_width', ''//prev%propdf_radial_bin_width, this%propdf_radial_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_n_bins', ''//prev%propdf_radial_n_bins, this%propdf_radial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_gaussian_sigma', ''//prev%propdf_radial_gaussian_sigma, this%propdf_radial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_mask', ''//trim(prev%propdf_radial_mask_str), this%propdf_radial_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'propdf_radial_property', ''//trim(prev%propdf_radial_property), this%propdf_radial_property, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! adfd
-    call param_register(params, 'adfd_zone_center', ''//prev%adfd_zone_center, this%adfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_zone_width', ''//prev%adfd_zone_width, this%adfd_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_n_zones', ''//prev%adfd_n_zones, this%adfd_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_dist_bin_width', ''//prev%adfd_dist_bin_width, this%adfd_dist_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_n_dist_bins', ''//prev%adfd_n_dist_bins, this%adfd_n_dist_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_n_angle_bins', ''//prev%adfd_n_angle_bins, this%adfd_n_angle_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_center_mask', trim(prev%adfd_center_mask_str), this%adfd_center_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_neighbour_1_mask', trim(prev%adfd_neighbour_1_mask_str), this%adfd_neighbour_1_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_neighbour_1_max_dist', ''//prev%adfd_neighbour_1_max_dist, this%adfd_neighbour_1_max_dist, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_neighbour_2_mask', trim(prev%adfd_neighbour_2_mask_str), this%adfd_neighbour_2_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_dist_bin_rc2', ''//prev%adfd_dist_bin_rc2, this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbor2, otherwise to r_neighbor1-neighbor2")
-
-    ! geometry
-    call param_register(params, 'geometry_filename', ''//trim(prev%geometry_filename), this%geometry_filename, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'geometry_central_atom', ''//prev%geometry_central_atom, this%geometry_central_atom, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! uniaxial density silica
-    call param_register(params, 'density_axial_n_bins', ''//prev%density_axial_n_bins, this%density_axial_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_axial_axis', ''//prev%density_axial_axis, this%density_axial_axis, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_axial_silica_atoms', ''//prev%density_axial_silica_atoms, this%density_axial_silica_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_axial_gaussian', ''//prev%density_axial_gaussian_smoothing, this%density_axial_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'density_axial_sigma', ''//prev%density_axial_gaussian_sigma, this%density_axial_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-
-    ! num_hbond_silica
-    call param_register(params, 'num_hbond_n_bins', ''//prev%num_hbond_n_bins, this%num_hbond_n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'num_hbond_axis', ''//prev%num_hbond_axis, this%num_hbond_axis, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'num_hbond_silica_atoms', ''//prev%num_hbond_silica_atoms, this%num_hbond_silica_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'num_hbond_gaussian', ''//prev%num_hbond_gaussian_smoothing, this%num_hbond_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'num_hbond_sigma', ''//prev%num_hbond_gaussian_sigma, this%num_hbond_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-
     ! water_orientation_silica
-    call param_register(params, 'water_orientation_n_pos_bins', ''//prev%water_orientation_n_pos_bins, this%water_orientation_n_pos_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_n_angle_bins', ''//prev%water_orientation_n_angle_bins, this%water_orientation_n_angle_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_axis', ''//prev%water_orientation_axis, this%water_orientation_axis, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_silica_atoms', ''//prev%water_orientation_silica_atoms, this%water_orientation_silica_atoms, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_gaussian', ''//prev%water_orientation_gaussian_smoothing, this%water_orientation_gaussian_smoothing, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_pos_sigma', ''//prev%water_orientation_pos_gaussian_sigma, this%water_orientation_pos_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-    !call param_register(params, 'water_orientation_angle_sigma', ''//prev%water_orientation_angle_gaussian_sigma, this%water_orientation_angle_gaussian_sigma, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_use_dipole', ''//prev%water_orientation_use_dipole, this%water_orientation_use_dipole, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'water_orientation_use_HOHangle_bisector', ''//prev%water_orientation_use_HOHangle_bisector, this%water_orientation_use_HOHangle_bisector, help_string="No help yet.  This source file was $LastChangedBy$")
-
+    call param_register(params, 'water_orientation_n_pos_bins', ''//prev%water_orientation_n_pos_bins, this%water_orientation_n_pos_bins, help_string="")
+    call param_register(params, 'water_orientation_n_angle_bins', ''//prev%water_orientation_n_angle_bins, this%water_orientation_n_angle_bins, help_string="")
+    call param_register(params, 'water_orientation_axis', ''//prev%water_orientation_axis, this%water_orientation_axis, help_string="")
+    call param_register(params, 'water_orientation_silica_atoms', ''//prev%water_orientation_silica_atoms, this%water_orientation_silica_atoms, help_string="")
+    call param_register(params, 'water_orientation_gaussian', ''//prev%water_orientation_gaussian_smoothing, this%water_orientation_gaussian_smoothing, help_string="")
+    call param_register(params, 'water_orientation_pos_sigma', ''//prev%water_orientation_pos_gaussian_sigma, this%water_orientation_pos_gaussian_sigma, help_string="")
+    !call param_register(params, 'water_orientation_angle_sigma', ''//prev%water_orientation_angle_gaussian_sigma, this%water_orientation_angle_gaussian_sigma, help_string="")
+    call param_register(params, 'water_orientation_use_dipole', ''//prev%water_orientation_use_dipole, this%water_orientation_use_dipole, help_string="")
+    call param_register(params, 'water_orientation_use_HOHangle_bisector', ''//prev%water_orientation_use_HOHangle_bisector, this%water_orientation_use_HOHangle_bisector, help_string="")
   endif
 
   if (present(args_str)) then
@@ -2462,7 +2485,7 @@ implicit none
   call system_initialise(PRINT_NORMAL)
 
   call initialise(cli_params)
-  call param_register(cli_params, "verbose", "F", do_verbose, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, "verbose", "F", do_verbose, help_string="Set verbosity level to VERBOSE.")
   if (.not. param_read_args(cli_params, ignore_unknown=.true.)) &
     call system_abort("Impossible failure to parse verbosity")
   call finalise(cli_params)
@@ -2472,10 +2495,10 @@ implicit none
 
   call initialise(cli_params)
   call param_register(cli_params, "commandfile", '', commandfilename, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, "infile", "stdin", infilename, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, "decimation", "1", decimation, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, "infile_is_list", "F", infile_is_list, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(cli_params, "quiet", "F", quiet, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(cli_params, "infile", "stdin", infilename, help_string="Input file name (default: stdin)")
+  call param_register(cli_params, "decimation", "1", decimation, help_string="How many frames to advance in each step, i.e. every n-th frame will be analysed.")
+  call param_register(cli_params, "infile_is_list", "F", infile_is_list, help_string="Treat infile as a list of filenames to process sequentially.")
+  call param_register(cli_params, "quiet", "F", quiet, help_string="Suppress frame progress count.")
   if (.not. param_read_args(cli_params, ignore_unknown = .true., task="CLI")) then
     call system_abort("Failed to parse CLI")
   endif
