@@ -39,7 +39,7 @@ LINKER = gfortran
 FPP = gfortran -E -x f95-cpp-input -P
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
-SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
+SAMPLE_DEBUG = -O0 -g -fbounds-check -DDUMP_CORE_ON_ABORT
 DEBUG = 
 OPTIM = -O3
 
