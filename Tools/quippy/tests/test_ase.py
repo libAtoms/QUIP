@@ -229,10 +229,10 @@ C       3.00000000       3.00000000       3.00000000        6""", format='string
         at = self.a * (3, 3, 3)
         self.assertEquals(list(at.z), list(self.a.z)*(3*3*3))
 
-    # def test_operator_times_equals(self):
-    #     a0 = self.a.copy()
-    #     self.a *= (3, 3, 3)
-    #     self.assertEquals(list(self.a), list(a0.z)*(3*3*3))
+    def test_operator_times_equals(self):
+        a0 = self.a.copy()
+        self.a *= (3, 3, 3)
+        self.assertEquals(list(self.a.z), list(a0.z)*(3*3*3))
 
 
 if __name__ == '__main__':
