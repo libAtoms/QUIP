@@ -42,6 +42,7 @@ from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 from quippy import available_modules, FortranDerivedTypes, get_fortran_indexing
 
 atomslog = logging.getLogger('quippy.atoms')
+#atomslog.setLevel(logging.DEBUG)
 
 __doc__ = (_atoms.__doc__ + """
 
@@ -966,6 +967,80 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             mem += c.cell_heads.size*c.cell_heads.itemsize # cell data
 
         return mem
+
+    def extend(self, other):
+        """Extend atoms object by appending atoms from *other*."""
+        # modified version of ase.Atoms.extend() to work with QUIP data storage
+        if isinstance(other, ase.Atom):
+            other = self.__class__([other])
+
+        n1 = len(self)
+        n2 = len(other)
+
+        # first make a copy of self.arrays so that we can resize Atoms
+        arrays = dict([ (key, value.copy()) for (key, value) in self.arrays.items() ])
+
+        atomslog.debug('old arrays %r' % arrays)
+
+        for name, a1 in arrays.items():
+            a = np.zeros((n1 + n2,) + a1.shape[1:], a1.dtype)
+            a[:n1] = a1
+            if name == 'masses':
+                a2 = other.get_masses()
+            else:
+                a2 = other.arrays.get(name)
+            if a2 is not None:
+                a[n1:] = a2
+            self.arrays[name] = a
+
+        for name, a2 in other.arrays.items():
+            if name in self.arrays:
+                continue
+            a = np.empty((n1 + n2,) + a2.shape[1:], a2.dtype)
+            a[n1:] = a2
+            if name == 'masses':
+                a[:n1] = self.get_masses()[:n1]
+            else:
+                a[:n1] = 0
+
+            self.set_array(name, a)
+        atomslog.debug('new arrays %r' % self.arrays)
+
+        return self
+
+    __iadd__ = extend
+
+
+    def __imul__(self, m):
+        """In-place repeat of atoms."""
+        # modified version of ase.Atoms.extend() to work with QUIP data storage        
+        if isinstance(m, int):
+            m = (m, m, m)
+
+        M = np.product(m)
+        n = len(self)
+
+        # first make a copy of self.arrays so that we can resize Atoms
+        arrays = dict([ (key, value.copy()) for (key, value) in self.arrays.items() ])        
+
+        for name, a in arrays.items():
+            self.arrays[name] = np.tile(a, (M,) + (1,) * (len(a.shape) - 1))
+
+        positions = self.arrays['positions']
+        i0 = 0
+        for m0 in range(m[0]):
+            for m1 in range(m[1]):
+                for m2 in range(m[2]):
+                    i1 = i0 + n
+                    positions[i0:i1] += np.dot((m0, m1, m2), self._cell)
+                    i0 = i1
+
+        if self.constraints is not None:
+            self.constraints = [c.repeat(m, n) for c in self.constraints]
+
+        self._cell = np.array([m[c] * self._cell[c] for c in range(3)])
+
+        return self    
 
 
 FortranDerivedTypes['type(atoms)'] = Atoms

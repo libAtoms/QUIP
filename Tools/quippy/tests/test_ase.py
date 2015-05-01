@@ -198,6 +198,41 @@ class TestNumbersSpecies(QuippyTestCase):
         self.assert_(not at.has_property('species'))
         
 
+class TestOperators(QuippyTestCase):
+
+    def setUp(self):
+
+        self.a = Atoms("""2
+Lattice="10.0 0.0 0.0 0.0 10.0 0.0 0.0 0.0 10.0" Properties=species:S:1:pos:R:3:Z:I:1 nneightol=1.2 cutoff=0.0
+Si       0.00000000       0.00000000       0.00000000       14 
+Si       2.00000000       2.00000000       2.00000000       14""", format='string')
+        self.b = Atoms("""2
+Lattice="20.0 0.0 0.0 0.0 10.0 0.0 0.0 0.0 10.0" Properties=species:S:1:pos:R:3:Z:I:1 nneightol=1.2 cutoff=0.0
+C       1.00000000       0.00000000       0.00000000        6 
+C       3.00000000       3.00000000       3.00000000        6""", format='string')
+
+    def test_operator_plus(self):
+        at = self.a + self.b
+        self.assertEquals(list(at.z), list(self.a.z) + list(self.b.z))
+        self.assertArrayAlmostEqual(at.get_positions(), np.r_[self.a.get_positions(),
+                                                              self.b.get_positions()])
+
+    def test_operator_plus_equals(self):
+        a0 = self.a.copy()        
+        self.a += self.b
+        self.assertEquals(list(self.a.z), list(a0.z) + list(self.b.z))
+        self.assertArrayAlmostEqual(self.a.get_positions(), np.r_[a0.get_positions(),
+                                                                  self.b.get_positions()])
+        
+
+    def test_operator_times(self):
+        at = self.a * (3, 3, 3)
+        self.assertEquals(list(at.z), list(self.a.z)*(3*3*3))
+
+    # def test_operator_times_equals(self):
+    #     a0 = self.a.copy()
+    #     self.a *= (3, 3, 3)
+    #     self.assertEquals(list(self.a), list(a0.z)*(3*3*3))
 
 
 if __name__ == '__main__':
