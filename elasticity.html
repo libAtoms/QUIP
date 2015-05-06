@@ -27,8 +27,8 @@
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="CP2K I/O and driver" href="cp2k.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,11 +40,11 @@
         <li class="right" >
           <a href="cp2k.html" title="CP2K I/O and driver"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -52,12 +52,14 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="cp2k.html"
                         title="previous chapter">CP2K I/O and driver</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/elasticity.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/elasticity.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -76,11 +78,11 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-quippy.elasticity">
 <span id="elasticity-calculations"></span><h1>Elasticity calculations<a class="headerlink" href="#module-quippy.elasticity" title="Permalink to this headline">¶</a></h1>
-<p>Module contents for <a class="reference internal" href="#module-quippy.elasticity" title="quippy.elasticity: Elasticity calculations"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.elasticity</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.elasticity" title="quippy.elasticity: Elasticity calculations"><code class="xref py py-mod docutils literal"><span class="pre">quippy.elasticity</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -88,8 +90,8 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><tt class="xref py py-obj docutils literal"><span class="pre">AtomResolvedStressField</span></tt></a>([bulk,&nbsp;a,&nbsp;cij,&nbsp;method])</td>
-<td>Calculator interface to <a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><tt class="xref py py-func docutils literal"><span class="pre">elastic_fields_fortran()</span></tt></a> and <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><tt class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><code class="xref py py-obj docutils literal"><span class="pre">AtomResolvedStressField</span></code></a>([bulk,&nbsp;a,&nbsp;cij,&nbsp;method])</td>
+<td>Calculator interface to <a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields_fortran()</span></code></a> and <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -100,83 +102,52 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.einstein_frequencies" title="quippy.elasticity.einstein_frequencies"><tt class="xref py py-obj docutils literal"><span class="pre">einstein_frequencies</span></tt></a>(pot,at,[args_str,ii,delta])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><tt class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></tt></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></code></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;...])</td>
 <td>Compute atomistic strain field and linear elastic stress response.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.graphene_elastic" title="quippy.elasticity.graphene_elastic"><tt class="xref py py-obj docutils literal"><span class="pre">graphene_elastic</span></tt></a>(pot,[args_str,cb])</td>
-<td>Calculate in-plane elastic constants of a graphene sheet with lattice parameter <tt class="docutils literal"><span class="pre">a</span></tt> using the Potential <tt class="docutils literal"><span class="pre">pot</span></tt>.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.poisson_ratio" title="quippy.elasticity.poisson_ratio"><tt class="xref py py-obj docutils literal"><span class="pre">poisson_ratio</span></tt></a>(cc,l,m)</td>
-<td>Calculate Poisson ratio <img class="math" src="_images/math/06e43b805021c9947f52d9d0a6f492e65d3ea06f.png" alt="\nu_{lm}"/> from <img class="math" src="_images/math/0c0dbb5b06942a61e9e12b5648cd82b9094d388e.png" alt="6\times6"/> elastic constant matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.youngs_modulus" title="quippy.elasticity.youngs_modulus"><tt class="xref py py-obj docutils literal"><span class="pre">youngs_modulus</span></tt></a>(c,l)</td>
-<td>Calculate Youngs modulus <img class="math" src="_images/math/664f8a894dff16ef992aab19ce542340def34d85.png" alt="E_l"/> from <img class="math" src="_images/math/0c0dbb5b06942a61e9e12b5648cd82b9094d388e.png" alt="6\times6"/> elastic constants matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> This is the modulus for loading in the <img class="math" src="_images/math/d99efde75c84ef402a92cd4497530d2366fb112f.png" alt="l"/> direction.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.strain_matrix" title="quippy.elasticity.strain_matrix"><tt class="xref py py-obj docutils literal"><span class="pre">strain_matrix</span></tt></a>(strain_vector)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.strain_matrix" title="quippy.elasticity.strain_matrix"><code class="xref py py-obj docutils literal"><span class="pre">strain_matrix</span></code></a>(strain_vector)</td>
 <td>Form a 3x3 strain matrix from a 6 component vector in Voigt notation</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.stress_matrix" title="quippy.elasticity.stress_matrix"><tt class="xref py py-obj docutils literal"><span class="pre">stress_matrix</span></tt></a>(stress_vector)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.stress_matrix" title="quippy.elasticity.stress_matrix"><code class="xref py py-obj docutils literal"><span class="pre">stress_matrix</span></code></a>(stress_vector)</td>
 <td>Form a 3x3 stress matrix from a 6 component vector in Voigt notation</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.strain_vector" title="quippy.elasticity.strain_vector"><tt class="xref py py-obj docutils literal"><span class="pre">strain_vector</span></tt></a>(strain_matrix)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.strain_vector" title="quippy.elasticity.strain_vector"><code class="xref py py-obj docutils literal"><span class="pre">strain_vector</span></code></a>(strain_matrix)</td>
 <td>Form a 6 component strain vector in Voight notation from a 3x3 matrix</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.stress_vector" title="quippy.elasticity.stress_vector"><tt class="xref py py-obj docutils literal"><span class="pre">stress_vector</span></tt></a>(stress_matrix)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.stress_vector" title="quippy.elasticity.stress_vector"><code class="xref py py-obj docutils literal"><span class="pre">stress_vector</span></code></a>(stress_matrix)</td>
 <td>Form a 6 component stress vector in Voight notation from a 3x3 matrix</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.generate_strained_configs" title="quippy.elasticity.generate_strained_configs"><tt class="xref py py-obj docutils literal"><span class="pre">generate_strained_configs</span></tt></a>(at0[,&nbsp;symmetry,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.generate_strained_configs" title="quippy.elasticity.generate_strained_configs"><code class="xref py py-obj docutils literal"><span class="pre">generate_strained_configs</span></code></a>(at0[,&nbsp;symmetry,&nbsp;...])</td>
 <td>Generate a sequence of strained configurations</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.calc_stress" title="quippy.elasticity.calc_stress"><tt class="xref py py-obj docutils literal"><span class="pre">calc_stress</span></tt></a>(configs,&nbsp;pot[,&nbsp;relax,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.calc_stress" title="quippy.elasticity.calc_stress"><code class="xref py py-obj docutils literal"><span class="pre">calc_stress</span></code></a>(configs,&nbsp;pot[,&nbsp;relax,&nbsp;...])</td>
 <td>Given a sequence of configs, calculate stress on each one</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.fit_elastic_constants" title="quippy.elasticity.fit_elastic_constants"><tt class="xref py py-obj docutils literal"><span class="pre">fit_elastic_constants</span></tt></a>(configs[,&nbsp;symmetry,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.fit_elastic_constants" title="quippy.elasticity.fit_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">fit_elastic_constants</span></code></a>(configs[,&nbsp;symmetry,&nbsp;...])</td>
 <td>Given a sequence of configs with strain and stress parameters, fit elastic constants C_ij</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_constants" title="quippy.elasticity.elastic_constants"><tt class="xref py py-obj docutils literal"><span class="pre">elastic_constants</span></tt></a>(pot,&nbsp;at[,&nbsp;sym,&nbsp;relax,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_constants" title="quippy.elasticity.elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">elastic_constants</span></code></a>(pot,&nbsp;at[,&nbsp;sym,&nbsp;relax,&nbsp;...])</td>
 <td>Convenience function which returns the 6x6 matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> of configuration <cite>at</cite> with Potential <cite>pot</cite> assumming symmetry <cite>sym</cite> (default &#8220;cubic&#8221;).</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.atomic_strain" title="quippy.elasticity.atomic_strain"><tt class="xref py py-obj docutils literal"><span class="pre">atomic_strain</span></tt></a>(at,&nbsp;r0[,&nbsp;crystal_factor])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.atomic_strain" title="quippy.elasticity.atomic_strain"><code class="xref py py-obj docutils literal"><span class="pre">atomic_strain</span></code></a>(at,&nbsp;r0[,&nbsp;crystal_factor])</td>
 <td>Atomic strain as defined by JA Zimmerman in <cite>Continuum and Atomistic Modeling of Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford University (1999).</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><tt class="xref py py-obj docutils literal"><span class="pre">elastic_fields_fortran</span></tt></a>(at,a,[c11,c12,c44,cij])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><tt class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></tt></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></code></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;...])</td>
 <td>Compute atomistic strain field and linear elastic stress response.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.transform_elasticity" title="quippy.elasticity.transform_elasticity"><tt class="xref py py-obj docutils literal"><span class="pre">transform_elasticity</span></tt></a>(c,&nbsp;R)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.transform_elasticity" title="quippy.elasticity.transform_elasticity"><code class="xref py py-obj docutils literal"><span class="pre">transform_elasticity</span></code></a>(c,&nbsp;R)</td>
 <td>Transform c as a rank-4 tensor by the rotation matrix R.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.rayleigh_wave_speed" title="quippy.elasticity.rayleigh_wave_speed"><tt class="xref py py-obj docutils literal"><span class="pre">rayleigh_wave_speed</span></tt></a>(C,&nbsp;rho[,&nbsp;a,&nbsp;b,&nbsp;isotropic])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.rayleigh_wave_speed" title="quippy.elasticity.rayleigh_wave_speed"><code class="xref py py-obj docutils literal"><span class="pre">rayleigh_wave_speed</span></code></a>(C,&nbsp;rho[,&nbsp;a,&nbsp;b,&nbsp;isotropic])</td>
 <td>Rayleigh wave speed in a crystal.</td>
 </tr>
 </tbody>
 </table>
 <dl class="class">
 <dt id="quippy.elasticity.AtomResolvedStressField">
-<em class="property">class </em><tt class="descclassname">quippy.elasticity.</tt><tt class="descname">AtomResolvedStressField</tt><big>(</big><em>bulk=None</em>, <em>a=None</em>, <em>cij=None</em>, <em>method='fortran'</em>, <em>**extra_args</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>Calculator interface to <a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><tt class="xref py py-func docutils literal"><span class="pre">elastic_fields_fortran()</span></tt></a> and <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><tt class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></tt></a></p>
+<em class="property">class </em><code class="descclassname">quippy.elasticity.</code><code class="descname">AtomResolvedStressField</code><span class="sig-paren">(</span><em>bulk=None</em>, <em>a=None</em>, <em>cij=None</em>, <em>method='fortran'</em>, <em>**extra_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Calculator interface to <a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields_fortran()</span></code></a> and <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></code></a></p>
 <p>Computes local stresses from atom resolved strain tensor and linear elasticity.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -184,8 +155,8 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>bulk: Atoms object, optional</strong></p>
 <blockquote>
-<div><p>If present, set <cite>a</cite> and <tt class="docutils literal"><span class="pre">cij</span></tt> from <tt class="docutils literal"><span class="pre">bulk.cell[0,0]</span></tt> and
-<tt class="docutils literal"><span class="pre">bulk.get_calculator().get_elastic_constants(bulk)</span></tt>. This means
+<div><p>If present, set <cite>a</cite> and <code class="docutils literal"><span class="pre">cij</span></code> from <code class="docutils literal"><span class="pre">bulk.cell[0,0]</span></code> and
+<code class="docutils literal"><span class="pre">bulk.get_calculator().get_elastic_constants(bulk)</span></code>. This means
 <cite>bulk</cite> should be a relaxed cubic unit cell.</p>
 </div></blockquote>
 <p><strong>a</strong> : float, optional</p>
@@ -203,7 +174,7 @@ Can be obtained with :meth:<a href="#id1"><span class="problematic" id="id2">`</
 </div></blockquote>
 <p><strong>**extra_args</strong> : dict</p>
 <blockquote class="last">
-<div><p>Extra arguments to be passed along to python <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><tt class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></tt></a>, e.g.
+<div><p>Extra arguments to be passed along to python <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></code></a>, e.g.
 for non-cubic cells.</p>
 </div></blockquote>
 </td>
@@ -217,40 +188,40 @@ for non-cubic cells.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stress" title="quippy.elasticity.AtomResolvedStressField.get_stress"><tt class="xref py py-obj docutils literal"><span class="pre">get_stress</span></tt></a>(atoms)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stress" title="quippy.elasticity.AtomResolvedStressField.get_stress"><code class="xref py py-obj docutils literal"><span class="pre">get_stress</span></code></a>(atoms)</td>
 <td>Returns total stress on <cite>atoms</cite>, as a 6-element array</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="quippy.elasticity.AtomResolvedStressField.get_stresses"><tt class="xref py py-obj docutils literal"><span class="pre">get_stresses</span></tt></a>(atoms)</td>
-<td>Returns local stresses on <cite>atoms</cite> as a <tt class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></tt> array</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="quippy.elasticity.AtomResolvedStressField.get_stresses"><code class="xref py py-obj docutils literal"><span class="pre">get_stresses</span></code></a>(atoms)</td>
+<td>Returns local stresses on <cite>atoms</cite> as a <code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.elasticity.AtomResolvedStressField.get_stress">
-<tt class="descname">get_stress</tt><big>(</big><em>atoms</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField.get_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField.get_stress" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_stress</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField.get_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField.get_stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns total stress on <cite>atoms</cite>, as a 6-element array</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.elasticity.AtomResolvedStressField.get_stresses">
-<tt class="descname">get_stresses</tt><big>(</big><em>atoms</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns local stresses on <cite>atoms</cite> as a <tt class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></tt> array</p>
+<code class="descname">get_stresses</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns local stresses on <cite>atoms</cite> as a <code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.einstein_frequencies">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">einstein_frequencies</tt><big>(</big><em>pot</em>, <em>at</em><span class="optional">[</span>, <em>args_str</em>, <em>ii</em>, <em>delta</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.elasticity.einstein_frequencies" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">einstein_frequencies</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em><span class="optional">[</span>, <em>args_str</em>, <em>ii</em>, <em>delta</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.einstein_frequencies" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
 <blockquote>
 <div><p>Potential to use</p>
 </div></blockquote>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object</p>
+<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <blockquote>
 <div><p>Atoms structure - should be equilibrium bulk configuation</p>
 </div></blockquote>
@@ -274,12 +245,12 @@ for non-cubic cells.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">einstein_frequencies</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">einstein_frequencies</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_fields">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">elastic_fields</tt><big>(</big><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_fields" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute atomistic strain field and linear elastic stress response.</p>
 <p>Stress and strain are stored in compressed Voigt notation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_xx</span><span class="p">,</span><span class="n">e_yy</span><span class="p">,</span><span class="n">e_zz</span><span class="p">,</span><span class="n">e_yz</span><span class="p">,</span><span class="n">e_xz</span><span class="p">,</span><span class="n">e_xy</span><span class="p">]</span>
@@ -315,16 +286,16 @@ principal eigenvalue and eigenvector are <cite>stress_evals[1,:]</cite> and
 
 <dl class="function">
 <dt id="quippy.elasticity.graphene_elastic">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">graphene_elastic</tt><big>(</big><em>pot</em><span class="optional">[</span>, <em>args_str</em>, <em>cb</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.elasticity.graphene_elastic" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">graphene_elastic</code><span class="sig-paren">(</span><em>pot</em><span class="optional">[</span>, <em>args_str</em>, <em>cb</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.graphene_elastic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate in-plane elastic constants of a graphene sheet with lattice
-parameter <tt class="docutils literal"><span class="pre">a</span></tt> using the Potential <tt class="docutils literal"><span class="pre">pot</span></tt>. On exit, <tt class="docutils literal"><span class="pre">poisson</span></tt>
-will contain the in plane poisson ratio (dimensionless) and <tt class="docutils literal"><span class="pre">young</span></tt> the
+parameter <code class="docutils literal"><span class="pre">a</span></code> using the Potential <code class="docutils literal"><span class="pre">pot</span></code>. On exit, <code class="docutils literal"><span class="pre">poisson</span></code>
+will contain the in plane poisson ratio (dimensionless) and <code class="docutils literal"><span class="pre">young</span></code> the
 in plane Young&#8217;s modulus (GPa).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
 <p><strong>a</strong> :  float</p>
 <p><strong>poisson</strong> :  float</p>
 <p><strong>young</strong> :  float</p>
@@ -338,12 +309,12 @@ in plane Young&#8217;s modulus (GPa).</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">graphene_elastic</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">graphene_elastic</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.poisson_ratio">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">poisson_ratio</tt><big>(</big><em>cc</em>, <em>l</em>, <em>m</em><big>)</big><a class="headerlink" href="#quippy.elasticity.poisson_ratio" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">poisson_ratio</code><span class="sig-paren">(</span><em>cc</em>, <em>l</em>, <em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.poisson_ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate Poisson ratio <img class="math" src="_images/math/06e43b805021c9947f52d9d0a6f492e65d3ea06f.png" alt="\nu_{lm}"/> from <img class="math" src="_images/math/0c0dbb5b06942a61e9e12b5648cd82b9094d388e.png" alt="6\times6"/> elastic
 constant matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/>. This is the response in <img class="math" src="_images/math/c4bb40dd65eae6c11b325989b14e0b8d35e4e3ef.png" alt="m"/> direction
 to pulling in <img class="math" src="_images/math/d99efde75c84ef402a92cd4497530d2366fb112f.png" alt="l"/> direction. Result is dimensionless.
@@ -364,12 +335,12 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">poisson_ratio</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">poisson_ratio</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.youngs_modulus">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">youngs_modulus</tt><big>(</big><em>c</em>, <em>l</em><big>)</big><a class="headerlink" href="#quippy.elasticity.youngs_modulus" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">youngs_modulus</code><span class="sig-paren">(</span><em>c</em>, <em>l</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.youngs_modulus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate Youngs modulus <img class="math" src="_images/math/664f8a894dff16ef992aab19ce542340def34d85.png" alt="E_l"/> from <img class="math" src="_images/math/0c0dbb5b06942a61e9e12b5648cd82b9094d388e.png" alt="6\times6"/> elastic constants matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/>
 This is the modulus for loading in the <img class="math" src="_images/math/d99efde75c84ef402a92cd4497530d2366fb112f.png" alt="l"/> direction.
 Formula is from W. Brantley, Calculated elastic constants for stress problems associated
@@ -388,73 +359,73 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">youngs_modulus</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">youngs_modulus</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.strain_matrix">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">strain_matrix</tt><big>(</big><em>strain_vector</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#strain_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.strain_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">strain_matrix</code><span class="sig-paren">(</span><em>strain_vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#strain_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.strain_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Form a 3x3 strain matrix from a 6 component vector in Voigt notation</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.stress_matrix">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">stress_matrix</tt><big>(</big><em>stress_vector</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#stress_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.stress_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">stress_matrix</code><span class="sig-paren">(</span><em>stress_vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#stress_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.stress_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Form a 3x3 stress matrix from a 6 component vector in Voigt notation</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.strain_vector">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">strain_vector</tt><big>(</big><em>strain_matrix</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#strain_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.strain_vector" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">strain_vector</code><span class="sig-paren">(</span><em>strain_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#strain_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.strain_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Form a 6 component strain vector in Voight notation from a 3x3 matrix</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.stress_vector">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">stress_vector</tt><big>(</big><em>stress_matrix</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#stress_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.stress_vector" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">stress_vector</code><span class="sig-paren">(</span><em>stress_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#stress_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.stress_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Form a 6 component stress vector in Voight notation from a 3x3 matrix</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.generate_strained_configs">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">generate_strained_configs</tt><big>(</big><em>at0</em>, <em>symmetry='triclinic'</em>, <em>N_steps=5</em>, <em>delta=0.01</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#generate_strained_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.generate_strained_configs" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">generate_strained_configs</code><span class="sig-paren">(</span><em>at0</em>, <em>symmetry='triclinic'</em>, <em>N_steps=5</em>, <em>delta=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#generate_strained_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.generate_strained_configs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a sequence of strained configurations</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.calc_stress">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">calc_stress</tt><big>(</big><em>configs</em>, <em>pot</em>, <em>relax=False</em>, <em>relax_tol=0.001</em>, <em>relax_steps=100</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#calc_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.calc_stress" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">calc_stress</code><span class="sig-paren">(</span><em>configs</em>, <em>pot</em>, <em>relax=False</em>, <em>relax_tol=0.001</em>, <em>relax_steps=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#calc_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.calc_stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a sequence of configs, calculate stress on each one</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.fit_elastic_constants">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">fit_elastic_constants</tt><big>(</big><em>configs</em>, <em>symmetry=None</em>, <em>N_steps=5</em>, <em>verbose=True</em>, <em>graphics=True</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#fit_elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.fit_elastic_constants" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">fit_elastic_constants</code><span class="sig-paren">(</span><em>configs</em>, <em>symmetry=None</em>, <em>N_steps=5</em>, <em>verbose=True</em>, <em>graphics=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#fit_elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.fit_elastic_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a sequence of configs with strain and stress parameters, fit elastic constants C_ij</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_constants">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">elastic_constants</tt><big>(</big><em>pot</em>, <em>at</em>, <em>sym='cubic'</em>, <em>relax=True</em>, <em>verbose=True</em>, <em>graphics=True</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_constants" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_constants</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>sym='cubic'</em>, <em>relax=True</em>, <em>verbose=True</em>, <em>graphics=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function which returns the 6x6 matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> of configuration <cite>at</cite>
 with Potential <cite>pot</cite> assumming symmetry <cite>sym</cite> (default &#8220;cubic&#8221;).</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.atomic_strain">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">atomic_strain</tt><big>(</big><em>at</em>, <em>r0</em>, <em>crystal_factor=1.0</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#atomic_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.atomic_strain" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">atomic_strain</code><span class="sig-paren">(</span><em>at</em>, <em>r0</em>, <em>crystal_factor=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#atomic_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.atomic_strain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Atomic strain as defined by JA Zimmerman in <cite>Continuum and Atomistic Modeling of
 Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford University (1999).</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_fields_fortran">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">elastic_fields_fortran</tt><big>(</big><em>at</em>, <em>a</em><span class="optional">[</span>, <em>c11</em>, <em>c12</em>, <em>c44</em>, <em>cij</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.elasticity.elastic_fields_fortran" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields_fortran</code><span class="sig-paren">(</span><em>at</em>, <em>a</em><span class="optional">[</span>, <em>c11</em>, <em>c12</em>, <em>c44</em>, <em>cij</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.elastic_fields_fortran" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>a</strong> :  input float</p>
 <p><strong>c11</strong> :  input float, optional</p>
 <p><strong>c12</strong> :  input float, optional</p>
@@ -465,12 +436,12 @@ Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford Un
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">elastic_fields</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">elastic_fields</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Utils/elasticity.f95">QUIP_Utils/elasticity.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">elastic_fields</tt><big>(</big><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Compute atomistic strain field and linear elastic stress response.</p>
 <p>Stress and strain are stored in compressed Voigt notation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_xx</span><span class="p">,</span><span class="n">e_yy</span><span class="p">,</span><span class="n">e_zz</span><span class="p">,</span><span class="n">e_yz</span><span class="p">,</span><span class="n">e_xz</span><span class="p">,</span><span class="n">e_xy</span><span class="p">]</span>
@@ -506,7 +477,7 @@ principal eigenvalue and eigenvector are <cite>stress_evals[1,:]</cite> and
 
 <dl class="function">
 <dt id="quippy.elasticity.transform_elasticity">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">transform_elasticity</tt><big>(</big><em>c</em>, <em>R</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#transform_elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.transform_elasticity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">transform_elasticity</code><span class="sig-paren">(</span><em>c</em>, <em>R</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#transform_elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.transform_elasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform c as a rank-4 tensor by the rotation matrix R.</p>
 <p>Returns the new representation c&#8217;. If c is a 6x6 matrix it is first
 converted to 3x3x3x3 form, and then converted back after the
@@ -515,9 +486,9 @@ transformation.</p>
 
 <dl class="function">
 <dt id="quippy.elasticity.rayleigh_wave_speed">
-<tt class="descclassname">quippy.elasticity.</tt><tt class="descname">rayleigh_wave_speed</tt><big>(</big><em>C</em>, <em>rho</em>, <em>a=4000.0</em>, <em>b=6000.0</em>, <em>isotropic=False</em><big>)</big><a class="reference internal" href="_modules/quippy/elasticity.html#rayleigh_wave_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.rayleigh_wave_speed" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">rayleigh_wave_speed</code><span class="sig-paren">(</span><em>C</em>, <em>rho</em>, <em>a=4000.0</em>, <em>b=6000.0</em>, <em>isotropic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#rayleigh_wave_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.rayleigh_wave_speed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rayleigh wave speed in a crystal.</p>
-<p>Returns triplet <tt class="docutils literal"><span class="pre">(vs,</span> <span class="pre">vp,</span> <span class="pre">c_R)</span></tt> in m/s, where <cite>vs</cite> is the transverse
+<p>Returns triplet <code class="docutils literal"><span class="pre">(vs,</span> <span class="pre">vp,</span> <span class="pre">c_R)</span></code> in m/s, where <cite>vs</cite> is the transverse
 wave speed, <cite>vp</cite> the longitudinal wave speed and <cite>c_R</cite> the Rayleigh
 shear wave speed.</p>
 <p>For the anisotropic case (default), formula is Darinskii,
@@ -539,7 +510,7 @@ Rayleight speed returned is along the first (x) axis.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -551,13 +522,13 @@ Rayleight speed returned is along the first (x) axis.</p>
         <li class="right" >
           <a href="cp2k.html" title="CP2K I/O and driver"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

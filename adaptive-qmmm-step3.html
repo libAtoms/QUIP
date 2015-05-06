@@ -28,8 +28,8 @@
     <link rel="next" title="Solutions" href="adaptive-qmmm-solutions.html" />
     <link rel="prev" title="Step 2: Classical MD simulation of fracture in Si" href="adaptive-qmmm-step2.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,12 +44,12 @@
         <li class="right" >
           <a href="adaptive-qmmm-step2.html" title="Step 2: Classical MD simulation of fracture in Si"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
-          <li><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -105,12 +105,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="adaptive-qmmm-solutions.html"
                         title="next chapter">Solutions</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/adaptive-qmmm-step3.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/adaptive-qmmm-step3.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -129,23 +131,23 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="step-3-lotf-hybrid-md-simulation-of-fracture-in-si">
 <span id="step3"></span><h1>Step 3: LOTF hybrid MD simulation of fracture in Si<a class="headerlink" href="#step-3-lotf-hybrid-md-simulation-of-fracture-in-si" title="Permalink to this headline">¶</a></h1>
 <p>In the final part of this tutorial, we will be extending our previous script for
 classical molecular dynamics to carry out an adaptive QM/MM simulation of
 fracture using the &#8216;Learn on the Fly&#8217; (LOTF) scheme.</p>
-<p>You will need the <tt class="docutils literal"><span class="pre">run_crack_classical.py</span></tt> script from <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><em>Step 2: Classical MD simulation of fracture in Si</em></a>. If you
-don&#8217;t have it, you can <a class="reference download internal" href="_downloads/run_crack_classical.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">it</span> <span class="pre">here</span></tt></a>,
-and the <tt class="docutils literal"><span class="pre">crack.xyz</span></tt> input file from <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><em>Step 1: Setup of the Silicon model system</em></a>, which you
-can <a class="reference download internal" href="_downloads/crack.xyz"><tt class="xref download docutils literal"><span class="pre">also</span> <span class="pre">download</span> <span class="pre">here</span></tt></a>.</p>
+<p>You will need the <code class="docutils literal"><span class="pre">run_crack_classical.py</span></code> script from <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2: Classical MD simulation of fracture in Si</span></a>. If you
+don&#8217;t have it, you can <a class="reference download internal" href="_downloads/run_crack_classical.py"><code class="xref download docutils literal"><span class="pre">download</span> <span class="pre">it</span> <span class="pre">here</span></code></a>,
+and the <code class="docutils literal"><span class="pre">crack.xyz</span></code> input file from <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span>Step 1: Setup of the Silicon model system</span></a>, which you
+can <a class="reference download internal" href="_downloads/crack.xyz"><code class="xref download docutils literal"><span class="pre">also</span> <span class="pre">download</span> <span class="pre">here</span></code></a>.</p>
 <div class="section" id="initialisation-of-the-qm-mm-atomic-system-20-minutes">
 <h2>3.1 Initialisation of the QM/MM atomic system (20 minutes)<a class="headerlink" href="#initialisation-of-the-qm-mm-atomic-system-20-minutes" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="import-the-relevant-modules">
 <h3>Import the relevant modules<a class="headerlink" href="#import-the-relevant-modules" title="Permalink to this headline">¶</a></h3>
-<p>Make a copy of your <tt class="docutils literal"><span class="pre">run_crack_classical.py</span></tt> script and name it
-<tt class="docutils literal"><span class="pre">run_crack_lotf.py</span></tt>. Add the following extra import statements after those
+<p>Make a copy of your <code class="docutils literal"><span class="pre">run_crack_classical.py</span></code> script and name it
+<code class="docutils literal"><span class="pre">run_crack_lotf.py</span></code>. Add the following extra import statements after those
 that are already there:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="kn">import</span> <span class="n">ForceMixingPotential</span>
 <span class="kn">from</span> <span class="nn">quippy.lotf</span> <span class="kn">import</span> <span class="n">LOTFDynamics</span><span class="p">,</span> <span class="n">update_hysteretic_qm_region</span>
@@ -155,7 +157,7 @@ that are already there:</p>
 <div class="section" id="definition-of-the-simulation-parameters">
 <h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this headline">¶</a></h3>
 <p id="parameters3">Next, we need to add some additional parameters specifically for the
-QM/MM simulation. Again, insert them in <tt class="docutils literal"><span class="pre">run_crack_lotf.py</span></tt>, below the
+QM/MM simulation. Again, insert them in <code class="docutils literal"><span class="pre">run_crack_lotf.py</span></code>, below the
 existing parameters</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">qm_init_args</span> <span class="o">=</span> <span class="s">&#39;TB DFTB&#39;</span>         <span class="c"># Initialisation arguments for QM potential</span>
 <span class="n">qm_inner_radius</span> <span class="o">=</span> <span class="mf">8.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c"># Inner hysteretic radius for QM region</span>
@@ -174,22 +176,22 @@ to be combined into a hybrid QM/MM potential (<cite>qmmm_pot</cite>), which mixe
 and MM forces.</p>
 <p>Leave the initialisiton of the SW classical potential as it is. After this, we
 want to add some lines of code to setup the QM potential. Using the same
-<a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt></a> class, we initialise now the Density
+<a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> class, we initialise now the Density
 functional tight binding (DFTB) potential. This is done by passing the new QM
 <cite>qm_init_args</cite> as the <cite>init_args</cite> parameter and the same XML file as before for
 the <cite>param_filename</cite> to the Potential constructor (note that the single file
-<tt class="docutils literal"><span class="pre">params.xml</span></tt> contains parameters for both the SW and DFTB potentials):</p>
+<code class="docutils literal"><span class="pre">params.xml</span></code> contains parameters for both the SW and DFTB potentials):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">qm_pot</span> <span class="o">=</span> <span class="o">...</span>  <span class="c"># Initialise DFTB potential</span>
 </pre></div>
 </div>
 <p>The QM/MM potential is constructed using quippy&#8217;s
-<a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential" title="quippy.potential.ForceMixingPotential"><tt class="xref py py-class docutils literal"><span class="pre">quippy.potential.ForceMixingPotential</span></tt></a> class. Here, <cite>pot1</cite> is
+<a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential" title="quippy.potential.ForceMixingPotential"><code class="xref py py-class docutils literal"><span class="pre">quippy.potential.ForceMixingPotential</span></code></a> class. Here, <cite>pot1</cite> is
 the low precision, i.e. MM potential, and <cite>pot2</cite> is the high
 precision, i.e. QM potential. <cite>fit_hops</cite> is the number of hops used to
 define the fitting region, <cite>lotf_spring_hops</cite> defines the length of
 the springs in the LOTF <em>adjustable potential</em>, while the hysteretic
-buffer options control the size of the <a class="reference internal" href="adaptive-qmmm-theory.html#hysteretic"><em>hysteretic</em></a> <a class="reference internal" href="adaptive-qmmm-theory.html#buffer"><em>buffer
-region</em></a> region used for the embedded QM force calculation.</p>
+buffer options control the size of the <a class="reference internal" href="adaptive-qmmm-theory.html#hysteretic"><span>hysteretic</span></a> <a class="reference internal" href="adaptive-qmmm-theory.html#buffer"><span>buffer
+region</span></a> region used for the embedded QM force calculation.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">qmmm_pot</span> <span class="o">=</span> <span class="n">ForceMixingPotential</span><span class="p">(</span><span class="n">pot1</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">,</span>
                                 <span class="n">pot2</span><span class="o">=</span><span class="n">qm_pot</span><span class="p">,</span>
                                 <span class="n">qm_args_str</span><span class="o">=</span><span class="s">&#39;single_cluster cluster_periodic_z carve_cluster &#39;</span><span class="o">+</span>
@@ -217,25 +219,25 @@ of the outer layer of buffer atoms are not randomised.</p>
 <div class="section" id="set-up-the-initial-qm-region">
 <h3>Set up the initial QM region<a class="headerlink" href="#set-up-the-initial-qm-region" title="Permalink to this headline">¶</a></h3>
 <p>Now, we can set up the list of atoms in the initial QM region using
-the <a class="reference internal" href="lotf.html#quippy.lotf.update_hysteretic_qm_region" title="quippy.lotf.update_hysteretic_qm_region"><tt class="xref py py-func docutils literal"><span class="pre">update_hysteretic_qm_region()</span></tt></a> function, defined
-in quippy. Here we need to provide the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> system, the
+the <a class="reference internal" href="lotf.html#quippy.lotf.update_hysteretic_qm_region" title="quippy.lotf.update_hysteretic_qm_region"><code class="xref py py-func docutils literal"><span class="pre">update_hysteretic_qm_region()</span></code></a> function, defined
+in quippy. Here we need to provide the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> system, the
 centre of the QM region (i.e. the position of the crack tip), and the
-the inner and outer radius of the <a class="reference internal" href="adaptive-qmmm-theory.html#hysteretic"><em>hysteretic</em></a> QM
+the inner and outer radius of the <a class="reference internal" href="adaptive-qmmm-theory.html#hysteretic"><span>hysteretic</span></a> QM
 region. Note that the <cite>old_qm_list</cite> attribute must be an empty list
-(<tt class="docutils literal"><span class="pre">[]</span></tt>) in this initial case:</p>
+(<code class="docutils literal"><span class="pre">[]</span></code>) in this initial case:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">qm_list</span> <span class="o">=</span> <span class="o">...</span>             <span class="c"># Define the list of atoms in the QM region</span>
 </pre></div>
 </div>
 <p>The list needs to be attached to the <cite>qmmm_pot</cite> using the
-<a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms" title="quippy.potential.ForceMixingPotential.set_qm_atoms"><tt class="xref py py-meth docutils literal"><span class="pre">set_qm_atoms()</span></tt></a> method:</p>
+<a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms" title="quippy.potential.ForceMixingPotential.set_qm_atoms"><code class="xref py py-meth docutils literal"><span class="pre">set_qm_atoms()</span></code></a> method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">qmmm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c"># Attach QM list to calculator</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="milestone-3-1">
 <h3>Milestone 3.1<a class="headerlink" href="#milestone-3-1" title="Permalink to this headline">¶</a></h3>
-<p>Your <tt class="docutils literal"><span class="pre">run_crack_lotf.py</span></tt> script should look something
-like <a class="reference download internal" href="_downloads/run_crack_lotf_1.py"><tt class="xref download docutils literal"><span class="pre">run_crack_lotf_1.py</span></tt></a>.</p>
+<p>Your <code class="docutils literal"><span class="pre">run_crack_lotf.py</span></code> script should look something
+like <a class="reference download internal" href="_downloads/run_crack_lotf_1.py"><code class="xref download docutils literal"><span class="pre">run_crack_lotf_1.py</span></code></a>.</p>
 <p>At this point you should run your script and check the initial QM region. For
 testing, you should add a couple of temporary lines to force the script to
 finish after setting the QM region and before repeating the classical MD:</p>
@@ -244,7 +246,7 @@ finish after setting the QM region and before repeating the classical MD:</p>
 </pre></div>
 </div>
 <p>To visualise the initial QM region, you can type the following directly into
-your <cite>ipython</cite> session (remember to do a <tt class="docutils literal"><span class="pre">from</span> <span class="pre">qlab</span> <span class="pre">import</span> <span class="pre">*</span></tt> first if you
+your <cite>ipython</cite> session (remember to do a <code class="docutils literal"><span class="pre">from</span> <span class="pre">qlab</span> <span class="pre">import</span> <span class="pre">*</span></code> first if you
 haven&#8217;t already):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">view</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 <span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">qmmm_pot</span><span class="o">.</span><span class="n">get_qm_atoms</span><span class="p">())</span>
@@ -252,8 +254,8 @@ haven&#8217;t already):</p>
 </div>
 <a class="reference internal image-reference" href="_images/crack-initial-qm-region.png"><img alt="_images/crack-initial-qm-region.png" class="align-center" src="_images/crack-initial-qm-region.png" style="width: 600px;" /></a>
 <p>In the image above, the red atoms are QM and the blue atom classical.
-Internally, this list is actually saved as a <tt class="xref py py-attr docutils literal"><span class="pre">property</span></tt> inside the Atoms object named <tt class="docutils literal"><span class="pre">&quot;hybrid&quot;</span></tt>,
-which can also be displayed with <tt class="docutils literal"><span class="pre">aux_property_coloring(&quot;hybrid&quot;)</span></tt></p>
+Internally, this list is actually saved as a <code class="xref py py-attr docutils literal"><span class="pre">property</span></code> inside the Atoms object named <code class="docutils literal"><span class="pre">&quot;hybrid&quot;</span></code>,
+which can also be displayed with <code class="docutils literal"><span class="pre">aux_property_coloring(&quot;hybrid&quot;)</span></code></p>
 </div>
 </div>
 <div class="section" id="setup-and-run-the-adaptive-qm-mm-md-20-minutes">
@@ -261,20 +263,20 @@ which can also be displayed with <tt class="docutils literal"><span class="pre">
 <div class="section" id="initialising-the-dynamics">
 <h3>Initialising the Dynamics<a class="headerlink" href="#initialising-the-dynamics" title="Permalink to this headline">¶</a></h3>
 <p>The definition of the initial temperature of the system should be left as
-in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><em>Step 2</em></a>. Don&#8217;t forget to remove the temporary lines added above which
+in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2</span></a>. Don&#8217;t forget to remove the temporary lines added above which
 quit the script after setting up the initial QM region!</p>
 <p>Instead of a traditional dynamics in the NVE ensemble, let&#8217;s change the code to
-use <a class="reference internal" href="intro.html#lotf"><em>LOTF predictor-corrector dynamics</em></a>, using
-the <a class="reference internal" href="lotf.html#quippy.lotf.LOTFDynamics" title="quippy.lotf.LOTFDynamics"><tt class="xref py py-class docutils literal"><span class="pre">quippy.lotf.LOTFDynamics</span></tt></a> class instead of
-the <tt class="xref py py-class docutils literal"><span class="pre">VelocityVerlet</span></tt> class. We need to pass the following
-arguments: <cite>atoms</cite>, <cite>timestep</cite>, <cite>extrapolate_steps</cite> (see <a class="reference internal" href="#parameters3"><em>Parameters
-section</em></a>):</p>
+use <a class="reference internal" href="intro.html#lotf"><span>LOTF predictor-corrector dynamics</span></a>, using
+the <a class="reference internal" href="lotf.html#quippy.lotf.LOTFDynamics" title="quippy.lotf.LOTFDynamics"><code class="xref py py-class docutils literal"><span class="pre">quippy.lotf.LOTFDynamics</span></code></a> class instead of
+the <code class="xref py py-class docutils literal"><span class="pre">VelocityVerlet</span></code> class. We need to pass the following
+arguments: <cite>atoms</cite>, <cite>timestep</cite>, <cite>extrapolate_steps</cite> (see <a class="reference internal" href="#parameters3"><span>Parameters
+section</span></a>):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">dynamics</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Initialise the dynamical system</span>
 </pre></div>
 </div>
 <p>The logger and crack tip movement detection functions can be left almost exactly
 as before for now: we just need to make a small change to
-the <tt class="xref py py-func docutils literal"><span class="pre">printstatus()</span></tt> function so to distinguish between extrapolation and
+the <code class="xref py py-func docutils literal"><span class="pre">printstatus()</span></code> function so to distinguish between extrapolation and
 interpolation:</p>
 <p>Change the line:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;D&#39;</span>                   <span class="c"># Label for the status line</span>
@@ -284,21 +286,21 @@ interpolation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dynamics</span><span class="o">.</span><span class="n">state_label</span>  <span class="c"># Label for the status line</span>
 </pre></div>
 </div>
-<p>This uses the <tt class="xref py py-attr docutils literal"><span class="pre">state_label</span></tt> attribute to print
-an <tt class="docutils literal"><span class="pre">&quot;E&quot;</span></tt> at the beginning of the logger lines for extrapolation and an <tt class="docutils literal"><span class="pre">&quot;I&quot;</span></tt>
+<p>This uses the <code class="xref py py-attr docutils literal"><span class="pre">state_label</span></code> attribute to print
+an <code class="docutils literal"><span class="pre">&quot;E&quot;</span></code> at the beginning of the logger lines for extrapolation and an <code class="docutils literal"><span class="pre">&quot;I&quot;</span></code>
 for interpolation.</p>
 </div>
 <div class="section" id="updating-the-qm-region">
 <h3>Updating the QM region<a class="headerlink" href="#updating-the-qm-region" title="Permalink to this headline">¶</a></h3>
 <p>We need to define a function that updates the QM region at the
 beginning of each extrapolation cycle. As before, we need to find the
-position of the crack tip and then update the <a class="reference internal" href="adaptive-qmmm-theory.html#hysteretic"><em>hysteretic</em></a> QM region. Note that now a previous QM region exists and
+position of the crack tip and then update the <a class="reference internal" href="adaptive-qmmm-theory.html#hysteretic"><span>hysteretic</span></a> QM region. Note that now a previous QM region exists and
 its atoms should be passed to the
-<a class="reference internal" href="lotf.html#quippy.lotf.update_hysteretic_qm_region" title="quippy.lotf.update_hysteretic_qm_region"><tt class="xref py py-func docutils literal"><span class="pre">update_hysteretic_qm_region()</span></tt></a> function. The current
+<a class="reference internal" href="lotf.html#quippy.lotf.update_hysteretic_qm_region" title="quippy.lotf.update_hysteretic_qm_region"><code class="xref py py-func docutils literal"><span class="pre">update_hysteretic_qm_region()</span></code></a> function. The current
 QM atom list can be obtained with the
-<a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.get_qm_atoms" title="quippy.potential.ForceMixingPotential.get_qm_atoms"><tt class="xref py py-meth docutils literal"><span class="pre">quippy.potential.ForceMixingPotential.get_qm_atoms()</span></tt></a> method. To
+<a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.get_qm_atoms" title="quippy.potential.ForceMixingPotential.get_qm_atoms"><code class="xref py py-meth docutils literal"><span class="pre">quippy.potential.ForceMixingPotential.get_qm_atoms()</span></code></a> method. To
 find the crack position, use
-<a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><tt class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></tt></a> as before, but pass
+<a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a> as before, but pass
 the MM potential as the calculator used to calculated the stresses
 (force mixing potentials can only calculate forces, not per-atom
 stresses; we will check later that the classical stress is
@@ -318,7 +320,7 @@ dynamics.set_qm_update_func(update_qm_region)
 <p>Finally, we want to save frames to the trajectory every <cite>traj_interval</cite> time
 steps but, this time, only during the interpolation phase of the
 predictor-corrector cycle. To do this, we first initialise the trajectory file
-(see <a class="reference internal" href="io.html#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><tt class="xref py py-func docutils literal"><span class="pre">AtomsWriter()</span></tt></a>), and then define a function that only
+(see <a class="reference internal" href="io.html#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><code class="xref py py-func docutils literal"><span class="pre">AtomsWriter()</span></code></a>), and then define a function that only
 writes to the trajectory file if the state of the dynamical systems is
 <cite>Interpolation</cite>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">trajectory</span> <span class="o">=</span> <span class="o">...</span> <span class="c"># Initialise trajectory using traj_file</span>
@@ -330,7 +332,7 @@ writes to the trajectory file if the state of the dynamical systems is
 </div>
 <p>As before, we attach this function to the dynamical system, passing
 <cite>traj_interval</cite> and and extra argument of <cite>dynamics</cite> which gets passed along to the
-<cite>traj_writer</cite> function (see the <tt class="xref py py-meth docutils literal"><span class="pre">attach()</span></tt>
+<cite>traj_writer</cite> function (see the <code class="xref py py-meth docutils literal"><span class="pre">attach()</span></code>
 method):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">dynamics</span><span class="o">.</span> <span class="o">...</span>    <span class="c"># Attach traj_writer to dynamics</span>
 </pre></div>
@@ -341,13 +343,13 @@ method):</p>
 </div>
 <p>If you are interested in seeing how the LOTF predictor-corrector cycle is
 implemented, look at the documentation and <a class="reference external" href="_modules/quippy/lotf.html#LOTFDynamics.step">source code</a> for the
-<a class="reference internal" href="lotf.html#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><tt class="xref py py-meth docutils literal"><span class="pre">quippy.lotf.LOTFDynamics.step()</span></tt></a> routine.</p>
+<a class="reference internal" href="lotf.html#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><code class="xref py py-meth docutils literal"><span class="pre">quippy.lotf.LOTFDynamics.step()</span></code></a> routine.</p>
 </div>
 <div class="section" id="milestone-3-2">
 <h3>Milestone 3.2<a class="headerlink" href="#milestone-3-2" title="Permalink to this headline">¶</a></h3>
-<p>The finished version of the <tt class="docutils literal"><span class="pre">run_crack_lotf.py</span></tt> script should look something
-like <a class="reference internal" href="adaptive-qmmm-solutions.html#run-crack-lotf"><em>Step 3 solution &#8212; run_crack_lotf.py</em></a>. To clearly show the differences with respect to the
-classical MD script, here is a <a class="reference download internal" href="_downloads/run_crack_classical_lotf.patch"><tt class="xref download docutils literal"><span class="pre">patch</span></tt></a> which could be used to convert the classical
+<p>The finished version of the <code class="docutils literal"><span class="pre">run_crack_lotf.py</span></code> script should look something
+like <a class="reference internal" href="adaptive-qmmm-solutions.html#run-crack-lotf"><span>Step 3 solution &#8212; run_crack_lotf.py</span></a>. To clearly show the differences with respect to the
+classical MD script, here is a <a class="reference download internal" href="_downloads/run_crack_classical_lotf.patch"><code class="xref download docutils literal"><span class="pre">patch</span></code></a> which could be used to convert the classical
 script into the LOTF one.</p>
 </div>
 </div>
@@ -451,23 +453,23 @@ repeat the entire cycle.</p>
 </div>
 <div class="section" id="trajectory-analysis">
 <h3>Trajectory analysis<a class="headerlink" href="#trajectory-analysis" title="Permalink to this headline">¶</a></h3>
-<p>Open your new trajectory <a class="reference internal" href="adaptive-qmmm-step2.html#visualisation2"><em>as before</em></a>, using the
-<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><tt class="xref py py-func docutils literal"><span class="pre">view()</span></tt></a> function from within a new <cite>ipython</cite> session, and
+<p>Open your new trajectory <a class="reference internal" href="adaptive-qmmm-step2.html#visualisation2"><span>as before</span></a>, using the
+<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> function from within a new <cite>ipython</cite> session, and
 visualise the QM region by colouring the atoms using the
-<tt class="docutils literal"><span class="pre">hybrid_mark</span></tt> <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.properties" title="quippy.atoms.Atoms.properties"><tt class="xref py py-attr docutils literal"><span class="pre">property</span></tt></a></p>
+<code class="docutils literal"><span class="pre">hybrid_mark</span></code> <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.properties" title="quippy.atoms.Atoms.properties"><code class="xref py py-attr docutils literal"><span class="pre">property</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">aux_property_coloring</span><span class="p">(</span><span class="s">&quot;hybrid_mark&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This property is used internally to identify which atoms are used for the QM
 active and buffer regions:</p>
 <a class="reference internal image-reference" href="_images/crack-hybrid-mark.png"><img alt="_images/crack-hybrid-mark.png" class="align-center" src="_images/crack-hybrid-mark.png" style="width: 600px;" /></a>
-<p>The central green atoms have <tt class="docutils literal"><span class="pre">hybrid_mark</span> <span class="pre">==</span> <span class="pre">HYBRID_ACTIVE_MARK</span></tt>, and they are
+<p>The central green atoms have <code class="docutils literal"><span class="pre">hybrid_mark</span> <span class="pre">==</span> <span class="pre">HYBRID_ACTIVE_MARK</span></code>, and they are
 the atoms for which QM forces are used to propagate the dynamics. Classical
 forces are used for all other atoms, including the red buffer region, where
-<tt class="docutils literal"><span class="pre">hybrid_mark</span> <span class="pre">==</span> <span class="pre">HYBRID_BUFFER_MARK</span></tt>. As explained <a class="reference internal" href="adaptive-qmmm-theory.html#buffer"><em>above</em></a>, the
+<code class="docutils literal"><span class="pre">hybrid_mark</span> <span class="pre">==</span> <span class="pre">HYBRID_BUFFER_MARK</span></code>. As explained <a class="reference internal" href="adaptive-qmmm-theory.html#buffer"><span>above</span></a>, the
 purpose of the buffer region is to give accurate QM forces on the active atoms.</p>
 <p id="cluster">If you want to see the actual cluster used for carrying out the embedded DFTB
-calculation, you could use the <a class="reference internal" href="clusters.html#quippy.clusters.create_cluster_simple" title="quippy.clusters.create_cluster_simple"><tt class="xref py py-func docutils literal"><span class="pre">create_cluster_simple()</span></tt></a>
+calculation, you could use the <a class="reference internal" href="clusters.html#quippy.clusters.create_cluster_simple" title="quippy.clusters.create_cluster_simple"><code class="xref py py-func docutils literal"><span class="pre">create_cluster_simple()</span></code></a>
 function together with the same <cite>args_str</cite> cluster options defined above:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">cluster</span> <span class="o">=</span> <span class="n">create_cluster_simple</span><span class="p">(</span><span class="n">gcat</span><span class="p">(),</span>
                <span class="n">args_str</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;single_cluster cluster_periodic_z carve_cluster &quot;</span>
@@ -486,44 +488,44 @@ happens in the LOTF dynamics. As before, you can jump to the end with
 <cite>Ctrl+Delete</cite>. You should find that the dynamics is very different to the
 classical case.</p>
 <p>Check if the QM region is following the moving crack properly by looking at the
-<tt class="docutils literal"><span class="pre">hybrid_mark</span></tt> property. If you repeat the analysis of the <a class="reference internal" href="adaptive-qmmm-step2.html#stress-analysis"><em>stress field</em></a> carried out in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><em>Step 2</em></a>, you should find that
-the <a class="reference internal" href="adaptive-qmmm-step2.html#time-avg-stress"><em>time averaged stress field</em></a> is strongly concentrated
+<code class="docutils literal"><span class="pre">hybrid_mark</span></code> property. If you repeat the analysis of the <a class="reference internal" href="adaptive-qmmm-step2.html#stress-analysis"><span>stress field</span></a> carried out in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2</span></a>, you should find that
+the <a class="reference internal" href="adaptive-qmmm-step2.html#time-avg-stress"><span>time averaged stress field</span></a> is strongly concentrated
 on the sharp crack tip. It is this stress field which is used
-by <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><tt class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></tt></a> to follow the crack tip,
+by <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a> to follow the crack tip,
 and hence to update the set of atoms in the QM region.</p>
 <p>Here is a movie of a typical LOTF simulation on the <img class="math" src="_images/math/e97bf8fc8cd6792f35fccb06cdfbe293de724fe5.png" alt="(111)"/> cleavage
 plane. To colour the QM atoms dark blue, we passed
-the <a class="reference internal" href="qlab.html#qlab.highlight_qm_region" title="qlab.highlight_qm_region"><tt class="xref py py-func docutils literal"><span class="pre">highlight_qm_region()</span></tt></a> function as the <cite>hook</cite> argument
-to <a class="reference internal" href="qlab.html#qlab.render_movie" title="qlab.render_movie"><tt class="xref py py-func docutils literal"><span class="pre">render_movie()</span></tt></a>:</p>
+the <a class="reference internal" href="qlab.html#qlab.highlight_qm_region" title="qlab.highlight_qm_region"><code class="xref py py-func docutils literal"><span class="pre">highlight_qm_region()</span></code></a> function as the <cite>hook</cite> argument
+to <a class="reference internal" href="qlab.html#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-func docutils literal"><span class="pre">render_movie()</span></code></a>:</p>
 <center>
-<video width="640" height="360" controls="controls" poster="_movies/lotf-111-poster.jpg">
-  <source src="_movies/lotf-111.mp4"  type='video/mp4' />
-  <source src="_movies/lotf-111.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
-  <source src="_movies/lotf-111.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+<video width="640" height="360" controls="controls" poster="http://www.jrkermode.co.uk/_movies/lotf-111-poster.jpg">
+  <source src="http://www.jrkermode.co.uk/_movies/lotf-111.mp4"  type='video/mp4' />
+  <source src="http://www.jrkermode.co.uk/_movies/lotf-111.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
+  <source src="http://www.jrkermode.co.uk/_movies/lotf-111.webm" type='video/webm; codecs="vp8.0, vorbis"' />
   <p><b>Your browser does not support HTML5 video.
-  <a href="_movies/lotf-111.mp4">Download</a> the video instead.
+  <a href="http://www.jrkermode.co.uk/_movies/lotf-111.mp4">Download</a> the video instead.
   </b></p>
 </video>
 </center><p>During the LOTF dynamics, the time-averaged stress field smoothly tracks the
 crack tip, as can be seen in this movie, where atoms are coloured by
 their <img class="math" src="_images/math/98a0343bbb757fb44e2f8251c17fc9447be67a28.png" alt="\sigma_{yy}"/> component:</p>
 <center>
-<video width="640" height="360" controls="controls" poster="_movies/elastic-poster.jpg">
-  <source src="_movies/elastic.mp4"  type='video/mp4' />
-  <source src="_movies/elastic.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
-  <source src="_movies/elastic.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+<video width="640" height="360" controls="controls" poster="http://www.jrkermode.co.uk/_movies/elastic-poster.jpg">
+  <source src="http://www.jrkermode.co.uk/_movies/elastic.mp4"  type='video/mp4' />
+  <source src="http://www.jrkermode.co.uk/_movies/elastic.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
+  <source src="http://www.jrkermode.co.uk/_movies/elastic.webm" type='video/webm; codecs="vp8.0, vorbis"' />
   <p><b>Your browser does not support HTML5 video.
-  <a href="_movies/elastic.mp4">Download</a> the video instead.
+  <a href="http://www.jrkermode.co.uk/_movies/elastic.mp4">Download</a> the video instead.
   </b></p>
 </video>
 </center><p>And here is a head-to-head comparison of SW and LOTF dynamics:</p>
 <center>
-<video width="640" height="720" controls="controls" poster="_movies/classical-vs-lotf-poster.jpg">
-  <source src="_movies/classical-vs-lotf.mp4"  type='video/mp4' />
-  <source src="_movies/classical-vs-lotf.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
-  <source src="_movies/classical-vs-lotf.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+<video width="640" height="720" controls="controls" poster="http://www.jrkermode.co.uk/_movies/classical-vs-lotf-poster.jpg">
+  <source src="http://www.jrkermode.co.uk/_movies/classical-vs-lotf.mp4"  type='video/mp4' />
+  <source src="http://www.jrkermode.co.uk/_movies/classical-vs-lotf.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
+  <source src="http://www.jrkermode.co.uk/_movies/classical-vs-lotf.webm" type='video/webm; codecs="vp8.0, vorbis"' />
   <p><b>Your browser does not support HTML5 video.
-  <a href="_movies/classical-vs-lotf.mp4">Download</a> the video instead.
+  <a href="http://www.jrkermode.co.uk/_movies/classical-vs-lotf.mp4">Download</a> the video instead.
   </b></p>
 </video>
 </center><p>Fracture initiates much earlier in the LOTF case, i.e. at a much reduced energy
@@ -534,14 +536,14 @@ the frature surface after the crack has propagated for a few nm. These are
 associated with the relatively small system and high strain rate we are using
 here, which leads to fracture at high energies and possibly to high speed
 fracture instabilities <a class="reference internal" href="adaptive-qmmm-references.html#fineberg1991" id="id1">[Fineberg1991]</a>. If you have time you can investigate
-this in the <a class="reference internal" href="#system-size-and-strain-rate"><em>extension task on size and strain rate effects</em></a>.</p>
+this in the <a class="reference internal" href="#system-size-and-strain-rate"><span>extension task on size and strain rate effects</span></a>.</p>
 <center>
-<video width="640" height="720" controls="controls" poster="_movies/clas-vs-lotf-poster.jpg">
-  <source src="_movies/clas-vs-lotf.mp4"  type='video/mp4' />
-  <source src="_movies/clas-vs-lotf.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
-  <source src="_movies/clas-vs-lotf.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+<video width="640" height="720" controls="controls" poster="http://www.jrkermode.co.uk/_movies/clas-vs-lotf-poster.jpg">
+  <source src="http://www.jrkermode.co.uk/_movies/clas-vs-lotf.mp4"  type='video/mp4' />
+  <source src="http://www.jrkermode.co.uk/_movies/clas-vs-lotf.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
+  <source src="http://www.jrkermode.co.uk/_movies/clas-vs-lotf.webm" type='video/webm; codecs="vp8.0, vorbis"' />
   <p><b>Your browser does not support HTML5 video.
-  <a href="_movies/clas-vs-lotf.mp4">Download</a> the video instead.
+  <a href="http://www.jrkermode.co.uk/_movies/clas-vs-lotf.mp4">Download</a> the video instead.
   </b></p>
 </video>
 </center><p>Although it is beyond the scope of this tutorial, you might be interested to
@@ -552,18 +554,18 @@ gives an improved description of the fracture surfaces, which reconstruct to
 form a Pandey <img class="math" src="_images/math/c1bd4cb4e3647c6b2356b7ccf2f52aeffedd1b61.png" alt="\pi"/>-bonded chain, with it&#8217;s characteristic alternating
 pentagons and heptagons:</p>
 <center>
-<video width="640" height="360" controls="controls" poster="_movies/silicon-111-dft-1400-poster.jpg">
-  <source src="_movies/silicon-111-dft-1400.mp4"  type='video/mp4' />
-  <source src="_movies/silicon-111-dft-1400.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
-  <source src="_movies/silicon-111-dft-1400.webm" type='video/webm; codecs="vp8.0, vorbis"' />
+<video width="640" height="360" controls="controls" poster="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400-poster.jpg">
+  <source src="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400.mp4"  type='video/mp4' />
+  <source src="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400.ogv"  type='video/ogg; codecs="theora, vorbis"'' />
+  <source src="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400.webm" type='video/webm; codecs="vp8.0, vorbis"' />
   <p><b>Your browser does not support HTML5 video.
-  <a href="_movies/silicon-111-dft-1400.mp4">Download</a> the video instead.
+  <a href="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400.mp4">Download</a> the video instead.
   </b></p>
 </video>
 </center></div>
 <div class="section" id="evolution-of-energy-release-rate-and-crack-position">
 <span id="plot-g-and-crack-pos-x-lotf"></span><h3>Evolution of energy release rate and crack position<a class="headerlink" href="#evolution-of-energy-release-rate-and-crack-position" title="Permalink to this headline">¶</a></h3>
-<p>If you follow the <a class="reference internal" href="adaptive-qmmm-step2.html#plot-g-and-crack-pos-x"><em>previous approach</em></a> to plot the
+<p>If you follow the <a class="reference internal" href="adaptive-qmmm-step2.html#plot-g-and-crack-pos-x"><span>previous approach</span></a> to plot the
 energy release rate <cite>G</cite> and crack position <cite>crack_pos_x</cite> variables during your
 LOTF simulation, you should find that the crack now advances monotonically, with
 a constant crack velocity of around 2500 m/s, and at about half the energy
@@ -571,7 +573,7 @@ release rate of the classical case (6 J/m<sup>2</sup> vs 12 J/m<sup>2</sup>).</p
 <a class="reference internal image-reference" href="_images/lotf-energy-release-rate-crack-position.png"><img alt="_images/lotf-energy-release-rate-crack-position.png" class="align-center" src="_images/lotf-energy-release-rate-crack-position.png" style="width: 600px;" /></a>
 <p>For comparison, here is the classical plot again:</p>
 <a class="reference internal image-reference" href="_images/energy-release-rate-crack-position.png"><img alt="_images/energy-release-rate-crack-position.png" class="align-center" src="_images/energy-release-rate-crack-position.png" style="width: 600px;" /></a>
-<p>You should find that the <a class="reference internal" href="adaptive-qmmm-step2.html#plot-temperature"><em>temperature</em></a> still goes up,
+<p>You should find that the <a class="reference internal" href="adaptive-qmmm-step2.html#plot-temperature"><span>temperature</span></a> still goes up,
 but more gently than in the classical case, since the flow of energy to the
 crack tip is closer to the energy consumed by creating the new surfaces. Some
 heat is generated at the QM/MM border; usually this would be controlled with a
@@ -592,7 +594,7 @@ experimentally observable phenomena <a class="reference internal" href="adaptive
 </div>
 <div class="section" id="checking-the-predictor-corrector-force-errors-optional">
 <span id="pred-corr-error"></span><span id="extension-tasks"></span><h2>3.4 Checking the predictor/corrector force errors (optional)<a class="headerlink" href="#checking-the-predictor-corrector-force-errors-optional" title="Permalink to this headline">¶</a></h2>
-<p>Add <cite>check_force_error=True</cite> to the <a class="reference internal" href="lotf.html#quippy.lotf.LOTFDynamics" title="quippy.lotf.LOTFDynamics"><tt class="xref py py-class docutils literal"><span class="pre">LOTFDynamics</span></tt></a>
+<p>Add <cite>check_force_error=True</cite> to the <a class="reference internal" href="lotf.html#quippy.lotf.LOTFDynamics" title="quippy.lotf.LOTFDynamics"><code class="xref py py-class docutils literal"><span class="pre">LOTFDynamics</span></code></a>
 constructor. This causes the LOTF routines to do a reference QM force evaluation
 at every timestep (note that these extra QM forces are not used in the fitting,
 so the dynamical trajectory followed is the same as before).</p>
@@ -603,7 +605,7 @@ the QM region by commenting out the line:</p>
 </div>
 <p>Let&#8217;s create a logfile to save the force errors at each step during
 the interpolation and extrapolation. Add the following code before the
-<tt class="xref py py-meth docutils literal"><span class="pre">dynamics.run()</span></tt> call:</p>
+<code class="xref py py-meth docutils literal"><span class="pre">dynamics.run()</span></code> call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">log_pred_corr_errors</span><span class="p">(</span><span class="n">dynamics</span><span class="p">,</span> <span class="n">logfile</span><span class="p">):</span>
     <span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> err </span><span class="si">%10.1f%12.6f%12.6f</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dynamics</span><span class="o">.</span><span class="n">state_label</span><span class="p">,</span>
                                                    <span class="n">dynamics</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
@@ -614,17 +616,17 @@ the interpolation and extrapolation. Add the following code before the
 </pre></div>
 </div>
 <p>Finally, change the total number of steps (via the <cite>nsteps</cite> parameter) to a much
-smaller number (e.g. 200 steps), close the logfile after the <tt class="docutils literal"><span class="pre">dynamics.run()</span></tt>
+smaller number (e.g. 200 steps), close the logfile after the <code class="docutils literal"><span class="pre">dynamics.run()</span></code>
 line:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">logfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Once the dynamics have run for a few LOTF cycles, you can plot the results with
-a shell script called <tt class="docutils literal"><span class="pre">plot_pred_corr_errors.py</span></tt>:</p>
+a shell script called <code class="docutils literal"><span class="pre">plot_pred_corr_errors.py</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>plot_pred_corr_errors.py -e 10 pred-corr-error.txt
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">-e</span> <span class="pre">10</span></tt> argument is used to specify the number of extrapolate steps. This
+<p>The <code class="docutils literal"><span class="pre">-e</span> <span class="pre">10</span></code> argument is used to specify the number of extrapolate steps. This
 produces a set of four plots giving the RMS and maximum force errors during
 extrapolation and interpolation:</p>
 <a class="reference internal image-reference" href="_images/lotf_check_force_error.png"><img alt="_images/lotf_check_force_error.png" class="align-center" src="_images/lotf_check_force_error.png" style="width: 600px;" /></a>
@@ -636,8 +638,8 @@ maximum length of the corrective springs added to the potential and the size of
 the fit region, respectively.</p>
 <div class="section" id="milestone-3-4">
 <h3>Milestone 3.4<a class="headerlink" href="#milestone-3-4" title="Permalink to this headline">¶</a></h3>
-<p>Here is a final version of the <tt class="docutils literal"><span class="pre">run_crack_lotf.py</span></tt> script including
-checking of the force errors: <a class="reference download internal" href="_downloads/run_crack_lotf.py"><tt class="xref download docutils literal"><span class="pre">run_crack_lotf.py</span></tt></a>.</p>
+<p>Here is a final version of the <code class="docutils literal"><span class="pre">run_crack_lotf.py</span></code> script including
+checking of the force errors: <a class="reference download internal" href="_downloads/run_crack_lotf.py"><code class="xref download docutils literal"><span class="pre">run_crack_lotf.py</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="further-extension-tasks">
@@ -658,12 +660,12 @@ considered to be converged with respect to buffer region size?</p>
 <div class="section" id="crack-energy-speed-relationship">
 <span id="freund"></span><h3>Crack energy-speed relationship<a class="headerlink" href="#crack-energy-speed-relationship" title="Permalink to this headline">¶</a></h3>
 <p>Try varying the flow of energy to the crack tip by changing the <cite>initial_G</cite>
-parameter used when making the crack system in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><em>Step 1: Setup of the Silicon model system</em></a>. How does this
+parameter used when making the crack system in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span>Step 1: Setup of the Silicon model system</span></a>. How does this
 affect the speed of the crack?</p>
 </div>
 <div class="section" id="other-crack-orientations">
 <span id="other-orientations"></span><h3>Other crack orientations<a class="headerlink" href="#other-crack-orientations" title="Permalink to this headline">¶</a></h3>
-<p>Return to the beginning of <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><em>Step 1: Setup of the Silicon model system</em></a> and try classical and/or LOTF dynamics
+<p>Return to the beginning of <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span>Step 1: Setup of the Silicon model system</span></a> and try classical and/or LOTF dynamics
 (which will actually probably be faster!) on the <img class="math" src="_images/math/cbcf6fbec8bb706a5d81e95a498bbedb4e2d1138.png" alt="(110)"/> surface. Do you
 see any major differences? Can you find any dynamic fracture instabilities?</p>
 </div>
@@ -689,7 +691,7 @@ artificially high strain rate we have been forced to impose here.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -704,14 +706,14 @@ artificially high strain rate we have been forced to impose here.</p>
         <li class="right" >
           <a href="adaptive-qmmm-step2.html" title="Step 2: Classical MD simulation of fracture in Si"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
-          <li><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

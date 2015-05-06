@@ -27,8 +27,8 @@
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Elasticity calculations" href="elasticity.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,11 +40,11 @@
         <li class="right" >
           <a href="elasticity.html" title="Elasticity calculations"
              accesskey="N">next</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -52,12 +52,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="elasticity.html"
                         title="next chapter">Elasticity calculations</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/cp2k.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cp2k.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -76,10 +78,594 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
-  <div class="section" id="cp2k-i-o-and-driver">
-<span id="cp2k"></span><h1>CP2K I/O and driver<a class="headerlink" href="#cp2k-i-o-and-driver" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-quippy.cp2k">
+<span id="cp2k-i-o-and-driver"></span><span id="cp2k"></span><h1>CP2K I/O and driver<a class="headerlink" href="#module-quippy.cp2k" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cp2k" title="quippy.cp2k: CP2K I/O"><code class="xref py py-mod docutils literal"><span class="pre">quippy.cp2k</span></code></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.CP2KPotential" title="quippy.cp2k.CP2KPotential"><code class="xref py py-obj docutils literal"><span class="pre">CP2KPotential</span></code></a>([fpointer,&nbsp;finalise,&nbsp;error])</td>
+<td>QUIP Potential interface to the CP2K code.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.CP2KInputHeader" title="quippy.cp2k.CP2KInputHeader"><code class="xref py py-obj docutils literal"><span class="pre">CP2KInputHeader</span></code></a>([filename])</td>
+<td>Read a cp2k_input.inp.header file and parse into an ordered dictionary.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.read_cp2k_qm_kind" title="quippy.cp2k.read_cp2k_qm_kind"><code class="xref py py-obj docutils literal"><span class="pre">read_cp2k_qm_kind</span></code></a>(fh)</td>
+<td>Read a file in cp2k_input.qmmm_qm_kind</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.read_psf" title="quippy.cp2k.read_psf"><code class="xref py py-obj docutils literal"><span class="pre">read_psf</span></code></a>(psf[,&nbsp;rev_sort_index])</td>
+<td>Read the PSF topology file from the filename <cite>psf</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.apply_cp2k_sort_order" title="quippy.cp2k.apply_cp2k_sort_order"><code class="xref py py-obj docutils literal"><span class="pre">apply_cp2k_sort_order</span></code></a>(at[,&nbsp;...])</td>
+<td>Reorder atoms in <cite>at</cite> so that they match rev_sort_index read from file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.bonds_from_avgpos" title="quippy.cp2k.bonds_from_avgpos"><code class="xref py py-obj docutils literal"><span class="pre">bonds_from_avgpos</span></code></a>(at)</td>
+<td>Compute connectivity of <cite>at</cite> using <cite>avgpos</cite> positions.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.qmmm_link_bonds" title="quippy.cp2k.qmmm_link_bonds"><code class="xref py py-obj docutils literal"><span class="pre">qmmm_link_bonds</span></code></a>(at[,&nbsp;run_suffix])</td>
+<td>Return the set of QM/MM link bonds in <cite>at</cite>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.cp2k.CP2KPotential">
+<em class="property">class </em><code class="descclassname">quippy.cp2k.</code><code class="descname">CP2KPotential</code><span class="sig-paren">(</span><em>fpointer=None</em>, <em>finalise=True</em>, <em>error=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#CP2KPotential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.CP2KPotential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">quippy.potential.Potential</span></code></a></p>
+<p>QUIP Potential interface to the CP2K code.</p>
+<p>Calls do_cp2k_calc() in QUIP_FilePot_Drivers/cp2k_driver_module.f95 to do the heavy lifting</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="quippy.cp2k.CP2KInputHeader">
+<em class="property">class </em><code class="descclassname">quippy.cp2k.</code><code class="descname">CP2KInputHeader</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#CP2KInputHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.CP2KInputHeader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">quippy.ordereddict.OrderedDict</span></code></p>
+<p>Read a cp2k_input.inp.header file and parse into an ordered dictionary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k.read_cp2k_qm_kind">
+<code class="descclassname">quippy.cp2k.</code><code class="descname">read_cp2k_qm_kind</code><span class="sig-paren">(</span><em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#read_cp2k_qm_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.read_cp2k_qm_kind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a file in cp2k_input.qmmm_qm_kind</p>
+<p>This is the format produced by the QUIP cp2k_driver.
+Returns a list of tuples (qm_kind, atom_indices).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k.read_psf">
+<code class="descclassname">quippy.cp2k.</code><code class="descname">read_psf</code><span class="sig-paren">(</span><em>psf</em>, <em>rev_sort_index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#read_psf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.read_psf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the PSF topology file from the filename <cite>psf</cite>.</p>
+<p>Returns a pair of lists <cite>(bonds, angles)</cite>. <cite>bonds</cite> is a list
+of pairs of bonded atom indices <cite>(i, j)</cite> and <cite>angles</cite> is a list
+of triplets <cite>(i, j, k)</cite>. Order is same as that in PSF file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k.apply_cp2k_sort_order">
+<code class="descclassname">quippy.cp2k.</code><code class="descname">apply_cp2k_sort_order</code><span class="sig-paren">(</span><em>at</em>, <em>rev_sort_index_filename='quip_rev_sort_index'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#apply_cp2k_sort_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.apply_cp2k_sort_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorder atoms in <cite>at</cite> so that they match rev_sort_index read from file.</p>
+<p>Returns sort_index and rev_sort_index arrays.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k.bonds_from_avgpos">
+<code class="descclassname">quippy.cp2k.</code><code class="descname">bonds_from_avgpos</code><span class="sig-paren">(</span><em>at</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#bonds_from_avgpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.bonds_from_avgpos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute connectivity of <cite>at</cite> using <cite>avgpos</cite> positions.</p>
+<p>A copy of <cite>at</cite> is made to avoid changing its connect
+object. Returns list of bonds as a set.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k.qmmm_link_bonds">
+<code class="descclassname">quippy.cp2k.</code><code class="descname">qmmm_link_bonds</code><span class="sig-paren">(</span><em>at</em>, <em>run_suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#qmmm_link_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.qmmm_link_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set of QM/MM link bonds in <cite>at</cite>.</p>
+<p>Bonds are computed from average positions using <cite>bonds_from_avgpos()</cite>.
+<cite>run_suffix</cite> is used to find the relevant <cite>cluster_mark</cite> property.</p>
+</dd></dl>
+
+<span class="target" id="module-quippy.cp2k_driver"></span><p>guts of cp2k driver from template</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cp2k_driver" title="quippy.cp2k_driver: CP2K Interface"><code class="xref py py-mod docutils literal"><span class="pre">quippy.cp2k_driver</span></code></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.calc_charge_lsd" title="quippy.cp2k_driver.calc_charge_lsd"><code class="xref py py-obj docutils literal"><span class="pre">calc_charge_lsd</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.do_cp2k_calc" title="quippy.cp2k_driver.do_cp2k_calc"><code class="xref py py-obj docutils literal"><span class="pre">do_cp2k_calc</span></code></a>(at,args_str,n0,n1,[error])</td>
+<td><p class="rubric">args_str options</p>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.read_output" title="quippy.cp2k_driver.read_output"><code class="xref py py-obj docutils literal"><span class="pre">read_output</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.cp2k_state_change" title="quippy.cp2k_driver.cp2k_state_change"><code class="xref py py-obj docutils literal"><span class="pre">cp2k_state_change</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.qmmm_qm_abc" title="quippy.cp2k_driver.qmmm_qm_abc"><code class="xref py py-obj docutils literal"><span class="pre">qmmm_qm_abc</span></code></a>(at,qm_list_a,qm_vacuum)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.cp2k_driver.calc_charge_lsd">
+<code class="descclassname">quippy.cp2k_driver.</code><code class="descname">calc_charge_lsd</code><span class="sig-paren">(</span><em>at</em>, <em>qm_list_a</em>, <em>n_hydrogen</em>, <em>hydrogen_charge</em>, <em>n_extra_electrons</em>, <em>use_mm_charges</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cp2k_driver.calc_charge_lsd" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>qm_list_a</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>charge</strong> :  int</p>
+<p><strong>do_lsd</strong> :  int</p>
+<p><strong>n_hydrogen</strong> :  input int</p>
+<p><strong>hydrogen_charge</strong> :  input float</p>
+<p><strong>n_extra_electrons</strong> :  input int</p>
+<p><strong>use_mm_charges</strong> :  input int</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_charge_lsd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k_driver.do_cp2k_calc">
+<code class="descclassname">quippy.cp2k_driver.</code><code class="descname">do_cp2k_calc</code><span class="sig-paren">(</span><em>at</em>, <em>args_str</em>, <em>n0</em>, <em>n1</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cp2k_driver.do_cp2k_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">args_str options</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="5%" />
+<col width="21%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MM_param_file</td>
+<td>str</td>
+<td>None</td>
+<td>If tmp_run_dir&gt;0, where to find MM
+parameter file to copy it to the cp2k
+run dir on /tmp.</td>
+</tr>
+<tr class="row-odd"><td>PSF_print</td>
+<td>str</td>
+<td>NO_PSF</td>
+<td>When to print PSF file: NO_PSF,
+DRIVER_PRINT_AND_SAVE, USE_EXISTING_PSF</td>
+</tr>
+<tr class="row-even"><td>QM_basis_file</td>
+<td>str</td>
+<td>None</td>
+<td>If tmp_run_dir&gt;0, where to find QM
+BASIS_SET file to copy it to the cp2k
+run dir on /tmp.</td>
+</tr>
+<tr class="row-odd"><td>QM_potential_file</td>
+<td>str</td>
+<td>None</td>
+<td>If tmp_run_dir&gt;0, where to find QM
+POTENTIAL file to copy it to the cp2k
+run dir on /tmp.</td>
+</tr>
+<tr class="row-even"><td>auto_centre</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, automatically center
+configuration. May cause energy/force
+fluctuations. Mutually exclusive with
+centre_pos</td>
+</tr>
+<tr class="row-odd"><td>break_bond</td>
+<td>int</td>
+<td>0 0</td>
+<td>Bond to break (for EVB)</td>
+</tr>
+<tr class="row-even"><td>centre_pos</td>
+<td>float</td>
+<td>0.0 0.0 0.0</td>
+<td>Position to center around, mutually
+exclusive with auto_centre</td>
+</tr>
+<tr class="row-odd"><td>clean_up_files</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, clean up run directory files</td>
+</tr>
+<tr class="row-even"><td>clean_up_keep_n</td>
+<td>int</td>
+<td>1</td>
+<td>Number of old run directories to keep
+if cleaning up</td>
+</tr>
+<tr class="row-odd"><td>cp2k_calc_fake</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, do fake cp2k runs that just
+read from old output files</td>
+</tr>
+<tr class="row-even"><td>cp2k_template_file</td>
+<td>str</td>
+<td>cp2k_input.template</td>
+<td>Filename for cp2k input template</td>
+</tr>
+<tr class="row-odd"><td>create_residue_labels</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, recreate residue labels each
+time PSF file is generated (default T)</td>
+</tr>
+<tr class="row-even"><td>force_run_dir_i</td>
+<td>int</td>
+<td>-1</td>
+<td>If &gt; 0, force to run in this # run
+directory</td>
+</tr>
+<tr class="row-odd"><td>form_bond</td>
+<td>int</td>
+<td>0 0</td>
+<td>Extra bond to form (for EVB)</td>
+</tr>
+<tr class="row-even"><td>have_silica_potential</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, use 2.8A SILICA_CUTOFF for the
+connectivities</td>
+</tr>
+<tr class="row-odd"><td>have_titania_potential</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, use 2.8A TITANIA_CUTOFF for
+the connectivities</td>
+</tr>
+<tr class="row-even"><td>max_force_warning</td>
+<td>float</td>
+<td>2.0</td>
+<td>Generate warning if any force is larger
+than this</td>
+</tr>
+<tr class="row-odd"><td>max_n_tries</td>
+<td>int</td>
+<td>2</td>
+<td>Max number of times to run cp2k on
+failure</td>
+</tr>
+<tr class="row-even"><td>persistent</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, use persistent connection to
+cp2k with REFTRAJ</td>
+</tr>
+<tr class="row-odd"><td>persistent_max_wait_time</td>
+<td>float</td>
+<td>600.0</td>
+<td>Max amount of time in s to wait for
+forces to be available in persistent
+mode</td>
+</tr>
+<tr class="row-even"><td>persistent_restart_interval</td>
+<td>int</td>
+<td>100</td>
+<td>How often to restart cp2k for
+persistent connection</td>
+</tr>
+<tr class="row-odd"><td>qm_charges</td>
+<td>str</td>
+<td>None</td>
+<td>If not blank, name of property to put
+QM charges in</td>
+</tr>
+<tr class="row-even"><td>qm_vacuum</td>
+<td>float</td>
+<td>6.0</td>
+<td>Amount of vacuum to add to size of qm
+region in hybrid (and nonperiodic?)
+runs</td>
+</tr>
+<tr class="row-odd"><td>qmmm_link_fix_pbc</td>
+<td>bool</td>
+<td>True</td>
+<td>If true (default) move outer atoms in
+any QM links which straddle a periodic
+boundary so link is continous</td>
+</tr>
+<tr class="row-even"><td>qmmm_link_n_electrons</td>
+<td>int</td>
+<td>1</td>
+<td>Number of electrons to add per QM-MM
+link when qmmm_link_type=QM_KIND</td>
+</tr>
+<tr class="row-odd"><td>qmmm_link_qm_kind</td>
+<td>str</td>
+<td>OSTAR</td>
+<td>QM kind to use for inner boundary atoms
+when qmmm_link_type=QM_KIND</td>
+</tr>
+<tr class="row-even"><td>qmmm_link_qm_kind_z</td>
+<td>int</td>
+<td>8</td>
+<td>Atomic number of QM_KIND species
+(default 8)</td>
+</tr>
+<tr class="row-odd"><td>qmmm_link_template_file</td>
+<td>str</td>
+<td>None</td>
+<td>Filename for cp2k link atoms template
+file</td>
+</tr>
+<tr class="row-even"><td>qmmm_link_type</td>
+<td>str</td>
+<td>IMOMM</td>
+<td>Type of QMMM links to create: one of
+IMOMM, PSEUDO or QM_KIND. Default IMOMM</td>
+</tr>
+<tr class="row-odd"><td>qmmm_same_lattice</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, use full original MM lattice
+for QM calculation</td>
+</tr>
+<tr class="row-even"><td>qmmm_use_mm_charges</td>
+<td>bool</td>
+<td>True</td>
+<td>If true (default) use classical point
+charges of atoms in QM region to
+calculate total DFT charge</td>
+</tr>
+<tr class="row-odd"><td>remove_Si_H_silica_bonds</td>
+<td>bool</td>
+<td>True</td>
+<td>If true (default) remove any Si-H bonds
+detected in silica residue</td>
+</tr>
+<tr class="row-even"><td>remove_Ti_H_titania_bonds</td>
+<td>bool</td>
+<td>True</td>
+<td>If true (default) remove any Ti-H bonds
+detected in titania residue</td>
+</tr>
+<tr class="row-odd"><td>res_num_silica</td>
+<td>int</td>
+<td>1</td>
+<td>Residue number for silica residue</td>
+</tr>
+<tr class="row-even"><td>run_suffix</td>
+<td>str</td>
+<td>None</td>
+<td>String to append to various marks and
+saved info to indicate distinct sets of
+calculations or QM/MM QM regions</td>
+</tr>
+<tr class="row-odd"><td>save_output_files</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, save the output files</td>
+</tr>
+<tr class="row-even"><td>save_output_wfn_files</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, save output wavefunction files</td>
+</tr>
+<tr class="row-odd"><td>silica_add_23_body</td>
+<td>bool</td>
+<td>True</td>
+<td>If true and if have_silica_potential is
+true, add bonds for silica 2- and
+3-body terms to PSF</td>
+</tr>
+<tr class="row-even"><td>silica_charge_transfer</td>
+<td>float</td>
+<td>2.4</td>
+<td>Amount of charge transferred from Si to
+O in silica bulk, per formula unit</td>
+</tr>
+<tr class="row-odd"><td>silica_pos_dep_charges</td>
+<td>bool</td>
+<td>True</td>
+<td>If true and if have_silica_potential is
+true, use variable charges for silicon
+and oxygen ions in silica residue</td>
+</tr>
+<tr class="row-even"><td>tmp_run_dir_i</td>
+<td>int</td>
+<td>-1</td>
+<td>If &gt;0, the cp2k run directory will be
+/tmp/cp2k_run_$tmp_run_dir_i$, and all
+input files are also copied here when
+first called</td>
+</tr>
+<tr class="row-odd"><td>topology_suffix</td>
+<td>str</td>
+<td>None</td>
+<td>String to append to file containing
+topology info (for runs that do
+multiple topologies not to accidentally
+reuse PSF file</td>
+</tr>
+<tr class="row-even"><td>try_reuse_wfn</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, try to reuse previous
+wavefunction file</td>
+</tr>
+<tr class="row-odd"><td>use_buffer</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, use buffer as specified in
+relevant hybrid_mark</td>
+</tr>
+<tr class="row-even"><td>verbosity</td>
+<td>str</td>
+<td>NORMAL</td>
+<td>Verbosity level</td>
+</tr>
+<tr class="row-odd"><td>virial</td>
+<td>str</td>
+<td>None</td>
+<td>If not blank, name of property to put
+virial in</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>f</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_f,0)</p>
+</div></blockquote>
+<p><strong>n1</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_f,1)</p>
+</div></blockquote>
+<p><strong>e</strong> :  float</p>
+<p><strong>args_str</strong> :  input string(len=-1)</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">do_cp2k_calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k_driver.read_output">
+<code class="descclassname">quippy.cp2k_driver.</code><code class="descname">read_output</code><span class="sig-paren">(</span><em>at</em>, <em>qm_list_a</em>, <em>cur_qmmm_qm_abc</em>, <em>run_dir</em>, <em>proj</em>, <em>calc_qm_charges</em>, <em>do_calc_virial</em>, <em>save_reordering_index</em>, <em>n1</em>, <em>n2</em><span class="optional">[</span>, <em>out_i</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cp2k_driver.read_output" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>qm_list_a</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>cur_qmmm_qm_abc</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>run_dir</strong> :  input string(len=-1)</p>
+<p><strong>proj</strong> :  input string(len=-1)</p>
+<p><strong>e</strong> :  float</p>
+<p><strong>f</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2)</p>
+<p><strong>n1</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_f,0)</p>
+</div></blockquote>
+<p><strong>n2</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_f,1)</p>
+</div></blockquote>
+<p><strong>calc_qm_charges</strong> :  input string(len=-1)</p>
+<p><strong>do_calc_virial</strong> :  input int</p>
+<p><strong>save_reordering_index</strong> :  input int</p>
+<p><strong>out_i</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">read_output</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k_driver.cp2k_state_change">
+<code class="descclassname">quippy.cp2k_driver.</code><code class="descname">cp2k_state_change</code><span class="sig-paren">(</span><em>at</em>, <em>to</em>, <em>from_list</em><span class="optional">[</span>, <em>ignore_failure</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cp2k_driver.cp2k_state_change" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>to</strong> :  input string(len=-1)</p>
+<p><strong>from_list</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(*))</p>
+<p><strong>ignore_failure</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cp2k_state_change</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cp2k_driver.qmmm_qm_abc">
+<code class="descclassname">quippy.cp2k_driver.</code><code class="descname">qmmm_qm_abc</code><span class="sig-paren">(</span><em>at</em>, <em>qm_list_a</em>, <em>qm_vacuum</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cp2k_driver.qmmm_qm_abc" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>qm_list_a</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>qm_vacuum</strong> :  input float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_qmmm_qm_abc</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">qmmm_qm_abc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+</dd></dl>
+
 </div>
 
 
@@ -88,7 +674,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -100,13 +686,13 @@
         <li class="right" >
           <a href="elasticity.html" title="Elasticity calculations"
              >next</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

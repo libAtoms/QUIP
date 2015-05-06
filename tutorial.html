@@ -28,8 +28,8 @@
     <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html" />
     <link rel="prev" title="Tutorials" href="tutorials.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +44,11 @@
         <li class="right" >
           <a href="tutorials.html" title="Tutorials"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -72,12 +72,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="adglass.html"
                         title="next chapter">Molecular Dynamics Simulation of Fracture in Quartz</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/tutorial.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tutorial.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -96,13 +98,13 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="introductory-tutorial">
 <span id="tutorial-intro"></span><h1><a class="toc-backref" href="#id3">Introductory Tutorial</a><a class="headerlink" href="#introductory-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial assumes you&#8217;ve successfully installed quippy and that
-all the tests pass. If not, see <a class="reference internal" href="install.html#installation"><em>Installation</em></a>. We make use
-<a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>, <a class="reference external" href="http://www.scipy.org">scipy</a> and the quippy <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt></a> extension
+all the tests pass. If not, see <a class="reference internal" href="install.html#installation"><span>Installation</span></a>. We make use
+<a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>, <a class="reference external" href="http://www.scipy.org">scipy</a> and the quippy <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> extension
 module in this tutorial, but you can skip other these sections if you
 don&#8217;t have these components installed.</p>
 <p>Other tutorials that may be useful:</p>
@@ -115,7 +117,7 @@ useful resource. In particular, there&#8217;s a good <a class="reference externa
 tutorial</a> as part of
 the ASE documentation.</li>
 <li>The numpy project also provides an (unfinished) <a class="reference external" href="http://www.scipy.org/Tentative_NumPy_Tutorial">tutorial</a>. If you follow
-this tutorial, be aware that quippy&#8217;s <tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt> class
+this tutorial, be aware that quippy&#8217;s <code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code> class
 uses one- rather than zero-based indexing, in order to fit in
 better with Fortran. numpy also has an online <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html">reference manual</a></li>
 <li><a class="reference external" href="http://www.scipy.org/NumPy_for_Matlab_Users">Numpy for Matlab Users</a>
@@ -126,7 +128,7 @@ typing commands interactively in Python (or, better, <a class="reference externa
 play around with things interactively, which is what we&#8217;ll do in this
 tutorial, but when you want to do something more than once it&#8217;s worth
 saving the commands in a script file. Just create a text file with the
-extension <tt class="docutils literal"><span class="pre">.py</span></tt>.</p>
+extension <code class="docutils literal"><span class="pre">.py</span></code>.</p>
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
@@ -148,23 +150,23 @@ extension <tt class="docutils literal"><span class="pre">.py</span></tt>.</p>
 &gt;&gt;&gt; from qlab import *
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">&gt;&gt;&gt;</span></tt> is the Python prompt, at which you type commands. Here
-we&#8217;ve asked Python to import all the names defined in <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><tt class="xref py py-mod docutils literal"><span class="pre">qlab</span></tt></a>,
+<p>The <code class="docutils literal"><span class="pre">&gt;&gt;&gt;</span></code> is the Python prompt, at which you type commands. Here
+we&#8217;ve asked Python to import all the names defined in <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a>,
 which is a convenience module that gives us access to all the
-<tt class="docutils literal"><span class="pre">quippy</span></tt> functionality.</p>
+<code class="docutils literal"><span class="pre">quippy</span></code> functionality.</p>
 <p>Alternatively, if you have the <a class="reference external" href="http://ipython.scipy.org">ipython</a>
 improved interactive shell installed, you can start quippy and load
 all the required modules with a helper script:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ quippy
 </pre></div>
 </div>
-<p>Now, let&#8217;s create an <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object. This is the fundamental
+<p>Now, let&#8217;s create an <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object. This is the fundamental
 class in quippy, and it represents a collection of atoms which together
 make up a crystal or molecule. We&#8217;ll make an 8-atom silicon unit cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first argument to <tt class="xref py py-func docutils literal"><span class="pre">diamond()</span></tt> is the lattice constant in Angstrom,
+<p>The first argument to <code class="xref py py-func docutils literal"><span class="pre">diamond()</span></code> is the lattice constant in Angstrom,
 and the second is the atomic number. Let&#8217;s poke around a little inside
 our new Atoms object. Here are two equivalent ways to determine the
 number of atoms:</p>
@@ -175,7 +177,7 @@ number of atoms:</p>
 </pre></div>
 </div>
 <p>We can save our new atoms to an XYZ file, and then re-read it by
-passing the filename to the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> constructor. Let&#8217;s do that,
+passing the filename to the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> constructor. Let&#8217;s do that,
 and check that what we get back is the same as the original:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;diamond.xyz&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dia2</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s">&#39;diamond.xyz&#39;</span><span class="p">)</span>
@@ -211,7 +213,7 @@ name to a value. For example the sequence of commands</p>
 operator == checks whether two names corresond to the same <em>value</em>,
 wheras the <cite>is</cite> operator checks if they correspond to the same
 address.  The expression <cite>a is b</cite> is equivalent to <cite>id(a) == id(b)</cite>,
-where <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#id" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt></a> is a Python built in function which returns a
+where <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#id" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">id()</span></code></a> is a Python built in function which returns a
 unique number identifying a the memory address to which a reference
 points.</p>
 <p>If you forget about this you can get into difficulties when dealing
@@ -241,8 +243,8 @@ for list objects this is done with the slice operator:</p>
 <span class="go">[]</span>
 </pre></div>
 </div>
-<p>To make a copy of a more complex object like an array or an <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> instance
-you should use the <tt class="xref py py-meth docutils literal"><span class="pre">copy()</span></tt> method, e.g.</p>
+<p>To make a copy of a more complex object like an array or an <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> instance
+you should use the <code class="xref py py-meth docutils literal"><span class="pre">copy()</span></code> method, e.g.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span>
@@ -251,13 +253,13 @@ you should use the <tt class="xref py py-meth docutils literal"><span class="pre
 <span class="go">False</span>
 </pre></div>
 </div>
-<p>Instead, use the <tt class="xref py py-meth docutils literal"><span class="pre">copy()</span></tt> method,
+<p>Instead, use the <code class="xref py py-meth docutils literal"><span class="pre">copy()</span></code> method,
 like in the second statement above.</p>
 <p class="last">For more information, consult the <a class="reference external" href="http://docs.python.org/dev/tutorial/index.html">offical Python tutorial</a>.</p>
 </div>
-<p>Various different file formats are supported, see <a class="reference internal" href="io.html#fileformats"><em>Supported File Formats</em></a>.</p>
-<p>If you have the optional <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt></a> module installed, you can visualise
-your new Atoms object by creating an <a class="reference internal" href="qlab.html#qlab.AtomsViewer" title="qlab.AtomsViewer"><tt class="xref py py-class docutils literal"><span class="pre">AtomsViewer</span></tt></a>:</p>
+<p>Various different file formats are supported, see <a class="reference internal" href="io.html#fileformats"><span>Supported File Formats</span></a>.</p>
+<p>If you have the optional <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> module installed, you can visualise
+your new Atoms object by creating an <a class="reference internal" href="qlab.html#qlab.AtomsViewer" title="qlab.AtomsViewer"><code class="xref py py-class docutils literal"><span class="pre">AtomsViewer</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">dia</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -272,8 +274,8 @@ species         =  Si
 z               =  14
 </pre></div>
 </div>
-<p>The positions and atomic numbers of each atom are available in the <tt class="docutils literal"><span class="pre">pos</span></tt>
-and <tt class="docutils literal"><span class="pre">z</span></tt> <tt class="xref py py-attr docutils literal"><span class="pre">properties</span></tt>:</p>
+<p>The positions and atomic numbers of each atom are available in the <code class="docutils literal"><span class="pre">pos</span></code>
+and <code class="docutils literal"><span class="pre">z</span></code> <code class="xref py py-attr docutils literal"><span class="pre">properties</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">z</span>
 <span class="go">[14 14 14 14 14 14 14 14]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span>
@@ -287,12 +289,12 @@ and <tt class="docutils literal"><span class="pre">z</span></tt> <tt class="xref
 <span class="go"> [ 1.36  4.08  4.08]]</span>
 </pre></div>
 </div>
-<p>Note that we print the <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.9)"><tt class="xref py py-func docutils literal"><span class="pre">transpose()</span></tt></a> of the
-position array using the <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.9)"><tt class="xref py py-attr docutils literal"><span class="pre">T</span></tt></a> attribute, since the
-actual <tt class="docutils literal"><span class="pre">dia.pos</span></tt> array has 3 rows and <tt class="docutils literal"><span class="pre">len(dia)</span> <span class="pre">==</span> <span class="pre">8</span></tt> columns,
+<p>Note that we print the <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.9)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
+position array using the <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.9)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
+actual <code class="docutils literal"><span class="pre">dia.pos</span></code> array has 3 rows and <code class="docutils literal"><span class="pre">len(dia)</span> <span class="pre">==</span> <span class="pre">8</span></code> columns,
 which isn&#8217;t very convenient for printing. Atomic properties are stored
 in arrays (actually, in a special type of array called a
-<a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a>), so it&#8217;s easy to access parts of the data.
+<a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code></a>), so it&#8217;s easy to access parts of the data.
 Array indexing and slicing works in the same way as in Fortran, except
 that square brackets are used:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>   <span class="c"># x coordinate of atom 1</span>
@@ -311,8 +313,8 @@ that square brackets are used:</p>
 </div>
 <div class="section" id="manipulating-atoms">
 <h2><a class="toc-backref" href="#id5">Manipulating Atoms</a><a class="headerlink" href="#manipulating-atoms" title="Permalink to this headline">¶</a></h2>
-<p>Let&#8217;s make a more complex structure to play with, a <a class="reference internal" href="structures.html#quippy.structures.supercell" title="quippy.structures.supercell"><tt class="xref py py-func docutils literal"><span class="pre">supercell()</span></tt></a>
-of 3 x 3 x 3 <a class="reference internal" href="structures.html#quippy.structures.alpha_quartz" title="quippy.structures.alpha_quartz"><tt class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></tt></a> unit cells:</p>
+<p>Let&#8217;s make a more complex structure to play with, a <a class="reference internal" href="structures.html#quippy.structures.supercell" title="quippy.structures.supercell"><code class="xref py py-func docutils literal"><span class="pre">supercell()</span></code></a>
+of 3 x 3 x 3 <a class="reference internal" href="structures.html#quippy.structures.alpha_quartz" title="quippy.structures.alpha_quartz"><code class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></code></a> unit cells:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="mf">4.92</span><span class="p">,</span> <span class="mf">5.40</span><span class="p">,</span> <span class="mf">0.4697</span><span class="p">,</span> <span class="mf">0.4135</span><span class="p">,</span> <span class="mf">0.2669</span><span class="p">,</span> <span class="mf">0.1191</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq</span><span class="p">)</span> <span class="c"># only do this if AtomEye plugin is installed</span>
@@ -320,9 +322,9 @@ of 3 x 3 x 3 <a class="reference internal" href="structures.html#quippy.structur
 </div>
 <img alt="_images/alphaquartz.png" class="align-center" src="_images/alphaquartz.png" />
 <p>This cell contains 243 atoms. Let&#8217;s look at the
-<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><tt class="xref py py-attr docutils literal"><span class="pre">lattice</span></tt></a> vectors, which are stored in a 3 x 3 matrix
-with <tt class="docutils literal"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">aq.lattice[:,1]</span></tt>, <tt class="docutils literal"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">aq.lattice[:,2]</span></tt> and <tt class="docutils literal"><span class="pre">c</span> <span class="pre">=</span>
-<span class="pre">aq.lattice[:,3]</span></tt>:</p>
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><code class="xref py py-attr docutils literal"><span class="pre">lattice</span></code></a> vectors, which are stored in a 3 x 3 matrix
+with <code class="docutils literal"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">aq.lattice[:,1]</span></code>, <code class="docutils literal"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">aq.lattice[:,2]</span></code> and <code class="docutils literal"><span class="pre">c</span> <span class="pre">=</span>
+<span class="pre">aq.lattice[:,3]</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">lattice</span>
 <span class="go">[[  7.38         7.38         0.        ]</span>
 <span class="go"> [-12.78253496  12.78253496   0.        ]</span>
@@ -331,11 +333,11 @@ with <tt class="docutils literal"><span class="pre">a</span> <span class="pre">=
 </div>
 <p>We can convert from a cartesian representation to cell lengths and
 angles to confirm that the cell has trigonal symmetry, using a
-function called <a class="reference internal" href="atoms.html#quippy.atoms.get_lattice_params" title="quippy.atoms.get_lattice_params"><tt class="xref py py-func docutils literal"><span class="pre">get_lattice_params()</span></tt></a>. To get online help on any
-anything from within Python, you type <tt class="docutils literal"><span class="pre">help(name)</span></tt>. In ipython, it&#8217;s
+function called <a class="reference internal" href="atoms.html#quippy.atoms.get_lattice_params" title="quippy.atoms.get_lattice_params"><code class="xref py py-func docutils literal"><span class="pre">get_lattice_params()</span></code></a>. To get online help on any
+anything from within Python, you type <code class="docutils literal"><span class="pre">help(name)</span></code>. In ipython, it&#8217;s
 even easier, just postfix the name with a question mark (or two
 question marks for even more information). Here&#8217;s the help for
-<tt class="xref py py-func docutils literal"><span class="pre">/get_lattice_params()</span></tt>:</p>
+<code class="xref py py-func docutils literal"><span class="pre">/get_lattice_params()</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">get_lattice_params</span><span class="p">)</span>
 <span class="go">get_lattice_params(lattice)</span>
 <span class="go">    Wrapper around Fortran :func:`get_lattice_params_`</span>
@@ -383,14 +385,14 @@ of the Silicon atoms to +2.8</p>
 <span class="n">aq</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">aq</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">14</span><span class="p">]</span> <span class="o">=</span>  <span class="mf">2.8</span>
 </pre></div>
 </div>
-<p>If you have <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt></a> installed, you can colour the atoms by the
+<p>If you have <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> installed, you can colour the atoms by the
 new charge property using:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">aux_property_coloring</span><span class="p">(</span><span class="s">&#39;charge&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here&#8217;s an example of making a new Atoms object containing only
 the atoms with positive y coordinates. We first ensure all atoms
-are within the first unit cell using <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.map_into_cell" title="quippy.atoms.Atoms.map_into_cell"><tt class="xref py py-meth docutils literal"><span class="pre">map_into_cell()</span></tt></a>:</p>
+are within the first unit cell using <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.map_into_cell" title="quippy.atoms.Atoms.map_into_cell"><code class="xref py py-meth docutils literal"><span class="pre">map_into_cell()</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span> <span class="o">=</span> <span class="n">aq</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">aq</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq2</span><span class="p">)</span> <span class="c"># only if AtomEye is available</span>
@@ -400,9 +402,9 @@ are within the first unit cell using <a class="reference internal" href="atoms.h
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">AtomEye has a different idea of the first unit-cell than quippy.
-I&#8217;ve shifted the cell by lattice coordinates of <tt class="docutils literal"><span class="pre">(0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5)</span></tt>
+I&#8217;ve shifted the cell by lattice coordinates of <code class="docutils literal"><span class="pre">(0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5)</span></code>
 to make this image.  With the extended version of AtomEye included
-in quippy, you can do this by pressing <tt class="kbd docutils literal"><span class="pre">Shift+z</span></tt>.</p>
+in quippy, you can do this by pressing <code class="kbd docutils literal"><span class="pre">Shift+z</span></code>.</p>
 </div>
 </div>
 <div class="section" id="using-an-atomslist-to-analyse-results">
@@ -412,12 +414,12 @@ simulations conducted with QUIP and libAtoms. It can read and write
 Atoms objects to and from a variety of file formats, with extended XYZ
 and NetCDF being the natively supported formats. Let&#8217;s see how we
 might construct a simple script to load and analyse some simulation data.</p>
-<p>The first example is <a class="reference download internal" href="_downloads/si-1000.xyz"><tt class="xref download docutils literal"><span class="pre">si-1000.xyz</span></tt></a>, which contains snapshots
+<p>The first example is <a class="reference download internal" href="_downloads/si-1000.xyz"><code class="xref download docutils literal"><span class="pre">si-1000.xyz</span></code></a>, which contains snapshots
 from a molecular dynamics simulation of silicon with the
 Stillinger-Weber potential, starting from a randomised velocity
-distribution at a temperature of 1000K (see <a class="reference internal" href="#moleculardynamics"><em>Potentials and DynamicalSystems</em></a>
+distribution at a temperature of 1000K (see <a class="reference internal" href="#moleculardynamics"><span>Potentials and DynamicalSystems</span></a>
 example).</p>
-<p>The <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> class is used to deal with a series of configurations.
+<p>The <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a> class is used to deal with a series of configurations.
 We can open the XYZ file and see how many frames it contains like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">al</span> <span class="o">=</span> <span class="n">AtomsList</span><span class="p">(</span><span class="s">&#39;si-1000.xyz&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">al</span><span class="p">)</span>
@@ -425,8 +427,8 @@ We can open the XYZ file and see how many frames it contains like this:</p>
 </pre></div>
 </div>
 <p>If you have the AtomEye extension, you can open a viewer with the
-<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><tt class="xref py py-func docutils literal"><span class="pre">view()</span></tt></a> function at this point, to allow visualisation of
-the trajectory: use <tt class="kbd docutils literal"><span class="pre">Insert</span></tt> and <tt class="kbd docutils literal"><span class="pre">Delete</span></tt> to move forwards
+<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> function at this point, to allow visualisation of
+the trajectory: use <code class="kbd docutils literal"><span class="pre">Insert</span></code> and <code class="kbd docutils literal"><span class="pre">Delete</span></code> to move forwards
 and backwards:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">al</span><span class="p">)</span>
 </pre></div>
@@ -434,27 +436,27 @@ and backwards:</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>The previous two steps can be accompished in one go using the
-<tt class="docutils literal"><span class="pre">quippy</span></tt> script from the shell command prompt:</p>
+<code class="docutils literal"><span class="pre">quippy</span></code> script from the shell command prompt:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ quippy si-1000.xyz
 </pre></div>
 </div>
 <p>In this case the trajectory is loaded directly into an
-<a class="reference internal" href="qlab.html#qlab.AtomsListViewer" title="qlab.AtomsListViewer"><tt class="xref py py-class docutils literal"><span class="pre">AtomsListViewer</span></tt></a> class, with a name taken from the
-basname of the input filename, e.g. <tt class="docutils literal"><span class="pre">si_1000</span></tt> in this case.
+<a class="reference internal" href="qlab.html#qlab.AtomsListViewer" title="qlab.AtomsListViewer"><code class="xref py py-class docutils literal"><span class="pre">AtomsListViewer</span></code></a> class, with a name taken from the
+basname of the input filename, e.g. <code class="docutils literal"><span class="pre">si_1000</span></code> in this case.
 You can check the name of the current viewer with the
-<a class="reference internal" href="qlab.html#qlab.gcv" title="qlab.gcv"><tt class="xref py py-func docutils literal"><span class="pre">gcv()</span></tt></a> function:</p>
+<a class="reference internal" href="qlab.html#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal"><span class="pre">gcv()</span></code></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
 <span class="go">&#39;si_1000&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_1000</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="last">For the purposes of following along with this tutorial, it&#8217;s
-simplest to create the <tt class="docutils literal"><span class="pre">al</span></tt> <tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt> as described
+simplest to create the <code class="docutils literal"><span class="pre">al</span></code> <code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code> as described
 above.</p>
 </div>
-<p>An <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> is essentially nothing more than a list of
-<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> objects. You can access the component objects by
-indexing, e.g. <tt class="docutils literal"><span class="pre">al[i]</span></tt> is the ith Atoms object within <tt class="docutils literal"><span class="pre">al</span></tt>.</p>
+<p>An <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a> is essentially nothing more than a list of
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> objects. You can access the component objects by
+indexing, e.g. <code class="docutils literal"><span class="pre">al[i]</span></code> is the ith Atoms object within <code class="docutils literal"><span class="pre">al</span></code>.</p>
 <p>Let&#8217;s check the conservation of the total energy in this simulation.
 The first frame in the data we&#8217;ve loaded has the following properties
 and parameters:</p>
@@ -466,8 +468,8 @@ and parameters:</p>
 <span class="go">[&#39;energy&#39;, &#39;time&#39;]</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">energy</span></tt> is the total potential energy of each configuration,
-and <tt class="docutils literal"><span class="pre">velo</span></tt> and <tt class="docutils literal"><span class="pre">mass</span></tt> the atomic velocities and masses respectively.
+<p>The <code class="docutils literal"><span class="pre">energy</span></code> is the total potential energy of each configuration,
+and <code class="docutils literal"><span class="pre">velo</span></code> and <code class="docutils literal"><span class="pre">mass</span></code> the atomic velocities and masses respectively.
 We can get a list of all the energies in a couple of different ways:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">energies</span> <span class="o">=</span> <span class="p">[</span> <span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span> <span class="p">]</span>       <span class="c"># Method 1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">energies</span>
@@ -478,10 +480,10 @@ We can get a list of all the energies in a couple of different ways:</p>
 </div>
 <p>Method 1 uses a Python feature called <a class="reference external" href="http://docs.python.org/tutorial/datastructures.html#list-comprehensions">list comprehension</a>
 to build a list with one entry for each frame in our
-<tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt>. The second method works in the same way but saves
+<code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code>. The second method works in the same way but saves
 typing by automatically constructing the loop for us, returning a list
 of energies.</p>
-<p>This trick also works for the Atoms property arrays., e.g. <tt class="docutils literal"><span class="pre">al.velo</span></tt>
+<p>This trick also works for the Atoms property arrays., e.g. <code class="docutils literal"><span class="pre">al.velo</span></code>
 gives us an array with the first axis corresponding to the frame
 within the file (length 100 here), the second to the spatial dimension
 (length 3), and the third to the atom number (length 216 here)</p>
@@ -492,7 +494,7 @@ within the file (length 100 here), the second to the spatial dimension
 </pre></div>
 </div>
 <p>To plot the potential energy as a function of time (assuming
-<tt class="xref py py-mod docutils literal"><span class="pre">matplotlib</span></tt> is available), run the commands:</p>
+<code class="xref py py-mod docutils literal"><span class="pre">matplotlib</span></code> is available), run the commands:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pylab</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">al</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Time / fs&#39;</span><span class="p">)</span>
@@ -514,15 +516,15 @@ arithmetic:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.9)"><tt class="xref py py-func docutils literal"><span class="pre">array()</span></tt></a> is used here to combine the trajectory frames
+<p>The <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.9)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib&#8217;s
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.4.3)"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function. If you want to retain the
-one-based indexing, using <a class="reference internal" href="farray.html#quippy.farray.farray" title="quippy.farray.farray"><tt class="xref py py-func docutils literal"><span class="pre">farray()</span></tt></a> instead, which
-returns a <a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><tt class="xref py py-class docutils literal"><span class="pre">FortranArray</span></tt></a>.</p>
-<p>Note the partial sums: the inner sum is over axis 1 of <tt class="docutils literal"><span class="pre">al.velo</span></tt>
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.4.3)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
+one-based indexing, using <a class="reference internal" href="farray.html#quippy.farray.farray" title="quippy.farray.farray"><code class="xref py py-func docutils literal"><span class="pre">farray()</span></code></a> instead, which
+returns a <a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code></a>.</p>
+<p>Note the partial sums: the inner sum is over axis 1 of <code class="docutils literal"><span class="pre">al.velo</span></code>
 which is the spatial dimension, and the outer sum is over axis 1 of
-<tt class="docutils literal"><span class="pre">.5*array(al.mass)*sum(array(al.velo)**2,axis=1)</span></tt> which is the atom
+<code class="docutils literal"><span class="pre">.5*array(al.mass)*sum(array(al.velo)**2,axis=1)</span></code> which is the atom
 number (here of length 216). Let&#8217;s add plots of the kinetic and total
 energies to our graph:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">ke</span><span class="p">)</span>                              <span class="c"># Plot kinetic energy</span>
@@ -560,13 +562,13 @@ temperature of 500K like this:</p>
 </pre></div>
 </div>
 <p>(If you want to clear the previous plot first, use the
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.clf" title="(in Matplotlib v1.4.3)"><tt class="xref py py-func docutils literal"><span class="pre">clf()</span></tt></a> matplotlib function). To add a
-histogram of the speeds in the last frame of our <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><tt class="xref py py-class docutils literal"><span class="pre">AtomsList</span></tt></a> to
-the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist" title="(in Matplotlib v1.4.3)"><tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt></a> function:</p>
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.clf" title="(in Matplotlib v1.4.3)"><code class="xref py py-func docutils literal"><span class="pre">clf()</span></code></a> matplotlib function). To add a
+histogram of the speeds in the last frame of our <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a> to
+the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist" title="(in Matplotlib v1.4.3)"><code class="xref py py-func docutils literal"><span class="pre">hist()</span></code></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">al</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">(),</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <tt class="xref py py-meth docutils literal"><span class="pre">norm()</span></tt> function returns the norm of each
+<p>The <code class="xref py py-meth docutils literal"><span class="pre">norm()</span></code> function returns the norm of each
 element in a 3 x <cite>N</cite> matrix as an array of length <cite>N</cite>. The agreement
 is not that good as we don&#8217;t have enough data. Let&#8217;s average over the
 last 50 snapshots to improve the sampling:</p>
@@ -575,7 +577,7 @@ last 50 snapshots to improve the sampling:</p>
 </div>
 <p><a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.hstack.html">hstack()</a>
 is a numpy function which stacks a sequence of arrays horizontally to
-form a composite array. The <cite>alpha</cite> parameter to <tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt> causes
+form a composite array. The <cite>alpha</cite> parameter to <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> causes
 the bars to be partially transparent. After setting the axis labels
 and legends, we get the figure shown below.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">xlabel</span><span class="p">(</span><span class="s">r&#39;Velocity / $\AA$ fs$^{-1}$&#39;</span><span class="p">)</span>
@@ -586,8 +588,8 @@ and legends, we get the figure shown below.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">LaTeX mathematical symbols can be used in matplotlib plots by
-enclosing them between dollar signs: <tt class="docutils literal"><span class="pre">$...$</span></tt>. Note how we put an
-<tt class="docutils literal"><span class="pre">r</span></tt> before the string containing the x-axis label. This causes
+enclosing them between dollar signs: <code class="docutils literal"><span class="pre">$...$</span></code>. Note how we put an
+<code class="docutils literal"><span class="pre">r</span></code> before the string containing the x-axis label. This causes
 Python to treat it as a <cite>raw string</cite>, meaning that backslash characters
 do not have to be escaped.</p>
 </div>
@@ -598,7 +600,7 @@ do not have to be escaped.</p>
 <p>Now let&#8217;s look at how to run simulations entirely using quippy. This
 will only be practical for small systems which run quickly, but can be
 very useful to get a feel for what&#8217;s going on. For this example we&#8217;ll
-build up the tools necessary to generate the <tt class="file docutils literal"><span class="pre">si-1000.xyz</span></tt> file
+build up the tools necessary to generate the <code class="file docutils literal"><span class="pre">si-1000.xyz</span></code> file
 used above. The code for this example is contained in the script
 file:<cite>examples/md.py</cite> in the quippy source tree.</p>
 <p>The first step is to define the initial atomic configuration. We&#8217;ll use
@@ -606,13 +608,13 @@ a 3 x 3 x 3 supercell of the 8-atom silicon unit cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Next we need to create a <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt></a> object to represent the
+<p>Next we need to create a <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object to represent the
 interatomic force model to be used for calculating energies and
-forces. The <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt></a> object is created by with two string
+forces. The <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object is created by with two string
 arguments, called <cite>args_str</cite> and <cite>param_str</cite>. The first of these
 identifies the type of potential, and the second is an XML string
 containing the parameters. QUIP contains a database of parameter files
-in the <tt class="file docutils literal"><span class="pre">QUIP_Core/parameters</span></tt>. We&#8217;ll use a Stillinger-Weber
+in the <code class="file docutils literal"><span class="pre">QUIP_Core/parameters</span></code>. We&#8217;ll use a Stillinger-Weber
 interatomic potential (<cite>args_str=&#8221;IP SW&#8221;</cite>) with the original
 parameters published in <cite>Phys. Rev. B</cite> <strong>31</strong>, 5262 (1984). Python
 triple-quoted strings can be split over multiple lines, so we can
@@ -641,9 +643,9 @@ matching parameters:</p>
 </pre></div>
 </div>
 <p>Our new potential object has several methods, the most important being
-<a class="reference internal" href="potential.html#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><tt class="xref py py-meth docutils literal"><span class="pre">calc()</span></tt></a> which is used whenever we want to calculate
-energies, forces or virial stresses. <a class="reference internal" href="potential.html#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><tt class="xref py py-meth docutils literal"><span class="pre">calc()</span></tt></a> operates
-on an <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object. We ask for the quantities we are
+<a class="reference internal" href="potential.html#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code></a> which is used whenever we want to calculate
+energies, forces or virial stresses. <a class="reference internal" href="potential.html#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code></a> operates
+on an <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object. We ask for the quantities we are
 interested in, which can either be returned in arrays or stored within
 the Atoms object. Let&#8217;s try to calculate the energy of our silicon cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>   <span class="c"># Create a rank-0 array to store energy</span>
@@ -654,7 +656,7 @@ the Atoms object. Let&#8217;s try to calculate the energy of our silicon cell:</
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>In earlier versions of <tt class="docutils literal"><span class="pre">quippy</span></tt>, the following error may be raised:</p>
+<p>In earlier versions of <code class="docutils literal"><span class="pre">quippy</span></code>, the following error may be raised:</p>
 <div class="highlight-python"><div class="highlight"><pre>Traceback (most recent call last):
   File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
   File &quot;/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py&quot;, line 438, in &lt;lambda&gt;
@@ -664,7 +666,7 @@ the Atoms object. Let&#8217;s try to calculate the energy of our silicon cell:</
 RuntimeError: Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.
 </pre></div>
 </div>
-<p>The <tt class="xref py py-exc docutils literal"><span class="pre">RuntimeError</span></tt> exception gets raised whenever something goes
+<p>The <code class="xref py py-exc docutils literal"><span class="pre">RuntimeError</span></code> exception gets raised whenever something goes
 wrong within a Fortran routine. In this case we need to calculate the
 atomic connectivity before we can evaluate the energy. To do this we
 need to choose a cutoff distance, which we can do in sensible fashion
@@ -695,14 +697,14 @@ positions a little.</p>
 </pre></div>
 </div>
 <p>The extended AtomEye plugin can draw arrows to represent these forces
-using the <tt class="xref py py-func docutils literal"><span class="pre">draw_arrows()</span></tt> function:</p>
+using the <code class="xref py py-func docutils literal"><span class="pre">draw_arrows()</span></code> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">draw_arrows</span><span class="p">(</span><span class="s">&#39;force&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/forces.png"><img alt="_images/forces.png" class="align-center" src="_images/forces.png" style="width: 600px;" /></a>
 <p>To perform a molecular dynamics calculation using our potential, we
-need to create a <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><tt class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></tt></a> object from our <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a>
+need to create a <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></code></a> object from our <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a>
 object. This stores all the dynamical variables and has methods
 to advance the simulation using the Velocity-Verlet algorithm. We&#8217;ll
 construct a DynamicalSystem, and randomise the initial velocities to 1000K:</p>
@@ -724,35 +726,35 @@ construct a DynamicalSystem, and randomise the initial velocities to 1000K:</p>
         <span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet1" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet1"><tt class="xref py py-meth docutils literal"><span class="pre">advance_verlet1()</span></tt></a> advances the velocities by
+<p><a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet1" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet1"><code class="xref py py-meth docutils literal"><span class="pre">advance_verlet1()</span></code></a> advances the velocities by
 half the time-step <img class="math" src="_images/math/6c030557cb024cfac6faf1fe59776f81099c4aad.png" alt="\delta t"/> and the positions by the full
 time-step.  We then calculate at new forces from our potential at
 <img class="math" src="_images/math/3dc43a946845228118914cdb9eadf786c31fad1a.png" alt="\mathbf{r}(t+\delta t)"/>.  Finally
-<a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet2" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet2"><tt class="xref py py-meth docutils literal"><span class="pre">advance_verlet2()</span></tt></a> advances the velocities by
-the second half time-step. <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.print_status" title="quippy.dynamicalsystem.DynamicalSystem.print_status"><tt class="xref py py-meth docutils literal"><span class="pre">print_status()</span></tt></a>
+<a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet2" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet2"><code class="xref py py-meth docutils literal"><span class="pre">advance_verlet2()</span></code></a> advances the velocities by
+the second half time-step. <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.print_status" title="quippy.dynamicalsystem.DynamicalSystem.print_status"><code class="xref py py-meth docutils literal"><span class="pre">print_status()</span></code></a>
 prints a status line with the current time, temperature, total energy,
 etc.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p><a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><tt class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></tt></a> has a <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.run" title="quippy.dynamicalsystem.DynamicalSystem.run"><tt class="xref py py-meth docutils literal"><span class="pre">run()</span></tt></a> method which
+<p><a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></code></a> has a <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.run" title="quippy.dynamicalsystem.DynamicalSystem.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a> method which
 implements an MD loop like the example and returns a list of
 snapshots:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">traj</span>    <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">save_interval</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">energies</span> <span class="o">=</span> <span class="p">[</span> <span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj</span> <span class="p">]</span>
 </pre></div>
 </div>
-<p>The <tt class="xref py py-meth docutils literal"><span class="pre">run()</span></tt> method also has an <cite>trajectory</cite>
+<p>The <code class="xref py py-meth docutils literal"><span class="pre">run()</span></code> method also has an <cite>trajectory</cite>
 argument which can be used in conjunction with <cite>write_interval</cite> to
 write frames to a file as the simulation runs, for example to write
-every 100th frame to <tt class="file docutils literal"><span class="pre">traj.xyz</span></tt>:</p>
+every 100th frame to <code class="file docutils literal"><span class="pre">traj.xyz</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">outfile</span> <span class="o">=</span> <span class="n">CInOutput</span><span class="p">(</span><span class="s">&#39;traj.xyz&#39;</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
 <span class="n">traj</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span> <span class="n">write_interval</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">outfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
-<p class="last">See also the <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.Dynamics" title="quippy.dynamicalsystem.Dynamics"><tt class="xref py py-class docutils literal"><span class="pre">Dynamics</span></tt></a> wrapper around the
-<a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><tt class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></tt></a> class, which makes it
-compatible with the ASE <tt class="xref py py-class docutils literal"><span class="pre">MolecularDynamics</span></tt>
+<p class="last">See also the <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.Dynamics" title="quippy.dynamicalsystem.Dynamics"><code class="xref py py-class docutils literal"><span class="pre">Dynamics</span></code></a> wrapper around the
+<a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></code></a> class, which makes it
+compatible with the ASE <code class="xref py py-class docutils literal"><span class="pre">MolecularDynamics</span></code>
 interface.</p>
 </div>
 </div>
@@ -760,11 +762,11 @@ interface.</p>
 <span id="geomopt"></span><h2><a class="toc-backref" href="#id8">Structural optimisation</a><a class="headerlink" href="#structural-optimisation" title="Permalink to this headline">¶</a></h2>
 <p>If you want to optimise the positions and/or the lattice of an atomic
 configuration, you&#8217;ll need to use either the
-<a class="reference internal" href="potential.html#quippy.potential.Potential.minim" title="quippy.potential.Potential.minim"><tt class="xref py py-meth docutils literal"><span class="pre">potential.Potential.minim()</span></tt></a> method or the
-<a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><tt class="xref py py-class docutils literal"><span class="pre">potential.Minim</span></tt></a> helper class.</p>
+<a class="reference internal" href="potential.html#quippy.potential.Potential.minim" title="quippy.potential.Potential.minim"><code class="xref py py-meth docutils literal"><span class="pre">potential.Potential.minim()</span></code></a> method or the
+<a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal"><span class="pre">potential.Minim</span></code></a> helper class.</p>
 <p>In this tutorial we&#8217;ll consider the Stillinger-Weber potential we
 defined above.  Let&#8217;s use this to relax the positions and lattice of a
-cubic Si cell using conjugate-gradients (<tt class="docutils literal"><span class="pre">cg</span></tt>), to a tolerance of
+cubic Si cell using conjugate-gradients (<code class="docutils literal"><span class="pre">cg</span></code>), to a tolerance of
 <img class="math" src="_images/math/f35ed1880e339f442b93acf08f143786c693363f.png" alt="|\mathbf{f}|^2 &lt; 10^{-7}"/>, using a maximum of 100 steps.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;IP SW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
@@ -786,7 +788,7 @@ cubic Si cell using conjugate-gradients (<tt class="docutils literal"><span clas
 <span class="go">Goodbye from minim()</span>
 </pre></div>
 </div>
-<p><tt class="xref py py-meth docutils literal"><span class="pre">minim()</span></tt> overwrites the original atoms object with
+<p><code class="xref py py-meth docutils literal"><span class="pre">minim()</span></code> overwrites the original atoms object with
 the new positions and lattice coordinates, so we can check the
 lattice properties of the minimised configuration:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">get_lattice_params</span><span class="p">(</span><span class="n">at0</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
@@ -798,7 +800,7 @@ lattice properties of the minimised configuration:</p>
 </div>
 <p>i.e. we get a cubic cell with lattice constant of 5.4309498 A, which
 is correct for this potential.</p>
-<p>To use the <a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><tt class="xref py py-class docutils literal"><span class="pre">potential.Minim</span></tt></a> class instead, which implements the ASE
+<p>To use the <a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal"><span class="pre">potential.Minim</span></code></a> class instead, which implements the ASE
 <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html">optimizer inferface</a>, do the
 following:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;IP SW&#39;</span><span class="p">)</span>
@@ -810,8 +812,8 @@ following:</p>
 <span class="go">[ 5.43094978  5.43094978  5.43094978]</span>
 </pre></div>
 </div>
-<p>Note the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_calculator" title="quippy.atoms.Atoms.set_calculator"><tt class="xref py py-meth docutils literal"><span class="pre">Atoms.set_calculator()</span></tt></a> call, and that it is no longer
-necessary to set the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.cutoff" title="quippy.atoms.Atoms.cutoff"><tt class="xref py py-attr docutils literal"><span class="pre">Atoms.cutoff</span></tt></a>, since <a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><tt class="xref py py-class docutils literal"><span class="pre">Minim</span></tt></a>
+<p>Note the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_calculator" title="quippy.atoms.Atoms.set_calculator"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.set_calculator()</span></code></a> call, and that it is no longer
+necessary to set the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.cutoff" title="quippy.atoms.Atoms.cutoff"><code class="xref py py-attr docutils literal"><span class="pre">Atoms.cutoff</span></code></a>, since <a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal"><span class="pre">Minim</span></code></a>
 takes care of this.</p>
 </div>
 <div class="section" id="bulk-modulus-calculations">
@@ -839,11 +841,11 @@ which assumes the bulk modulus is of the form</p>
 <p>We want to calculate the energy for a variety of cell volumes. The
 routine below takes an initial configuration <cite>at0</cite> and first
 compresses and then expands it in increments of <cite>eps</cite>. To achieve this
-we exploit the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_lattice" title="quippy.atoms.Atoms.set_lattice"><tt class="xref py py-meth docutils literal"><span class="pre">Atoms.set_lattice()</span></tt></a> method making sure that
+we exploit the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_lattice" title="quippy.atoms.Atoms.set_lattice"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.set_lattice()</span></code></a> method making sure that
 <cite>scale_positions</cite> is true so that all atomic positions are scaled
 appropriately. Finally, we set the calculator and calculate the
-energy using <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_potential_energy" title="quippy.atoms.Atoms.get_potential_energy"><tt class="xref py py-meth docutils literal"><span class="pre">Atoms.get_potential_energy()</span></tt></a> and cell volume using
-<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_volume" title="quippy.atoms.Atoms.get_volume"><tt class="xref py py-meth docutils literal"><span class="pre">Atoms.get_volume()</span></tt></a>.</p>
+energy using <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_potential_energy" title="quippy.atoms.Atoms.get_potential_energy"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.get_potential_energy()</span></code></a> and cell volume using
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_volume" title="quippy.atoms.Atoms.get_volume"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.get_volume()</span></code></a>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">compress_expand</span><span class="p">(</span><span class="n">at0</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="n">volumes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
@@ -865,19 +867,19 @@ energy using <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.g
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/energyvolume1.png"><img alt="_images/energyvolume1.png" class="align-center" src="_images/energyvolume1.png" style="width: 600px;" /></a>
-<p>Fitting the equation of state requires the <tt class="xref py py-mod docutils literal"><span class="pre">scipy.optimize</span></tt>
+<p>Fitting the equation of state requires the <code class="xref py py-mod docutils literal"><span class="pre">scipy.optimize</span></code>
 module, so you need <a class="reference external" href="http://www.scipy.org">scipy</a> installed to run
 this example. We need to define an error function, which will make use
-of the <tt class="xref py py-func docutils literal"><span class="pre">birch_energy()</span></tt> routine defined above.</p>
+of the <code class="xref py py-func docutils literal"><span class="pre">birch_energy()</span></code> routine defined above.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">leastsq</span>
 
 <span class="k">def</span> <span class="nf">errfunc</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">birch_energy</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span> <span class="o">-</span> <span class="n">energy</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">*params</span></tt> entry in the argument list tells Python to use the
+<p>The <code class="docutils literal"><span class="pre">*params</span></code> entry in the argument list tells Python to use the
 sequence <cite>params</cite> for the first four arguments to
-<tt class="xref py py-func docutils literal"><span class="pre">birch_energy()</span></tt>; we override the volume specifically.</p>
+<code class="xref py py-func docutils literal"><span class="pre">birch_energy()</span></code>; we override the volume specifically.</p>
 <p>Here&#8217;s a function to estimate initial values for the four parameters <cite>eo</cite>, <cite>vo</cite>,
 <cite>bo</cite> and <cite>bop</cite> and carry out the least-squares fit:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">birch_fit</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">volumes</span><span class="p">):</span>
@@ -921,7 +923,7 @@ sequence <cite>params</cite> for the first four arguments to
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -936,13 +938,13 @@ sequence <cite>params</cite> for the first four arguments to
         <li class="right" >
           <a href="tutorials.html" title="Tutorials"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

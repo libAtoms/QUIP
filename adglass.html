@@ -28,8 +28,8 @@
     <link rel="next" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="prev" title="Introductory Tutorial" href="tutorial.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +44,11 @@
         <li class="right" >
           <a href="tutorial.html" title="Introductory Tutorial"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -80,12 +80,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="adaptive-qmmm.html"
                         title="next chapter">Adaptive QM/MM MD of Fracture in Silicon</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/adglass.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/adglass.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -104,7 +106,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="molecular-dynamics-simulation-of-fracture-in-quartz">
 <h1>Molecular Dynamics Simulation of Fracture in Quartz<a class="headerlink" href="#molecular-dynamics-simulation-of-fracture-in-quartz" title="Permalink to this headline">¶</a></h1>
@@ -124,7 +126,7 @@ is a Python command which should be typed into the <cite>ipython</cite> shell. I
 you&#8217;re not familiar with Python don&#8217;t worry, it&#8217;s quite easy to pickup
 and the syntax is very similar to Fortran.</p>
 <p>This tutorial assumes you have installed <cite>QUIP</cite> and <cite>quippy</cite>; see the
-<a class="reference internal" href="install.html#installation"><em>Installation</em></a> section if you need some help on doing this.</p>
+<a class="reference internal" href="install.html#installation"><span>Installation</span></a> section if you need some help on doing this.</p>
 </div>
 <div class="section" id="starting-a-fracture-simulation">
 <h2>Starting a fracture simulation<a class="headerlink" href="#starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
@@ -133,7 +135,7 @@ session, the first task is to get a fracture simulation running.</p>
 <p>We&#8217;re going to be modelling a crack in <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz opening
 on the basal plane <img class="math" src="_images/math/d19b97712e71e46bd0de6a1dac8ded4f5572b26e.png" alt="(0001)"/>, with the crack front parallel to
 the <img class="math" src="_images/math/17c8e44a8d70e5a91e2fc2fd260ca1d15b61cbd7.png" alt="[\bar{1}10]"/> direction. The input structure is an
-<a class="reference download internal" href="_downloads/quartz_crack.xyz"><tt class="xref download docutils literal"><span class="pre">XYZ</span> <span class="pre">file</span></tt></a> contains a <img class="math" src="_images/math/d1a2523b704eafd00a35e7b0f7a322de3f8f2227.png" alt="150~\AA
+<a class="reference download internal" href="_downloads/quartz_crack.xyz"><code class="xref download docutils literal"><span class="pre">XYZ</span> <span class="pre">file</span></code></a> contains a <img class="math" src="_images/math/d1a2523b704eafd00a35e7b0f7a322de3f8f2227.png" alt="150~\AA
 \times 50 \AA"/> crack system with around 4000 atoms. The <cite>y</cite> axis is
 aligned with the <img class="math" src="_images/math/d19b97712e71e46bd0de6a1dac8ded4f5572b26e.png" alt="(0001)"/> plane, and the <cite>z</cite> axis with the
 <img class="math" src="_images/math/17c8e44a8d70e5a91e2fc2fd260ca1d15b61cbd7.png" alt="[\bar{1}10]"/> direction. The system contains a seed crack under
@@ -142,9 +144,9 @@ uniaxial tension in the <cite>y</cite> direction with a strain of 23%.</p>
 <p>Download the following input files:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><a class="reference download internal" href="_downloads/quartz_crack.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></tt></a> - the input structure, pictured above</li>
-<li><a class="reference download internal" href="_downloads/quartz_crack.xml"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></tt></a> - parameters for potential and molecular dynamics</li>
-<li><a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></tt></a> - structure of the quartz primitive cell</li>
+<li><a class="reference download internal" href="_downloads/quartz_crack.xyz"><code class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></code></a> - the input structure, pictured above</li>
+<li><a class="reference download internal" href="_downloads/quartz_crack.xml"><code class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></code></a> - parameters for potential and molecular dynamics</li>
+<li><a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz"><code class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - structure of the quartz primitive cell</li>
 </ol>
 </div></blockquote>
 <p>Before we begin, we need to make sure that the QUIP <cite>crack</cite> program is compiled
@@ -157,19 +159,19 @@ $ make QUIP_Programs/crack
 <p>Then press <cite>enter</cite> to accept default settings.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The value you should assign to the variable <span class="target" id="index-0"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></tt> depends on your
-platform (see <a class="reference internal" href="install.html#installation"><em>Installation</em></a> for more details). <span class="target" id="index-1"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></tt>
+<p class="last">The value you should assign to the variable <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> depends on your
+platform (see <a class="reference internal" href="install.html#installation"><span>Installation</span></a> for more details). <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code>
 refers to the directory where the the QUIP source code is located.</p>
 </div>
 <p>To make the command <cite>crack</cite> availale, copy the executable
-<tt class="docutils literal"><span class="pre">${QUIP_ROOT}/build.${QUIP_ARCH}</span></tt> to a directory on your <span class="target" id="index-2"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.4.3)"><tt class="xref std std-envvar docutils literal"><span class="pre">PATH</span></tt></a>,
-e.g. <tt class="docutils literal"><span class="pre">~/bin</span></tt>.</p>
+<code class="docutils literal"><span class="pre">${QUIP_ROOT}/build.${QUIP_ARCH}</span></code> to a directory on your <span class="target" id="index-2"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.4.3)"><code class="xref std std-envvar docutils literal"><span class="pre">PATH</span></code></a>,
+e.g. <code class="docutils literal"><span class="pre">~/bin</span></code>.</p>
 <p>Similarly, to compile <cite>eval</cite> run:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ make QUIP_Programs/eval
 </pre></div>
 </div>
 <p>It is highly recommended to change the name when copying the <cite>eval</cite> prgram to a
-directory on <span class="target" id="index-3"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.4.3)"><tt class="xref std std-envvar docutils literal"><span class="pre">PATH</span></tt></a> to avoid a clash with the builtin <tt class="docutils literal"><span class="pre">eval</span></tt> command.</p>
+directory on <span class="target" id="index-3"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.4.3)"><code class="xref std std-envvar docutils literal"><span class="pre">PATH</span></code></a> to avoid a clash with the builtin <code class="docutils literal"><span class="pre">eval</span></code> command.</p>
 <p>Start the simulation by running the <cite>crack</cite> program, which takes
 the &#8220;stem&#8221; of the input filenames as its only argument:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ crack quartz_crack &gt; quartz_crack.out &amp;
@@ -193,7 +195,7 @@ forwards or backwards through the trajectory - note the frame number
 in the title bar of the window. You can quit <cite>AtomEye</cite> by pressing <cite>q</cite>.</p>
 <p>For more help on <cite>AtomEye</cite> see its <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">web page</a> or my notes on this
 <a class="reference external" href="http://www.jrkermode.co.uk/AtomEye">modified version</a>. In
-particular, you might find this <a class="reference download internal" href="_downloads/atomeyerc"><tt class="xref download docutils literal"><span class="pre">startup</span> <span class="pre">file</span></tt></a>
+particular, you might find this <a class="reference download internal" href="_downloads/atomeyerc"><code class="xref download docutils literal"><span class="pre">startup</span> <span class="pre">file</span></code></a>
 useful (copy to <cite>~/.A</cite> to use).</p>
 <p>Have a look at the output in <cite>quartz_crack.out</cite>. To see how the
 simulation is progressing, you can search this for lines starting with
@@ -245,10 +247,10 @@ an XYZ file:</p>
 the internal displacement of the silicon atoms and <cite>x</cite>, <cite>y</cite>, and <cite>z</cite>
 the internal coordinates of the oxygens (see image below).</p>
 <a class="reference internal image-reference" href="_images/quartz_unit_cell.png"><img alt="_images/quartz_unit_cell.png" class="align-center" src="_images/quartz_unit_cell.png" style="width: 300px;" /></a>
-<p>The variable <cite>aq</cite> is referred to as <tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt> object. It contains
+<p>The variable <cite>aq</cite> is referred to as <code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code> object. It contains
 various attributes representing the system of interest which you can
 inspect from the <cite>ipython</cite> command line, e.g. to print out the lattice
-vectors, which are stored as columns in the <tt class="xref py py-attr docutils literal"><span class="pre">lattice</span></tt> matrix</p>
+vectors, which are stored as columns in the <code class="xref py py-attr docutils literal"><span class="pre">lattice</span></code> matrix</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">lattice</span>
 </pre></div>
 </div>
@@ -262,14 +264,14 @@ name following by a question mark, e.g.</p>
 </pre></div>
 </div>
 <p>will print out the function signature and list of parameter types, as
-well as a brief description of what <tt class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></tt> does. If
+well as a brief description of what <code class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></code> does. If
 you are interested in learning more about using <cite>QUIP</cite> and <cite>quippy</cite>,
-you could take a look at the online <a class="reference internal" href="tutorial.html#tutorial-intro"><em>Introductory Tutorial</em></a>.</p>
+you could take a look at the online <a class="reference internal" href="tutorial.html#tutorial-intro"><span>Introductory Tutorial</span></a>.</p>
 <p>Keep your <cite>ipython</cite> session open as we&#8217;ll need it later. Open the
 <cite>quartz.xyz</cite> file you created with <cite>AtomEye</cite>. You should see something
 like this:</p>
 <a class="reference internal image-reference" href="_images/quartz.png"><img alt="_images/quartz.png" class="align-center" src="_images/quartz.png" style="width: 300px;" /></a>
-<p>You can also download <a class="reference download internal" href="_downloads/quartz.xyz"><tt class="xref download docutils literal"><span class="pre">quartz.xyz</span></tt></a> for comparison.</p>
+<p>You can also download <a class="reference download internal" href="_downloads/quartz.xyz"><code class="xref download docutils literal"><span class="pre">quartz.xyz</span></code></a> for comparison.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The main advantage of <cite>AtomEye</cite> is that it scales well to very
@@ -303,7 +305,7 @@ the Voigt convention:</p>
     2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)"/></p>
 </div><p>The simplest way to calculate <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> with <cite>QUIP</cite> is to use the
 command line QUIP <cite>eval</cite> program. You will need the file <cite>quartz.xyz</cite>
-you made earlier, as well as an <a class="reference download internal" href="_downloads/TS_params.xml"><tt class="xref download docutils literal"><span class="pre">XML</span> <span class="pre">file</span></tt></a>
+you made earlier, as well as an <a class="reference download internal" href="_downloads/TS_params.xml"><code class="xref download docutils literal"><span class="pre">XML</span> <span class="pre">file</span></code></a>
 containing the parameters of the classical potential:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ eval init_args=&quot;IP TS&quot; at_file=quartz.xyz param_file=TS_params.xml cij
 </pre></div>
@@ -397,7 +399,7 @@ of the rotated cell. How well does this matrix compare to <cite>C_eff</cite>?</p
 </div>
 <div class="section" id="surface-energy">
 <h3>Surface Energy<a class="headerlink" href="#surface-energy" title="Permalink to this headline">¶</a></h3>
-<p>The file <a class="reference download internal" href="_downloads/quartz_0001.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></tt></a> contains a 54 atom unit cell for
+<p>The file <a class="reference download internal" href="_downloads/quartz_0001.xyz"><code class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></code></a> contains a 54 atom unit cell for
 the (0001) surface of <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz (shown below). Use either
 the QUIP <cite>eval</cite> program or <cite>quippy</cite> to calculate the surface energy
 density <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> predicted by our classical potential for this
@@ -405,10 +407,10 @@ surface.</p>
 <img alt="_images/quartz_0001.png" class="align-center" src="_images/quartz_0001.png" />
 <p>If you use <cite>eval</cite>, use the <cite>E</cite> command line option to get the program
 to calculate the potential energy of the input cell. If you use
-<cite>quippy</cite>, you should construct a <tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt> object using the
+<cite>quippy</cite>, you should construct a <code class="xref py py-class docutils literal"><span class="pre">Potential</span></code> object using the
 XML parameters from the file <cite>TS_params.xml</cite> as shown above. You can
-then calculate the energy using the <tt class="xref py py-meth docutils literal"><span class="pre">calc()</span></tt>
-function - see the tutorial section on <a class="reference internal" href="tutorial.html#moleculardynamics"><em>Potentials and DynamicalSystems</em></a> for
+then calculate the energy using the <code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code>
+function - see the tutorial section on <a class="reference internal" href="tutorial.html#moleculardynamics"><span>Potentials and DynamicalSystems</span></a> for
 more details.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -425,7 +427,7 @@ because there are two open surfaces in this unit cell).</p>
 <p>You should get a value for <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> of around 3.5 J/m<sup>2</sup>.</p>
 <p><strong>Extension</strong>: what effect does relaxing the atomic positions have on
 the surface energy? (use the <cite>relax</cite> argument to the <cite>eval</cite>
-program, or the <tt class="xref py py-meth docutils literal"><span class="pre">minim()</span></tt> function in <cite>quippy</cite>). What
+program, or the <code class="xref py py-meth docutils literal"><span class="pre">minim()</span></code> function in <cite>quippy</cite>). What
 happens if you anneal the surface using the <cite>md</cite> program?</p>
 <div class="highlight-python"><div class="highlight"><pre>$ md pot_init_args=&quot;IP TS&quot; params_in_file=TS_params.xml \
     atoms_in_file=quartz_0001.xyz dt=0.5 N_steps=1000
@@ -529,7 +531,7 @@ estimate the crack velocity from looking at the XYZ file (right-click
 on an atom in <cite>AtomEye</cite> to print out its position; the interval
 between frames is 10 fs) or by plotting the crack position as a
 function of time by extracting lines starting with <cite>CRACK_TIP</cite> from
-the output file (you might find this <a class="reference download internal" href="_downloads/crack-velo.sh"><tt class="xref download docutils literal"><span class="pre">crack-velo.sh</span></tt></a> script
+the output file (you might find this <a class="reference download internal" href="_downloads/crack-velo.sh"><code class="xref download docutils literal"><span class="pre">crack-velo.sh</span></code></a> script
 useful to do this; note however that the crack tip position is found
 using the atomic coordination numbers so if thre are defects in your
 cell it will not work correctly).</p>
@@ -609,16 +611,16 @@ limitations be overcome in a more complete simulation?</p>
 <div class="section" id="input-files-and-solutions">
 <h2>Input files and Solutions<a class="headerlink" href="#input-files-and-solutions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><a class="reference download internal" href="_downloads/quartz_crack.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></tt></a>, <a class="reference download internal" href="_downloads/quartz_crack.xml"><tt class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></tt></a>, <a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></tt></a> - input files for crack simulation</li>
-<li><a class="reference download internal" href="_downloads/quartz.xyz"><tt class="xref download docutils literal"><span class="pre">quartz.xyz</span></tt></a> - quartz primitive cell</li>
-<li><a class="reference download internal" href="_downloads/quartz_0001.xyz"><tt class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></tt></a> - quartz (0001) surface cell</li>
-<li><a class="reference download internal" href="_downloads/TS_params.xml"><tt class="xref download docutils literal"><span class="pre">TS_params.xml</span></tt></a> - potential parameters</li>
-<li><a class="reference download internal" href="_downloads/elastic.sh"><tt class="xref download docutils literal"><span class="pre">elastic.sh</span></tt></a> - script to compute elastic constants</li>
-<li><a class="reference download internal" href="_downloads/cij.dat"><tt class="xref download docutils literal"><span class="pre">cij.dat</span></tt></a> - elastic constants obtained with <cite>eval</cite> program</li>
-<li><a class="reference download internal" href="_downloads/surface-energy.sh"><tt class="xref download docutils literal"><span class="pre">surface-energy.sh</span></tt></a> - script to compute surface energy</li>
-<li><a class="reference download internal" href="_downloads/surface-energy-relaxed.sh"><tt class="xref download docutils literal"><span class="pre">surface-energy-relaxed.sh</span></tt></a> - script to compute relaxed surface energy</li>
-<li><a class="reference download internal" href="_downloads/surface-energy-annealed.sh"><tt class="xref download docutils literal"><span class="pre">surface-energy-annealed.sh</span></tt></a> - script to compute annealed surface energy</li>
-<li><a class="reference download internal" href="_downloads/crack-velo.sh"><tt class="xref download docutils literal"><span class="pre">crack-velo.sh</span></tt></a> - script to crack velocity</li>
+<li><a class="reference download internal" href="_downloads/quartz_crack.xyz"><code class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></code></a>, <a class="reference download internal" href="_downloads/quartz_crack.xml"><code class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></code></a>, <a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz"><code class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - input files for crack simulation</li>
+<li><a class="reference download internal" href="_downloads/quartz.xyz"><code class="xref download docutils literal"><span class="pre">quartz.xyz</span></code></a> - quartz primitive cell</li>
+<li><a class="reference download internal" href="_downloads/quartz_0001.xyz"><code class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></code></a> - quartz (0001) surface cell</li>
+<li><a class="reference download internal" href="_downloads/TS_params.xml"><code class="xref download docutils literal"><span class="pre">TS_params.xml</span></code></a> - potential parameters</li>
+<li><a class="reference download internal" href="_downloads/elastic.sh"><code class="xref download docutils literal"><span class="pre">elastic.sh</span></code></a> - script to compute elastic constants</li>
+<li><a class="reference download internal" href="_downloads/cij.dat"><code class="xref download docutils literal"><span class="pre">cij.dat</span></code></a> - elastic constants obtained with <cite>eval</cite> program</li>
+<li><a class="reference download internal" href="_downloads/surface-energy.sh"><code class="xref download docutils literal"><span class="pre">surface-energy.sh</span></code></a> - script to compute surface energy</li>
+<li><a class="reference download internal" href="_downloads/surface-energy-relaxed.sh"><code class="xref download docutils literal"><span class="pre">surface-energy-relaxed.sh</span></code></a> - script to compute relaxed surface energy</li>
+<li><a class="reference download internal" href="_downloads/surface-energy-annealed.sh"><code class="xref download docutils literal"><span class="pre">surface-energy-annealed.sh</span></code></a> - script to compute annealed surface energy</li>
+<li><a class="reference download internal" href="_downloads/crack-velo.sh"><code class="xref download docutils literal"><span class="pre">crack-velo.sh</span></code></a> - script to crack velocity</li>
 </ul>
 </div>
 </div>
@@ -629,7 +631,7 @@ limitations be overcome in a more complete simulation?</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -644,13 +646,13 @@ limitations be overcome in a more complete simulation?</p>
         <li class="right" >
           <a href="tutorial.html" title="Introductory Tutorial"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

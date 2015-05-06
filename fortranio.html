@@ -28,8 +28,8 @@
     <link rel="next" title="FortranArray objects for one-based array indexing" href="farray.html" />
     <link rel="prev" title="Command line argument parser" href="paramreader.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +44,11 @@
         <li class="right" >
           <a href="paramreader.html" title="Command line argument parser"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -59,12 +59,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="farray.html"
                         title="next chapter">FortranArray objects for one-based array indexing</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/fortranio.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fortranio.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -83,11 +85,11 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-quippy.fortranio">
 <span id="fortran-input-output"></span><h1>Fortran input/output<a class="headerlink" href="#module-quippy.fortranio" title="Permalink to this headline">¶</a></h1>
-<p>Module contents for <a class="reference internal" href="#module-quippy.fortranio" title="quippy.fortranio: Fortran input/output"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.fortranio</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.fortranio" title="quippy.fortranio: Fortran input/output"><code class="xref py py-mod docutils literal"><span class="pre">quippy.fortranio</span></code></a>:</p>
 <p class="rubric">Functions</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -95,23 +97,23 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.fortranio.fortran_print" title="quippy.fortranio.fortran_print"><tt class="xref py py-obj docutils literal"><span class="pre">fortran_print</span></tt></a>(*args)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.fortranio.fortran_print" title="quippy.fortranio.fortran_print"><code class="xref py py-obj docutils literal"><span class="pre">fortran_print</span></code></a>(*args)</td>
 <td>Print <cite>args</cite> to mainlog using Fortran I/O routines.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.fortranio.fortran_print_error" title="quippy.fortranio.fortran_print_error"><tt class="xref py py-obj docutils literal"><span class="pre">fortran_print_error</span></tt></a>(*args)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.fortranio.fortran_print_error" title="quippy.fortranio.fortran_print_error"><code class="xref py py-obj docutils literal"><span class="pre">fortran_print_error</span></code></a>(*args)</td>
 <td>Print <cite>args</cite> to errorlog using Fortran I/O routines.</td>
 </tr>
 </tbody>
 </table>
 <dl class="function">
 <dt id="quippy.fortranio.fortran_print">
-<tt class="descclassname">quippy.fortranio.</tt><tt class="descname">fortran_print</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.fortranio.</code><code class="descname">fortran_print</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print <cite>args</cite> to mainlog using Fortran I/O routines. Respects prefix and verbosity settings</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.fortranio.fortran_print_error">
-<tt class="descclassname">quippy.fortranio.</tt><tt class="descname">fortran_print_error</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print_error" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.fortranio.</code><code class="descname">fortran_print_error</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print <cite>args</cite> to errorlog using Fortran I/O routines. Respects prefix and verbosity settings</p>
 </dd></dl>
 
@@ -123,7 +125,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -138,13 +140,13 @@
         <li class="right" >
           <a href="paramreader.html" title="Command line argument parser"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

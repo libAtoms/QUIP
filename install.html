@@ -27,8 +27,8 @@
     <link rel="next" title="Tutorials" href="tutorials.html" />
     <link rel="prev" title="Introduction to quippy" href="intro.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,10 +43,10 @@
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -73,7 +73,7 @@
 <li><a class="reference internal" href="#importerror-when-importing">ImportError when importing</a></li>
 <li><a class="reference internal" href="#possible-problems-installing-atomeye-module">Possible problems installing atomeye module</a></li>
 <li><a class="reference internal" href="#error-compiling-ipmodel-gap">Error compiling IPModel_GAP</a></li>
-<li><a class="reference internal" href="#warning-about-quippy-castep-when-importing-quippy">Warning about <tt class="docutils literal"><span class="pre">quippy.castep</span></tt> when importing quippy</a></li>
+<li><a class="reference internal" href="#warning-about-quippy-castep-when-importing-quippy">Warning about <code class="docutils literal"><span class="pre">quippy.castep</span></code> when importing quippy</a></li>
 <li><a class="reference internal" href="#internal-compiler-error-with-ifort">Internal compiler error with <cite>ifort</cite></a></li>
 <li><a class="reference internal" href="#linking-error-on-mac-os-x-lion-10-7">Linking error on Mac OS X Lion (10.7)</a></li>
 </ul>
@@ -84,16 +84,18 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="intro.html"
-                        title="previous chapter">Introduction to <tt class="docutils literal"><span class="pre">quippy</span></tt></a></p>
+                        title="previous chapter">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorials.html"
                         title="next chapter">Tutorials</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/install.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -112,7 +114,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
@@ -135,7 +137,7 @@ $ python setup.py test
 $ python setup.py install [--prefix=PREFIX]
 </pre></div>
 </div>
-<p>Then add the installation directory to your <span class="target" id="index-0"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></tt></a>.</p>
+<p>Then add the installation directory to your <span class="target" id="index-0"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code></a>.</p>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -173,16 +175,16 @@ functionality e.g. least squares fitting, optimisation, etc.</li>
 <div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/libAtoms/QUIP.git
 </pre></div>
 </div>
-<p>We&#8217;ll use the environment variable <span class="target" id="index-1"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></tt> to refer
+<p>We&#8217;ll use the environment variable <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code> to refer
 to the root of the QUIP tree:</p>
 <div class="highlight-python"><div class="highlight"><pre>export QUIP_ROOT=~/QUIP/
 </pre></div>
 </div>
-<p>The <tt class="file docutils literal"><span class="pre">libAtoms</span></tt>, <tt class="file docutils literal"><span class="pre">QUIP_Core</span></tt>, <tt class="file docutils literal"><span class="pre">QUIP_Util</span></tt> and
-<tt class="file docutils literal"><span class="pre">QUIP_Programs</span></tt> directories contain Fortran 95 source
-code. quippy itself lives in the <tt class="file docutils literal"><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy</span></tt>
+<p>The <code class="file docutils literal"><span class="pre">libAtoms</span></code>, <code class="file docutils literal"><span class="pre">QUIP_Core</span></code>, <code class="file docutils literal"><span class="pre">QUIP_Util</span></code> and
+<code class="file docutils literal"><span class="pre">QUIP_Programs</span></code> directories contain Fortran 95 source
+code. quippy itself lives in the <code class="file docutils literal"><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy</span></code>
 directory.</p>
-<p>If you want to use the <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt></a> extension, you should check it
+<p>If you want to use the <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> extension, you should check it
 out and compile it as a Python extension module:</p>
 <div class="highlight-python"><div class="highlight"><pre>git clone https://www.github.com/jameskermode/AtomEye
 cd AtomEye/Python
@@ -198,9 +200,9 @@ a <cite>make clean</cite> first.</p>
 <div class="section" id="configuring-quippy">
 <h2>Configuring quippy<a class="headerlink" href="#configuring-quippy" title="Permalink to this headline">¶</a></h2>
 <p>Before compiling quippy, you need to set the environment variable
-<span class="target" id="index-2"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></tt>. This sets the architecture for the QUIP framework which
+<span class="target" id="index-2"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code>. This sets the architecture for the QUIP framework which
 quippy wraps. Architectures are defined by creating a file
-<tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Makefiles/Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></tt> which describes which
+<code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Makefiles/Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></code> which describes which
 compilers and libraries should be used and where they can be found. quippy has
 been tested on the following architectures:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">darwin_x86_64_gfortran</span>
@@ -209,13 +211,13 @@ been tested on the following architectures:</p>
 <span class="n">linux_x86_64_pgi</span>
 </pre></div>
 </div>
-<p>If you&#8217;re on one of these platforms then just set <span class="target" id="index-3"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></tt>
+<p>If you&#8217;re on one of these platforms then just set <span class="target" id="index-3"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code>
 appropriately, for example on 64-bit Mac OS X with gfortran you would
 do:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ export QUIP_ARCH=darwin_x86_64_gfortran
 </pre></div>
 </div>
-<p>Otherwise you&#8217;ll have to make a new <tt class="file docutils literal"><span class="pre">Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></tt>,
+<p>Otherwise you&#8217;ll have to make a new <code class="file docutils literal"><span class="pre">Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></code>,
 containing some of the variables defined below</p>
 <div class="section" id="mandatory-settings">
 <h3>Mandatory settings<a class="headerlink" href="#mandatory-settings" title="Permalink to this headline">¶</a></h3>
@@ -225,12 +227,12 @@ containing some of the variables defined below</p>
 <div class="highlight-python"><div class="highlight"><pre>$ f2py -c --help-fcompiler
 </pre></div>
 </div>
-<p class="last">will print a list of detected compilers on your system. Use <tt class="docutils literal"><span class="pre">gnu95</span></tt> for gfortran,
-<tt class="docutils literal"><span class="pre">intel</span></tt> for ifort on 32-bit platforms and <tt class="docutils literal"><span class="pre">intelem</span></tt> for ifort on 64-bit platforms.</p>
+<p class="last">will print a list of detected compilers on your system. Use <code class="docutils literal"><span class="pre">gnu95</span></code> for gfortran,
+<code class="docutils literal"><span class="pre">intel</span></code> for ifort on 32-bit platforms and <code class="docutils literal"><span class="pre">intelem</span></code> for ifort on 64-bit platforms.</p>
 </dd>
 <dt><strong class="makevar">QUIPPY_DEFINES</strong> Preprocessor macros which should be defined</dt>
 <dd>when compiling quippy. Note that since the Fortran source files are
-preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><tt class="xref py py-mod docutils literal"><span class="pre">f90doc</span></tt></a>, it&#8217;s
+preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, it&#8217;s
 important to put all the <cite>-D</cite> options needed here and not in
 <strong class="makevar">QUIPPY_F90FLAGS</strong>.</dd>
 <dt><strong class="makevar">MATHS_LINKOPTS</strong></dt>
@@ -263,8 +265,8 @@ This also disables optimisation.</dd>
 <dt><strong class="makevar">QUIPPY_CPP</strong></dt>
 <dd>Fortran preprocessor to use. Default is system <cite>cpp</cite>.</dd>
 <dt><strong class="makevar">QUIPPY_INSTALL_OPTS</strong></dt>
-<dd>Installation options, e.g. specify <tt class="docutils literal"><span class="pre">--home=${HOME}</span></tt>
-or <tt class="docutils literal"><span class="pre">--prefix=${PREFIX}</span></tt> to install in a non-default location.</dd>
+<dd>Installation options, e.g. specify <code class="docutils literal"><span class="pre">--home=${HOME}</span></code>
+or <code class="docutils literal"><span class="pre">--prefix=${PREFIX}</span></code> to install in a non-default location.</dd>
 <dt><strong class="makevar">QUIPPY_NO_TOOLS</strong></dt>
 <dd>If set to 1, omit compilation of extra tools such as the elasticity module.</dd>
 <dt><strong class="makevar">QUIPPY_NO_CRACK</strong></dt>
@@ -283,8 +285,8 @@ Should be read automatically from QUIP.</dd>
 <h2>Compilation<a class="headerlink" href="#compilation" title="Permalink to this headline">¶</a></h2>
 <p>It&#8217;s best to compile QUIP before trying to compile quippy. This will
 compile the FoX Fortran XML library as well as generating the required
-Makefiles. To compile QUIP, run <cite>make</cite> from the <span class="target" id="index-4"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></tt>
-directory after setting <span class="target" id="index-5"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></tt> appropriately, e.g.</p>
+Makefiles. To compile QUIP, run <cite>make</cite> from the <span class="target" id="index-4"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code>
+directory after setting <span class="target" id="index-5"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> appropriately, e.g.</p>
 <div class="highlight-python"><div class="highlight"><pre>cd ${QUIP_ROOT}
 export QUIP_ARCH=linux_x86_64_gfortran
 make
@@ -305,36 +307,36 @@ override the settings described above: run</p>
 <p>for details. The compilation process is quite long; here is an
 overview of the various steps that are performed.</p>
 <ul class="simple">
-<li><a class="reference internal" href="patch_f2py.html#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><tt class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></tt></a> is invoked to patch the <tt class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></tt>
+<li><a class="reference internal" href="patch_f2py.html#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><code class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></code></a> is invoked to patch the <code class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></code>
 package at runtime to make several changes to the f2py-generated
-C code. This will fail if you don&#8217;t have <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#module-numpy" title="(in NumPy v1.9)"><tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt></a> 1.2.1 or
+C code. This will fail if you don&#8217;t have <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#module-numpy" title="(in NumPy v1.9)"><code class="xref py py-mod docutils literal"><span class="pre">numpy</span></code></a> 1.2.1 or
 later.</li>
-<li>Fortran sources are imported from the <tt class="file docutils literal"><span class="pre">libAtoms</span></tt>, <tt class="file docutils literal"><span class="pre">QUIP_Core</span></tt>,
-<tt class="file docutils literal"><span class="pre">QUIP_Utils</span></tt> (if <strong class="makevar">QUIPPY_NO_TOOLS</strong> is not set)
-and <tt class="file docutils literal"><span class="pre">QUIP_Programs</span></tt> (if <strong class="makevar">QUIPPY_NO_CRACK</strong> is not set)
+<li>Fortran sources are imported from the <code class="file docutils literal"><span class="pre">libAtoms</span></code>, <code class="file docutils literal"><span class="pre">QUIP_Core</span></code>,
+<code class="file docutils literal"><span class="pre">QUIP_Utils</span></code> (if <strong class="makevar">QUIPPY_NO_TOOLS</strong> is not set)
+and <code class="file docutils literal"><span class="pre">QUIP_Programs</span></code> (if <strong class="makevar">QUIPPY_NO_CRACK</strong> is not set)
 directories. At this stage the sources are preprocessed with the
-<strong class="makevar">QUIPPY_CPP</strong> preprocessor. This removes <tt class="docutils literal"><span class="pre">#ifdef</span></tt> sections
+<strong class="makevar">QUIPPY_CPP</strong> preprocessor. This removes <code class="docutils literal"><span class="pre">#ifdef</span></code> sections
 so that the tools which read the Fortran source do not get confused
 by multiple version of routines.</li>
-<li>The <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><tt class="xref py py-mod docutils literal"><span class="pre">f90doc</span></tt></a> module is used to parse Fortran sources and
+<li>The <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> module is used to parse Fortran sources and
 analyse all the types, subroutines and functions.</li>
-<li>Using the definitions read by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><tt class="xref py py-mod docutils literal"><span class="pre">f90doc</span></tt></a>, the
-<a class="reference internal" href="f2py_wrapper_gen.html#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><tt class="xref py py-mod docutils literal"><span class="pre">f2py_wrapper_gen</span></tt></a> module writes a Fortran wrapper file for
+<li>Using the definitions read by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, the
+<a class="reference internal" href="f2py_wrapper_gen.html#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><code class="xref py py-mod docutils literal"><span class="pre">f2py_wrapper_gen</span></code></a> module writes a Fortran wrapper file for
 each source file that we&#8217;re going to wrap. These files are named
-<tt class="file docutils literal"><span class="pre">quippy_$</span><em><span class="pre">STEM</span></em><span class="pre">_wrap.f90</span></tt> and are designed to use the
+<code class="file docutils literal"><span class="pre">quippy_$</span><em><span class="pre">STEM</span></em><span class="pre">_wrap.f90</span></code> and are designed to use the
 restricted set of Fortran 90 features understood by f2py.</li>
-<li>The <tt class="file docutils literal"><span class="pre">quippy_$</span><em><span class="pre">STEM</span></em><span class="pre">_wrap.f90</span></tt> files are passed to f2py, which
-generates a Python extension module <tt class="xref py py-mod docutils literal"><span class="pre">_quippy</span></tt>. This is a low-level
+<li>The <code class="file docutils literal"><span class="pre">quippy_$</span><em><span class="pre">STEM</span></em><span class="pre">_wrap.f90</span></code> files are passed to f2py, which
+generates a Python extension module <code class="xref py py-mod docutils literal"><span class="pre">_quippy</span></code>. This is a low-level
 module which allows all the Fortran functions to be called from Python,
-but doesn&#8217;t know anything about derived-types. See <a class="reference internal" href="fortran_wrapper.html#wrapping-fortran-90-code"><em>Appendix: wrapping Fortran 90 Code</em></a>
+but doesn&#8217;t know anything about derived-types. See <a class="reference internal" href="fortran_wrapper.html#wrapping-fortran-90-code"><span>Appendix: wrapping Fortran 90 Code</span></a>
 for more details.</li>
 <li>All the Fortran sources - both those imported and the generated
 wrappers - are compiled using the Fortran compiler specified in
-the <strong class="makevar">QUIPPY_FCOMPILER</strong> Makefile variable. The <tt class="xref py py-mod docutils literal"><span class="pre">_quippy</span></tt>
+the <strong class="makevar">QUIPPY_FCOMPILER</strong> Makefile variable. The <code class="xref py py-mod docutils literal"><span class="pre">_quippy</span></code>
 C extension module is also compiled.</li>
 <li>Finally all the object files are linked, together with external
 libraries such as NetCDF and LAPACK, to create
-<tt class="file docutils literal"><span class="pre">_quippy.so</span></tt>, the Python extension module.</li>
+<code class="file docutils literal"><span class="pre">_quippy.so</span></code>, the Python extension module.</li>
 </ul>
 <p>If the compilation fails with an error message, please send the full
 output to me at <a class="reference external" href="mailto:james&#46;kermode&#37;&#52;&#48;kcl&#46;ac&#46;uk">james<span>&#46;</span>kermode<span>&#64;</span>kcl<span>&#46;</span>ac<span>&#46;</span>uk</a> and I&#8217;ll do my best to work
@@ -354,7 +356,7 @@ python setup.py test --test=test_atoms.TestGeometry
 python setup.py test --test=test_atoms.TestGeometry.test_cell_volume
 </pre></div>
 </div>
-<p>The tests themselves can be found in <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy/tests/test*.py</span></tt>.
+<p>The tests themselves can be found in <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy/tests/test*.py</span></code>.
 If any of the tests fail please send me (<a class="reference external" href="mailto:james&#46;kermode&#37;&#52;&#48;kcl&#46;ac&#46;uk">james<span>&#46;</span>kermode<span>&#64;</span>kcl<span>&#46;</span>ac<span>&#46;</span>uk</a>) the output.</p>
 </div>
 <div class="section" id="id3">
@@ -365,18 +367,18 @@ If any of the tests fail please send me (<a class="reference external" href="mai
 </div>
 <p>to install in the standard place for Python extension modules on your
 system (this will probably be something like
-<tt class="file docutils literal"><span class="pre">/usr/local/lib/python-2.</span><em><span class="pre">x</span></em><span class="pre">/site-packages</span></tt>), or</p>
+<code class="file docutils literal"><span class="pre">/usr/local/lib/python-2.</span><em><span class="pre">x</span></em><span class="pre">/site-packages</span></code>), or</p>
 <div class="highlight-python"><div class="highlight"><pre>python setup.py install --prefix=PREFIX
 </pre></div>
 </div>
-<p>to install to a specific location such as <tt class="file docutils literal"><span class="pre">/usr/local</span></tt>. A useful
+<p>to install to a specific location such as <code class="file docutils literal"><span class="pre">/usr/local</span></code>. A useful
 option for users without root access is:</p>
 <div class="highlight-python"><div class="highlight"><pre>python setup.py install --home=$HOME
 </pre></div>
 </div>
 <p>which will install everything in your home directory. You will need to
 add the installation directory containing the Python modules to
-your <span class="target" id="index-6"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></tt></a> environment variable, e.g. by adding the
+your <span class="target" id="index-6"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code></a> environment variable, e.g. by adding the
 following line your your <cite>~/.bashrc</cite> or <cite>~/.profile</cite> file:</p>
 <div class="highlight-python"><div class="highlight"><pre>export PYTHONPATH=${HOME}/lib/python:${PYTHONPATH}
 </pre></div>
@@ -390,18 +392,18 @@ $ python
 </pre></div>
 </div>
 <p>If you have any problems as this stage such as unresolved linking
-dependencies, consult the list of <a class="reference internal" href="#install-faq"><em>Common Problems</em></a> below.</p>
+dependencies, consult the list of <a class="reference internal" href="#install-faq"><span>Common Problems</span></a> below.</p>
 </div>
 <div class="section" id="installing-the-ipython-profile">
 <h2>Installing the ipython profile<a class="headerlink" href="#installing-the-ipython-profile" title="Permalink to this headline">¶</a></h2>
 <p>If you use <a class="reference external" href="http://ipython.scipy.org">ipython</a> and have installed <a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>, there&#8217;s a
 special quippy profile you can install. Copy the files
-<tt class="file docutils literal"><span class="pre">quippy_load.py</span></tt> and <tt class="file docutils literal"><span class="pre">ipythonrc-quippy</span></tt> from
-<tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy</span></tt> to your <tt class="file docutils literal"><span class="pre">~/.ipython</span></tt> directory.
-Invoking ipython as <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">-p</span> <span class="pre">quippy</span></tt> sets up matplotlib and
+<code class="file docutils literal"><span class="pre">quippy_load.py</span></code> and <code class="file docutils literal"><span class="pre">ipythonrc-quippy</span></code> from
+<code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy</span></code> to your <code class="file docutils literal"><span class="pre">~/.ipython</span></code> directory.
+Invoking ipython as <code class="docutils literal"><span class="pre">ipython</span> <span class="pre">-p</span> <span class="pre">quippy</span></code> sets up matplotlib and
 imports all the quippy functionality when you start ipython. This is
-equivalent to <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">-pylab</span></tt> followed by <tt class="docutils literal"><span class="pre">from</span> <span class="pre">quippy</span> <span class="pre">import</span> <span class="pre">*</span></tt>.</p>
-<p>I use a shell alias which maps <tt class="docutils literal"><span class="pre">ipythonq</span></tt> to <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">-p</span> <span class="pre">quippy</span></tt>
+equivalent to <code class="docutils literal"><span class="pre">ipython</span> <span class="pre">-pylab</span></code> followed by <code class="docutils literal"><span class="pre">from</span> <span class="pre">quippy</span> <span class="pre">import</span> <span class="pre">*</span></code>.</p>
+<p>I use a shell alias which maps <code class="docutils literal"><span class="pre">ipythonq</span></code> to <code class="docutils literal"><span class="pre">ipython</span> <span class="pre">-p</span> <span class="pre">quippy</span></code>
 to save typing.</p>
 </div>
 <div class="section" id="common-problems">
@@ -409,7 +411,7 @@ to save typing.</p>
 <div class="section" id="permission-errors-when-installing">
 <h3>Permission errors when installing<a class="headerlink" href="#permission-errors-when-installing" title="Permalink to this headline">¶</a></h3>
 <p>If you are installing as root, you may need to make sure the value of
-the <span class="target" id="index-7"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></tt> gets through to the install script, e.g.</p>
+the <span class="target" id="index-7"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> gets through to the install script, e.g.</p>
 <div class="highlight-python"><div class="highlight"><pre>sudo QUIP_ARCH=darwin_x86_64_gfortran python setup.py install
 </pre></div>
 </div>
@@ -418,7 +420,7 @@ the <span class="target" id="index-7"></span><tt class="xref std std-envvar docu
 <h3>Installating on Mac OS X with macports<a class="headerlink" href="#installating-on-mac-os-x-with-macports" title="Permalink to this headline">¶</a></h3>
 <p>Macports requires various packages to be installed to compile
 everything, and may require extra linking arguments. See the
-<tt class="file docutils literal"><span class="pre">README.macports</span></tt> for the latest details.</p>
+<code class="file docutils literal"><span class="pre">README.macports</span></code> for the latest details.</p>
 </div>
 <div class="section" id="runtimeerror-when-importing">
 <h3>RuntimeError when importing<a class="headerlink" href="#runtimeerror-when-importing" title="Permalink to this headline">¶</a></h3>
@@ -442,16 +444,16 @@ or by applying <a class="reference external" href="http://projects.scipy.org/num
 </div>
 <div class="section" id="importerror-when-importing">
 <h3>ImportError when importing<a class="headerlink" href="#importerror-when-importing" title="Permalink to this headline">¶</a></h3>
-<p>If you get an <tt class="xref py py-exc docutils literal"><span class="pre">ImportError</span></tt> with a message about unresolved
+<p>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message about unresolved
 dependancies then something went wrong with the linking process -
 check that all the libraries you&#8217;re linking against are correct. You
 can used <cite>ldd</cite> on Linux of <cite>otool -L</cite> on Mac OS X to check which
-libraries the <tt class="file docutils literal"><span class="pre">_quippy.so</span></tt> Python extension is linked against.</p>
+libraries the <code class="file docutils literal"><span class="pre">_quippy.so</span></code> Python extension is linked against.</p>
 </div>
 <div class="section" id="possible-problems-installing-atomeye-module">
 <h3>Possible problems installing atomeye module<a class="headerlink" href="#possible-problems-installing-atomeye-module" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
-<dt>If you get an <tt class="xref py py-exc docutils literal"><span class="pre">ImportError</span></tt> with a message ::</dt>
+<dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
 <dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
 <span class="go">ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: _Config_load_libatoms</span>
 <span class="go">Referenced from: /Users/silvia/lib/python/_atomeye.so</span>
@@ -461,10 +463,10 @@ libraries the <tt class="file docutils literal"><span class="pre">_quippy.so</sp
 </div>
 </dd>
 </dl>
-<p>be sure that you have set <span class="target" id="index-8"></span><tt class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></tt> variable before starting the compilation.
+<p>be sure that you have set <span class="target" id="index-8"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code> variable before starting the compilation.
 If not make clean and recompile again</p>
 <dl class="docutils">
-<dt>If you get an <tt class="xref py py-exc docutils literal"><span class="pre">ImportError</span></tt> with a message ::</dt>
+<dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
 <dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
 <span class="go">ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: __gfortran_adjustl</span>
 <span class="go">Referenced from: /Users/silvia/lib/python/_atomeye.so</span>
@@ -487,11 +489,11 @@ Fatal Error: Can&#39;t open module file &#39;descriptors_module.mod&#39; for rea
 </pre></div>
 </div>
 <p>The <cite>GAP_predict</cite> module is not publicly available, so the
-<tt class="file docutils literal"><span class="pre">Makefile.inc</span></tt> must contain <strong class="makevar">HAVE_GP_PREDICT</strong> = 0, and
+<code class="file docutils literal"><span class="pre">Makefile.inc</span></code> must contain <strong class="makevar">HAVE_GP_PREDICT</strong> = 0, and
 <strong class="makevar">HAVE_GP_TEACH</strong> = 0.</p>
 </div>
 <div class="section" id="warning-about-quippy-castep-when-importing-quippy">
-<h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></tt></a> when importing quippy<a class="headerlink" href="#warning-about-quippy-castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
+<h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><code class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></code></a> when importing quippy<a class="headerlink" href="#warning-about-quippy-castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
 <p>If you get the following warning message when importin quippy:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python
 &gt;&gt;&gt; from quippy import *
@@ -541,7 +543,7 @@ problem.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -556,12 +558,12 @@ problem.</p>
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

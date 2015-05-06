@@ -28,8 +28,8 @@
     <link rel="next" title="Fortran 90 derived-type support" href="oo_fortran.html" />
     <link rel="prev" title="f2py_wrapper_gen — Fortran 90 source code wrapping" href="f2py_wrapper_gen.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,27 +44,29 @@
         <li class="right" >
           <a href="f2py_wrapper_gen.html" title="f2py_wrapper_gen — Fortran 90 source code wrapping"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="fortran_wrapper.html" accesskey="U">Appendix: wrapping Fortran 90 Code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="fortran_wrapper.html" accesskey="U">Appendix: wrapping Fortran 90 Code</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
             </a></p>
   <h4>Previous topic</h4>
   <p class="topless"><a href="f2py_wrapper_gen.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">f2py_wrapper_gen</span></tt> &#8212; Fortran 90 source code wrapping</a></p>
+                        title="previous chapter"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="oo_fortran.html"
                         title="next chapter">Fortran 90 derived-type support</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/patch_f2py.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/patch_f2py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -83,27 +85,27 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-patch_f2py">
-<span id="patch-f2py-modify-numpy-f2py-at-runtime"></span><h1><a class="reference internal" href="#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><tt class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></tt></a> &#8212; modify <tt class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></tt> at runtime<a class="headerlink" href="#module-patch_f2py" title="Permalink to this headline">¶</a></h1>
-<p>This module patches <tt class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></tt> at runtime, to customise the C code that
+<span id="patch-f2py-modify-numpy-f2py-at-runtime"></span><h1><a class="reference internal" href="#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><code class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></code></a> &#8212; modify <code class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></code> at runtime<a class="headerlink" href="#module-patch_f2py" title="Permalink to this headline">¶</a></h1>
+<p>This module patches <code class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></code> at runtime, to customise the C code that
 is generated. We make several changes to f2py:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Allow the Fortran <tt class="xref c c-func docutils literal"><span class="pre">present()</span></tt> function to work correctly with optional arguments.
+<li>Allow the Fortran <code class="xref c c-func docutils literal"><span class="pre">present()</span></code> function to work correctly with optional arguments.
 If an argument to an f2py wrapped function is optional and is not given, replace it
-with <tt class="docutils literal"><span class="pre">NULL</span></tt>.</li>
-<li>Allow Fortran routines to raise a <tt class="xref py py-exc docutils literal"><span class="pre">RuntimeError</span></tt> exception
+with <code class="docutils literal"><span class="pre">NULL</span></code>.</li>
+<li>Allow Fortran routines to raise a <code class="xref py py-exc docutils literal"><span class="pre">RuntimeError</span></code> exception
 with a message by calling an external function
-<tt class="xref c c-func docutils literal"><span class="pre">quippy_error_abort()</span></tt>. This is implemented using a
-<tt class="xref c c-func docutils literal"><span class="pre">setjmp()</span></tt>/ <tt class="xref c c-func docutils literal"><span class="pre">longjmp()</span></tt> trap.</li>
-<li>Allow Fortran routines to be interrupted with <tt class="kbd docutils literal"><span class="pre">Ctrl+C</span></tt> by installing a custom
+<code class="xref c c-func docutils literal"><span class="pre">quippy_error_abort()</span></code>. This is implemented using a
+<code class="xref c c-func docutils literal"><span class="pre">setjmp()</span></code>/ <code class="xref c c-func docutils literal"><span class="pre">longjmp()</span></code> trap.</li>
+<li>Allow Fortran routines to be interrupted with <code class="kbd docutils literal"><span class="pre">Ctrl+C</span></code> by installing a custom
 interrupt handler before the call into Fortran is made. After the Fortran routine
 returns, the previous interrupt handler is restored.</li>
 </ol>
 </div></blockquote>
-<p>Module contents for <a class="reference internal" href="#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><tt class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><code class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></code></a>:</p>
 </div>
 
 
@@ -112,7 +114,7 @@ returns, the previous interrupt handler is restored.</li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -127,13 +129,13 @@ returns, the previous interrupt handler is restored.</li>
         <li class="right" >
           <a href="f2py_wrapper_gen.html" title="f2py_wrapper_gen — Fortran 90 source code wrapping"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="fortran_wrapper.html" >Appendix: wrapping Fortran 90 Code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="fortran_wrapper.html" >Appendix: wrapping Fortran 90 Code</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -28,8 +28,8 @@
     <link rel="next" title="Low-level system routines" href="system.html" />
     <link rel="prev" title="Periodic table data" href="periodictable.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +44,11 @@
         <li class="right" >
           <a href="periodictable.html" title="Periodic table data"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -59,12 +59,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="system.html"
                         title="next chapter">Low-level system routines</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/units.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/units.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -83,19 +85,19 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-quippy.units">
 <span id="units-and-physical-constants"></span><h1>Units and physical constants<a class="headerlink" href="#module-quippy.units" title="Permalink to this headline">¶</a></h1>
 <p>This module holds a collection of our units and conversion factors.
 We use Angstroms (<img class="math" src="_images/math/61f08a33ffebe94e1e06451ec1142eb65ea18d35.png" alt="\mathrm{\AA}"/>), eV, and femtoseconds (fs).</p>
 <ul class="simple">
-<li>Length:   Angstroms, <tt class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">BOHR</span></tt></li>
-<li>Energy:   eV,        <tt class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">HARTREE</span></tt></li>
+<li>Length:   Angstroms, <code class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">BOHR</span></code></li>
+<li>Energy:   eV,        <code class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">HARTREE</span></code></li>
 <li>Time:     fs</li>
-<li>Mass:     <img class="math" src="_images/math/0c54cc5500fbe40fc34460635d047c5f412302d4.png" alt="E T^2/L^2"/> = <tt class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">HARTREE</span> <span class="pre">*</span> <span class="pre">AU_FS**2</span> <span class="pre">/</span> <span class="pre">BOHR**2</span></tt></li>
+<li>Mass:     <img class="math" src="_images/math/0c54cc5500fbe40fc34460635d047c5f412302d4.png" alt="E T^2/L^2"/> = <code class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">HARTREE</span> <span class="pre">*</span> <span class="pre">AU_FS**2</span> <span class="pre">/</span> <span class="pre">BOHR**2</span></code></li>
 </ul>
-<p>Module contents for <a class="reference internal" href="#module-quippy.units" title="quippy.units: Units and physical constants"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.units</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.units" title="quippy.units: Units and physical constants"><code class="xref py py-mod docutils literal"><span class="pre">quippy.units</span></code></a>:</p>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -108,88 +110,88 @@ We use Angstroms (<img class="math" src="_images/math/61f08a33ffebe94e1e06451ec1
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">CPLX_ZERO</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_ZERO</span></code></td>
 <td>(0.0, 0.0)</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">BOLTZMANN_K</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">BOLTZMANN_K</span></code></td>
 <td>8.617385e-05</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">RADIANS_PER_DEGREE</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">RADIANS_PER_DEGREE</span></code></td>
 <td>0.0174532925199</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">ONESECOND</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND</span></code></td>
 <td>1e+15</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">N_A</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">N_A</span></code></td>
 <td>6.0221479e+23</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">CUBIC_BOHR</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CUBIC_BOHR</span></code></td>
 <td>0.0102908560748</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">AU_FS</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">AU_FS</span></code></td>
 <td>0.0241888434383</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">have_cp2k</span></tt></td>
-<td>0</td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_cp2k</span></code></td>
+<td>1</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">BOHR</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">BOHR</span></code></td>
 <td>0.529177249</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">KCAL_MOL</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">KCAL_MOL</span></code></td>
 <td>0.043383</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">have_lotf</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">have_lotf</span></code></td>
 <td>1</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">DEBYE</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">DEBYE</span></code></td>
 <td>0.208194346224</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">PI</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PI</span></code></td>
 <td>3.14159265359</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">CPLX_ONE</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_ONE</span></code></td>
 <td>(1.0, 0.0)</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">ONESECOND_AU</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND_AU</span></code></td>
 <td>4.13413730405e+16</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">MASSCONVERT</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">MASSCONVERT</span></code></td>
 <td>103.642721759</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">ELEM_CHARGE</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ELEM_CHARGE</span></code></td>
 <td>1.60217653e-19</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">EPSILON_0</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">EPSILON_0</span></code></td>
 <td>0.0055263497194</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">GPA</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">GPA</span></code></td>
 <td>160.22</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">HBAR_EVSEC</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_EVSEC</span></code></td>
 <td>6.582122e-16</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">HBAR</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR</span></code></td>
 <td>0.6582122</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">have_netcdf</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_netcdf</span></code></td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">HBAR_AU</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_AU</span></code></td>
 <td>1.0</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">RYDBERG</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">RYDBERG</span></code></td>
 <td>13.60569805</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">DEGREES_PER_RADIAN</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">DEGREES_PER_RADIAN</span></code></td>
 <td>57.2957795131</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">CPLX_IMAG</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_IMAG</span></code></td>
 <td>(0.0, 1.0)</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">HARTREE</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HARTREE</span></code></td>
 <td>27.2113961</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">ELECTRONMASS_GPERMOL</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ELECTRONMASS_GPERMOL</span></code></td>
 <td>0.000548579903</td>
 </tr>
 </tbody>
@@ -202,7 +204,7 @@ We use Angstroms (<img class="math" src="_images/math/61f08a33ffebe94e1e06451ec1
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -217,13 +219,13 @@ We use Angstroms (<img class="math" src="_images/math/61f08a33ffebe94e1e06451ec1
         <li class="right" >
           <a href="periodictable.html" title="Periodic table data"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

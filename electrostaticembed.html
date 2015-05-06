@@ -28,8 +28,8 @@
     <link rel="next" title="Linear algebra routines" href="linearalgebra.html" />
     <link rel="prev" title="Tools for polarizable potentials" href="polarization.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +44,11 @@
         <li class="right" >
           <a href="polarization.html" title="Tools for polarizable potentials"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -59,12 +59,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="linearalgebra.html"
                         title="next chapter">Linear algebra routines</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/electrostaticembed.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/electrostaticembed.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -83,12 +85,12 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-quippy.electrostaticembed">
 <span id="tools-for-electrostatic-embedding"></span><h1>Tools for electrostatic embedding<a class="headerlink" href="#module-quippy.electrostaticembed" title="Permalink to this headline">¶</a></h1>
 <p>ElectrostaticEmbed - tools for electrostatic embedding of potentials</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.electrostaticembed" title="quippy.electrostaticembed: Tools for electrostatic embedding"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.electrostaticembed</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.electrostaticembed" title="quippy.electrostaticembed: Tools for electrostatic embedding"><code class="xref py py-mod docutils literal"><span class="pre">quippy.electrostaticembed</span></code></a>:</p>
 <p class="rubric">Functions</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -96,7 +98,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.electrostaticembed.extent_to_ngrid" title="quippy.electrostaticembed.extent_to_ngrid"><tt class="xref py py-obj docutils literal"><span class="pre">extent_to_ngrid</span></tt></a>(extent,fine_gmax)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.electrostaticembed.extent_to_ngrid" title="quippy.electrostaticembed.extent_to_ngrid"><code class="xref py py-obj docutils literal"><span class="pre">extent_to_ngrid</span></code></a>(extent,fine_gmax)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -107,7 +109,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.electrostaticembed.assign_grid_coordinates" title="quippy.electrostaticembed.assign_grid_coordinates"><tt class="xref py py-obj docutils literal"><span class="pre">assign_grid_coordinates</span></tt></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.electrostaticembed.assign_grid_coordinates" title="quippy.electrostaticembed.assign_grid_coordinates"><code class="xref py py-obj docutils literal"><span class="pre">assign_grid_coordinates</span></code></a>(...)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -122,7 +124,7 @@
 </table>
 <dl class="function">
 <dt id="quippy.electrostaticembed.extent_to_ngrid">
-<tt class="descclassname">quippy.electrostaticembed.</tt><tt class="descname">extent_to_ngrid</tt><big>(</big><em>extent</em>, <em>fine_gmax</em><big>)</big><a class="headerlink" href="#quippy.electrostaticembed.extent_to_ngrid" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.electrostaticembed.</code><code class="descname">extent_to_ngrid</code><span class="sig-paren">(</span><em>extent</em>, <em>fine_gmax</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.electrostaticembed.extent_to_ngrid" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -137,12 +139,12 @@
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">extent_to_ngrid</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/ElectrostaticEmbed.f95">QUIP_Core/ElectrostaticEmbed.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">extent_to_ngrid</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/ElectrostaticEmbed.f95">QUIP_Core/ElectrostaticEmbed.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.electrostaticembed.assign_grid_coordinates">
-<tt class="descclassname">quippy.electrostaticembed.</tt><tt class="descname">assign_grid_coordinates</tt><big>(</big><em>ngrid</em>, <em>origin</em>, <em>extent</em>, <em>n0</em>, <em>n1</em><big>)</big><a class="headerlink" href="#quippy.electrostaticembed.assign_grid_coordinates" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.electrostaticembed.</code><code class="descname">assign_grid_coordinates</code><span class="sig-paren">(</span><em>ngrid</em>, <em>origin</em>, <em>extent</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.electrostaticembed.assign_grid_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -165,7 +167,7 @@
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">assign_grid_coordinates</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/ElectrostaticEmbed.f95">QUIP_Core/ElectrostaticEmbed.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">assign_grid_coordinates</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/ElectrostaticEmbed.f95">QUIP_Core/ElectrostaticEmbed.f95</a>.</p>
 </dd></dl>
 
 </div>
@@ -176,7 +178,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -191,13 +193,13 @@
         <li class="right" >
           <a href="polarization.html" title="Tools for polarizable potentials"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

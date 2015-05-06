@@ -27,8 +27,8 @@
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Units and physical constants" href="units.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,11 +40,11 @@
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              accesskey="N">next</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -52,12 +52,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="units.html"
                         title="next chapter">Units and physical constants</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/periodictable.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/periodictable.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -76,12 +78,12 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-quippy.periodictable">
 <span id="periodic-table-data"></span><h1>Periodic table data<a class="headerlink" href="#module-quippy.periodictable" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a list of elements, their masses and covalent radii.</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.periodictable" title="quippy.periodictable: Element data"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.periodictable</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.periodictable" title="quippy.periodictable: Element data"><code class="xref py py-mod docutils literal"><span class="pre">quippy.periodictable</span></code></a>:</p>
 <p class="rubric">Functions</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -89,9 +91,6 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.periodictable.atomic_number" title="quippy.periodictable.atomic_number"><tt class="xref py py-obj docutils literal"><span class="pre">atomic_number</span></tt></a>(*args,&nbsp;**kwargs)</td>
-<td>Do a reverse lookup of atomic number from either symbol or mass</td>
-</tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
@@ -106,32 +105,32 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">ElementCovRad</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ElementCovRad</span></code></td>
 <td>&#8212;</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">ElementName</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ElementName</span></code></td>
 <td>&#8212;</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">ElementMass</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ElementMass</span></code></td>
 <td>&#8212;</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">ElementValence</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ElementValence</span></code></td>
 <td>&#8212;</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">ElementColours</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ElementColours</span></code></td>
 <td>&#8212;</td>
 </tr>
 </tbody>
 </table>
 <dl class="function">
 <dt id="quippy.periodictable.atomic_number">
-<tt class="descclassname">quippy.periodictable.</tt><tt class="descname">atomic_number</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.periodictable.atomic_number" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.periodictable.</code><code class="descname">atomic_number</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.periodictable.atomic_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do a reverse lookup of atomic number from either symbol or mass</p>
-<p>Routine is wrapper around Fortran interface <tt class="docutils literal"><span class="pre">atomic_number</span></tt> containing multiple routines:</p>
+<p>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">atomic_number</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
-<tt class="descclassname">quippy.periodictable.</tt><tt class="descname">atomic_number</tt><big>(</big><em>atomic_symbol</em><big>)</big></dt>
+<code class="descclassname">quippy.periodictable.</code><code class="descname">atomic_number</code><span class="sig-paren">(</span><em>atomic_symbol</em><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -142,12 +141,12 @@
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">atomic_number_from_symbol</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/PeriodicTable.f95">libAtoms/PeriodicTable.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">atomic_number_from_symbol</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/PeriodicTable.f95">libAtoms/PeriodicTable.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.periodictable.</tt><tt class="descname">atomic_number</tt><big>(</big><em>atomic_mass</em><big>)</big></dt>
+<code class="descclassname">quippy.periodictable.</code><code class="descname">atomic_number</code><span class="sig-paren">(</span><em>atomic_mass</em><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -158,7 +157,7 @@
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">atomic_number_from_mass</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/PeriodicTable.f95">libAtoms/PeriodicTable.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">atomic_number_from_mass</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/PeriodicTable.f95">libAtoms/PeriodicTable.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -172,7 +171,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -184,13 +183,13 @@
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              >next</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -26,8 +26,8 @@
     <link rel="top" title="quippy  documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -36,16 +36,16 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/hybrid.png" alt="Logo"/>
             </a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -64,7 +64,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for quippy.potential</h1><div class="highlight"><pre>
 <span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
@@ -194,13 +194,14 @@
 <span class="s">    array in :attr:`.Atoms.arrays` containing volumes for each atom.</span>
 
 <span class="s">&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">signature</span><span class="o">=</span><span class="s">&#39;Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms])&#39;</span><span class="p">)</span>
+    <span class="n">signature</span><span class="o">=</span><span class="s">&#39;Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms, calculation_always_required])&#39;</span><span class="p">)</span>
 
     <span class="n">callback_map</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pot1</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pot2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">param_str</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">param_filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bulk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mpi_obj</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">calculator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+		 <span class="n">calculation_always_required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">fpointer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">error</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -217,6 +218,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_calc_args</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_default_quantities</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span> <span class="o">=</span> <span class="n">cutoff_skin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span> <span class="o">=</span> <span class="n">calculation_always_required</span>
 
         <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">calculator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -401,22 +403,24 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="c"># check if atoms has changed since last call</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">equivalent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">):</span>
-            <span class="k">return</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span><span class="p">:</span>
+	    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">equivalent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">):</span>
+		<span class="k">return</span>
 
         <span class="c"># Mark all quantities as needing to be recalculated</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wipe</span><span class="p">()</span>
 
         <span class="c"># do we need to reinitialise _prev_atoms?</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">connect</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">copy_without_connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;orig_pos&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c"># _prev_atoms is OK, update it in place</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">z</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pos</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">lattice</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span><span class="p">:</span>
+	    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">connect</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">copy_without_connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;orig_pos&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+	    <span class="k">else</span><span class="p">:</span>
+		<span class="c"># _prev_atoms is OK, update it in place</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">z</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pos</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">lattice</span>
 
         <span class="c"># do a calc_connect(), setting cutoff_skin so full reconnect will only be done when necessary</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">(),</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span><span class="p">)</span>
@@ -667,27 +671,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">dict_to_args_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_args</span><span class="p">)</span>
 
-</div>
-    <span class="k">def</span> <span class="nf">get_cutoff_skin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutoff_skin</span>
-
-    <span class="k">def</span> <span class="nf">set_cutoff_skin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cutoff_skin</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cutoff_skin</span> <span class="o">=</span> <span class="n">cutoff_skin</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="o">=</span> <span class="bp">None</span> <span class="c"># force a recalculation</span>
-
-    <span class="n">cutoff_skin</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_cutoff_skin</span><span class="p">,</span> <span class="n">set_cutoff_skin</span><span class="p">,</span>
-                           <span class="n">doc</span><span class="o">=</span><span class="s">&quot;&quot;&quot;</span>
-<span class="s">                           The `cutoff_skin` attribute is only relevant when the ASE-style</span>
-<span class="s">                           interface to the Potential is used, via the :meth:`get_forces`,</span>
-<span class="s">                           :meth:`get_potential_energy` etc. methods. In this case the</span>
-<span class="s">                           connectivity of the :class:`~quippy.atoms.Atoms` object for which</span>
-<span class="s">                           the calculation is requested is automatically kept up to date by</span>
-<span class="s">                           using a neighbour cutoff of :meth:`cutoff` + `cutoff_skin`, and</span>
-<span class="s">                           recalculating the neighbour lists whenever the maximum displacement</span>
-<span class="s">                           since the last :meth:`Atoms.calc_connect` exceeds `cutoff_skin`.</span>
-<span class="s">                           &quot;&quot;&quot;</span><span class="p">)</span>
-
-</div>
+</div></div>
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">FortranDerivedTypes</span>
 <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(potential)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Potential</span>
 
@@ -806,7 +790,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_lat</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">cutoff</span><span class="p">(),</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
 
         <span class="c"># check for constraints, only FixAtoms is supported for now</span>
@@ -920,7 +904,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -929,13 +913,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

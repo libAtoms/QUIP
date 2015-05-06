@@ -24,11 +24,10 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="quippy  documentation" href="index.html" />
-    <link rel="next" title="f90doc — Fortran 90 source code scanner" href="f90doc.html" />
-    <link rel="prev" title="2D plotting tools" href="plot2d.html" /> 
+    <link rel="next" title="f90doc — Fortran 90 source code scanner" href="f90doc.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,29 +39,25 @@
         <li class="right" >
           <a href="f90doc.html" title="f90doc — Fortran 90 source code scanner"
              accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="plot2d.html" title="2D plotting tools"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
             </a></p>
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="plot2d.html"
-                        title="previous chapter">2D plotting tools</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="f90doc.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">f90doc</span></tt> &#8212; Fortran 90 source code scanner</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/fortran_wrapper.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+                        title="next chapter"><code class="docutils literal"><span class="pre">f90doc</span></code> &#8212; Fortran 90 source code scanner</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fortran_wrapper.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -81,7 +76,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="appendix-wrapping-fortran-90-code">
 <span id="wrapping-fortran-90-code"></span><h1>Appendix: wrapping Fortran 90 Code<a class="headerlink" href="#appendix-wrapping-fortran-90-code" title="Permalink to this headline">¶</a></h1>
@@ -93,18 +88,18 @@ routine to allow it to be called from quippy. The first two take place
 at compile-time (and so these modules do not form part of the
 installed quippy package), and the last two at run-time.</p>
 <ol class="arabic simple">
-<li><a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><tt class="xref py py-mod docutils literal"><span class="pre">f90doc</span></tt></a> is used to scan the Fortran source file,
+<li><a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> is used to scan the Fortran source file,
 building up a data struture which describes all the types, subroutines
 and functions found in the file.</li>
-<li><a class="reference internal" href="f2py_wrapper_gen.html#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><tt class="xref py py-mod docutils literal"><span class="pre">f2py_wrapper_gen</span></tt></a> is used to write a simplified Fortran 90
+<li><a class="reference internal" href="f2py_wrapper_gen.html#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><code class="xref py py-mod docutils literal"><span class="pre">f2py_wrapper_gen</span></code></a> is used to write a simplified Fortran 90
 prototype for each routine, with derived type arguments replaced by
 integer arrays containing a representation of a pointer to the
 derived type, in the manner described in <a class="reference internal" href="intro.html#pletzer2008" id="id1">[Pletzer2008]</a> This allows
 us to pass opaque references to the true Fortran derived type data
 structures back and forth between Python and Fortran. The
-<a class="reference internal" href="patch_f2py.html#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><tt class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></tt></a> module is used to patch the <tt class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></tt>
+<a class="reference internal" href="patch_f2py.html#module-patch_f2py" title="patch_f2py: Modify numpy.f2py at runtime"><code class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></code></a> module is used to patch the <code class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></code>
 system at runtime, to slightly modify the way it generates C code.</li>
-<li><a class="reference internal" href="oo_fortran.html#module-quippy.oo_fortran" title="quippy.oo_fortran: Fortran 90 derived-type support"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.oo_fortran</span></tt></a> acts as a thin object-oriented layer on
+<li><a class="reference internal" href="oo_fortran.html#module-quippy.oo_fortran" title="quippy.oo_fortran: Fortran 90 derived-type support"><code class="xref py py-mod docutils literal"><span class="pre">quippy.oo_fortran</span></code></a> acts as a thin object-oriented layer on
 top of the f2py generated wrapper functions which handles
 conversion between Python object instances and Fortran derived-type
 variables, converting arguments back and forth automatically.</li>
@@ -112,13 +107,13 @@ variables, converting arguments back and forth automatically.</li>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="f90doc.html"><tt class="docutils literal"><span class="pre">f90doc</span></tt> &#8212; Fortran 90 source code scanner</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> &#8212; Fortran 90 source code scanner</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="f90doc.html#command-line-usage">Command line usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="f90doc.html#module-usage">Module usage</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="f2py_wrapper_gen.html"><tt class="docutils literal"><span class="pre">f2py_wrapper_gen</span></tt> &#8212; Fortran 90 source code wrapping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="patch_f2py.html"><tt class="docutils literal"><span class="pre">patch_f2py</span></tt> &#8212; modify <tt class="docutils literal"><span class="pre">numpy.f2py</span></tt> at runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> &#8212; modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="oo_fortran.html">Fortran 90 derived-type support</a><ul class="simple">
 </ul>
 </li>
@@ -141,7 +136,7 @@ variables, converting arguments back and forth automatically.</li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -153,15 +148,12 @@ variables, converting arguments back and forth automatically.</li>
         <li class="right" >
           <a href="f90doc.html" title="f90doc — Fortran 90 source code scanner"
              >next</a> |</li>
-        <li class="right" >
-          <a href="plot2d.html" title="2D plotting tools"
-             >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -28,8 +28,8 @@
     <link rel="next" title="Step 2: Classical MD simulation of fracture in Si" href="adaptive-qmmm-step2.html" />
     <link rel="prev" title="Theoretical background" href="adaptive-qmmm-theory.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,12 +44,12 @@
         <li class="right" >
           <a href="adaptive-qmmm-theory.html" title="Theoretical background"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
-          <li><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -89,12 +89,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="adaptive-qmmm-step2.html"
                         title="next chapter">Step 2: Classical MD simulation of fracture in Si</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/adaptive-qmmm-step1.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/adaptive-qmmm-step1.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -113,19 +115,19 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="step-1-setup-of-the-silicon-model-system">
 <span id="step1"></span><h1>Step 1: Setup of the Silicon model system<a class="headerlink" href="#step-1-setup-of-the-silicon-model-system" title="Permalink to this headline">¶</a></h1>
 <p>The first task in this tutorial is to build the model system we will
 use for both the classical and QM/MM simulations. We will use an
-approximately 2D model system in the <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><em>thin strip geometry</em></a></p>
+approximately 2D model system in the <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span>thin strip geometry</span></a></p>
 <div class="section" id="building-the-bulk-unit-cell-30-minutes">
 <h2>1.1 Building the bulk unit cell (30 minutes)<a class="headerlink" href="#building-the-bulk-unit-cell-30-minutes" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="import-the-relevant-modules-and-functions">
 <h3>Import the relevant modules and functions<a class="headerlink" href="#import-the-relevant-modules-and-functions" title="Permalink to this headline">¶</a></h3>
 <p>We start by importing all the functions we will need. Create a new
-script named <tt class="docutils literal"><span class="pre">make_crack.py</span></tt> and add the following lines:</p>
+script named <code class="docutils literal"><span class="pre">make_crack.py</span></code> and add the following lines:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ase.structure</span> <span class="kn">import</span> <span class="n">bulk</span>
 <span class="kn">from</span> <span class="nn">ase.lattice.cubic</span> <span class="kn">import</span> <span class="n">Diamond</span>
 <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixAtoms</span>
@@ -148,8 +150,8 @@ the interatomic potentials plus some special purpose functionality.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">For interactive use, it is convenient to import everything from the
-entire <cite>quippy</cite> package with <tt class="docutils literal"><span class="pre">from</span> <span class="pre">qlab</span> <span class="pre">import</span> <span class="pre">*</span></tt> as described
-in the <a class="reference internal" href="adaptive-qmmm-step0.html#practical"><em>Practical considerations</em></a> section. We chose not to do that in these scripts to
+entire <cite>quippy</cite> package with <code class="docutils literal"><span class="pre">from</span> <span class="pre">qlab</span> <span class="pre">import</span> <span class="pre">*</span></code> as described
+in the <a class="reference internal" href="adaptive-qmmm-step0.html#practical"><span>Practical considerations</span></a> section. We chose not to do that in these scripts to
 make it clear where each function we are using is defined, and to make it easier
 to look them up in the online documentation.</p>
 </div>
@@ -190,8 +192,8 @@ parameters:</p>
 </pre></div>
 </div>
 <p>Note the explicit unit conversion: some of this is unnecessary as we
-are using the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/units.html">ase.units module</a> where <tt class="docutils literal"><span class="pre">Ang</span> <span class="pre">=</span> <span class="pre">eV</span> <span class="pre">=</span>
-<span class="pre">1</span></tt>. The energy release rate <cite>initial_G</cite> is given in the
+are using the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/units.html">ase.units module</a> where <code class="docutils literal"><span class="pre">Ang</span> <span class="pre">=</span> <span class="pre">eV</span> <span class="pre">=</span>
+<span class="pre">1</span></code>. The energy release rate <cite>initial_G</cite> is given in the
 widely used units of J/m<sup>2</sup>.</p>
 <p>Next we define some parameters related to the classical interatomic
 potential:</p>
@@ -207,27 +209,27 @@ potential:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">output_file</span> <span class="o">=</span> <span class="s">&#39;crack.xyz&#39;</span>            <span class="c"># File to which structure will be written</span>
 </pre></div>
 </div>
-<p>You should download the <a class="reference download internal" href="_downloads/params.xml"><tt class="xref download docutils literal"><span class="pre">params.xml</span></tt></a> file, which contains
+<p>You should download the <a class="reference download internal" href="_downloads/params.xml"><code class="xref download docutils literal"><span class="pre">params.xml</span></code></a> file, which contains
 the parameters for the SW potential (and also for DFTB, needed for
-<a class="reference internal" href="adaptive-qmmm-step3.html#step3"><em>Step 3: LOTF hybrid MD simulation of fracture in Si</em></a>)</p>
+<a class="reference internal" href="adaptive-qmmm-step3.html#step3"><span>Step 3: LOTF hybrid MD simulation of fracture in Si</span></a>)</p>
 </div>
 <div class="section" id="finding-the-equilibrium-lattice-constant-for-si">
 <span id="latticeconstant"></span><h3>Finding the equilibrium lattice constant for Si<a class="headerlink" href="#finding-the-equilibrium-lattice-constant-for-si" title="Permalink to this headline">¶</a></h3>
 <p>To find the Si equilibrium lattice constant <cite>a0</cite> with the SW potential,
 let&#8217;s first build the 8-atom diamond cubic cell for silicon, with an initial
 guess at lattice constant of 5.44 A. This can be done using the
-<tt class="xref py py-func docutils literal"><span class="pre">bulk()</span></tt> function from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/structure.html#module-ase.structure" title="(in ASE v3.9.0.4154)"><tt class="xref py py-mod docutils literal"><span class="pre">ase.structure</span></tt></a> module:</p>
+<code class="xref py py-func docutils literal"><span class="pre">bulk()</span></code> function from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/structure.html#module-ase.structure" title="(in ASE v)"><code class="xref py py-mod docutils literal"><span class="pre">ase.structure</span></code></a> module:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Build the 8-atom diamond cubic cell for Si</span>
 </pre></div>
 </div>
-<p>The variable <cite>si_bulk</cite> is an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4154)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object.  It
+<p>The variable <cite>si_bulk</cite> is an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object.  It
 has various attributes and methods that will be introduced as necessary
 during this tutorial.</p>
-<p>Once you have created your <cite>si_bulk</cite> object, run the <tt class="docutils literal"><span class="pre">make_crack.py</span></tt>
-script from within <cite>ipython</cite> with the <tt class="docutils literal"><span class="pre">run</span></tt> command. Providing you
-have imported everything from the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><tt class="xref py py-mod docutils literal"><span class="pre">qlab</span></tt></a> module, will then be
+<p>Once you have created your <cite>si_bulk</cite> object, run the <code class="docutils literal"><span class="pre">make_crack.py</span></code>
+script from within <cite>ipython</cite> with the <code class="docutils literal"><span class="pre">run</span></code> command. Providing you
+have imported everything from the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> module, will then be
 able to interactively visualise the Si unit cell with the
-<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><tt class="xref py py-func docutils literal"><span class="pre">view()</span></tt></a> function from the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><tt class="xref py py-mod docutils literal"><span class="pre">qlab</span></tt></a> module, which you
+<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> function from the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> module, which you
 should type in at the <cite>ipython</cite> prompt:</p>
 <div class="highlight-python"><div class="highlight"><pre>In [5]: view(si_bulk)
 </pre></div>
@@ -241,9 +243,9 @@ boundaries by holding <cite>Shift</cite> and dragging. Zoom in and out by
 dragging with the right mouse button (or scroll wheel, if you have
 one). Press <cite>b</cite> to toggle the display of bonds. For more help on
 <cite>AtomEye</cite> see its <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">web page</a> or the documentation
-for the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><tt class="xref py py-mod docutils literal"><span class="pre">qlab</span></tt></a> and <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><tt class="xref py py-mod docutils literal"><span class="pre">atomeye</span></tt></a> modules.</p>
+for the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> and <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> modules.</p>
 <p>Now, we initialise the Stillinger-Weber (SW) classical interatomic
-potential using quippy&#8217;s <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><tt class="xref py py-class docutils literal"><span class="pre">Potential</span></tt></a> class</p>
+potential using quippy&#8217;s <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> class</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;IP SW&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s">&#39;params.xml&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -251,17 +253,17 @@ potential using quippy&#8217;s <a class="reference internal" href="potential.htm
 cell degrees of freedom with respect to the virial tensor calculated by the
 SW potential. First, we need to attach a calculator (i.e. the SW
 potential, <cite>mm_pot</cite> we just created) to the <cite>si_bulk</cite> object,
-using the method <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_calculator" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">set_calculator()</span></tt></a>:</p>
+using the method <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_calculator" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">set_calculator()</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span><span class="o">.</span> <span class="o">...</span>             <span class="c"># Attach the SW potential to si_bulk</span>
 </pre></div>
 </div>
 <p>This means that subsequent requests to calculate energy or forces of
 <cite>si_bulk</cite> will be performed using our SW potential.</p>
 <p>The minimisation can now be carried out by making a
-<a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><tt class="xref py py-class docutils literal"><span class="pre">Minim</span></tt></a> class from the <cite>si_bulk</cite> Atoms,
+<a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal"><span class="pre">Minim</span></code></a> class from the <cite>si_bulk</cite> Atoms,
 requesting that both atomic positions and cell degrees of freedom
 should be relaxed. Then run the minimisation until the maximum force
-is below <tt class="docutils literal"><span class="pre">fmax=1e-2</span></tt>, using the <a class="reference internal" href="potential.html#quippy.potential.Minim.run" title="quippy.potential.Minim.run"><tt class="xref py py-meth docutils literal"><span class="pre">run()</span></tt></a>
+is below <code class="docutils literal"><span class="pre">fmax=1e-2</span></code>, using the <a class="reference internal" href="potential.html#quippy.potential.Minim.run" title="quippy.potential.Minim.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a>
 method</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>                           <span class="c"># Initialise the minimiser from si_bulk</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Minimising bulk unit cell&#39;</span><span class="p">)</span>
@@ -269,10 +271,10 @@ method</p>
 </pre></div>
 </div>
 <p>The lattice constant <cite>a0</cite> can be easily obtained from the relaxed
-lattice vectors using the <tt class="xref py py-meth docutils literal"><span class="pre">cell()</span></tt> attribute of
+lattice vectors using the <code class="xref py py-meth docutils literal"><span class="pre">cell()</span></code> attribute of
 the <cite>si_bulk</cite> object, which returns a <img class="math" src="_images/math/9570fefe745eeeb3fb70f10bf7a441868fbe1cdd.png" alt="3 \times 3"/> matrix
 containing the lattice vectors as rows in Cartesian coordinates,
-i.e. <tt class="docutils literal"><span class="pre">si_bulk.cell[0,0]</span></tt> is the <cite>x</cite> coordinate of the first lattice
+i.e. <code class="docutils literal"><span class="pre">si_bulk.cell[0,0]</span></code> is the <cite>x</cite> coordinate of the first lattice
 vector.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">a0</span> <span class="o">=</span> <span class="o">...</span>                                <span class="c"># Get the lattice constant</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Lattice constant </span><span class="si">%.3f</span><span class="s"> A</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">a0</span><span class="p">)</span>
@@ -289,19 +291,19 @@ off-diagonal components of the lattice are exactly zero:</p>
 </div>
 <div class="section" id="milestone-1-1">
 <h3>Milestone 1.1<a class="headerlink" href="#milestone-1-1" title="Permalink to this headline">¶</a></h3>
-<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_1.py"><tt class="xref download docutils literal"><span class="pre">make_crack_1.py</span></tt></a>.</p>
+<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_1.py"><code class="xref download docutils literal"><span class="pre">make_crack_1.py</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="calculation-of-elastic-and-surface-properties-of-silicon-30-minutes">
 <h2>1.2 Calculation of elastic and surface properties of silicon (30 minutes)<a class="headerlink" href="#calculation-of-elastic-and-surface-properties-of-silicon-30-minutes" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="calculation-of-the-young-s-modulus-and-the-poisson-ratio">
 <span id="youngs-modulus-and-poisson-ratio"></span><h3>Calculation of the Young&#8217;s modulus and the Poisson ratio<a class="headerlink" href="#calculation-of-the-young-s-modulus-and-the-poisson-ratio" title="Permalink to this headline">¶</a></h3>
-<p>Following the discussion <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><em>above</em></a> section, we need to
+<p>Following the discussion <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span>above</span></a> section, we need to
 calculate some elastic properties of our model silicon. To calculate the Young&#8217;s
 modulus <cite>E</cite> along the direction perpendicular to the cleavage plane, and the
 Poisson ratio <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> in the <img class="math" src="_images/math/ba433fb15d4a342407ac3a29f01c1fbef83bd6e4.png" alt="xy"/> plane, we need the <img class="math" src="_images/math/ba2239efbf2b7af93fac86ed238d63d0748c1f63.png" alt="6 \times
 6"/> matrix of the elastic constants <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/>. This matrix <cite>c</cite> can be
-calculated using the <a class="reference internal" href="potential.html#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><tt class="xref py py-meth docutils literal"><span class="pre">get_elastic_constants()</span></tt></a>
+calculated using the <a class="reference internal" href="potential.html#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><code class="xref py py-meth docutils literal"><span class="pre">get_elastic_constants()</span></code></a>
 method of the <cite>mm_pot</cite> Potential object.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">c</span> <span class="o">=</span> <span class="n">mm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c"># Get the 6x6 C_ij matrix</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Elastic constants (GPa):&#39;</span><span class="p">)</span>
@@ -309,14 +311,14 @@ method of the <cite>mm_pot</cite> Potential object.</p>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here, the <tt class="xref py py-attr docutils literal"><span class="pre">GPa</span></tt> constant from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/units.html">ase.units module</a> module is used to
+<p>Here, the <code class="xref py py-attr docutils literal"><span class="pre">GPa</span></code> constant from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/units.html">ase.units module</a> module is used to
 convert from pressure units of eV/A<sup>3</sup> into GPa.</p>
 <p>The Young&#8217;s modulus <cite>E</cite> and the Poisson ratio <cite>nu</cite> can now be calculated,
 given <cite>c</cite>, the <cite>cleavage_plane</cite> and the <cite>crack_direction</cite> (defined in the
-<a class="reference internal" href="#parameters"><em>parameters section</em></a> above), using the functions
-<a class="reference internal" href="elasticity.html#quippy.elasticity.youngs_modulus" title="quippy.elasticity.youngs_modulus"><tt class="xref py py-func docutils literal"><span class="pre">youngs_modulus()</span></tt></a> and
-<a class="reference internal" href="elasticity.html#quippy.elasticity.poisson_ratio" title="quippy.elasticity.poisson_ratio"><tt class="xref py py-func docutils literal"><span class="pre">poisson_ratio()</span></tt></a> from the
-<a class="reference internal" href="elasticity.html#module-quippy.elasticity" title="quippy.elasticity: Elasticity calculations"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.elasticity</span></tt></a> module.</p>
+<a class="reference internal" href="#parameters"><span>parameters section</span></a> above), using the functions
+<a class="reference internal" href="elasticity.html#quippy.elasticity.youngs_modulus" title="quippy.elasticity.youngs_modulus"><code class="xref py py-func docutils literal"><span class="pre">youngs_modulus()</span></code></a> and
+<a class="reference internal" href="elasticity.html#quippy.elasticity.poisson_ratio" title="quippy.elasticity.poisson_ratio"><code class="xref py py-func docutils literal"><span class="pre">poisson_ratio()</span></code></a> from the
+<a class="reference internal" href="elasticity.html#module-quippy.elasticity" title="quippy.elasticity: Elasticity calculations"><code class="xref py py-mod docutils literal"><span class="pre">quippy.elasticity</span></code></a> module.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">E</span> <span class="o">=</span> <span class="o">...</span>                                              <span class="c"># Get E</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Young</span><span class="se">\&#39;</span><span class="s">s modulus </span><span class="si">%.1f</span><span class="s"> GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">E</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">))</span>
 <span class="n">nu</span> <span class="o">=</span> <span class="o">...</span>                                             <span class="c"># Get nu</span>
@@ -337,8 +339,8 @@ system can be printed using the following command:</p>
 </pre></div>
 </div>
 <p>The new unit slab can be obtained using the
-<tt class="xref py py-func docutils literal"><span class="pre">ase.lattice.cubic.Diamond</span></tt>
-from the <tt class="xref py py-mod docutils literal"><span class="pre">ase.lattice</span></tt> module, which is used as follows:</p>
+<code class="xref py py-func docutils literal"><span class="pre">ase.lattice.cubic.Diamond</span></code>
+from the <code class="xref py py-mod docutils literal"><span class="pre">ase.lattice</span></code> module, which is used as follows:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">unit_slab</span> <span class="o">=</span> <span class="n">Diamond</span><span class="p">(</span><span class="n">directions</span><span class="o">=</span><span class="p">[</span><span class="n">crack_direction</span><span class="p">,</span>
                                 <span class="n">cleavage_plane</span><span class="p">,</span>
                                 <span class="n">crack_front</span><span class="p">],</span>
@@ -351,7 +353,7 @@ from the <tt class="xref py py-mod docutils literal"><span class="pre">ase.latti
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You can visualise the new cell with <tt class="docutils literal"><span class="pre">view(unit_slab)</span></tt> (type this at
+<p>You can visualise the new cell with <code class="docutils literal"><span class="pre">view(unit_slab)</span></code> (type this at
 the <cite>ipython</cite> prompt after running the script as it is so far, don&#8217;t
 add it to the script file):</p>
 <a class="reference internal image-reference" href="_images/unit_slab.png"><img alt="_images/unit_slab.png" class="align-center" src="_images/unit_slab.png" style="width: 400px;" /></a>
@@ -365,25 +367,25 @@ into the unit cell:</p>
 <span class="n">unit_slab</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">unit_slab</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.positions" title="(in ASE v3.9.0.4154)"><tt class="xref py py-attr docutils literal"><span class="pre">positions</span></tt></a> is a <cite>(N,3)</cite> array containing
+<p>The <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.positions" title="(in ASE v)"><code class="xref py py-attr docutils literal"><span class="pre">positions</span></code></a> is a <cite>(N,3)</cite> array containing
 the Cartesian coordinates of the atoms, and
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_scaled_positions" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">set_scaled_positions()</span></tt></a> and
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_scaled_positions" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">get_scaled_positions()</span></tt></a> are necessary to ensure
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_scaled_positions" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">set_scaled_positions()</span></code></a> and
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_scaled_positions" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">get_scaled_positions()</span></code></a> are necessary to ensure
 all the atoms are mapped back inside the unit cell before we open
 up a surface. This is the result of applying the shift (do another
-<tt class="docutils literal"><span class="pre">view(unit_slab)</span></tt> to update your AtomEye viewer).</p>
+<code class="docutils literal"><span class="pre">view(unit_slab)</span></code> to update your AtomEye viewer).</p>
 <a class="reference internal image-reference" href="_images/unit_slab_shifted.png"><img alt="_images/unit_slab_shifted.png" class="align-center" src="_images/unit_slab_shifted.png" style="width: 400px;" /></a>
 <p>Note how the top and bottom layers now correspond to <img class="math" src="_images/math/e97bf8fc8cd6792f35fccb06cdfbe293de724fe5.png" alt="(111)"/>
 glide planes, so that the cell boundary now corresponds to a shuffle
 plane as required.</p>
 <p>We now make a copy of the <cite>unit_slab</cite> and create a <cite>surface</cite> unit cell
 with surfaces parallel to the <cite>cleavage_plane</cite>. We can use the
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">ase.atoms.Atoms.center()</span></tt></a> method which, besides centring the
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">ase.atoms.Atoms.center()</span></code></a> method which, besides centring the
 atoms in the unit cell, allows some vacuum to be added on both sides
-of the slab along a specified axis (use <tt class="docutils literal"><span class="pre">axis=0</span></tt> for the <cite>x</cite>-axis,
-or <tt class="docutils literal"><span class="pre">axis=1</span></tt> for the <cite>y</cite>-axis, etc.). The amount of vacuum you add is
+of the slab along a specified axis (use <code class="docutils literal"><span class="pre">axis=0</span></code> for the <cite>x</cite>-axis,
+or <code class="docutils literal"><span class="pre">axis=1</span></code> for the <cite>y</cite>-axis, etc.). The amount of vacuum you add is
 not critical, but could be taken from the <cite>vacuum</cite> parameter in the
-<a class="reference internal" href="#parameters"><em>parameters section</em></a> above:</p>
+<a class="reference internal" href="#parameters"><span>parameters section</span></a> above:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">surface</span> <span class="o">=</span> <span class="n">unit_slab</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">surface</span><span class="o">.</span> <span class="o">...</span>               <span class="c"># Add vacuum along y axis</span>
 </pre></div>
@@ -395,13 +397,13 @@ key. The green atoms on the surfaces are three-fold coordinated.</p>
 <p>Now that we have both the bulk unit slab and the surface unit cell,
 the surface energy <cite>gamma</cite> for the cleavage plane can be calculated
 using the SW potential. Once a calculator (e.g. <cite>mm_pot</cite>) is attached
-to an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4154)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object, the potential energy of the
+to an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, the potential energy of the
 atomic system can be calculated with
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_potential_energy" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">get_potential_energy()</span></tt></a>. It is useful to know
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_potential_energy" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">get_potential_energy()</span></code></a>. It is useful to know
 that the number of atoms in an Atoms object can be obtained by the
 list-method <cite>len</cite> (e.g. <cite>len(si_bulk)</cite> gives the number of atoms in
 <cite>si_bulk</cite>), and that the volume of a cell can be calculated with
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_volume" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">get_volume()</span></tt></a>:</p>
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_volume" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">get_volume()</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">surface</span><span class="o">.</span> <span class="o">...</span>           <span class="c"># Attach SW potential to surface atoms</span>
 <span class="n">E_surf</span> <span class="o">=</span> <span class="o">...</span>           <span class="c"># Get potential energy of surface system</span>
 <span class="n">E_per_atom_bulk</span> <span class="o">=</span> <span class="o">...</span>  <span class="c"># Get potential energy per atom for bulk slab</span>
@@ -414,12 +416,12 @@ list-method <cite>len</cite> (e.g. <cite>len(si_bulk)</cite> gives the number of
 <p>As a check, you should obtain <img class="math" src="_images/math/27841a0408255bcdcf0264adfab7f86166047f6c.png" alt="\gamma_{(111)}"/> = 1.36 J/m<sup>2</sup>. You may want to verify that this result is converged
 with respect to the number of layers in the system (note the cutoff
 distance of the SW potential, which you can obtain with
-<tt class="docutils literal"><span class="pre">mm_pot.cutoff()</span></tt>, is about 3.93 A, just beyond the second neighbour
+<code class="docutils literal"><span class="pre">mm_pot.cutoff()</span></code>, is about 3.93 A, just beyond the second neighbour
 distance).</p>
 </div>
 <div class="section" id="milestone-1-2">
 <h3>Milestone 1.2<a class="headerlink" href="#milestone-1-2" title="Permalink to this headline">¶</a></h3>
-<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_2.py"><tt class="xref download docutils literal"><span class="pre">make_crack_2.py</span></tt></a></p>
+<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_2.py"><code class="xref download docutils literal"><span class="pre">make_crack_2.py</span></code></a></p>
 </div>
 </div>
 <div class="section" id="setup-of-the-crack-slab-supercell-30-minutes">
@@ -430,8 +432,8 @@ distance).</p>
 system and to apply the requested strain field.</p>
 <p>We start by building the full slab system. First, we need to find the number
 of <cite>unit_slab</cite> cells along <cite>x</cite> and <cite>y</cite> that approximately match <cite>width</cite> and
-<cite>height</cite> (see <a class="reference internal" href="#parameters"><em>parameters section</em></a>).
-Note that the python function <tt class="xref py py-func docutils literal"><span class="pre">int()</span></tt> can be used to
+<cite>height</cite> (see <a class="reference internal" href="#parameters"><span>parameters section</span></a>).
+Note that the python function <code class="xref py py-func docutils literal"><span class="pre">int()</span></code> can be used to
 convert a floating point number into an integer, truncating towards zero:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">nx</span> <span class="o">=</span> <span class="o">...</span>    <span class="c"># Find number of unit_slab cells along x</span>
 <span class="n">ny</span> <span class="o">=</span> <span class="o">...</span>    <span class="c"># Find number of unit_slab cells along y</span>
@@ -449,7 +451,7 @@ the number of units cell in this direction, <cite>ny</cite>,  must be even:</p>
 </pre></div>
 </div>
 <p>As we did before for the <cite>surface</cite> system, <cite>vacuum</cite> has to be introduced along
-the <cite>x</cite> and <cite>y</cite> axes (<em>Hint:</em> use the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">center()</span></tt></a>
+the <cite>x</cite> and <cite>y</cite> axes (<em>Hint:</em> use the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">center()</span></code></a>
 method twice)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c"># Add vacuum along x</span>
 <span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c"># Add vacuum along y</span>
@@ -489,27 +491,27 @@ original <cite>x</cite> coordinates of the left and right surfaces are also save
 atoms will be kept fixed. More precisely, these rows of atoms will
 only be moved rigidly when the strain is applied and will not move in
 response to forces from the interatomic potential (see the
-<a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><em>discussion of the thin strip geometry above</em></a>). To do
+<a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span>discussion of the thin strip geometry above</span></a>). To do
 this, we initialise a <cite>fixed_mask</cite> array that is <cite>True</cite> for each atom
 whose position needs to be fixed, and <cite>False</cite> otherwise:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">fixed_mask</span> <span class="o">=</span> <span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">top</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">|</span>
               <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bottom</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Note that the <tt class="docutils literal"><span class="pre">|</span></tt> operator is shorthand for a logical &#8216;or&#8217;
+<p>Note that the <code class="docutils literal"><span class="pre">|</span></code> operator is shorthand for a logical &#8216;or&#8217;
 operation. After re-running the latest version of your script and
-executing <tt class="docutils literal"><span class="pre">view(crack_slab)</span></tt>, you can colour the atoms by
-<cite>fixed_mask</cite> using the <a class="reference internal" href="qlab.html#qlab.aux_property_coloring" title="qlab.aux_property_coloring"><tt class="xref py py-func docutils literal"><span class="pre">aux_property_coloring()</span></tt></a> function</p>
+executing <code class="docutils literal"><span class="pre">view(crack_slab)</span></code>, you can colour the atoms by
+<cite>fixed_mask</cite> using the <a class="reference internal" href="qlab.html#qlab.aux_property_coloring" title="qlab.aux_property_coloring"><code class="xref py py-func docutils literal"><span class="pre">aux_property_coloring()</span></code></a> function</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">fixed_mask</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>which colours the atoms where <cite>fixed_mask</cite> is True in red and those where
 it is <cite>False</cite> in blue, like this:</p>
 <a class="reference internal image-reference" href="_images/fixed_mask.png"><img alt="_images/fixed_mask.png" class="align-center" src="_images/fixed_mask.png" style="width: 600px;" /></a>
-<p>Now we can use the <tt class="xref py py-class docutils literal"><span class="pre">FixAtoms</span></tt> class to
+<p>Now we can use the <code class="xref py py-class docutils literal"><span class="pre">FixAtoms</span></code> class to
 fix the positions of the atoms according to the mask <cite>fixed_mask</cite>, and
 then attach the constraint to <cite>crack_slab</cite> using
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_constraint" title="(in ASE v3.9.0.4154)"><tt class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></tt></a>:</p>
+<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_constraint" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">const</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Initialise the constraint</span>
 <span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>        <span class="c"># Attach the constraint to crack_slab</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Fixed </span><span class="si">%d</span><span class="s"> atoms</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
@@ -517,16 +519,16 @@ then attach the constraint to <cite>crack_slab</cite> using
 </div>
 <p>To create the crack seed, we now apply the initial strain ramp. First,
 we need to convert the chosen energy release rate <cite>initial_G</cite> into a
-strain. This can be done using the <a class="reference internal" href="crack.html#quippy.crack.G_to_strain" title="quippy.crack.G_to_strain"><tt class="xref py py-func docutils literal"><span class="pre">G_to_strain()</span></tt></a>
-function which implements the <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip-equation"><em>thin strip equation described
-above</em></a>. The <cite>strain</cite> is then used to displace
+strain. This can be done using the <a class="reference internal" href="crack.html#quippy.crack.G_to_strain" title="quippy.crack.G_to_strain"><code class="xref py py-func docutils literal"><span class="pre">G_to_strain()</span></code></a>
+function which implements the <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip-equation"><span>thin strip equation described
+above</span></a>. The <cite>strain</cite> is then used to displace
 the <cite>y</cite> coordinate of the atomic positions according to the strain
-ramp produced by the <a class="reference internal" href="crack.html#quippy.crack.thin_strip_displacement_y" title="quippy.crack.thin_strip_displacement_y"><tt class="xref py py-func docutils literal"><span class="pre">thin_strip_displacement_y()</span></tt></a>
+ramp produced by the <a class="reference internal" href="crack.html#quippy.crack.thin_strip_displacement_y" title="quippy.crack.thin_strip_displacement_y"><code class="xref py py-func docutils literal"><span class="pre">thin_strip_displacement_y()</span></code></a>
 function. Here, the <cite>crack_seed_length</cite> and the <cite>strain_ramp_length</cite>
 parameters should be used. The objective is that atoms to the left of
-<tt class="docutils literal"><span class="pre">left</span> <span class="pre">+</span> <span class="pre">crack_seed_length</span></tt> should be rigidly shifted vertically, and
-those to the right of <tt class="docutils literal"><span class="pre">left</span> <span class="pre">+</span> <span class="pre">crack_seed_length</span> <span class="pre">+</span>
-<span class="pre">strain_ramp_length</span></tt> should be uniformly strained, with a transition
+<code class="docutils literal"><span class="pre">left</span> <span class="pre">+</span> <span class="pre">crack_seed_length</span></code> should be rigidly shifted vertically, and
+those to the right of <code class="docutils literal"><span class="pre">left</span> <span class="pre">+</span> <span class="pre">crack_seed_length</span> <span class="pre">+</span>
+<span class="pre">strain_ramp_length</span></code> should be uniformly strained, with a transition
 region in between.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">strain</span> <span class="o">=</span> <span class="o">...</span>                       <span class="c"># Convert G into strain</span>
 <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="o">...</span>  <span class="c"># update the atoms positions along y</span>
@@ -543,11 +545,11 @@ region in between.</p>
 approximate geometry optimisation of the slab, keeping the top and
 bottom rows of atoms fixed. Once again, our <cite>mm_pot</cite> needs to be
 attached to <cite>crack_slab</cite> and the minimiser
-<a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><tt class="xref py py-class docutils literal"><span class="pre">Minim</span></tt></a> initialised (note that here it does
+<a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal"><span class="pre">Minim</span></code></a> initialised (note that here it does
 not make sense to relax the cell since we have vacuum in two
 directions). We can then perform the minimisation until the maximum
-force is below the <cite>relax_fmax</cite> defined in the <a class="reference internal" href="#parameters"><em>parameters
-section</em></a>:</p>
+force is below the <cite>relax_fmax</cite> defined in the <a class="reference internal" href="#parameters"><span>parameters
+section</span></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Relaxing slab&#39;</span><span class="p">)</span>
 <span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>       <span class="c"># Attach the calculator to crack_slab</span>
 <span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>           <span class="c"># Initialise the minimiser</span>
@@ -561,7 +563,7 @@ section</em></a>:</p>
 <h3>Locating the crack tip<a class="headerlink" href="#locating-the-crack-tip" title="Permalink to this headline">¶</a></h3>
 <p>Before starting the next steps, it is useful to find the initial
 position of the crack tip.  This is provided by the
-<a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><tt class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></tt></a> function:</p>
+<a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&#39;Found crack tip at position </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">crack_pos</span>
 </pre></div>
@@ -575,7 +577,7 @@ position.</p>
 <div class="section" id="saving-the-output-file">
 <h3>Saving the output file<a class="headerlink" href="#saving-the-output-file" title="Permalink to this headline">¶</a></h3>
 <p>Finally, we can save all the calculated materials properties inside the
-<cite>crack_slab</cite> <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v3.9.0.4154)"><tt class="xref py py-class docutils literal"><span class="pre">Atoms</span></tt></a> object, before writing it to disk:</p>
+<cite>crack_slab</cite> <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, before writing it to disk:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;nneightol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.30</span> <span class="c"># set nearest neighbour tolerance</span>
 <span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;LatticeConstant&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a0</span>
 <span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;C11&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
@@ -596,8 +598,8 @@ position.</p>
 </pre></div>
 </div>
 <p>We can save our results, including all the extra properties and
-information, in <a class="reference internal" href="io.html#extendedxyz"><em>Extended XYZ</em></a> in the <cite>output_file</cite>, whose name is
-defined in the <a class="reference internal" href="#parameters"><em>parameters section</em></a>:</p>
+information, in <a class="reference internal" href="io.html#extendedxyz"><span>Extended XYZ</span></a> in the <cite>output_file</cite>, whose name is
+defined in the <a class="reference internal" href="#parameters"><span>parameters section</span></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Writing crack slab to file </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
 <span class="n">write</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
 </pre></div>
@@ -606,8 +608,8 @@ defined in the <a class="reference internal" href="#parameters"><em>parameters s
 <div class="section" id="milestone-1-3">
 <h3>Milestone 1.3<a class="headerlink" href="#milestone-1-3" title="Permalink to this headline">¶</a></h3>
 <p>At this point your final script should look something like
-<a class="reference internal" href="adaptive-qmmm-solutions.html#make-crack"><em>Step 1 solution &#8212; make_crack.py</em></a>, and your XYZ file like <a class="reference download internal" href="_downloads/crack.xyz"><tt class="xref download docutils literal"><span class="pre">crack.xyz</span></tt></a>.</p>
-<p>When you are ready, proceed to <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><em>Step 2: Classical MD simulation of fracture in Si</em></a>.</p>
+<a class="reference internal" href="adaptive-qmmm-solutions.html#make-crack"><span>Step 1 solution &#8212; make_crack.py</span></a>, and your XYZ file like <a class="reference download internal" href="_downloads/crack.xyz"><code class="xref download docutils literal"><span class="pre">crack.xyz</span></code></a>.</p>
+<p>When you are ready, proceed to <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2: Classical MD simulation of fracture in Si</span></a>.</p>
 </div>
 </div>
 </div>
@@ -618,7 +620,7 @@ defined in the <a class="reference internal" href="#parameters"><em>parameters s
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -633,14 +635,14 @@ defined in the <a class="reference internal" href="#parameters"><em>parameters s
         <li class="right" >
           <a href="adaptive-qmmm-theory.html" title="Theoretical background"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
-          <li><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -27,8 +27,8 @@
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Fortran input/output" href="fortranio.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,11 +40,11 @@
         <li class="right" >
           <a href="fortranio.html" title="Fortran input/output"
              accesskey="N">next</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -52,12 +52,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="fortranio.html"
                         title="next chapter">Fortran input/output</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/paramreader.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/paramreader.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -76,17 +78,17 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-quippy.paramreader">
 <span id="command-line-argument-parser"></span><h1>Command line argument parser<a class="headerlink" href="#module-quippy.paramreader" title="Permalink to this headline">¶</a></h1>
 <p>The ParamReader module provides the facility to read parameters in the
-form <tt class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></tt> from files or from the command line. In typical
-usage you would <tt class="docutils literal"><span class="pre">Param_Register</span></tt> a series of parameters with default values,
+form <code class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></code> from files or from the command line. In typical
+usage you would <code class="docutils literal"><span class="pre">Param_Register</span></code> a series of parameters with default values,
 then read some values from a parameter file overriding the defaults,
 possibly then reading from the command line arguments to override the
 options set by the parameter file.</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.paramreader" title="quippy.paramreader: Command line argument parser"><tt class="xref py py-mod docutils literal"><span class="pre">quippy.paramreader</span></tt></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.paramreader" title="quippy.paramreader: Command line argument parser"><code class="xref py py-mod docutils literal"><span class="pre">quippy.paramreader</span></code></a>:</p>
 <p class="rubric">Functions</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -94,10 +96,10 @@ options set by the parameter file.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_read_line" title="quippy.paramreader.param_read_line"><tt class="xref py py-obj docutils literal"><span class="pre">param_read_line</span></tt></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_read_line" title="quippy.paramreader.param_read_line"><code class="xref py py-obj docutils literal"><span class="pre">param_read_line</span></code></a>(...)</td>
 <td>Read and parse line and update the key/value pairs stored by in a Dictionary object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_print_help" title="quippy.paramreader.param_print_help"><tt class="xref py py-obj docutils literal"><span class="pre">param_print_help</span></tt></a>(dict,[verbosity,out])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_print_help" title="quippy.paramreader.param_print_help"><code class="xref py py-obj docutils literal"><span class="pre">param_print_help</span></code></a>(dict,[verbosity,out])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -108,19 +110,19 @@ options set by the parameter file.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_check" title="quippy.paramreader.param_check"><tt class="xref py py-obj docutils literal"><span class="pre">param_check</span></tt></a>(dict,[missing_keys])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_check" title="quippy.paramreader.param_check"><code class="xref py py-obj docutils literal"><span class="pre">param_check</span></code></a>(dict,[missing_keys])</td>
 <td>Explicity check if all mandatory values have now been specified Returns true or false accordingly.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_write_string" title="quippy.paramreader.param_write_string"><tt class="xref py py-obj docutils literal"><span class="pre">param_write_string</span></tt></a>(dict)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_write_string" title="quippy.paramreader.param_write_string"><code class="xref py py-obj docutils literal"><span class="pre">param_write_string</span></code></a>(dict)</td>
 <td>Return string representation of param dictionary, i.e.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_print" title="quippy.paramreader.param_print"><tt class="xref py py-obj docutils literal"><span class="pre">param_print</span></tt></a>(dict,[verbosity,out])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_print" title="quippy.paramreader.param_print"><code class="xref py py-obj docutils literal"><span class="pre">param_print</span></code></a>(dict,[verbosity,out])</td>
 <td>Print key/value pairs.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_read_args" title="quippy.paramreader.param_read_args"><tt class="xref py py-obj docutils literal"><span class="pre">param_read_args</span></tt></a>(...)</td>
-<td>Read <tt class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></tt> pairs from command line and set entries in this <tt class="docutils literal"><span class="pre">dict</span></tt>.</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_read_args" title="quippy.paramreader.param_read_args"><code class="xref py py-obj docutils literal"><span class="pre">param_read_args</span></code></a>(...)</td>
+<td>Read <code class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></code> pairs from command line and set entries in this <code class="docutils literal"><span class="pre">dict</span></code>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_register" title="quippy.paramreader.param_register"><tt class="xref py py-obj docutils literal"><span class="pre">param_register</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_register" title="quippy.paramreader.param_register"><code class="xref py py-obj docutils literal"><span class="pre">param_register</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Overloaded interface to register a parameter in a Dictionary object.</td>
 </tr>
 </tbody>
@@ -137,29 +139,29 @@ options set by the parameter file.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">PARAM_INTEGER</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PARAM_INTEGER</span></code></td>
 <td>2</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">PARAM_REAL</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">PARAM_REAL</span></code></td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">PARAM_MANDATORY</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PARAM_MANDATORY</span></code></td>
 <td>//MANDATORY//</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">PARAM_NO_VALUE</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">PARAM_NO_VALUE</span></code></td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-attr docutils literal"><span class="pre">PARAM_LOGICAL</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PARAM_LOGICAL</span></code></td>
 <td>4</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-attr docutils literal"><span class="pre">PARAM_STRING</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">PARAM_STRING</span></code></td>
 <td>3</td>
 </tr>
 </tbody>
 </table>
 <dl class="function">
 <dt id="quippy.paramreader.param_read_line">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_read_line</tt><big>(</big><em>dict</em>, <em>myline</em><span class="optional">[</span>, <em>ignore_unknown</em>, <em>check_mandatory</em>, <em>task</em>, <em>did_help</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.paramreader.param_read_line" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_read_line</code><span class="sig-paren">(</span><em>dict</em>, <em>myline</em><span class="optional">[</span>, <em>ignore_unknown</em>, <em>check_mandatory</em>, <em>task</em>, <em>did_help</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_read_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and parse line and update the key/value pairs stored by
 in a Dictionary object. Returns false if an error is encountered parsing
 the line.</p>
@@ -167,7 +169,7 @@ the line.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
@@ -193,33 +195,33 @@ the line.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_read_line</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_read_line</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.paramreader.param_print_help">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_print_help</tt><big>(</big><em>dict</em><span class="optional">[</span>, <em>verbosity</em>, <em>out</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.paramreader.param_print_help" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_print_help</code><span class="sig-paren">(</span><em>dict</em><span class="optional">[</span>, <em>verbosity</em>, <em>out</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_print_help" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
 <p><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>out</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><tt class="xref py py-class docutils literal"><span class="pre">InOutput</span></tt></a> object, optional</p>
+<p class="last"><strong>out</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_print_help</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_print_help</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.paramreader.param_check">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_check</tt><big>(</big><em>dict</em><span class="optional">[</span>, <em>missing_keys</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.paramreader.param_check" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_check</code><span class="sig-paren">(</span><em>dict</em><span class="optional">[</span>, <em>missing_keys</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Explicity check if all mandatory values have now been specified
 Returns true or false accordingly. Optionally return the list
 of missing keys as a string.</p>
@@ -227,7 +229,7 @@ of missing keys as a string.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
@@ -244,19 +246,19 @@ separated by spaces.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_check</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_check</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.paramreader.param_write_string">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_write_string</tt><big>(</big><em>dict</em><big>)</big><a class="headerlink" href="#quippy.paramreader.param_write_string" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_write_string</code><span class="sig-paren">(</span><em>dict</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_write_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return string representation of param dictionary, i.e.
-<tt class="docutils literal"><span class="pre">key1=value1</span> <span class="pre">key2=value2</span> <span class="pre">quotedkey=&quot;quoted</span> <span class="pre">value&quot;</span></tt></p>
+<code class="docutils literal"><span class="pre">key1=value1</span> <span class="pre">key2=value2</span> <span class="pre">quotedkey=&quot;quoted</span> <span class="pre">value&quot;</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
@@ -268,36 +270,36 @@ separated by spaces.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_write_string</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_write_string</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.paramreader.param_print">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_print</tt><big>(</big><em>dict</em><span class="optional">[</span>, <em>verbosity</em>, <em>out</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.paramreader.param_print" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_print</code><span class="sig-paren">(</span><em>dict</em><span class="optional">[</span>, <em>verbosity</em>, <em>out</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print key/value pairs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
 <p><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>out</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><tt class="xref py py-class docutils literal"><span class="pre">InOutput</span></tt></a> object, optional</p>
+<p class="last"><strong>out</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_print</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_print</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.paramreader.param_read_args">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_read_args</tt><big>(</big><em>dict</em><span class="optional">[</span>, <em>args</em>, <em>check_mandatory</em>, <em>ignore_unknown</em>, <em>task</em>, <em>command_line</em>, <em>did_help</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#quippy.paramreader.param_read_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read <tt class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></tt> pairs from command line and set entries in this
-<tt class="docutils literal"><span class="pre">dict</span></tt>. Array <tt class="docutils literal"><span class="pre">args</span></tt> is a list of the indices of command line
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_read_args</code><span class="sig-paren">(</span><em>dict</em><span class="optional">[</span>, <em>args</em>, <em>check_mandatory</em>, <em>ignore_unknown</em>, <em>task</em>, <em>command_line</em>, <em>did_help</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_read_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read <code class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></code> pairs from command line and set entries in this
+<code class="docutils literal"><span class="pre">dict</span></code>. Array <code class="docutils literal"><span class="pre">args</span></code> is a list of the indices of command line
 arguments that we should look at, in order, if it&#8217;s not given we look
 at all arguments.  Returns false if fails, or if optional check that
 all mandatory values have been specified fails.</p>
@@ -305,7 +307,7 @@ all mandatory values have been specified fails.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
@@ -332,29 +334,29 @@ all mandatory values have been specified fails.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_read_args</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_read_args</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.paramreader.param_register">
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#quippy.paramreader.param_register" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded interface to register a parameter in a Dictionary object.
 &#8216;key&#8217; is the key name and &#8216;value&#8217; the default value. For a mandatory
 parameter use a value of &#8216;PARAM_MANDATORY&#8217;. The last argument to Register
 should be a pointer to the variable that the value of  the parameter should
 be copied to after parsing by &#8216;param_read_line&#8217;, &#8216;param_read_file&#8217;
 or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parsed, do not specify a target.</p>
-<p>Routine is wrapper around Fortran interface <tt class="docutils literal"><span class="pre">param_register</span></tt> containing multiple routines:</p>
+<p>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">param_register</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em>, <em>value</em>, <em>char_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>char_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>char_target</strong> (<em>in/output rank-0 array(string(len=-1),&#8217;c&#8217;)</em>) &#8211; </li>
@@ -365,18 +367,18 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_single_string</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_single_string</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>int_target_array</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
@@ -387,18 +389,18 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_multiple_integer</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_multiple_integer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>int_target</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;)</em>) &#8211; </li>
@@ -409,18 +411,18 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_single_integer</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_single_integer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>real_target_array</strong> (<em>in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
@@ -431,18 +433,18 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_multiple_real</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_multiple_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em>, <em>value</em>, <em>logical_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>logical_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>logical_target</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;)</em>) &#8211; </li>
@@ -453,18 +455,18 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_single_logical</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_single_logical</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>real_target</strong> (<em>in/output rank-0 array(float,&#8217;d&#8217;)</em>) &#8211; </li>
@@ -475,25 +477,25 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_single_real</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_single_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt>
-<tt class="descclassname">quippy.paramreader.</tt><tt class="descname">param_register</tt><big>(</big><em>dict</em>, <em>key</em><big>)</big></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><tt class="xref py py-class docutils literal"><span class="pre">Dictionary</span></tt></a> object) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 <li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <tt class="docutils literal"><span class="pre">param_register_dontread</span></tt> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">param_register_dontread</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/ParamReader.f95">libAtoms/ParamReader.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -507,7 +509,7 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -519,13 +521,13 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
         <li class="right" >
           <a href="fortranio.html" title="Fortran input/output"
              >next</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

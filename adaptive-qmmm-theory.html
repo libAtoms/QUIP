@@ -28,8 +28,8 @@
     <link rel="next" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html" />
     <link rel="prev" title="Introduction" href="adaptive-qmmm-step0.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,12 +44,12 @@
         <li class="right" >
           <a href="adaptive-qmmm-step0.html" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
-          <li><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/hybrid.png" alt="Logo"/>
@@ -81,12 +81,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="adaptive-qmmm-step1.html"
                         title="next chapter">Step 1: Setup of the Silicon model system</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/adaptive-qmmm-theory.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/adaptive-qmmm-theory.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -105,7 +107,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="theoretical-background">
 <h1>Theoretical background<a class="headerlink" href="#theoretical-background" title="Permalink to this headline">¶</a></h1>
@@ -114,10 +116,10 @@
 <p>Fracture is the main lifetime limiting failure mode of many materials, from
 metals to ceramics and glasses. There are two broad classes of
 fracture: <em>brittle</em> and <em>ductile</em>.</p>
-<div class="figure align-center">
+<div class="figure align-center" id="id27">
 <a class="reference internal image-reference" href="_images/brittle-vs-ductile.png"><img alt="_images/brittle-vs-ductile.png" src="_images/brittle-vs-ductile.png" style="width: 600px;" /></a>
-<p class="caption">Brittle and ductile failure of steel, at low and high temperature
-respectively. Image credit: <a class="reference external" href="http://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html">Internet Electron Microscopy website, UMIST</a></p>
+<p class="caption"><span class="caption-text">Brittle and ductile failure of steel, at low and high temperature
+respectively. Image credit: <a class="reference external" href="http://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html">Internet Electron Microscopy website, UMIST</a></span></p>
 </div>
 <p>In brittle fracture, there is no plastic deformation, and failure occurs along
 particular low-energy cleavage planes. In contrast, ductile materials such as
@@ -126,10 +128,10 @@ pulling apart to leave rough fracture surfaces. The same patterns are evident
 upon closer examination: brittle cracks are found to be atomically sharp,
 proceeding bond by bond, while ductile cracks remain rough at the microscale,
 driven by the formation and coalescence of microscopic voids.</p>
-<div class="figure align-center">
+<div class="figure align-center" id="id28">
 <a class="reference internal image-reference" href="_images/brittle-vs-ductile-microscale.png"><img alt="_images/brittle-vs-ductile-microscale.png" src="_images/brittle-vs-ductile-microscale.png" style="width: 600px;" /></a>
-<p class="caption">Brittle and ductile failure mechanisms, for silica and aluminium respectively.
-Image credits: C. Marlière and A. Weck.</p>
+<p class="caption"><span class="caption-text">Brittle and ductile failure mechanisms, for silica and aluminium respectively.
+Image credits: C. Marlière and A. Weck.</span></p>
 </div>
 <p>Silicon is known to be an ideally brittle material, as shown by the image below.
 Below the brittle to ductile transition, at around <img class="math" src="_images/math/0e77c857d766ccc2f85c6216602c5706d038955e.png" alt="500^\circ~\mathrm{C}"/>, silicon
@@ -137,10 +139,10 @@ cleaves atomically smooth fracture surfaces (left and centre panel; sample in
 central panel is tilted to show the crack front). At higher temperatures,
 fracture is ductile, with the emission of multiple dislocations from the tip
 (right panel).</p>
-<div class="figure align-center" id="si-tem-images">
-<a class="reference internal image-reference" href="_images/lawn-fracture-silicon.png"><img alt="_images/lawn-fracture-silicon.png" src="_images/lawn-fracture-silicon.png" style="width: 600px;" /></a>
-<p class="caption">Transmission electron microscopy (TEM) images of a crack in silicon.
-Image reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id1">[Lawn1993]</a>.</p>
+<div class="figure align-center" id="id29">
+<span id="si-tem-images"></span><a class="reference internal image-reference" href="_images/lawn-fracture-silicon.png"><img alt="_images/lawn-fracture-silicon.png" src="_images/lawn-fracture-silicon.png" style="width: 600px;" /></a>
+<p class="caption"><span class="caption-text">Transmission electron microscopy (TEM) images of a crack in silicon.
+Image reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id1">[Lawn1993]</a>.</span></p>
 </div>
 <div class="section" id="fracture-mechanics">
 <span id="theory-griffith"></span><h3>Fracture Mechanics<a class="headerlink" href="#fracture-mechanics" title="Permalink to this headline">¶</a></h3>
@@ -194,17 +196,17 @@ the crack tip exceeds the cost of creating two new surfaces.</p>
 simulate fracture at the atomic level, to examine the combined effects
 of stress and chemistry (&#8216;chemomechanics&#8217;). A first approach would be
 to use classical interatomic potentials to carry out molecular
-dynamics (MD). However, as we will see in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><em>Step 2: Classical MD simulation of fracture in Si</em></a>, most classical
+dynamics (MD). However, as we will see in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2: Classical MD simulation of fracture in Si</span></a>, most classical
 potentials fail to accurately reproduce brittle fracture. This is due
 to stress concentration which has been shown to diverge as
 <img class="math" src="_images/math/a753df954a690f1a44e0dce6255b050f3208d8aa.png" alt="\sigma \sim 1/\sqrt{r}"/> near a crack tip <a class="reference internal" href="adaptive-qmmm-references.html#irwin1948" id="id5">[Irwin1948]</a>, leading
 to anharmonic stretching and rupture of bonds, which is typically not
 well captured by simple interatomic potentials.</p>
-<div class="figure align-center" id="irwin-sig-yy">
-<a class="reference internal image-reference" href="_images/irwin-sig-yy.png"><img alt="_images/irwin-sig-yy.png" src="_images/irwin-sig-yy.png" style="width: 300px;" /></a>
-<p class="caption">Irwin near-field solution for <img class="math" src="_images/math/98a0343bbb757fb44e2f8251c17fc9447be67a28.png" alt="\sigma_{yy}"/> for a singular crack.
+<div class="figure align-center" id="id30">
+<span id="irwin-sig-yy"></span><a class="reference internal image-reference" href="_images/irwin-sig-yy.png"><img alt="_images/irwin-sig-yy.png" src="_images/irwin-sig-yy.png" style="width: 300px;" /></a>
+<p class="caption"><span class="caption-text">Irwin near-field solution for <img class="math" src="_images/math/98a0343bbb757fb44e2f8251c17fc9447be67a28.png" alt="\sigma_{yy}"/> for a singular crack.
 Black is zero stress and yellow very high stress; note the divergence at the
-crack tip.</p>
+crack tip.</span></p>
 </div>
 <p>Most potentials overestimate what is called the <em>lattice trapping
 barrier</em>, the energy barrier to bond breaking at a crack tip that
@@ -218,12 +220,12 @@ contrast with the expected brittle behaviour.</p>
 with one another until surprisingly close to the crack tip (~1nm),
 where non-linear effects become important, as illustrated in the
 figure below.</p>
-<div class="figure align-center">
+<div class="figure align-center" id="id31">
 <a class="reference internal image-reference" href="_images/atomistic-vs-continuum.png"><img alt="_images/atomistic-vs-continuum.png" src="_images/atomistic-vs-continuum.png" style="width: 400px;" /></a>
-<p class="caption">Atomic and continuum calculations for the stress along the line ahead of a
+<p class="caption"><span class="caption-text">Atomic and continuum calculations for the stress along the line ahead of a
 crack tip in silicon. Agreement is excellent beyond ~ 2 nm from the tip.
 Reproduced from G. Singh, J.R. Kermode, A. De Vita, R.W. Zimmerman,
-<em>in prep.</em> (2013).</p>
+<em>in prep.</em> (2013).</span></p>
 </div>
 <p>The region where atomistic and continuum theories disagree is the
 non-linear <em>process zone</em>, where chemically interesting things are happening.
@@ -244,11 +246,11 @@ archetypical coupled multiscale problem, with thousands of atoms
 contributing to the elastic relaxation of the near-tip region. We will
 describe how classical and QM descriptions can be coupled to study
 problems in fracture using the &#8216;Learn on the Fly&#8217; (LOTF) approach in
-<a class="reference internal" href="#theory3"><em>more detail</em></a> later in this tutorial.</p>
-<div class="figure align-center">
+<a class="reference internal" href="#theory3"><span>more detail</span></a> later in this tutorial.</p>
+<div class="figure align-center" id="id32">
 <a class="reference internal image-reference" href="_images/multiscale-coupling.png"><img alt="_images/multiscale-coupling.png" src="_images/multiscale-coupling.png" style="width: 500px;" /></a>
-<p class="caption">Hierarchy of materials modelling techniques, showing simultaneous coupling
-of QM methods and empirical interatomic potentials. Image source: G. Csányi.</p>
+<p class="caption"><span class="caption-text">Hierarchy of materials modelling techniques, showing simultaneous coupling
+of QM methods and empirical interatomic potentials. Image source: G. Csányi.</span></p>
 </div>
 </div>
 <div class="section" id="thin-strip-loading-geometry-and-elasticity-theory">
@@ -290,7 +292,7 @@ direction and <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb62
 </div><p>We can see that, in order to relate the strain we apply to the system
 with the energy release rate, we will need to calculate the Young&#8217;s
 modulus and Poisson ratio for our model material. We will see how to
-do this from the elastic constant matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><em>below</em></a>.</p>
+do this from the elastic constant matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span>below</span></a>.</p>
 </div>
 </div>
 <div class="section" id="classical-interatomic-potentials-for-silicon">
@@ -378,15 +380,15 @@ cost, we increase the size of the QM region by adding a &#8220;buffer
 region&#8221;, as illustrated below. The calculation of the QM forces is
 carried out on a cluster made from the QM + buffer regions, after
 suitable termination with H atoms.</p>
-<div class="figure align-center">
+<div class="figure align-center" id="id33">
 <a class="reference internal image-reference" href="_images/buffer-region.png"><img alt="_images/buffer-region.png" src="_images/buffer-region.png" style="width: 600px;" /></a>
-<p class="caption">The finite buffer termination strategy. Force on the atoms in the buffer
+<p class="caption"><span class="caption-text">The finite buffer termination strategy. Force on the atoms in the buffer
 region (dark grey) are discarded to give accurate QM or MM forces on all atoms
-(right hand panel). Reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id22">[Bernstein2009]</a>.</p>
+(right hand panel). Reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id22">[Bernstein2009]</a>.</span></p>
 </div>
 <p>The buffer region must be large enough to minimize the errors on the QM forces
 due to the presence of the outer artificial surface. The size of the buffer
-region can be determined through some tests (see <a class="reference internal" href="adaptive-qmmm-step3.html#buffer-region-size"><em>this extension task</em></a>) , and is typically around 8 A, or 4 neighbour hops, for
+region can be determined through some tests (see <a class="reference internal" href="adaptive-qmmm-step3.html#buffer-region-size"><span>this extension task</span></a>) , and is typically around 8 A, or 4 neighbour hops, for
 Si. This near-sightedness of quantum mechanics is ultimately due to the locality
 of the density matrix in covalent materials.</p>
 <p>Once accurate QM forces have been obtained, only the QM forces on the atoms
@@ -429,10 +431,10 @@ algorithm, these atoms will remain QM until they move further than the
 <em>outer radius</em> <img class="math" src="_images/math/db2cc99b9cc60ad364d45151b6641bdb05d9c4e1.png" alt="r_\mathrm{+}"/> (where <img class="math" src="_images/math/5b0355b163eb9c7935e6966840e63566eac469c8.png" alt="r_\mathrm{+} &gt; r_\mathrm{-}"/>)
 away from the crack tip. In our simulation, this outer radius will be 10 A. We
 refer to the current set of QM atoms in as the <em>QM active region</em>.</p>
-<div class="figure align-center">
+<div class="figure align-center" id="id34">
 <a class="reference internal image-reference" href="_images/hysteresis.png"><img alt="_images/hysteresis.png" src="_images/hysteresis.png" style="height: 200px;" /></a>
-<p class="caption">Hysteretic QM selection algorithm. For fracture simulations the black <em>active region</em>
-can be reduced to a single point at the crack tip. Reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id25">[Bernstein2009]</a>.</p>
+<p class="caption"><span class="caption-text">Hysteretic QM selection algorithm. For fracture simulations the black <em>active region</em>
+can be reduced to a single point at the crack tip. Reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id25">[Bernstein2009]</a>.</span></p>
 </div>
 <p>As well as using hysteresis to select the QM active atoms for which QM
 forces will be used, we can also use the hysteretic selection
@@ -442,7 +444,7 @@ takes the form of a shell of constant width around the QM atoms. Here
 we will use inner and outer buffer radii of 7 A and 9 A, respectively.
 This leads to overall QM active + buffer clusters with a radius of
 around 15 A, containing around 150 atoms, including terminating
-hydrogens (see the <a class="reference internal" href="adaptive-qmmm-step3.html#cluster"><em>example cluster</em></a> below).</p>
+hydrogens (see the <a class="reference internal" href="adaptive-qmmm-step3.html#cluster"><span>example cluster</span></a> below).</p>
 <p>Further tricks which can be used to stabilise the QM and buffer region include
 growing the regions using bond hopping rather than distance criteria, and using
 time-averaged positions <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id26">[Bernstein2009]</a>. For simplicity, in this tutorial we
@@ -522,7 +524,7 @@ parameters linear interpolated between <img class="math" src="_images/math/e6565
 <p>The number of extrapolation steps that can be made before the potential
 parameters change too much can be checked by keeping an eye on the force errors
 made by the LOTF scheme in comparison with doing a QM force evaluation at each
-time step: there is an <a class="reference internal" href="adaptive-qmmm-step3.html#pred-corr-error"><em>extension task</em></a> at the end of
+time step: there is an <a class="reference internal" href="adaptive-qmmm-step3.html#pred-corr-error"><span>extension task</span></a> at the end of
 this tutorial to do exactly that.</p>
 </div>
 </div>
@@ -534,7 +536,7 @@ this tutorial to do exactly that.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -549,14 +551,14 @@ this tutorial to do exactly that.</p>
         <li class="right" >
           <a href="adaptive-qmmm-step0.html" title="Introduction"
              >previous</a> |</li>
-        <li><a href="index.html">quippy  documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li>
-          <li><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
