@@ -302,11 +302,6 @@ if 'enthought.mayavi' in available_modules:
     from quippy.plot3d import *
     __all__.extend(quippy.plot3d.__all__)
 
-#if 'pylab' in available_modules:
-#    import quippy.plot2d
-#    from quippy.plot2d import *
-#    __all__.extend(quippy.plot2d.__all__)
-
 import quippy.elasticity
 from quippy.elasticity import *
 __all__.extend(quippy.elasticity.__all__)
