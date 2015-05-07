@@ -7,7 +7,7 @@ February 2013
 This extension defines a 'video' directive which can be used to insert
 an HTML5 <video> element into the HTML output. Usage is::
 
-   .. video:: basename width height
+   .. video:: basename width height [movie_host_path]
 
 where `basename` is the stem of the movie filename: .mp4, .ogv and .webm
 versions are expected in the _movies/ directory, and a poster frame named
@@ -18,7 +18,7 @@ from docutils import nodes, statemachine
 from docutils.parsers.rst import directives
 from sphinx.util.compat import Directive
 
-movie_host_path = 'http://www.jrkermode.co.uk/_movies'
+default_movie_host_path = 'http://www.jrkermode.co.uk/_movies'
 
 class Video(Directive):
 
@@ -29,10 +29,13 @@ class Video(Directive):
 
     def run(self):
         d = {}
-        d['movie_host_path'] = movie_host_path
         d['basename'] = self.arguments[0]
         d['width'] = int(self.arguments[1])
         d['height'] = int(self.arguments[2])
+        try:
+            d['movie_host_path'] = self.arguments[3]
+        except KeyError:
+            d['movie_host_path'] = default_movie_host_path
 
         lines = (r""".. raw:: html
 
