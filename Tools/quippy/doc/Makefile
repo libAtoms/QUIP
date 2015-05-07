@@ -111,4 +111,4 @@ upload: html
 	rsync -avz -e ssh $(BUILDDIR) sphinx:~/www.jrk33.co.uk_html/quippy
 
 docpush: html
-	pwd; cd ../../../QUIP-pages; git add . ; git commit -m docpush ; git push origin gh-pages
+	make -C $(BUILDDIR) docpush
