@@ -111,9 +111,9 @@ Lattice="7.12 0 0 0 7.12 0 0 0 7.12" Properties=Z:I:1:pos:R:3:velo:R:3
 6 6.23 4.45 6.23 -0.00924378031234806 0.000428670913396328 0.00379061562085293
 6 6.23 6.23 4.45 -0.0098571449499882 0.000171478590631485 -0.0016754965018994""", format='string')
           self.ds = DynamicalSystem(at)
-          self.ds.atoms.set_cutoff(self.pot.cutoff()+0.5)
+          self.ds.atoms.set_cutoff(self.pot.cutoff(), cutoff_skin=1.0)
           self.ds.atoms.calc_connect()
-          self.ds.run(self.pot, dt=0.05, n_steps=1000, connect_interval=1, hook=lambda:None, hook_interval=1000)
+          self.ds.run(self.pot, dt=0.05, n_steps=1000, hook=lambda:None, hook_interval=1000)
 
           self.ref_at = Atoms("""64
 Lattice="7.120000 0.000000 0.000000 0.000000 7.120000 0.000000 0.000000 0.000000 7.120000" Properties=Z:I:1:pos:R:3:velo:R:3

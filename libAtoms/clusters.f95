@@ -176,7 +176,7 @@ contains
       use_connect => this%connect
     endif
 
-    if (present(debugfile)) call print("bfs_step cutoff " // this%cutoff // " " // this%use_uniform_cutoff, file=debugfile)
+    if (present(debugfile)) call print("bfs_step cutoff " // this%cutoff, file=debugfile)
 
     if (.not.use_connect%initialised) then
          RAISE_ERROR('BFS_Step: Atomic structure has no connectivity data', error)
@@ -1731,11 +1731,7 @@ end function cluster_in_out_in
     if (do_calc_connect) then
        call print('carve_cluster: doing calc_connect', PRINT_VERBOSE)
        ! Does QM force model need connectivity information?
-       if (at%use_uniform_cutoff) then
-          call set_cutoff(cluster, at%cutoff)
-       else
-          call set_cutoff_factor(cluster, at%cutoff)
-       end if
+       call set_cutoff(cluster, at%cutoff)
        call calc_connect(cluster)
     end if
 
@@ -2418,6 +2414,7 @@ end function cluster_in_out_in
     logical :: min_images_only, mark_buffer_outer_layer, cluster_hopping_nneighb_only, hysteretic_buffer, hysteretic_connect, hysteretic_buffer_nneighb_only
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
+    real(dp) :: hysteretic_connect_inner_cutoff, hysteretic_connect_outer_cutoff
     integer :: buffer_hops, transition_hops
     character(STRING_LENGTH) :: weight_interpolation, run_suffix
     logical :: construct_buffer_use_only_heavy_atoms, cluster_hopping_skip_unreachable
@@ -2433,8 +2430,6 @@ end function cluster_in_out_in
     type(Table) :: total_embedlist 
 
     real(dp) :: origin(3), extent(3,3)
-    real(dp) :: save_cutoff, save_cutoff_break
-    logical :: save_use_uniform_cutoff
     integer :: old_n
     integer, allocatable :: uniq_Z(:)
 
@@ -2553,16 +2548,7 @@ end function cluster_in_out_in
        if (hysteretic_connect) then
          call system_timer('hysteretic_connect')
          call estimate_origin_extent(at, hybrid_mark == HYBRID_ACTIVE_MARK, hysteretic_connect_cluster_radius, origin, extent)
-         save_use_uniform_cutoff = at%use_uniform_cutoff
-         save_cutoff = at%cutoff
-         save_cutoff_break = at%cutoff_break
-         call set_cutoff_factor(at, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor)
-         call calc_connect_hysteretic(at, at%hysteretic_connect, origin, extent)
-         if (save_use_uniform_cutoff) then
-           call set_cutoff(at, save_cutoff, save_cutoff_break)
-         else
-           call set_cutoff_factor(at, save_cutoff, save_cutoff_break)
-         endif
+         call calc_connect_hysteretic(at, hysteretic_connect_inner_cutoff, hysteretic_connect_outer_cutoff, at%hysteretic_connect, origin, extent)
          call system_timer('hysteretic_connect')
        endif
 
@@ -3433,7 +3419,7 @@ type(inoutput), optional :: debugfile
       do while (more_hops)
 	if (present(debugfile)) call print('   construct_region do_hopping_nneighb_only = ' // do_hopping_nneighb_only // ' do_min_images_only = '//do_min_images_only, file=debugfile)
 	if (present(debugfile)) call print('   doing hop ' // cur_hop, file=debugfile)
-	if (present(debugfile)) call print('   cutoffs ' // at%cutoff // ' ' // at%use_uniform_cutoff, file=debugfile)
+	if (present(debugfile)) call print('   cutoffs ' // at%cutoff, file=debugfile)
 	more_hops = .false.
 	call bfs_step(at, region, nextlist, nneighb_only=(do_hopping_nneighb_only .and. .not. present(radius)) .or. do_force_hopping_nneighb_only, &
                       min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect, debugfile=debugfile)
@@ -3514,7 +3500,7 @@ type(inoutput), optional :: debugfile
        call add_property(this, 'old_nn', 0)
        call add_property(this, 'active', 0)
 
-       call set_cutoff_factor(nn_atoms, use_nn_tol)
+
     end if
 
     if (this%N /= nn_atoms%N) then
@@ -3541,7 +3527,9 @@ type(inoutput), optional :: debugfile
        call print('update_actives: using instantaneous atomic positions', PRINT_VERBOSE)
        nn_atoms%pos = this%pos
     end if
-    call calc_connect(nn_atoms)
+    !% Use hysteretic connect so we can work with relative cutoffs
+    call calc_connect_hysteretic(nn_atoms, cutoff_factor=use_nn_tol, &
+                                 cutoff_break_factor=use_nn_tol)
 
     nn = 0
     do i = 1,nn_atoms%N
@@ -4129,8 +4117,10 @@ type(inoutput), optional :: debugfile
     atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
     atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
 
-    call set_cutoff_factor(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
-    call calc_connect(atoms_for_add_cut_hydrogens)
+    !% Use hysteretic connectivity calculator so we can work with relative cutoffs
+    call calc_connect_hysteretic(atoms_for_add_cut_hydrogens, cutoff_factor=DEFAULT_NNEIGHTOL, &
+         cutoff_break_factor=DEFAULT_NNEIGHTOL)
+   
 
     call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
     call finalise(atoms_for_add_cut_hydrogens)

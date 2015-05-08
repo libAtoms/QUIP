@@ -112,7 +112,11 @@ if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
     sys.setdlopenflags(flags | RTLD_GLOBAL)
     available_modules.append('mpi')
 
-import _quippy
+try:
+    import _quippy
+except ImportError as err:
+    raise ImportError(err.message +
+                    " - perhaps you are trying to import quippy from the source directory?")
 
 # Reference values of .true. and .false. from Fortran
 QUIPPY_TRUE = _quippy.qp_reference_true()
@@ -297,11 +301,6 @@ if 'enthought.mayavi' in available_modules:
     import quippy.plot3d
     from quippy.plot3d import *
     __all__.extend(quippy.plot3d.__all__)
-
-#if 'pylab' in available_modules:
-#    import quippy.plot2d
-#    from quippy.plot2d import *
-#    __all__.extend(quippy.plot2d.__all__)
 
 import quippy.elasticity
 from quippy.elasticity import *

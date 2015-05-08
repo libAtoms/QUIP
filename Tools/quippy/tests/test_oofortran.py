@@ -49,6 +49,7 @@ class TestOOFortran(QuippyTestCase):
       self.assert_(self.dia.has_property('pos'))
 
    def testroutinekwargs(self):
+      self.dia.set_cutoff(3.0)
       self.dia.calc_connect(own_neighbour=True)
 
    def testroutine2(self):
@@ -80,6 +81,7 @@ class TestOOFortran(QuippyTestCase):
       self.assertRaises(RuntimeError, quippy._atoms.Atoms.select, self.dia, self.dia)
 
    def testoptional(self):
+      self.dia.set_cutoff(3.0)
       self.dia.calc_connect() # without optional argument
       self.dia.calc_connect(self.dia.connect) # optional argument by position
       self.dia.calc_connect(own_neighbour=1)

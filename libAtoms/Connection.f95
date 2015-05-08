@@ -435,7 +435,7 @@ contains
   !% Test if atom $i$ is a neighbour of atom $j$ and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup, error)
+  subroutine test_form_bond(this, cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup, error)
 
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff
@@ -460,6 +460,7 @@ contains
     if(current_verbosity() >= PRINT_ANAL) then
        call print('Entering test_form_bond, i = '//i//' j = '//j, PRINT_ANAL)
        call print('use_uniform_cutoff = '//use_uniform_cutoff, PRINT_ANAL)
+       call print('cutoff = '//cutoff, PRINT_ANAL)
     end if
 #endif
 
@@ -517,7 +518,7 @@ contains
   !% Test if atom $i$ is no longer neighbour of atom $j$ with shift $s$, and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  function test_break_bond(this,cutoff_break, use_uniform_cutoff, Z, pos, lattice, i,j, shift, error)
+  function test_break_bond(this, cutoff_break, use_uniform_cutoff, Z, pos, lattice, i,j, shift, error)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff_break
     logical, intent(in) :: use_uniform_cutoff
@@ -540,7 +541,8 @@ contains
 #ifdef DEBUG
     if(current_verbosity() >= PRINT_ANAL) then
        call print('Entering test_break_bond, i = '//i//' j = '//j, PRINT_ANAL)
-       call print('use_uniform_cutoff = '//use_uniform_cutoff // " cutoff_break = "// cutoff_break, PRINT_ANAL)
+       call print(" cutoff_break = "// cutoff_break, PRINT_ANAL)
+       call print(" use_uniform_cutoff ="//use_uniform_cutoff, PRINT_ANAL)
     end if
 #endif
 
@@ -549,11 +551,11 @@ contains
        cutoff = cutoff_break
     else
        cutoff = bond_length(Z(i),Z(j)) * cutoff_break
-    end if
+    end if    
 
     d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d//' cutoff = '//cutoff//' i = '//i//' j = '//j, PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d//' cutof = '//cutoff//' i = '//i//' j = '//j, PRINT_ANAL)
 #endif
     if (d > cutoff) then
 #ifdef DEBUG
@@ -730,11 +732,13 @@ contains
   !%  hystertically: atoms must come within 'cutoff' to be considered
   !%  neighbours, and then will remain connect until them move apart
   !%  further than 'cutoff_break'.
-  subroutine connection_calc_connect_hysteretic(this, at, origin, extent, own_neighbour, store_is_min_image, error)
+   subroutine connection_calc_connect_hysteretic(this, at, cutoff_factor, cutoff_break_factor, &
+        origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
     type(Connection), intent(inout)  :: this
     type(Atoms), intent(inout) :: at
+    real(dp), intent(in) :: cutoff_factor, cutoff_break_factor
     real(dp), optional :: origin(3), extent(3,3)
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, store_n_neighb
     integer, intent(out), optional :: error
 
     integer  :: cellsNa,cellsNb,cellsNc
@@ -744,11 +748,11 @@ contains
     integer  :: min_cell_image_Na
     integer  :: max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb
     integer  :: min_cell_image_Nc, max_cell_image_Nc
-    real(dp)  :: cutoff
+    real(dp)  :: cutoff ! absolute cutoffs
     integer :: ji, s_ij(3), nn_guess
-    logical my_own_neighbour, my_store_is_min_image
+    logical my_own_neighbour, my_store_is_min_image, my_store_n_neighb
     logical :: change_i, change_j, change_k, broken
-    integer, pointer :: map_shift(:,:)
+    integer, pointer :: map_shift(:,:), n_neighb(:)
 
     INIT_ERROR(error)
 
@@ -756,36 +760,20 @@ contains
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
+    my_store_n_neighb = optional_default(.true., store_n_neighb)    
 
-    if (at%cutoff < 0.0_dp .or. at%cutoff_break < 0.0_dp) then
-       RAISE_ERROR('calc_connect: Negative cutoff radius ' // at%cutoff // ' ' // at%cutoff_break, error)
-    end if
-
-    if (at%cutoff > at%cutoff_break) then
-       RAISE_ERROR('calc_connect: Negative hysteresis cutoff radius formation ' // at%cutoff // ' > breaking ' // at%cutoff_break, error)
-    end if
-
-    if ((at%cutoff .feq. 0.0_dp) .or. (at%cutoff_break .feq. 0.0_dp)) then
-      call wipe(this)
-      return
-    endif
-
-    !Calculate the cutoff value we should use in dividing up the simulation cell
-    if (at%use_uniform_cutoff) then
-       !The cutoff has been specified by the user, so use that value
-       cutoff = at%cutoff
-    else
-       !Otherwise, find the maximum covalent radius of all the atoms in the structure, double it
-       !and multiple by cutoff. At makes sure we can deal with the worst case scenario of big atom 
-       !bonded to big atom
-       cutoff = 0.0_dp
-       do i = 1, at%N
-          if (ElementCovRad(at%Z(i)) > cutoff) cutoff = ElementCovRad(at%Z(i))
-       end do
-       cutoff = (2.0_dp * cutoff) * at%cutoff
-    end if
-
-    call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_NERD)
+    !Find the maximum covalent radius of all the atoms in the structure, double it
+    !and multiple by cutoff. At makes sure we can deal with the worst case scenario of big atom
+    !bonded to big atom
+    cutoff = 0.0_dp
+    do i = 1, at%N
+       if (ElementCovRad(at%Z(i)) > cutoff) cutoff = ElementCovRad(at%Z(i))
+    end do
+    cutoff = (2.0_dp * cutoff) * cutoff_factor
+   
+    call print("calc_connect_hysteretic: cutoff_factor " // cutoff_factor, PRINT_NERD)
+    call print("calc_connect_hysteretic: cutoff_break_factor " // cutoff_break_factor, PRINT_NERD)
+    call print("calc_connect_hysteretic: cutoff " // cutoff, PRINT_NERD)
 
     if (present(origin) .and. present(extent)) then
       cellsNa = 1
@@ -849,7 +837,7 @@ contains
       do
 	if (ji > n_neighbours(this, i)) exit
 	j = connection_neighbour(this, at, i, ji, shift = s_ij)
-        broken = test_break_bond(this, at%cutoff_break, at%use_uniform_cutoff, &
+        broken = test_break_bond(this, cutoff_break_factor, .false., &
              at%Z, at%pos, at%lattice, i, j, s_ij, error)
         PASS_ERROR(error)
 	if (.not. broken) then
@@ -857,11 +845,6 @@ contains
 	              ! if we did break a bond, ji now points to a different bond, so don't increment it
 	endif
       end do
-!      do ji=1, atoms_n_neighbours(at, i, alt_connect=this)
-!	j = atoms_neighbour(at, i, ji, shift = s_ij, alt_connect=this)
-!	call test_break_bond(this, at%cutoff_break, at%use_uniform_cutoff, &
-!	  at%Z, at%pos, at%lattice, i, j, s_ij)
-!      end do
     end do
 
     ! Here is the main loop:
@@ -931,7 +914,7 @@ contains
                                cycle atom2_loop
                             endif
 
-                            call test_form_bond(this, at%cutoff, at%use_uniform_cutoff, &
+                            call test_form_bond(this, cutoff_factor, .false., &
                                  at%Z, at%pos, at%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
 				 .true., error)
@@ -962,6 +945,14 @@ contains
           end if
        end do
     end if
+
+    if (my_store_n_neighb) then
+       call add_property(at, 'n_neighb', 0, ptr=n_neighb, overwrite=.true.)
+       do i=1,at%n
+          n_neighb(i) = n_neighbours(this, i)
+       end do
+    end if
+
 
   end subroutine connection_calc_connect_hysteretic
 
@@ -1034,29 +1025,15 @@ contains
     my_skip_zero_zero_bonds = optional_default(.false., skip_zero_zero_bonds)
     my_store_n_neighb = optional_default(.true., store_n_neighb)
 
-    if (at%cutoff < 0.0_dp .or. at%cutoff_break < 0.0_dp) then
-       RAISE_ERROR('calc_connect: Negative cutoff radius ' // at%cutoff // ' ' // at%cutoff_break, error)
+    if (at%cutoff < 0.0_dp) then
+       RAISE_ERROR('calc_connect: Negative cutoff radius ' // at%cutoff, error)
     end if
 
-    if ((at%cutoff .feq. 0.0_dp) .or. (at%cutoff_break .feq. 0.0_dp)) then
-      call wipe(this)
-      return
+    if ((at%cutoff .feq. 0.0_dp)) then
+       RAISE_ERROR('calc_connect: at%cutoff==0.0. Call set_cutoff() first!', error)
     endif
     !Calculate the cutoff value we should use in dividing up the simulation cell
-    if (at%use_uniform_cutoff) then
-       !The cutoff has been specified by the user, so use that value
-       cutoff = at%cutoff
-    else
-       !Otherwise, find the maximum covalent radius of all the atoms in the structure, double it
-       !and multiple by cutoff. At makes sure we can deal with the worst case scenario of big atom 
-       !bonded to big atom
-       cutoff = 0.0_dp
-       do i = 1, at%N
-          if (ElementCovRad(at%Z(i)) > cutoff) cutoff = ElementCovRad(at%Z(i))
-       end do
-       cutoff = (2.0_dp * cutoff) * at%cutoff
-    end if
-
+    cutoff = at%cutoff
     if (present(cutoff_skin)) then
        if (cutoff_skin .fne. 0.0_dp) then
           call print('calc_connect: increasing cutoff from '//cutoff//' by cutoff_skin='//cutoff_skin ,PRINT_VERBOSE)
@@ -1242,7 +1219,7 @@ contains
                                atom2 = this%next_atom_in_cell(atom2)
                                cycle atom2_loop
                             endif
-			    call test_form_bond(this,at%cutoff, at%use_uniform_cutoff, &
+			    call test_form_bond(this, cutoff, .true., &
 			      at%Z, at%pos, at%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
 				 .false., error)
@@ -1987,6 +1964,10 @@ contains
     integer ::j, i_n1n, j_n1n, i_njn, m
 
     INIT_ERROR(error)
+
+    if (.not. this%initialised) then
+       RAISE_ERROR('connection_n_neighbours: Connection structure has no connectivity data. Call calc_connect first.', error)
+    end if
 
     if (.not. associated(this%neighbour1(i)%t)) then
       RAISE_ERROR("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table", error)

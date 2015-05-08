@@ -501,12 +501,9 @@ class QuippyViewer(AtomEyeViewer):
                 if nneighb_only:
                     cutoff = at.nneightol*bond_length(Z1, Z2)
                     print 'nneigbb', cutoff
-                elif at.use_uniform_cutoff:
+                else:
                     cutoff = at.cutoff
                     print 'uniform', cutoff
-                else:
-                    cutoff = at.cutoff*bond_length(Z1, Z2)
-                    print 'relative', cutoff
                 self.rcut_patch(sym1, sym2, cutoff, absolute=True)
     
 

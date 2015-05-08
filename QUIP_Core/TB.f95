@@ -391,9 +391,9 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
   my_use_prev_charge = optional_default(.false., use_prev_charge)
 
-  if (.not. this%at%use_uniform_cutoff .or. this%at%cutoff < this%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called TB_solve_diag with messed up cutoff in atoms: uniform" // this%at%use_uniform_cutoff &
-      // " " // this%at%cutoff // " < " // this%tbsys%tbmodel%cutoff)
+  if (this%at%cutoff < this%tbsys%tbmodel%cutoff) &
+    call print ("WARNING: Called TB_solve_diag with messed up cutoff in atoms: cutoff "// &
+                this%at%cutoff // " < " // this%tbsys%tbmodel%cutoff)
 
   if (present(AF)) then
     if (present(use_fermi_E)) then
@@ -1217,9 +1217,9 @@ function calculate_forces_diag(this) result(forces)
 
   integer i
 
-  if (.not. this%at%use_uniform_cutoff .or. this%at%cutoff < this%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called calculate_forces_diag with messed up cutoff in atoms: uniform" // &
-      this%at%use_uniform_cutoff // " " // this%at%cutoff // " < " // this%tbsys%tbmodel%cutoff)
+  if (this%at%cutoff < this%tbsys%tbmodel%cutoff) &
+    call print ("WARNING: Called calculate_forces_diag with messed up cutoff in atoms: cutoff" // &
+                 this%at%cutoff // " < " // this%tbsys%tbmodel%cutoff)
 
   forces = 0.0_dp
   allocate(od_mask(this%at%N))
@@ -1263,9 +1263,9 @@ function calculate_virial_diag(this) result(virial)
 
   integer i
 
-  if (.not. this%at%use_uniform_cutoff .or. this%at%cutoff < this%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called calculate_virial_diag with messed up cutoff in atoms: uniform" // this%at%use_uniform_cutoff &
-      // " " // this%at%cutoff // " < " // this%tbsys%tbmodel%cutoff)
+  if (this%at%cutoff < this%tbsys%tbmodel%cutoff) &
+    call print ("WARNING: Called calculate_virial_diag with messed up cutoff in atoms: cutoff" // &
+                this%at%cutoff // " < " // this%tbsys%tbmodel%cutoff)
 
   virial = 0.0_dp
   allocate(od_mask(this%at%N))
@@ -1312,9 +1312,9 @@ function calculate_forces_GF(this, w_e, w_n) result (forces)
 
   call system_timer("calculate_forces_GF")
 
-  if (.not. this%at%use_uniform_cutoff .or. this%at%cutoff < this%gf%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called calculate_forces_GF with messed up cutoff in atoms: uniform" // &
-      this%at%use_uniform_cutoff // " " // this%at%cutoff // " < " // this%gf%tbsys%tbmodel%cutoff)
+  if (this%at%cutoff < this%gf%tbsys%tbmodel%cutoff) &
+    call print("WARNING: Called calculate_forces_GF with messed up cutoff in atoms: cutoff" // &
+               this%at%cutoff // " < " // this%gf%tbsys%tbmodel%cutoff)
 
   call system_timer("calculate_forces_GF_calc_mod_dm")
   call calc_mod_dm_from_Gs(this%gf, w_e, w_n)
@@ -1386,9 +1386,9 @@ function scf_f_correction_GF(gf, at, w_e, w_n) result(forces)
 
   integer i, j
 
-  if (.not. at%use_uniform_cutoff .or. at%cutoff < gf%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called scf_f_correction_GF with messed up cutoff in atoms: uniform" // at%use_uniform_cutoff &
-      // " " // at%cutoff // " < " // gf%tbsys%tbmodel%cutoff)
+  if (at%cutoff < gf%tbsys%tbmodel%cutoff) &
+    call print ("WARNING: Called scf_f_correction_GF with messed up cutoff in atoms: cutoff" // &
+                 at%cutoff // " < " // gf%tbsys%tbmodel%cutoff)
 
   N_atoms = gf%tbsys%N_atoms
 
@@ -1528,9 +1528,9 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
   integer ip, i, j, ii
   logical, allocatable :: d_mask(:), od_mask(:)
 
-  if (.not. at%use_uniform_cutoff .or. at%cutoff < gf%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called calc_dn_dr_mat with messed up cutoff in atoms: uniform" // at%use_uniform_cutoff &
-      // " " // at%cutoff // " < " // gf%tbsys%tbmodel%cutoff)
+  if (at%cutoff < gf%tbsys%tbmodel%cutoff) &
+    call print ("WARNING: Called calc_dn_dr_mat with messed up cutoff in atoms: cutoff" // &
+                at%cutoff // " < " // gf%tbsys%tbmodel%cutoff)
 
   N_eff = gf%tbsys%N
 
@@ -1781,9 +1781,9 @@ subroutine calc_dgN_dr_vec(gf, at, dgN_dr_vec, w_n, sp_S, sp_Stwid)
 
   type(TBMatrix) :: GWN, SG, aGWNSG, azGWNSG, GWNSG
 
-  if (.not. at%use_uniform_cutoff .or. at%cutoff < gf%tbsys%tbmodel%cutoff) &
-    call print ("WARNING: Called calc_dgN_dr_vec with messed up cutoff in atoms: uniform" // at%use_uniform_cutoff &
-      // " " // at%cutoff // " < " // gf%tbsys%tbmodel%cutoff)
+  if (at%cutoff < gf%tbsys%tbmodel%cutoff) &
+    call print ("WARNING: Called calc_dgN_dr_vec with messed up cutoff in atoms: uniform" // &
+                at%cutoff // " < " // gf%tbsys%tbmodel%cutoff)
 
   allocate(ww_n(gf%tbsys%N))
   ww_n = atom_orbital_spread(gf%tbsys, w_n)

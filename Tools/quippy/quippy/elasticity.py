@@ -532,10 +532,8 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
     if a is None:
         a = bond_length*4/np.sqrt(3.)
 
-    # We want nearest neighbour connectivity only
-    save_cutoff, save_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
-    at.set_cutoff_factor(cutoff_factor)
-    at.calc_connect()
+    # Use hysteretic connect as we want nearest neighbour connectivity only
+    at.calc_connect_hysteretic(cutoff_factor, cutoff_factor)
 
     if (save_reference or use_reference) and not at.has_property('primitive_index'):
         raise ValueError('Property "primitive_index" missing from Atoms object')
@@ -735,9 +733,6 @@ def elastic_fields(at, a=None,  bond_length=None, c=None, c_vector=None, cij=Non
 
     if (system == 'anatase'):
         print 'Ti atoms computed', n_at
-
-    # Restore original neighbour cutoff
-    at.cutoff, at.use_uniform_cutoff = save_cutoff, save_use_uniform_cutoff
 
 
 class AtomResolvedStressField(object):

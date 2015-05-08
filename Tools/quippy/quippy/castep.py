@@ -58,110 +58,138 @@ castep_output_map = {
    False: 'false'
    }
 
-# Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 4.3.
+# Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 8.0.
 
 valid_cell_keywords = ['lattice_cart', 'lattice_abc', 'positions_frac', 'positions_abs',
-                       'symmetry_generate', 'symmetry_tol', 'ionic_constraints', 'fix_com',
-                       'cell_constraints', 'external_pressure', 'fix_all_ions', 'fix_all_cell',
-                       'species_mass', 'species_pot', 'ionic_velocities', 'species_lcao_states',
-                       'kpoints_list', 'kpoints_mp_grid', 'kpoints_mp_spacing', 'kpoints_mp_offset',
-                       'kpoint_list', 'kpoint_mp_grid', 'kpoint_mp_spacing', 'kpoint_mp_offset',
-                       'bs_kpoint_path', 'bs_kpoint_path_spacing', 'bs_kpoint_list', 'bs_kpoint_mp_grid',
-                       'bs_kpoint_mp_spacing', 'bs_kpoint_mp_offset', 'bs_kpoints_path', 'bs_kpoints_path_spacing',
-                       'bs_kpoints_list', 'bs_kpoints_mp_grid', 'bs_kpoints_mp_spacing', 'bs_kpoints_mp_offset',
-                       'phonon_supercell_matrix', 'phonon_kpoint_path', 'phonon_kpoint_path_spacing',
-                       'phonon_kpoint_list', 'phonon_kpoint_mp_grid', 'phonon_kpoint_mp_offset',
-                       'phonon_kpoint_mp_spacing', 'phonon_gamma_directions', 'phonon_kpoints_path',
-                       'phonon_kpoints_path_spacing', 'phonon_kpoints_list', 'phonon_fine_kpoint_list',
-                       'phonon_fine_kpoint_path', 'phonon_fine_kpoint_path_spacing', 'phonon_fine_kpoint_mp_grid',
-                       'phonon_fine_kpoint_mp_spacing', 'phonon_fine_kpoint_mp_offset', 'optics_kpoints_list',
-                       'optics_kpoints_mp_grid', 'optics_kpoints_mp_spacing', 'optics_kpoints_mp_offset',
-                       'optics_kpoint_list', 'optics_kpoint_mp_grid', 'optics_kpoint_mp_spacing',
-                       'optics_kpoint_mp_offset', 'magres_kpoint_list', 'magres_kpoint_path',
-                       'magres_kpoint_path_spacing', 'magres_kpoint_mp_grid', 'magres_kpoint_mp_spacing',
-                       'magres_kpoint_mp_offset', 'positions_frac_product', 'positions_abs_product',
-                       'positions_frac_intermediate', 'positions_abs_intermediate', 'fix_vol',
-                       'species_gamma', 'species_q', 'supercell_kpoints_list', 'supercell_kpoints_mp_grid',
-                       'supercell_kpoints_mp_spacing', 'supercell_kpoints_mp_offset', 'supercell_kpoint_list',
-                       'supercell_kpoint_mp_grid', 'supercell_kpoint_mp_spacing', 'supercell_kpoint_mp_offset',
-                       'supercell_matrix', 'nonlinear_constraints', 'external_efield', 'positions_noise',
-                       'cell_noise', 'hubbard_u', 'hubbard_alpha', 'quantisation_axis', 'quantization_axis']
+                       'symmetry_generate', 'symmetry_ops', 'symmetry_tol', 'ionic_constraints',
+                       'fix_com', 'cell_constraints', 'external_pressure', 'fix_all_ions',
+                       'fix_all_cell', 'species_mass', 'species_pot', 'ionic_velocities',
+                       'species_lcao_states', 'kpoints_list', 'kpoints_mp_grid', 'kpoints_mp_spacing',
+                       'kpoints_mp_offset', 'kpoint_list', 'kpoint_mp_grid', 'kpoint_mp_spacing',
+                       'kpoint_mp_offset', 'bs_kpoint_path', 'bs_kpoint_path_spacing',
+                       'bs_kpoint_list', 'bs_kpoint_mp_grid', 'bs_kpoint_mp_spacing',
+                       'bs_kpoint_mp_offset', 'bs_kpoints_path', 'bs_kpoints_path_spacing',
+                       'bs_kpoints_list', 'bs_kpoints_mp_grid', 'bs_kpoints_mp_spacing',
+                       'bs_kpoints_mp_offset', 'phonon_supercell_matrix', 'phonon_kpoint_path',
+                       'phonon_kpoint_path_spacing', 'phonon_kpoint_list', 'phonon_kpoint_mp_grid',
+                       'phonon_kpoint_mp_offset', 'phonon_kpoint_mp_spacing',
+                       'phonon_gamma_directions', 'phonon_kpoints_path', 'phonon_kpoints_path_spacing',
+                       'phonon_kpoints_list', 'phonon_fine_kpoint_list', 'phonon_fine_kpoint_path',
+                       'phonon_fine_kpoint_path_spacing', 'phonon_fine_kpoint_mp_grid',
+                       'phonon_fine_kpoint_mp_spacing', 'phonon_fine_kpoint_mp_offset',
+                       'optics_kpoints_list', 'optics_kpoints_mp_grid', 'optics_kpoints_mp_spacing',
+                       'optics_kpoints_mp_offset', 'optics_kpoint_list', 'optics_kpoint_mp_grid',
+                       'optics_kpoint_mp_spacing', 'optics_kpoint_mp_offset', 'magres_kpoint_list',
+                       'magres_kpoint_path', 'magres_kpoint_path_spacing', 'magres_kpoint_mp_grid',
+                       'magres_kpoint_mp_spacing', 'magres_kpoint_mp_offset', 'positions_frac_product',
+                       'positions_abs_product', 'positions_frac_intermediate',
+                       'positions_abs_intermediate', 'fix_vol', 'species_gamma', 'species_q',
+                       'supercell_kpoints_list', 'supercell_kpoints_mp_grid',
+                       'supercell_kpoints_mp_spacing', 'supercell_kpoints_mp_offset',
+                       'supercell_kpoint_list', 'supercell_kpoint_mp_grid',
+                       'supercell_kpoint_mp_spacing', 'supercell_kpoint_mp_offset', 'supercell_matrix',
+                       'nonlinear_constraints', 'external_efield', 'positions_noise', 'cell_noise',
+                       'hubbard_u', 'hubbard_alpha', 'atomic_init', 'quantisation_axis',
+                       'quantization_axis', 'jcoupling_site', 'chemical_potential',
+                       'elnes_kpoint_list', 'elnes_kpoint_mp_grid', 'elnes_kpoint_mp_spacing',
+                       'elnes_kpoint_mp_offset', 'snap_to_symmetry', 'spectral_kpoint_path',
+                       'spectral_kpoint_path_spacing', 'spectral_kpoint_list',
+                       'spectral_kpoint_mp_grid', 'spectral_kpoint_mp_spacing',
+                       'spectral_kpoint_mp_offset', 'spectral_kpoints_path',
+                       'spectral_kpoints_path_spacing', 'spectral_kpoints_list',
+                       'spectral_kpoints_mp_grid', 'spectral_kpoints_mp_spacing',
+                       'spectral_kpoints_mp_offset']
 
 valid_parameters_keywords = ['comment', 'iprint', 'continuation', 'reuse', 'checkpoint', 'task',
-                             'calculate_stress', 'calculate_elf', 'num_backup_iter', 'print_clock',
-                             'print_memory_usage', 'write_formatted_potential', 'write_formatted_density',
-                             'write_formatted_elf', 'write_orbitals', 'calc_molecular_dipole', 'cml_output',
-                             'cml_filename', 'stop', 'xc_functional', 'ppd_integral', 'nlxc_ppd_integral',
-                             'nlxc_div_corr_on', 'pspot_nonlocal_type', 'basis_precision', 'fixed_npw',
-                             'finite_basis_corr', 'nelectrons', 'charge', 'spin', 'nup', 'ndown',
-                             'spin_polarized', 'spin_polarised', 'nbands', 'electronic_minimizer',
-                             'elec_method', 'metals_method', 'elec_energy_tol', 'elec_eigenvalue_tol',
-                             'elec_force_tol', 'fix_occupancy', 'elec_dump_file', 'num_dump_cycles',
-                             'elec_restore_file', 'mixing_scheme', 'popn_calculate', 'popn_bond_cutoff',
-                             'pdos_calculate_weights', 'bs_max_iter', 'bs_nbands', 'bs_eigenvalue_tol',
-                             'bs_xc_functional', 'geom_method', 'geom_max_iter', 'geom_energy_tol',
-                             'geom_force_tol', 'geom_disp_tol', 'geom_stress_tol', 'geom_modulus_est',
-                             'geom_frequency_est', 'md_num_iter', 'md_delta_t', 'md_ensemble', 'md_use_pathint',
-                             'md_num_beads', 'md_pathint_staging', 'md_pathint_num_stages', 'md_temperature',
-                             'md_thermostat', 'md_barostat', 'md_cell_t', 'md_langevin_t', 'md_extrap',
-                             'md_extrap_fit', 'md_damping_scheme', 'md_opt_damped_delta_t', 'md_elec_force_tol',
-                             'md_sample_iter', 'md_eqm_method', 'md_eqm_ion_t', 'md_eqm_cell_t',
-                             'md_eqm_t', 'optics_xc_functional', 'tssearch_method', 'tssearch_lstqst_protocol',
-                             'tssearch_force_tol', 'tssearch_disp_tol', 'phonon_const_basis', 'phonon_energy_tol',
-                             'phonon_preconditioner', 'phonon_use_kpoint_symmetry', 'phonon_calculate_dos',
-                             'phonon_dos_spacing', 'phonon_dos_limit', 'phonon_finite_disp',
-                             'phonon_force_constant_cutoff', 'phonon_fine_method', 'phonon_method',
-                             'secondd_method', 'efield_energy_tol', 'thermo_t_start',
-                             'thermo_t_stop', 'thermo_t_spacing', 'wannier_spread_tol',
-                             'wannier_sd_step', 'wannier_spread_type', 'wannier_min_algor',
-                             'wannier_ion_rmax', 'wannier_ion_cut_fraction', 'wannier_restart',
-                             'wannier_ion_cut_tol', 'magres_task', 'magres_method',
-                             'magres_conv_tol', 'magres_xc_functional', 'magres_jcoupling_task',
-                             'ga_pop_size', 'ga_max_gens', 'ga_mutate_rate',
-                             'ga_mutate_amp', 'ga_fixed_n', 'ga_bulk_slice',
-                             'calculate_densdiff', 'run_time', 'backup_interval',
-                             'length_unit', 'mass_unit', 'time_unit',
-                             'charge_unit', 'energy_unit', 'force_unit',
-                             'velocity_unit', 'pressure_unit', 'inv_length_unit',
-                             'frequency_unit', 'force_constant_unit', 'volume_unit',
-                             'ir_intensity_unit', 'dipole_unit', 'efield_unit',
-                             'page_wvfns', 'data_distribution', 'opt_strategy',
-                             'opt_strategy_bias', 'num_farms', 'num_proc_in_smp',
-                             'page_ex_pot', 'nlxc_page_ex_pot', 'ppd_size_x',
-                             'nlxc_ppd_size_x', 'ppd_size_y', 'nlxc_ppd_size_y',
-                             'ppd_size_z', 'nlxc_ppd_size_z', 'impose_trs',
-                             'nlxc_impose_trs', 'exchange_reflect_kpts', 'nlxc_exchange_reflect_kpts',
-                             'k_scrn_den_function', 'nlxc_k_scrn_den_function', 'k_scrn_averaging_scheme',
-                             'nlxc_k_scrn_averaging_scheme', 're_est_k_scrn', 'nlxc_re_est_k_scrn',
-                             'calc_full_ex_pot', 'nlxc_calc_full_ex_pot', 'cut_off_energy',
-                             'basis_de_dloge', 'finite_basis_npoints', 'finite_basis_spacing',
-                             'nspins', 'nextra_bands', 'perc_extra_bands',
-                             'elec_temp', 'max_sd_steps', 'max_cg_steps',
-                             'max_diis_steps', 'elec_convergence_win', 'max_scf_cycles',
-                             'spin_fix', 'smearing_scheme', 'smearing_width',
-                             'efermi_tol', 'num_occ_cycles', 'mix_history_length',
-                             'mix_charge_amp', 'mix_spin_amp', 'mix_cut_off_energy',
-                             'mix_metric_q', 'bs_max_cg_steps', 'bs_nextra_bands',
-                             'bs_perc_extra_bands', 'bs_re_est_k_scrn', 'geom_convergence_win',
-                             'geom_spin_fix', 'geom_linmin_tol', 'md_ion_t',
-                             'md_nhc_length', 'md_nose_t', 'md_damping_reset',
-                             'md_elec_energy_tol', 'md_elec_eigenvalue_tol', 'md_elec_convergence_win',
-                             'optics_nextra_bands', 'optics_perc_extra_bands', 'optics_nbands',
-                             'tssearch_qst_max_iter', 'tssearch_cg_max_iter', 'phonon_max_cg_steps',
-                             'phonon_max_cycles', 'phonon_convergence_win', 'phonon_calc_lo_to_splitting',
-                             'phonon_sum_rule', 'calculate_born_charges', 'born_charge_sum_rule',
-                             'efield_max_cg_steps', 'efield_max_cycles', 'efield_convergence_win',
-                             'efield_calc_ion_permittivity', 'efield_ignore_molec_modes', 'efield_freq_spacing',
-                             'efield_oscillator_q', 'thermo_calculate_helmholtz', 'thermo_t_npoints',
-                             'wannier_max_sd_steps', 'wannier_print_cube', 'wannier_ion_moments',
-                             'wannier_ion_cut', 'wannier_ion_cmoments', 'magres_max_cg_steps',
-                             'magres_convergence_win', 'magres_max_sc_cycles', 'magres_write_response',
-                             'excited_state_scissors', 'rand_seed', 'num_proc_in_smp_fine',
-                             'message_size', 'xc_vxc_deriv_epsilon', 'nlxc_div_corr_s_width',
-                             'nlxc_div_corr_tol', 'nlxc_div_corr_npts_step', 'pspot_beta_phi_type',
-                             'grid_scale', 'fine_grid_scale', 'fine_gmax',
-                             'mix_charge_gmax', 'mix_spin_gmax', 'devel_code',
-                             'max_scf_cycles_dm', 'max_scf_cycles_edft', 'extpot_file']
+                             'calculate_stress', 'calculate_densdiff', 'calculate_elf',
+                             'calculate_hirshfeld', 'run_time', 'backup_interval', 'num_backup_iter',
+                             'print_clock', 'print_memory_usage', 'write_formatted_potential',
+                             'write_formatted_density', 'write_formatted_elf', 'write_orbitals',
+                             'write_cif_structure', 'write_cell_structure', 'write_bib',
+                             'calc_molecular_dipole', 'write_checkpoint', 'cml_output', 'cml_filename',
+                             'length_unit', 'mass_unit', 'time_unit', 'charge_unit', 'spin_unit',
+                             'energy_unit', 'force_unit', 'velocity_unit', 'pressure_unit',
+                             'inv_length_unit', 'frequency_unit', 'force_constant_unit', 'volume_unit',
+                             'ir_intensity_unit', 'dipole_unit', 'efield_unit', 'entropy_unit', 'page_wvfns',
+                             'rand_seed', 'data_distribution', 'opt_strategy', 'opt_strategy_bias',
+                             'num_farms', 'num_proc_in_smp', 'num_proc_in_smp_fine', 'message_size', 'stop',
+                             'xc_functional', 'xc_vxc_deriv_epsilon', 'relativistic_treatment', 'sedc_apply',
+                             'sedc_scheme', 'sedc_sr_ts', 'sedc_d_ts', 'sedc_s6_g06', 'sedc_d_g06',
+                             'sedc_lambda_obs', 'sedc_n_obs', 'sedc_sr_jchs', 'sedc_s6_jchs', 'sedc_d_jchs',
+                             'page_ex_pot', 'nlxc_page_ex_pot', 'ppd_integral', 'nlxc_ppd_integral',
+                             'ppd_size_x', 'nlxc_ppd_size_x', 'ppd_size_y', 'nlxc_ppd_size_y', 'ppd_size_z',
+                             'nlxc_ppd_size_z', 'impose_trs', 'nlxc_impose_trs', 'exchange_reflect_kpts',
+                             'nlxc_exchange_reflect_kpts', 'k_scrn_den_function', 'nlxc_k_scrn_den_function',
+                             'k_scrn_averaging_scheme', 'nlxc_k_scrn_averaging_scheme', 're_est_k_scrn',
+                             'nlxc_re_est_k_scrn', 'nlxc_exchange_screening', 'nlxc_exchange_fraction',
+                             'calc_full_ex_pot', 'nlxc_calc_full_ex_pot', 'nlxc_div_corr_on',
+                             'nlxc_div_corr_s_width', 'nlxc_div_corr_tol', 'nlxc_div_corr_npts_step',
+                             'pspot_nonlocal_type', 'pspot_beta_phi_type', 'basis_precision',
+                             'cut_off_energy', 'grid_scale', 'fine_grid_scale', 'fine_gmax',
+                             'fft_max_prime_factor', 'fixed_npw', 'finite_basis_corr', 'basis_de_dloge',
+                             'finite_basis_npoints', 'finite_basis_spacing', 'nelectrons', 'charge', 'spin',
+                             'nup', 'ndown', 'spin_polarized', 'spin_polarised', 'nspins', 'nextra_bands',
+                             'perc_extra_bands', 'nbands', 'elec_temp', 'electronic_minimizer',
+                             'max_sd_steps', 'max_cg_steps', 'max_diis_steps', 'elec_method',
+                             'metals_method', 'elec_energy_tol', 'elec_eigenvalue_tol', 'elec_force_tol',
+                             'elec_convergence_win', 'max_scf_cycles', 'spin_fix', 'fix_occupancy',
+                             'smearing_scheme', 'smearing_width', 'efermi_tol', 'num_occ_cycles',
+                             'dipole_correction', 'dipole_dir', 'elec_dump_file', 'num_dump_cycles',
+                             'elec_restore_file', 'mixing_scheme', 'mix_history_length', 'mix_charge_amp',
+                             'mix_charge_gmax', 'mix_spin_amp', 'mix_spin_gmax', 'mix_cut_off_energy',
+                             'mix_metric_q', 'popn_calculate', 'popn_bond_cutoff', 'pdos_calculate_weights',
+                             'bs_max_iter', 'bs_max_cg_steps', 'bs_nextra_bands', 'bs_perc_extra_bands',
+                             'bs_nbands', 'bs_eigenvalue_tol', 'bs_xc_functional', 'bs_re_est_k_scrn',
+                             'bs_write_eigenvalues', 'geom_method', 'geom_max_iter', 'geom_energy_tol',
+                             'geom_force_tol', 'geom_disp_tol', 'geom_stress_tol', 'geom_convergence_win',
+                             'geom_modulus_est', 'geom_frequency_est', 'geom_spin_fix', 'geom_use_linmin',
+                             'geom_linmin_tol', 'geom_lbfgs_max_updates', 'geom_tpsd_init_stepsize',
+                             'geom_tpsd_iterchange', 'md_num_iter', 'md_delta_t', 'md_ensemble',
+                             'md_use_pathint', 'md_num_beads', 'md_pathint_init', 'md_pathint_staging',
+                             'md_pathint_num_stages', 'md_temperature', 'md_thermostat', 'md_barostat',
+                             'md_ion_t', 'md_cell_t', 'md_nhc_length', 'md_nose_t', 'md_langevin_t',
+                             'md_extrap', 'md_extrap_fit', 'md_xlbomd', 'md_xlbomd_history',
+                             'md_damping_scheme', 'md_damping_reset', 'md_opt_damped_delta_t',
+                             'md_elec_energy_tol', 'md_elec_eigenvalue_tol', 'md_elec_force_tol',
+                             'md_elec_convergence_win', 'md_sample_iter', 'md_eqm_method', 'md_eqm_ion_t',
+                             'md_eqm_cell_t', 'md_eqm_t', 'md_use_plumed', 'optics_nextra_bands',
+                             'optics_perc_extra_bands', 'optics_nbands', 'optics_xc_functional',
+                             'tssearch_method', 'tssearch_lstqst_protocol', 'tssearch_qst_max_iter',
+                             'tssearch_cg_max_iter', 'tssearch_max_path_points', 'tssearch_force_tol',
+                             'tssearch_disp_tol', 'tssearch_energy_tol', 'phonon_const_basis',
+                             'phonon_energy_tol', 'phonon_max_cg_steps', 'phonon_max_cycles',
+                             'phonon_convergence_win', 'phonon_preconditioner', 'phonon_use_kpoint_symmetry',
+                             'phonon_calculate_dos', 'phonon_dos_spacing', 'phonon_dos_limit',
+                             'phonon_finite_disp', 'phonon_fine_cutoff_method',
+                             'phonon_force_constant_cutoff', 'phonon_force_constant_cut_scale',
+                             'phonon_force_constant_ellipsoid', 'phonon_fine_method', 'phonon_method',
+                             'phonon_dfpt_method', 'secondd_method', 'phonon_calc_lo_to_splitting',
+                             'phonon_sum_rule', 'phonon_sum_rule_method', 'calculate_born_charges',
+                             'born_charge_sum_rule', 'calculate_raman', 'raman_range_low',
+                             'raman_range_high', 'phonon_write_force_constants', 'phonon_write_dynamical',
+                             'efield_dfpt_method', 'efield_max_cg_steps', 'efield_max_cycles',
+                             'efield_convergence_win', 'efield_energy_tol', 'efield_calc_ion_permittivity',
+                             'efield_ignore_molec_modes', 'efield_freq_spacing', 'efield_oscillator_q',
+                             'thermo_calculate_helmholtz', 'thermo_t_start', 'thermo_t_stop',
+                             'thermo_t_spacing', 'thermo_t_npoints', 'wannier_spread_tol',
+                             'wannier_max_sd_steps', 'wannier_sd_step', 'wannier_print_cube',
+                             'wannier_spread_type', 'wannier_min_algor', 'wannier_ion_moments',
+                             'wannier_ion_rmax', 'wannier_ion_cut', 'wannier_ion_cut_fraction',
+                             'wannier_restart', 'wannier_ion_cut_tol', 'wannier_ion_cmoments', 'magres_task',
+                             'magres_method', 'magres_max_cg_steps', 'magres_convergence_win',
+                             'magres_conv_tol', 'magres_xc_functional', 'magres_max_sc_cycles',
+                             'magres_jcoupling_task', 'magres_write_response', 'elnes_nextra_bands',
+                             'elnes_perc_extra_bands', 'elnes_nbands', 'elnes_xc_functional',
+                             'elnes_eigenvalue_tol', 'spectral_theory', 'spectral_task', 'spectral_max_iter',
+                             'spectral_max_steps_per_iter', 'spectral_nextra_bands',
+                             'spectral_perc_extra_bands', 'spectral_nbands', 'spectral_eigenvalue_tol',
+                             'spectral_xc_functional', 'spectral_re_est_k_scrn',
+                             'spectral_write_eigenvalues', 'tddft_num_states', 'tddft_selected_state',
+                             'tddft_eigenvalue_tol', 'tddft_convergence_win', 'tddft_max_iter',
+                             'tddft_nextra_states', 'tddft_xc_functional', 'tddft_method',
+                             'tddft_eigenvalue_method', 'tddft_approximation', 'ga_pop_size', 'ga_max_gens',
+                             'ga_mutate_rate', 'ga_mutate_amp', 'ga_fixed_n', 'ga_bulk_slice',
+                             'excited_state_scissors', 'devel_code']
 
 class CastepCell(OrderedDict):
     """Class to wrap a CASTEP cell (.cell) file"""
@@ -1021,6 +1049,95 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
         if eof:
             break
 
+@atoms_reader('magres')
+def MagresReader(source, atoms_ref=None, format=None):
+    """Generator to read .magres files. The specification of the format my be found at http://www.ccpnc.ac.uk/"""
+
+    if type(source) == type(''):
+        source = open(source, 'r')
+    source = iter(source)
+
+    if atoms_ref is not None and not atoms_ref.has_property('frac_pos'):
+        atoms_ref.add_property('frac_pos',0.0,n_cols=3)
+        atoms_ref.frac_pos[:] = np.dot(atoms_ref.g,atoms_ref.pos)
+
+    eof = False
+    parsing_started = False
+    while True:
+       block = ""
+       atom_line = []
+       ms_line = []
+       efg_line = []
+       while True:
+           try:
+               line=source.next()
+           except StopIteration:
+               eof = True
+               
+           if re.match("#\$magres",line) or eof:
+               if parsing_started:
+                  break
+               else:
+                  parsing_started = True
+               continue
+           elif re.match("\[[^/].*\]",line):
+               block = line.replace("[","").replace("]","")
+               continue
+           elif re.match("\[\/.*\]",line):
+               block = ""
+               continue
+
+           if "atoms" in block:
+               if line.startswith("lattice"):
+                   lattice_line = line.split()[1:10]
+               elif line.startswith("atom"):
+                   atom_line.append(line.split())
+           if "magres" in block:
+               if line.startswith("ms"):
+                   ms_line.append(line.split())
+               if line.startswith("efg"):
+                   efg_line.append(line.split())
+       
+       lattice = fzeros((3,3))
+       lattice[:,:] = np.reshape(map(float,lattice_line),(3,3))
+
+       n_atoms=len(atom_line)
+       atoms = Atoms(n=n_atoms,lattice=lattice)
+       lookup = {}
+
+       for i, line in fenumerate(atom_line):
+           label, atom_type, species_label, number_in_species_label, x, y, z = line
+           if not (species_label, number_in_species_label) in lookup:
+               lookup[(species_label, number_in_species_label)] = i
+           atoms.z[lookup[(species_label, number_in_species_label)]] = atomic_number(atom_type)
+           atoms.pos[:,lookup[(species_label, number_in_species_label)]] = map(float,(x,y,z))
+
+       atoms.set_atoms(atoms.z) # set at.species from at.z
+
+       if n_atoms == len(ms_line):
+           atoms.add_property('ms',0.0,n_cols=9)
+           for i, line in fenumerate(ms_line):
+               (label, species_label, number_in_species_label,
+                ms_xx, ms_xy, ms_xz,
+                ms_yx, ms_yy, ms_yz,
+                ms_zx, ms_zy, ms_zz) = line
+               atoms.ms[:,lookup[(species_label, number_in_species_label)]] = map(float,(ms_xx, ms_xy, ms_xz,
+                                                                                         ms_yx, ms_yy, ms_yz,
+                                                                                         ms_zx, ms_zy, ms_zz))
+       if n_atoms == len(efg_line):
+           atoms.add_property('efg',0.0,n_cols=9)
+           for i, line in fenumerate(efg_line):
+               (label, species_label, number_in_species_label,
+                efg_xx, efg_xy, efg_xz,
+                efg_yx, efg_yy, efg_yz,
+                efg_zx, efg_zy, efg_zz) = line
+               atoms.efg[:,lookup[(species_label, number_in_species_label)]] = map(float,(efg_xx, efg_xy, efg_xz,
+                                                                                         efg_yx, efg_yy, efg_yz,
+                                                                                         efg_zx, efg_zy, efg_zz))
+
+       yield atoms
+       if eof:
+          break
 
 def get_valid_keywords(castep):
     """Determines valid cell and parameter keyword by invoking castep with -help parameter.
@@ -1032,26 +1149,21 @@ def get_valid_keywords(castep):
     if castep.find('%s') == -1:
         castep = castep + ' %s'
 
-    for level in ('basic', 'inter', 'expert'):
-        lines = os.popen(castep % ('-help %s' % level)).readlines()
-        try:
-            cell_start = lines.index('Help information on CELL keywords:')
-            param_start = lines.index('Help information on PARAMETERS keywords:')
-        except ValueError:
-            raise ValueError('Error parsing output of castep -help %s' % level)
+    lines = os.popen(castep % ('-help all')).readlines()
+    try:
+       cell_start = lines.index('Help information on CELL keywords:\n')
+       param_start = lines.index('Help information on PARAMETERS keywords:\n')
+    except ValueError:
+       raise ValueError('Error parsing output of castep -help all')
 
-        cell_lines = lines[cell_start+2:param_start-2]
-        param_lines = lines[param_start+2:-1]
+    cell_lines = lines[cell_start+2:param_start-2]
+    param_lines = lines[param_start+2:-1]
 
-        for lines, keywords  in zip((cell_lines, param_lines),
-                                    (valid_cell_keywords,valid_parameters_keywords)):
-            lines = map(string.strip, lines)
-            lines = filter(lambda s: not s.startswith('*!'), lines)
-            for line in lines:
-                commentpos = line.find(' *!')
-                if commentpos != -1:
-                    line = line[:commentpos]
-                keywords.append(line.lower())
+    for lines, keywords  in zip((cell_lines, param_lines),
+          (valid_cell_keywords,valid_parameters_keywords)):
+       lines = map(string.strip, lines)
+       for line in lines:
+          keywords.append(line.split()[0].lower())
 
     print 'valid_cell_keywords = %r\n' % valid_cell_keywords
     print 'valid_parameters_keywords = %r' % valid_parameters_keywords

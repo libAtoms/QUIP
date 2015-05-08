@@ -189,17 +189,17 @@ class Test_Tersoff_Rescale_Automatic_Factors(QuippyTestCase):
         self.bulk.calc_connect()        
 
     def test_factors(self):
-        self.assertArrayAlmostEqual([self.p.r_scale, self.p.e_scale], [0.990373161231, 1.10443023495])
+        self.assertArrayAlmostEqual([self.p.r_scale, self.p.e_scale], [0.990373161231, 1.10443023495], tol=1e-2)
 
     def test_volume(self):
         verbosity_push_decrement()
         self.p.minim(self.bulk, 'cg', 1e-6, 100, do_lat=True, do_pos=True)
         verbosity_pop()
-        self.assertArrayAlmostEqual([self.bulk.cell_volume()], [self.target_vol], tol=1e-4)
+        self.assertArrayAlmostEqual([self.bulk.cell_volume()], [self.target_vol], tol=1e-2)
 
     def test_bulk_modulus(self):
         b, v = self.p.bulk_modulus(self.bulk, minimise_bulk=True)
-        self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-3)
+        self.assertArrayAlmostEqual([b], [self.target_B], tol=1e-2)
 
 
 class Test_Tersoff_Rescale_Energy(QuippyTestCase):

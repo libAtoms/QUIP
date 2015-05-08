@@ -535,13 +535,17 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         if(parse_ip%initialised) call finalise(parse_ip)
      endif
 
+
      call QUIP_FoX_get_value(attributes, 'gap_version', value, status)
      if( (status == 0) ) then
         parse_ip%xml_version = string_to_int(value)
-        if( parse_ip%xml_version > gap_version ) call system_abort( &
+        if( parse_ip%xml_version > gap_version ) &
+        call system_abort( &
 	   'Database was created with a later version of the code.' // &
 	   'Version of code used to generate the database is '//trim(value)//'.'// &
 	   'Version of current code is '//gap_version//'. Please update your code.')
+     else
+        parse_ip%xml_version = 0
      endif
 
   elseif(parse_in_ip .and. name == 'GAP_data') then

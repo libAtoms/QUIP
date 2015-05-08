@@ -276,14 +276,7 @@ class PuPyXYZWriter(object):
         # Set extra params entries for cutoff etc.
         params = at.params.copy()
         params['nneightol'] = at.nneightol
-        if at.use_uniform_cutoff:
-            params['cutoff'] = at.cutoff
-            if at.cutoff != at.cutoff_break:
-                params['cutoff_break'] = at.cutoff_break
-        else:
-            params['cutoff_factor'] = at.cutoff
-            if at.cutoff != at.cutoff_break:
-                params['cutoff_break_factor'] = at.cutoff_break
+        params['cutoff'] = at.cutoff
 
         props_str, comment = properties_comment(at, props, params)
 

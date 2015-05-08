@@ -46,7 +46,7 @@ module CInOutput_module
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
        print_keys, c_dictionary_ptr_type, assignment(=)
   use Atoms_module, only: Atoms, initialise, is_initialised, is_domain_decomposed, finalise, set_lattice, &
-       atoms_repoint, transform_basis, bcast, has_property, set_cutoff, set_cutoff_factor
+       atoms_repoint, transform_basis, bcast, has_property, set_cutoff
   use Atoms_types_module, only : add_property
   use MPI_Context_module, only: MPI_context
   use DomainDecomposition_module, only: allocate, comm_atoms_to_all
@@ -181,8 +181,7 @@ module CInOutput_module
      !% * **frac_pos**, real, 3 cols -- fractional positions of atoms
      !% 
      !% Along with all :attr:`~Atoms.params` entries, the
-     !% :attr:`~.Atoms.lattice`, :attr:`~.Atoms.cutoff` (along with
-     !% :attr:`~.Atoms.cutoff_break`, if different from cutoff), and
+     !% :attr:`~.Atoms.lattice`, :attr:`~.Atoms.cutoff`, and
      !% attr:`~Atoms.nneightol` attributes are read from the comment
      !% line of XYZ file, or from special variables in NetCDF files
      module procedure CInOutput_read
@@ -195,10 +194,9 @@ module CInOutput_module
      !
      !% Along with all atomic :attr:`~.Atoms.properties` and
      !% :attr:`~Atoms.params` entries, the :attr:`~.Atoms.lattice`,
-     !% :attr:`~.Atoms.cutoff` (along with
-     !% :attr:`~.Atoms.cutoff_break`, if different from cutoff), and
-     !% attr:`~Atoms.nneightol` attributes are written to the comment
-     !% line of XYZ file, or from special variables in NetCDF files
+     !% :attr:`~.Atoms.cutoff` and attr:`~Atoms.nneightol` attributes
+     !% are written to the comment line of XYZ file, or from special
+     !% variables in NetCDF files
      module procedure CInOutput_write
      module procedure atoms_write
      module procedure atoms_write_cinoutput
@@ -364,7 +362,7 @@ contains
     integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep, do_range(2), cell_rotated, n_index
     integer(C_INT), dimension(:), allocatable :: c_indices
     real(C_DOUBLE) :: r_rep
-    real(dp) :: lattice(3,3), maxlen(3), sep(3), cell_lengths(3), cell_angles(3), orig_lattice(3,3), cutoff, cutoff_break, nneightol
+    real(dp) :: lattice(3,3), maxlen(3), sep(3), cell_lengths(3), cell_angles(3), orig_lattice(3,3), cutoff, nneightol
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
     integer, dimension(SIZEOF_FORTRAN_T) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
     integer n_atom
@@ -509,32 +507,19 @@ contains
        deallocate(c_indices)
 
        if (get_value(tmp_params, 'cutoff', cutoff)) then
-          if (get_value(tmp_params, 'cutoff_break', cutoff_break)) then
-             call set_cutoff(at, cutoff, cutoff_break)
-          else
-             call set_cutoff(at, cutoff)
-          end if
-       else if (get_value(tmp_params, 'cutoff_factor', cutoff)) then
-          if (get_value(tmp_params, 'cutoff_break_factor', cutoff_break)) then
-             call set_cutoff_factor(at, cutoff, cutoff_break)
-          else
-             call set_cutoff_factor(at, cutoff)
-          end if
+          call set_cutoff(at, cutoff)
        end if
 
        if (get_value(tmp_params, 'nneightol', nneightol)) at%nneightol = nneightol
 
        ! Copy tmp_params into at%params, removing "Lattice", "Properties", "cutoff", 
-       ! "cutoff_factor", "cutoff_break", cutoff_factor_break" and "nneightol"entries
+       ! and "nneightol"entries
        allocate(filtered_keys(tmp_params%N))
        j = 1
        do i=1,tmp_params%N
           if (string(tmp_params%keys(i)) == 'Lattice' .or. &
               string(tmp_params%keys(i)) == 'Properties' .or. &
               string(tmp_params%keys(i)) == 'cutoff' .or. &
-              string(tmp_params%keys(i)) == 'cutoff_break' .or. &
-              string(tmp_params%keys(i)) == 'cutoff_factor' .or. &
-              string(tmp_params%keys(i)) == 'cutoff_break_factor' .or. &
               string(tmp_params%keys(i)) == 'nneightol') cycle
 
           call initialise(filtered_keys(j), tmp_params%keys(i))
@@ -744,15 +729,7 @@ contains
 
     tmp_params = at%params  ! Make a copy since write_xyz() adds "Lattice" and "Properties" keys
 
-    if (at%use_uniform_cutoff) then
-       call set_value(tmp_params, 'cutoff', at%cutoff)
-       if (at%cutoff_break .fne. at%cutoff) &
-            call set_value(tmp_params, 'cutoff_break', at%cutoff)
-    else
-       call set_value(tmp_params, 'cutoff_factor', at%cutoff)
-       if (at%cutoff_break .fne. at%cutoff) &
-            call set_value(tmp_params, 'cutoff_break_factor', at%cutoff)
-    end if
+    call set_value(tmp_params, 'cutoff', at%cutoff)
     call set_value(tmp_params, 'nneightol', at%nneightol)
 
     params_ptr%p => tmp_params

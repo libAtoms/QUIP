@@ -132,7 +132,7 @@ module Potential_module
   use connection_module, only : connection
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer, diff_min_image, distance_min_image
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, set_lattice, is_nearest_neighbour, &
-   get_param_value, remove_property, calc_connect, set_cutoff, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
+   get_param_value, remove_property, calc_connect, set_cutoff, set_cutoff_minimum, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
   use cinoutput_module, only : cinoutput, write
   use dynamicalsystem_module, only : dynamicalsystem, ds_print_status, advance_verlet1, advance_verlet2
   use clusters_module, only : HYBRID_ACTIVE_MARK, HYBRID_NO_MARK, HYBRID_BUFFER_MARK, create_embed_and_fit_lists_from_cluster_mark, create_embed_and_fit_lists, &
@@ -195,13 +195,15 @@ module Potential_module
   !%      ...
   !%      call diamond(at, 5.44, 14)
   !%      call randomise(at%pos, 0.01)
-  !%      call set_cutoff(at, cutoff(pot))
-  !%      call calc_connect(at)
   !%      call calc(pot, at, force=force)
   !%
-  !%  Note how the 'Atoms%cutoff' attribute is set to the cutoff of
-  !%  this Potential, and then the neighbour lists are built with the
-  !%  :meth:`~quippy.atoms.Atoms.calc_connect` routine.
+  !%  Note that there is now no need to set the 'Atoms%cutoff' attribute to the
+  !%  cutoff of this Potential: if it is less than this it will be increased
+  !%  automatically and a warning will be printed.
+  !%  The neighbour lists are updated automatically with the
+  !%  :meth:`~quippy.atoms.Atoms.calc_connect` routine. For efficiency,
+  !%  it's a good idea to set at%cutoff_skin greater than zero to decrease
+  !%  the frequency at which the connectivity needs to be rebuilt.
   !%
   !%  A Potential can be used to optimise the geometry of an
   !%  :class:`~quippy.atoms.Atoms` structure, using the :meth:`minim` routine,
@@ -277,8 +279,10 @@ module Potential_module
   public :: Calc
 
   !% Apply this Potential to the Atoms object
-  !% 'at', which must have connectivity information
-  !% (i.e. 'Atoms%calc_connect' should have been called). The
+  !% 'at'. Atoms%calc_connect is automatically called to update the
+  !% connecticvity information -- if efficiency is important to you,
+  !% ensure that at%cutoff_skin is set to a non-zero value to decrease
+  !% the frequence of connectivity updates.
   !% optional arguments determine what should be calculated and how
   !% it will be returned. Each physical quantity has a
   !% corresponding optional argument, which can either be an 'True'
@@ -319,7 +323,6 @@ module Potential_module
   !% explanation)::
   !%
   !%>      at0 = diamond(5.44, 14)
-  !%>      at0.calc_connect()
   !%>      pot = Potential('IP SW', param_str='''<SW_params n_types="1">
   !%>              <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
   !%>              <per_type_data type="1" atomic_num="14" />
@@ -793,37 +796,18 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp) :: r_scale, E_scale
     logical :: has_r_scale, has_E_scale
     integer i
-    real(dp) :: effective_cutoff
 
     INIT_ERROR(error)
 
     if (cutoff(this) > 0.0_dp) then
        ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
-
-       if (.not. at%connect%initialised) then
-          call print('Potential_calc: setting Atoms cutoff to Potential cutoff ('//cutoff(this)//')', PRINT_VERBOSE)
+       ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
+       ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
+       if (at%cutoff < cutoff(this)) then
+          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
           call set_cutoff(at, cutoff(this))
-          call calc_connect(at)
        end if
-
-       if (at%use_uniform_cutoff) then
-          if (at%cutoff < cutoff(this)) then
-             RAISE_ERROR('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
-          end if
-       else
-          ! Find effective cutoff 
-          effective_cutoff = 0.0_dp
-          do i = 1, at%N
-             if (at%Z(i) < 1 .or. at%Z(i) > 116) then
-                RAISE_ERROR('Potential_calc: bad atomic number i='//i//' z='//at%z(i), error)
-             end if
-             if (ElementCovRad(at%Z(i)) > effective_cutoff) effective_cutoff = ElementCovRad(at%Z(i))
-          end do
-          effective_cutoff = (2.0_dp * effective_cutoff) * at%cutoff
-          if (effective_cutoff < cutoff(this)) then
-             RAISE_ERROR('Potential_calc: effective cutoff of Atoms object ('//effective_cutoff//') < Potential cutoff ('//cutoff(this)//')', error)
-          end if
-       end if
+       call calc_connect(at)
     end if
     
     calc_energy = ""
@@ -2206,12 +2190,12 @@ end subroutine pack_pos_dg
   !% total, with snapshots saved every 'save_interval' steps. The
   !% connectivity is recalculated every 'connect_interval' steps.
   !% 'args_str' can be used to supply extra arguments to 'Potential%calc'.
-  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str, error)
+  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, summary_interval, write_interval, trajectory, args_str, error)
     type(DynamicalSystem), intent(inout), target :: this
     type(Potential), intent(inout) :: pot
     real(dp), intent(in) :: dt
     integer, intent(in) :: n_steps
-    integer, intent(in), optional :: hook_interval, write_interval, connect_interval
+    integer, intent(in), optional :: summary_interval, hook_interval, write_interval
     type(CInOutput), intent(inout), optional :: trajectory
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
@@ -2220,7 +2204,7 @@ end subroutine pack_pos_dg
        end subroutine hook
     end interface    
     
-    integer :: n, my_hook_interval, my_write_interval, my_connect_interval
+    integer :: n, my_summary_interval, my_hook_interval, my_write_interval
     real(dp) :: e
     real(dp), pointer, dimension(:,:) :: f
     character(len=STRING_LENGTH) :: my_args_str
@@ -2228,9 +2212,9 @@ end subroutine pack_pos_dg
 
     INIT_ERROR(error)
 
+    my_summary_interval = optional_default(1, summary_interval)
     my_hook_interval = optional_default(1, hook_interval)
     my_write_interval = optional_default(1, write_interval)
-    my_connect_interval = optional_default(1, connect_interval)
     my_args_str = optional_default("", args_str)
     call initialise(params)
     call read_string(params, my_args_str)
@@ -2239,7 +2223,6 @@ end subroutine pack_pos_dg
     my_args_str = write_string(params)
     call finalise(params)
 
-    call calc_connect(this%atoms)
     call calc(pot, this%atoms, args_str=my_args_str, error=error)
     PASS_ERROR(error)
     call set_value(this%atoms%params, 'time', this%t)
@@ -2247,9 +2230,14 @@ end subroutine pack_pos_dg
          call system_abort("dynamicalsystem_run failed to get energy")
     if (.not. assign_pointer(this%atoms, 'force', f)) &
          call system_abort("dynamicalsystem_run failed to get forces")
-    call ds_print_status(this, epot=e)
+    if (my_summary_interval > 0) call ds_print_status(this, epot=e)
     call hook()
     if (present(trajectory)) call write(trajectory, this%atoms)
+
+    ! initialize accelerations from forces, so first call to verlet1 will be correct
+    this%atoms%acc(1,:) = f(1,:)/this%atoms%mass
+    this%atoms%acc(2,:) = f(2,:)/this%atoms%mass
+    this%atoms%acc(3,:) = f(3,:)/this%atoms%mass
 
     do n=1,n_steps
        call advance_verlet1(this, dt)
@@ -2260,12 +2248,12 @@ end subroutine pack_pos_dg
             call system_abort("dynamicalsystem_run failed to get energy")
        if (.not. assign_pointer(this%atoms, 'force', f)) &
             call system_abort("dynamicalsystem_run failed to get forces")
-       call ds_print_status(this, epot=e)
+       if (my_summary_interval > 0 .and. mod(n, my_summary_interval) == 0) call ds_print_status(this, epot=e)
        call set_value(this%atoms%params, 'time', this%t)
 
-       if (mod(n,my_hook_interval) == 0) call hook()
-       if (present(trajectory) .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
-       if (mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
+       if (my_hook_interval > 0 .and. mod(n,my_hook_interval) == 0) call hook()
+       if (present(trajectory) .and. my_write_interval > 0 .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
+       if (cutoff(pot) > 0.0_dp) call calc_connect(this%atoms)
     end do
 
   end subroutine DynamicalSystem_run
