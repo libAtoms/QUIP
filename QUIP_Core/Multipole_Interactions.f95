@@ -233,6 +233,10 @@ recursive subroutine Multipole_Moments_Site_Site_Interaction(energy,site_one,sit
 
   if (calc_opts%do_energy)  energy=0.0_dp
 !call print("do energy ? "//calc_opts%do_energy)
+!call print("site site interaction")
+!call print("position 1 "//site_one%position)
+!call print("position 2 "//site_two%position)
+
   if (calc_opts%do_force) then
     site_one%e_grad_pos = 0.0_dp
     site_one%e_grad_charge = 0.0_dp
@@ -321,6 +325,7 @@ subroutine Multipole_Interactions_Charge_Charge(energy,site_one, site_two,calc_o
 
   ! vector pointing from site one to site two. position of second site should already be set to correct image position
   r_one_two =  site_two%position - site_one%position  
+
 
   T0 = T_rank_zero(r_one_two,calc_opts,site_one%damp_rad,site_two%damp_rad,cutoff=cutoff)
   T1 = T_rank_one(r_one_two,calc_opts,site_one%damp_rad,site_two%damp_rad,cutoff=cutoff)

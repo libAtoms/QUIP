@@ -160,14 +160,44 @@ end subroutine Multipole_Moments_Finalise
 subroutine Monomers_Finalise(this)
 
   type(Monomers),intent(inout) :: this
+  integer :: i
+
   this%monomer_cutoff = 0.0_dp
-  if (allocated(this%site_types)) deallocate(this%site_types)
+  if (allocated(this%site_types)) then
+    do i=1,size(this%site_types)
+      call finalise(this%site_types(i))
+    end do
+    deallocate(this%site_types)
+  end if
   if (allocated(this%signature)) deallocate(this%signature)
   if (allocated(this%excluded_pairs)) deallocate(this%excluded_pairs)
   if (allocated(this%monomer_indices)) deallocate(this%monomer_indices)
   if (allocated(this%masses)) deallocate(this%masses)
 
 end subroutine Monomers_Finalise
+
+subroutine clear_sites(this)
+  type(Multipole_Moments),intent(inout) :: this
+  integer::i
+
+  if (allocated(this%monomer_types)) then 
+    do i=1,size(this%monomer_types)
+      if (allocated(this%monomer_types(i)%monomer_indices)) deallocate(this%monomer_types(i)%monomer_indices)
+    end do
+  end if
+
+  if (allocated(this%sites)) then
+    do i=1,size(this%sites)
+      call finalise(this%sites(i))
+    end do
+    deallocate(this%sites)
+  end if
+
+  if (allocated(this%pol_idx)) deallocate(this%pol_idx)
+  if (allocated(this%site_polarisable)) deallocate(this%site_polarisable)
+  if (allocated(this%exclude_list)) deallocate(this%exclude_list)
+    
+end subroutine clear_sites
 
 subroutine multipole_sites_setup(at,multipoles,dummy_atoms,do_grads,strict)
   type(Atoms)             :: at,dummy_atoms
@@ -182,10 +212,7 @@ subroutine multipole_sites_setup(at,multipoles,dummy_atoms,do_grads,strict)
   my_do_grads=optional_default(.false.,do_grads)
   my_strict=optional_default(.true.,strict)
 
-  if (allocated(multipoles%sites)) then  
-    
-    deallocate(multipoles%sites)
-  end if
+  call clear_sites(multipoles)
 
   call reallocate(associated_to_monomer,at%N,zero=.true.)
   n_sites=0
@@ -216,7 +243,9 @@ subroutine multipole_sites_setup(at,multipoles,dummy_atoms,do_grads,strict)
   call set_cutoff(dummy_atoms,multipoles%cutoff)
   call calc_connect(dummy_atoms)
 
-  call write(dummy_atoms, 'stdout', prefix='DUMMY',real_format='%16.8f')
+  !call write(dummy_atoms, 'stdout', prefix='DUMMY',real_format='%16.8f')
+
+
   ! if want to implement this way for efficiency, will probably have to create a second Connection object, which doesn't contain excluded interactions
   ! this is because for calculated induced dipoles we typically don't ignore intramolecular interactions, so we shuold ignore the exclude list.
 !!$
@@ -411,10 +440,8 @@ subroutine add_sites_for_monomer(at,sites,offset,exclude_list,monomer_type,atom_
   end if
   offset = offset+sites_per_mono
 
-!call print("excluded pairs")
-!call print(monomer_type%excluded_pairs)
-!call print("exclude list")
-!call print(exclude_list)
+  deallocate(atomic_positions)
+
 end subroutine add_sites_for_monomer
 
 subroutine electrostatics_calc(at,multipoles,ewald,do_pot,do_field,do_force,e)

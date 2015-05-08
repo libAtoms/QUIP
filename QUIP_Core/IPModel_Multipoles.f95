@@ -223,6 +223,14 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
      call atomic_forces_from_sites(this%multipoles%sites,f=f) ! no support for virial or local stuff yet
    end if
 
+   if (do_rescale_E) then
+      if (present(e)) e = e*E_scale
+      if (present(local_e)) local_e = local_e*E_scale
+      if (present(f)) f = f*E_scale
+      if (present(virial)) virial=virial*E_scale
+      if (present(local_virial)) local_virial=local_virial*E_scale
+   end if
+
    ! clean up
    if(allocated(pol_matrix)) deallocate(pol_matrix)
    call finalise(dummy_atoms)
@@ -281,7 +289,10 @@ subroutine IPModel_Multipoles_Print(this, file)
       call print("IPModel_Multipoles :   site " // tj // " d " // this%multipoles%monomer_types(ti)%site_types(tj)%d, file=file)
       call print("IPModel_Multipoles :   site " // tj //" charge method : "//this%multipoles%monomer_types(ti)%site_types(tj)%charge_method, file=file)
       call print("IPModel_Multipoles :   site " // tj //" dipole method : "//this%multipoles%monomer_types(ti)%site_types(tj)%dipole_method, file=file)
-      call print("IPModel_Multipoles :   site " // tj // " pos_type " // this%multipoles%monomer_types(ti)%site_types(tj)%pos_type, file=file)
+      call print("IPModel_Multipoles :   site " // tj //" pos_type " // this%multipoles%monomer_types(ti)%site_types(tj)%pos_type, file=file)
+      call print("IPModel_Multipoles :   site " // tj //" polarisable : "//this%multipoles%monomer_types(ti)%site_types(tj)%polarisable, file=file)
+      call print("IPModel_Multipoles :   site " // tj //" polarisability : "//this%multipoles%monomer_types(ti)%site_types(tj)%alpha, file=file)
+      call print("IPModel_Multipoles :   site " // tj //" damping radius : "//this%multipoles%monomer_types(ti)%site_types(tj)%damp_rad, file=file)
     end do
   end do
 
@@ -626,9 +637,12 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     else
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.true.
       if (parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d .lt. 3 ) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 3
+      read (value, *) alpha_au
+      parse_ip%multipoles%monomer_types(ti)%site_types(tj)%alpha=alpha_au*CUBIC_BOHR
+      if (parse_ip%multipoles%calc_opts%damping==Damping_None) then
+        call system_abort("IPModel_Multipoles_read_params_xml: Cannot have polarsiable sites present with undamped interactions")
+      end if
     end if
-    read (value, *) alpha_au
-    parse_ip%multipoles%monomer_types(ti)%site_types(tj)%alpha=alpha_au*CUBIC_BOHR
 
     ! by default, polarisable sites are damped and unpolarisable ones are not, can override default behaviour by setting damp_rad
     ! if damp_rad=0.0, then no damping occurs. If want to damp a non-polarisable site, have to provide a radius manually
@@ -643,15 +657,23 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       end if
     else
       if (parse_ip%multipoles%calc_opts%damping==Damping_None) then
-        call system_abort("damp_rad specified but no damping type selected, please specify damping=exp or damping=erf")
+        call system_abort("IPModel_Multipoles_read_params_xml: damp_rad specified but no damping type selected, please specify damping=exp or damping=erf")
       else
         read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damp_rad ! override default damp_rad value
         parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped = .true.
       end if
     end if
 
-    if (.not. parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped .and. parse_ip%multipoles%calc_opts%damping/=Damping_None ) then
-      call system_abort ("IPModel_Multipoles_read_params_xml: damping requested but no radii specified for non-polarisable sites ")
+    if (.not. parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped ) then
+      if ( parse_ip%multipoles%calc_opts%damping/=Damping_None ) then
+        call system_abort ("IPModel_Multipoles_read_params_xml: damping requested but no radii specified for non-polarisable sites ")
+      else
+        do i=1,tj-1
+          if (parse_ip%multipoles%monomer_types(ti)%site_types(i)%polarisable) then
+            call system_abort ("IPModel_Multipoles_read_params_xml: cannot have undamped charges in combination with polarisable sites. Please ensure all sites have a damp_rad set. ")
+          end if
+        end do
+      end if
     end if
 
     parse_ip%multipoles%monomer_types(ti)%site_types(tj)%initialised = .true.
