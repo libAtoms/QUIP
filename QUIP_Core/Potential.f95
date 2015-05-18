@@ -794,22 +794,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_local_virial, extra_args_str
     character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy, use_calc_local_virial
     real(dp) :: r_scale, E_scale
-    logical :: has_r_scale, has_E_scale
+    logical :: has_r_scale, has_E_scale, do_calc_connect
     integer i
 
     INIT_ERROR(error)
 
-    if (cutoff(this) > 0.0_dp) then
-       ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
-       ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
-       ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
-       if (at%cutoff < cutoff(this)) then
-          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
-          call set_cutoff(at, cutoff(this))
-       end if
-       call calc_connect(at)
-    end if
-    
     calc_energy = ""
     calc_virial = ""
     calc_force = ""
@@ -824,11 +813,23 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call param_register(params, "local_virial", "", calc_local_virial, help_string="If present, calculate local virial and put it in field with this string as name")
     call param_register(params, "r_scale", "0.0", r_scale, has_value_target=has_r_scale, help_string="Distance rescale factor. Overrides r_scale init arg")
     call param_register(params, "E_scale", "0.0", E_scale, has_value_target=has_E_scale, help_string="Energy rescale factor. Overrides E_scale init arg")
+    call param_register(params, "do_calc_connect", "T", do_calc_connect, help_string="Switch on/off automatic calc_connect() calls.")
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Calc args_str')) then
        RAISE_ERROR('Potential_Calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
     call finalise(params)
 
+    if (cutoff(this) > 0.0_dp .and. do_calc_connect) then
+       ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
+       ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
+       ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
+       if (at%cutoff < cutoff(this)) then
+          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          call set_cutoff(at, cutoff(this))
+       end if
+       call calc_connect(at)
+    end if
+    
     extra_args_str = ""
 
     ! create property/param names and possibly storage
