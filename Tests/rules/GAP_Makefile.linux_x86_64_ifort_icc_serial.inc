@@ -1,0 +1,37 @@
+# Place to override setting elsewhere, in particular things set in Makefile.linux_x86_64_ifort_icc_openmp
+# look in /home/wjs31/QUIP/Makefiles/Makefile.linux_x86_64_ifort_icc_openmp for defaults set by arch
+# OPTIM=
+# COPTIM=
+# DEBUG=-g -traceback -DDUMP_CORE_ON_ABORT 
+# CDEBUG=
+MATH_LINKOPTS=-mkl
+FOX_LIBDIR=${QUIP_ROOT}/FoX-4.0.3/objs.${QUIP_ARCH}/lib
+FOX_INCDIR=${QUIP_ROOT}/FoX-4.0.3/objs.${QUIP_ARCH}/finclude
+HAVE_EXTERNAL_FOX=0
+NETCDF_LIBDIR=/usr/lib
+NETCDF4=1
+NETCDF4_CURL=1
+NETCDF_INCDIR=/usr/include
+HAVE_NETCDF=0
+USE_MAKEDEP=1
+MAKEDEP=makedep.py
+HAVE_MDCORE=0
+HAVE_ASAP=0
+HAVE_KIM=0
+HAVE_CP2K=0
+HAVE_VASP=0
+HAVE_TB=0
+HAVE_FX=0
+HAVE_GAP=1
+HAVE_GAP_FILLER=0
+HAVE_QP_PREDICT=0
+HAVE_QP_TEACH=0
+HAVE_QR=1
+HAVE_LOTF=0
+HAVE_ONIOM=0
+HAVE_LOCAL_E_MIX=0
+HAVE_QC=0
+EXTRA_LINKOPTS=
+HAVE_CGAL=0
+SIZEOF_FORTRAN_T= 2
+HAVE_THIRDPARTY=1
