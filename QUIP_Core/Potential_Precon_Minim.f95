@@ -45,12 +45,12 @@ module Potential_Precon_Minim_module
   contains
 
 
-  subroutine allocate_precon(this,at,precon_id,nneigh,energy_scale,length_scale,cutoff,res2,max_iter,max_sub)
+  subroutine allocate_precon(this,at,precon_id,nneigh,energy_scale,length_scale,cutoff,res2,max_iter,max_sub,bulk_modulus,number_density)
     type (precon_data), intent(inout) :: this
     type (Atoms) :: at
     character(*) :: precon_id
     integer :: nneigh,max_iter,max_sub
-    real(dp) :: energy_scale, length_scale, cutoff,res2
+    real(dp) :: energy_scale, length_scale, cutoff,res2,bulk_modulus,number_density
 
     this%precon_id = precon_id
     this%nneigh = nneigh
@@ -60,6 +60,8 @@ module Potential_Precon_Minim_module
     this%res2 = res2
     this%mat_mult_max_iter = max_iter
     this%max_sub = max_sub
+    this%bulk_modulus = bulk_modulus
+    this%number_density = number_density
 
 
     if (has_property(at, 'move_mask')) then
@@ -294,7 +296,7 @@ end if
     integer :: I, J, target_elements(3), row_elements(3), thisind, am_data_size, K
     real(dp) :: scoeff
 
-    call allocate_precon(pr,at,'C1',125,1.0_dp,1.0_dp,cutoff,10.0_dp**(-10.0),100,20)
+    call allocate_precon(pr,at,'C1',125,1.0_dp,1.0_dp,cutoff,10.0_dp**(-10.0),100,20,0.625_dp,0.1_dp)
     
     am%minim_at => at
     am_data_size = size(transfer(am, am_mold))
@@ -328,7 +330,8 @@ end if
    
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook, hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,convchoice)
+       hook, hook_print_interval, &
+   error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,convchoice,bulk_modulus,number_density)
     
     implicit none
     
@@ -386,7 +389,11 @@ end if
     real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
     real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances, assuming first neighbours contribute much more to the energy, if the potential is more or less 'flat' then may need to include second neighbours
     integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125, only necessary to edit if you run out of memory
-    
+   
+
+    real(dp), intent(in), optional :: bulk_modulus
+    real(dp), intent(in), optional :: number_density
+
     real(dp), intent(in), optional :: res2 !criteria for the residual squared of the approximate preconditioner inverse, probably dont need to change this
     integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting, probably dont need to change this
@@ -412,7 +419,7 @@ end if
     integer :: status
 
     type (precon_data) :: pr
-    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
+    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2, my_bulk_modulus,my_number_density
     integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
     character(10) :: my_precon_id
     logical ::  doinfnorm
@@ -433,6 +440,9 @@ end if
     else
       call print("Defaulting to 2 norm for convergence")
     end if
+
+    my_bulk_modulus = optional_default(0.625_dp,bulk_modulus)
+    my_number_density = optional_default(0.1_dp,number_density)
 
     my_precon_id = optional_default('ID',precon_id)
     if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
@@ -534,7 +544,7 @@ end if
       call print("WARNING: You have set your atomistic length scale (approximate first neighbour distance) to: "//my_length_scale // " this is very low and probably constitutes an incorrect input",PRINT_ALWAYS)
     end if
 
-    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
+    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density)
 
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps, &
       efuncroutine=efuncroutine, linminroutine=linminroutine, hook=hook, hook_print_interval=hook_print_interval, &
@@ -559,7 +569,8 @@ end if
   
   function Precon_Potential_Dimer(this, at,at2, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
-       hook,hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride)
+       hook,hook_print_interval,&
+   error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride, bulk_modulus,number_density)
     
     implicit none
     
@@ -623,6 +634,10 @@ end if
     integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting
 
+    real(dp), intent(in), optional :: bulk_modulus
+    real(dp), intent(in), optional :: number_density
+
+
     integer:: Precon_Potential_Dimer
 
     character(len=STRING_LENGTH) :: use_method
@@ -640,7 +655,7 @@ end if
     integer :: status
 
     type (precon_data) :: pr
-    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
+    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2,my_bulk_modulus,my_number_density
     integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
     character(10) :: my_precon_id
 
@@ -671,6 +686,10 @@ end if
     allocate(vpos(at%N,3))
     vpos = (at%pos - at2%pos)
     
+    my_bulk_modulus = optional_default(0.625_dp,bulk_modulus)
+    my_number_density = optional_default(0.1_dp,number_density)
+
+
     call calc_connect(at)
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
@@ -756,7 +775,7 @@ end if
     my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
     my_max_sub = 30
 
-    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
+    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density)
     !call print(use_method)   
     n_iter = precondimer(x,v, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
             hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
