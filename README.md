@@ -8,7 +8,7 @@ potentials and tight binding quantum mechanics, and is also able to
 call external packages. Various hybrid combinations are also supported
 in the style of QM/MM.
 
-For more details, see the [online documentation](|http://libatoms.github.io/QUIP).
+For more details, see the [online documentation](http://libatoms.github.io/QUIP).
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
