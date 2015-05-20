@@ -1,34 +1,23 @@
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# X
-# X   libAtoms+QUIP: atomistic simulation library
-# X
-# X   Portions of this code were written by
-# X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-# X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
-# X
-# X   Copyright 2006-2010.
-# X
-# X   These portions of the source code are released under the GNU General
-# X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-# X
-# X   If you would like to license the source code under different terms,
-# X   please contact Gabor Csanyi, gc121@cam.ac.uk
-# X
-# X   Portions of this code were written by Noam Bernstein as part of
-# X   his employment for the U.S. Government, and are not subject
-# X   to copyright in the USA.
-# X
-# X
-# X   When using this software, please cite the following reference:
-# X
-# X   http://www.libatoms.org
-# X
-# X  Additional contributions by
-# X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
-# X
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# QUIP - Quantum Mechanics and Interatomic Potentials
 
-This is the top level directory for QUIP, libAtoms and friends. 
+This is the top level directory for QUIP, libAtoms and friends. This
+package is a software library written in Fortran 95+ for the purposes
+of carrying out molecular dynamics simulations. The QUIP package,
+built on top of libAtoms, implements a wide variety of interatomic
+potentials and tight binding quantum mechanics, and is also able to
+call external packages. Various hybrid combinations are also supported
+in the style of QM/MM.
+
+For more details, see the [online documentation](|http://libatoms.github.io/QUIP)
+
+The main libAtoms/QUIP contributors are:
+
+ - University of Cambridge: Albert P. Bartók, Gábor Csányi, Wojciech Szlachta, Csilla Várnai
+ - University of Warwick: James Kermode
+ - Naval Research Laboratory, Washington DC: Noam Bernstein
+- Fraunhofer IWM, Freiburg: Lars Pastewka, Michael Moseler
+
+## Compilation Instructions
 
 1) decide your architecture by looking at the Makefiles/README, and
    define an environmental variable QUIP_ARCH, e.g. 
@@ -121,3 +110,16 @@ This is the top level directory for QUIP, libAtoms and friends.
    parameters, TTM3f water model), GAP (Gaussian Approximation
    Potential models) and GAP-filler (Gaussian Approximation Potential
    model training).
+
+## Code Philosophy
+
+We try to strike a compromise between readability of code and
+efficiency, and think of QUIP/libAtoms as a "developer's code": nice
+when you want to try new ideas quickly, but not competitive in
+efficiency with other major md codes such as LAMMPS, Gromacs etc. We
+use several extensions to the Fortran 95 standard in order to make the
+coding style more object oriented. Several compilers support all the
+necessary extensions in their recent versions, e.g. GNU v4.4 and
+later. Support in the Intel compiler suite is there in principle, but
+not every recent version has correct implementation, although we have
+not encountered many problems past version 11.
