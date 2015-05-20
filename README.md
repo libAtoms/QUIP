@@ -8,14 +8,71 @@ potentials and tight binding quantum mechanics, and is also able to
 call external packages. Various hybrid combinations are also supported
 in the style of QM/MM.
 
-For more details, see the [online documentation](|http://libatoms.github.io/QUIP)
+For more details, see the [online documentation](|http://libatoms.github.io/QUIP).
+
+Most of the publicly available version is released under the GNU
+General Public license, version 2, with some portions in the public
+domain.
 
 The main libAtoms/QUIP contributors are:
 
- - University of Cambridge: Albert P. Bartók, Gábor Csányi, Wojciech Szlachta, Csilla Várnai
+ - University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan Nichol,
+ - Letif Mones, Wojciech Szlachta
  - University of Warwick: James Kermode
+ - King's College London: Alessandro De Vita
  - Naval Research Laboratory, Washington DC: Noam Bernstein
-- Fraunhofer IWM, Freiburg: Lars Pastewka, Michael Moseler
+ - Fraunhofer IWM, Freiburg: Lars Pastewka
+
+## Potentials
+
+The following interatomic potentials are presently coded or linked in QUIP:
+
+ - BKS (van Beest, Kremer and van Santen) (silica)
+ - EAM (fcc metals)
+ - Fanourgakis-Xantheas (water)
+ - Finnis-Sinclair (bcc metals)
+ - Flikkema-Bromley
+ - GAP (Gaussian Approximation Potentials: general many-body)
+ - Guggenheim-!McGlashan
+ - Brenner (carbon)
+ - OpenKIM (general interface)
+ - Lennard-Jones
+ - Morse
+ - Partridge-Schwenke (water monomer)
+ - Stillinger-Weber (carbon, silicon, germanium)
+ - SiMEAM (silicon)
+ - Sutton-Chen
+ - Tangney-Scandolo (silica, titania etc)
+ - Tersoff (silicon, carbon)
+
+The following tight-binding functional forms and parametrisations are implemented:
+
+ - Bowler
+ - DFTB
+ - GSP
+ - NRL-TB
+
+The following external packages can be called:
+
+ - CASTEP
+ - VASP
+ - CP2K
+ - ASAP
+ - ASE (latest svn trunk recommended)
+ - Molpro
+
+## Code Philosophy
+
+We try to strike a compromise between readability of code and
+efficiency, and think of QUIP/libAtoms as a "developer's code": nice
+when you want to try new ideas quickly, but not competitive in
+efficiency with other major md codes such as LAMMPS, Gromacs etc. We
+use several extensions to the Fortran 95 standard in order to make the
+coding style more object oriented. Several compilers support all the
+necessary extensions in their recent versions, e.g. GNU v4.4 and
+later. Support in the Intel compiler suite is there in principle, but
+not every recent version has correct implementation, although we have
+not encountered many problems past version 11.
 
 ## Compilation Instructions
 
@@ -105,21 +162,8 @@ The main libAtoms/QUIP contributors are:
    is recursive,  so 'init_args=IP --help'  will then proceed  to list
    the types of interatomic potentials (IP) that are available.
 
-6) Some functionality is only available if you check out other
-   packages within the QUIP tree, e.g. the ThirdParty (DFTB
-   parameters, TTM3f water model), GAP (Gaussian Approximation
-   Potential models) and GAP-filler (Gaussian Approximation Potential
-   model training).
+Some functionality is only available if you check out other packages
+within the QUIP tree, e.g. the ThirdParty (DFTB parameters, TTM3f
+water model), GAP (Gaussian Approximation Potential models) and
+GAP-filler (Gaussian Approximation Potential model training).
 
-## Code Philosophy
-
-We try to strike a compromise between readability of code and
-efficiency, and think of QUIP/libAtoms as a "developer's code": nice
-when you want to try new ideas quickly, but not competitive in
-efficiency with other major md codes such as LAMMPS, Gromacs etc. We
-use several extensions to the Fortran 95 standard in order to make the
-coding style more object oriented. Several compilers support all the
-necessary extensions in their recent versions, e.g. GNU v4.4 and
-later. Support in the Intel compiler suite is there in principle, but
-not every recent version has correct implementation, although we have
-not encountered many problems past version 11.
