@@ -16,8 +16,8 @@ domain.
 
 The main libAtoms/QUIP contributors are:
 
- - University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan Nichol,
- - Letif Mones, Wojciech Szlachta
+ - University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan
+   Nichol, Letif Mones, Wojciech Szlachta
  - University of Warwick: James Kermode
  - King's College London: Alessandro De Vita
  - Naval Research Laboratory, Washington DC: Noam Bernstein
