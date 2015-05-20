@@ -1919,11 +1919,11 @@ transforms is not included here.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_scaled_positions">
-<code class="descname">get_scaled_positions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_scaled_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_scaled_positions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_scaled_positions</code><span class="sig-paren">(</span><em>wrap=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_scaled_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_scaled_positions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get positions relative to unit cell.</p>
-<p>Atoms outside the unit cell will be wrapped into the cell in
-those directions with periodic boundary conditions so that the
-scaled coordinates are between zero and one.</p>
+<p>If wrap is True, atoms outside the unit cell will be wrapped into
+the cell in those directions with periodic boundary conditions
+so that the scaled coordinates are between zero and one.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3289,6 +3289,36 @@ interspersed will not work</p>
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">unskew_cell</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/Atoms_types.f95">libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Atoms.wrap">
+<code class="descname">wrap</code><span class="sig-paren">(</span><em>center=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>pbc=None</em>, <em>eps=1e-07</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap positions to unit cell.</p>
+<p>Parameters:</p>
+<dl class="docutils">
+<dt>center: three float</dt>
+<dd>The positons in fractional coordinates that the new positions
+will be nearest possible to.</dd>
+<dt>pbc: one or 3 bool</dt>
+<dd>For each axis in the unit cell decides whether the positions
+will be moved along this axis.  By default, the boundary
+conditions of the Atoms object will be used.</dd>
+<dt>eps: float</dt>
+<dd>Small number to prevent slightly negative coordinates from beeing
+wrapped.</dd>
+</dl>
+<p>See also the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/utils.html#ase.utils.geometry.wrap_positions" title="(in ASE v)"><code class="xref py py-func docutils literal"><span class="pre">ase.utils.geometry.wrap_positions()</span></code></a> function.
+Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="p">[[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.01</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">]],</span>
+<span class="gp">... </span>          <span class="n">cell</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]],</span>
+<span class="gp">... </span>          <span class="n">pbc</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">positions</span>
+<span class="go">array([[ 0.9 ,  0.01, -0.5 ]])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">

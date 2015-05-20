@@ -610,10 +610,10 @@ will be raised if you ask for something that is not supported.</p>
 <p class="rubric">args_str options</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="19%" />
-<col width="8%" />
-<col width="11%" />
-<col width="63%" />
+<col width="22%" />
+<col width="7%" />
+<col width="10%" />
+<col width="60%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -629,39 +629,45 @@ will be raised if you ask for something that is not supported.</p>
 <td>Energy rescale factor. Overrides
 E_scale init arg</td>
 </tr>
-<tr class="row-odd"><td>energy</td>
+<tr class="row-odd"><td>do_calc_connect</td>
+<td>bool</td>
+<td>True</td>
+<td>Switch on/off automatic calc_connect()
+calls.</td>
+</tr>
+<tr class="row-even"><td>energy</td>
 <td>str</td>
 <td>None</td>
 <td>If present, calculate energy and put it
 in field with this string as name</td>
 </tr>
-<tr class="row-even"><td>force</td>
+<tr class="row-odd"><td>force</td>
 <td>str</td>
 <td>None</td>
 <td>If present, calculate force and put it
 in field with this string as name</td>
 </tr>
-<tr class="row-odd"><td>local_energy</td>
+<tr class="row-even"><td>local_energy</td>
 <td>str</td>
 <td>None</td>
 <td>If present, calculate local energy and
 put it in field with this string as
 name</td>
 </tr>
-<tr class="row-even"><td>local_virial</td>
+<tr class="row-odd"><td>local_virial</td>
 <td>str</td>
 <td>None</td>
 <td>If present, calculate local virial and
 put it in field with this string as
 name</td>
 </tr>
-<tr class="row-odd"><td>r_scale</td>
+<tr class="row-even"><td>r_scale</td>
 <td>float</td>
 <td>0.0</td>
 <td>Distance rescale factor. Overrides
 r_scale init arg</td>
 </tr>
-<tr class="row-even"><td>virial</td>
+<tr class="row-odd"><td>virial</td>
 <td>str</td>
 <td>None</td>
 <td>If present, calculate virial and put it
