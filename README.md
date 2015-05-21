@@ -141,9 +141,8 @@ not encountered many problems past version 11.
     		eval at_file=test.xyz init_args='IP LJ' \
     			param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
     
-    assuming that you have a file called test.xyz with the following
-    data in it (without the dashes, obviously) representing Cu atoms in
-    a simple cubic lattice:
+    assuming that you have a file called `test.xyz` with the following
+    data in it representing Cu atoms in a simple cubic lattice:
     
     		1
     		Lattice="4 0 0 0 4 0 0 0 4" Properties=Z:I:1:pos:R:3
