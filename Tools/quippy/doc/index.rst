@@ -43,6 +43,44 @@ The main libAtoms/QUIP contributors are:
 
 The quippy interface is principally maintained by `James Kermode <http://www.jrkermode.co.uk>`_.  
 
+Features
+========
+
+The following interatomic potentials are presently coded or linked in QUIP:
+
+* EAM (fcc metals)
+* Fanourgakis-Xantheas (water)
+* Finnis-Sinclair (bcc metals)
+* Flikkema-Bromley
+* GAP (Gaussian Approximation Potentials: general many-body)
+* Guggenheim-!McGlashan
+* Brenner (carbon)
+* OpenKIM (general interface)
+* Lennard-Jones
+* Morse
+* Partridge-Schwenke (water monomer)
+* Stillinger-Weber (carbon, silicon, germanium)
+* SiMEAM (silicon)
+* Sutton-Chen
+* Tangney-Scandolo (silica, titania etc)
+* Tersoff (silicon, carbon)
+
+The following tight-binding functional forms and parametrisations are implemented:
+
+* Bowler
+* DFTB
+* GSP
+* NRL-TB
+
+The following external packages can be called:
+
+* CASTEP
+* VASP
+* CP2K
+* ASAP
+* ASE (latest svn trunk recommended)
+* Molpro
+
 Contents
 ========
 
