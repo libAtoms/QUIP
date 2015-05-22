@@ -19,21 +19,67 @@
 .. quippy documentation master file, created by
    sphinx-quickstart on Wed Sep  2 14:17:01 2009.
 
-quippy
-======
+QUIP and quippy documentation
+=============================
 
 .. module:: quippy
 
-quippy is a Python interface to the `libAtoms/QUIP <http://www.libatoms.org>`_
+The QUIP package is a software library written in Fortran 95+ for the
+purposes of carrying out molecular dynamics simulations. The code
+implements a wide variety of interatomic potentials and tight binding
+quantum mechanics, and is also able to call external packages. Various
+hybrid combinations are also supported in the style of QM/MM.
+
+quippy is a Python interface to the `libAtoms/QUIP <https://github.com/libAtoms/QUIP>`_
 molecular dynamics framework.  
 
-The quippy interface is principally maintained by `James Kermode <http://www.jrkermode.co.uk>`_. 
 The main libAtoms/QUIP contributors are:
 
-* University of Cambridge: Albert P. Bartók, Gábor Csányi, Wojciech Szlachta, Csilla Várnai
-* King's College London: James Kermode
+* University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan Nichol, Letif Mones, Wojciech Szlachta
+* University of Warwick: James Kermode
+* King's College London: Alessandro De Vita
 * Naval Research Laboratory, Washington DC: Noam Bernstein
-* Fraunhofer IWM, Freiburg: Lars Pastewka, Michael Moseler
+* Fraunhofer IWM, Freiburg: Lars Pastewka
+
+The quippy interface is principally maintained by `James Kermode <http://www.jrkermode.co.uk>`_.  
+
+Features
+========
+
+The following interatomic potentials are presently coded or linked in QUIP:
+
+* EAM (fcc metals)
+* Fanourgakis-Xantheas (water)
+* Finnis-Sinclair (bcc metals)
+* Flikkema-Bromley
+* GAP (Gaussian Approximation Potentials: general many-body)
+* Guggenheim-!McGlashan
+* Brenner (carbon)
+* OpenKIM (general interface)
+* Lennard-Jones
+* Morse
+* Partridge-Schwenke (water monomer)
+* Stillinger-Weber (carbon, silicon, germanium)
+* SiMEAM (silicon)
+* Sutton-Chen
+* Tangney-Scandolo (silica, titania etc)
+* Tersoff (silicon, carbon)
+
+The following tight-binding functional forms and parametrisations are implemented:
+
+* Bowler
+* DFTB
+* GSP
+* NRL-TB
+
+The following external packages can be called:
+
+* CASTEP
+* VASP
+* CP2K
+* ASAP
+* ASE (latest svn trunk recommended)
+* Molpro
 
 Contents
 ========
