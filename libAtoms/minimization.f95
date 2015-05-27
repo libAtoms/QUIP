@@ -71,6 +71,7 @@ module minimization_module
     real(dp) :: energy_scale,length_scale,cutoff,res2
     logical :: has_fixed = .FALSE.
     real(dp) :: cell_coeff = 1.0_dp
+    real(dp) :: bulk_modulus, number_density
   end type precon_data
   integer, parameter :: E_FUNC_BASIC=1, E_FUNC_KAHAN=2, E_FUNC_DOUBLEKAHAN=3
 

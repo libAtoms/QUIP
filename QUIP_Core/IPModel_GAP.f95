@@ -175,6 +175,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
 
   this%cutoff = 0.0_dp
   do i_coordinate = 1, this%my_gp%n_coordinate
+     call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%xml_version)
      call initialise(this%my_descriptor(i_coordinate),string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
      this%cutoff = max(this%cutoff,cutoff(this%my_descriptor(i_coordinate)))
   enddo

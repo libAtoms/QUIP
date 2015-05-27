@@ -122,7 +122,7 @@ module QUIP_LAMMPS_wrapper_module
          enddo
 
          ! Call the QUIP potential.
-         call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local lammps")
+         call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local lammps do_calc_connect=F")
       endif
 
    endsubroutine quip_lammps_wrapper
