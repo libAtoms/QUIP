@@ -183,10 +183,9 @@ subroutine IPModel_Coulomb_Finalise(this)
 
 end subroutine IPModel_Coulomb_Finalise
 
-recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, local_virial, args_str, mpi, error)
+recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
    type(IPModel_Coulomb), intent(inout):: this
-   type(Atoms), intent(inout),target  :: at_in
-   type(Atoms), pointer               :: at
+   type(Atoms), intent(inout)  :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)
@@ -204,7 +203,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
    integer :: n_uniq_Zs
-   type(Atoms),target :: at_dummy
+
 
    real(dp), allocatable :: gamma_mat(:,:)
 
@@ -216,27 +215,20 @@ recursive subroutine IPModel_Coulomb_Calc(this, at_in, e, local_e, f, virial, lo
    do_f=present(f)
    do_e=present(e)
 
-   at => at_in
-   if (.not. has_property(at,"dummy_charge")) then
-     if (do_e) e = 0.0_dp
-     if (present(local_e)) then
-        call check_size('Local_E',local_e,(/at%N/),'IPModel_Coulomb_Calc', error)
-        local_e = 0.0_dp
-     endif
-     if (do_f) then
-        call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
-        f = 0.0_dp
-     end if
-     if (present(virial)) virial = 0.0_dp
-     if (present(local_virial)) then
-        call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
-        local_virial = 0.0_dp
-     endif
-   else
-     if (do_f) then
-        call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
-     end if
+   if (do_e) e = 0.0_dp
+   if (present(local_e)) then
+      call check_size('Local_E',local_e,(/at%N/),'IPModel_Coulomb_Calc', error)
+      local_e = 0.0_dp
+   endif
+   if (do_f) then
+      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
+      f = 0.0_dp
    end if
+   if (present(virial)) virial = 0.0_dp
+   if (present(local_virial)) then
+      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_Coulomb_Calc', error)
+      local_virial = 0.0_dp
+   endif
 
    if (present(args_str)) then
       call initialise(params)
