@@ -288,7 +288,7 @@ subroutine add_sites_for_monomer(at,sites,offset,exclude_list,monomer_type,atom_
   real(dp),dimension(:,:),allocatable :: atomic_positions
   integer :: monomer_size,sites_per_mono,exclude_offset,n_exclude
   integer :: i_atom_site,i_site_glob,i_atom,i_site,i
-  !integer, dimension(3) :: water_signature = (/1,1,8/)
+  integer, dimension(3) :: water_signature = (/1,1,8/)
   real(dp), dimension(3,3) :: identity3x3
   real(dp), dimension(3)   :: com_pos
 
@@ -374,7 +374,11 @@ subroutine add_sites_for_monomer(at,sites,offset,exclude_list,monomer_type,atom_
       case(Dipole_Method_GAP)
         continue     ! call dipole_moment_GAP()
       case(Dipole_Method_Partridge_Schwenke)
+        if (any(monomer_type%signature .ne. water_signature)) then
+          call system_abort(" Signature of water monomer must be "//water_signature) 
+        end if
         call dipole_moment_PS(atomic_positions,sites(i_site_glob)%dipole) 
+        !call print("PS dipole : "//sites(i_site_glob)%dipole)
     end select
 
     if (do_grads) then
@@ -498,6 +502,7 @@ subroutine electrostatics_calc(at,multipoles,ewald,do_pot,do_field,do_force,e)
     end do
   end do
 
+call print("real space energy "//my_energy)
   ! if ewald
   ! recip part
   ! self part
@@ -627,7 +632,7 @@ subroutine  calc_induced_dipoles(pol_matrix,multipoles,polarisation,pol_energy)
     multipoles%sites(i_site)%dipole =  multipoles%sites(i_site)%dipole + induced_dipoles(ii:ii+2)
     pol_energy = pol_energy + 0.5_dp*(normsq(induced_dipoles(ii:ii+2))/multipoles%sites(i_site)%alpha)
   end do
-
+call print("polarisation energy "//pol_energy)
 !call print("dipoles")
 !call print(induced_dipoles)
 
