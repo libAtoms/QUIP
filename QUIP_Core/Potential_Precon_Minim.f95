@@ -45,12 +45,15 @@ module Potential_Precon_Minim_module
   contains
 
 
-  subroutine allocate_precon(this,at,precon_id,nneigh,energy_scale,length_scale,cutoff,res2,max_iter,max_sub,bulk_modulus,number_density)
+  subroutine allocate_precon(this,at,precon_id,nneigh,energy_scale,length_scale,cutoff,res2,max_iter,max_sub,bulk_modulus,number_density,auto_mu)
     type (precon_data), intent(inout) :: this
     type (Atoms) :: at
     character(*) :: precon_id
     integer :: nneigh,max_iter,max_sub
     real(dp) :: energy_scale, length_scale, cutoff,res2,bulk_modulus,number_density
+    real(dp) :: scalingnumer, scalingdenom, thisdist
+    logical :: auto_mu
+    integer :: I,J, thisind, thisneighcount
 
     this%precon_id = precon_id
     this%nneigh = nneigh
@@ -88,6 +91,30 @@ module Potential_Precon_Minim_module
     elseif (this%dense .eqv. .true.) then
       allocate(this%preconcoeffs(nneigh+1,at%N,6))
     end if
+call print(auto_mu)
+    if (auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
+        this%mu=25.5/(this%cutoff**2.0)
+    elseif (.not. auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
+      scalingnumer = 0.0_dp
+      scalingdenom = 0.0_dp
+      do I = 1,(at%N)
+        scalingnumer = scalingnumer + 1.0
+        thisneighcount = n_neighbours(at,I)
+        do J = 1,thisneighcount
+          thisind = neighbour(at,I,J,distance=thisdist) 
+          if (thisind > 0 .and. (thisdist <= this%cutoff)) then 
+            if (this%precon_id == "LJ" .or. this%precon_id == "C1") then
+              scalingdenom = scalingdenom + thisdist**2.0
+            end if
+          end if
+        end do
+      end do
+      scalingnumer = scalingnumer*bulk_modulus/number_density
+      this%mu = (2.0*scalingnumer)/(scalingdenom/3.0)
+    else
+        this%mu=1.0
+    end if
+
   end subroutine
   
   subroutine build_precon(this,am_data)
@@ -106,6 +133,7 @@ module Potential_Precon_Minim_module
     integer :: nearneighcount
     logical :: did_rebuild, do_this
     integer :: didcount 
+    real(dp) :: scalingcoeff, scalingnumer, scalingdenom
 
     call system_timer('build_precon')
     am = transfer(am_data,am)
@@ -129,6 +157,9 @@ module Potential_Precon_Minim_module
     !conconstant = 1.0_dp
     conconstant = 0.1_dp
 
+    scalingnumer = 0.0
+    scalingdenom = 0.0
+
     this%preconrowlengths = 0 
     this%preconindices = 0
     this%preconcoeffs = 0.0
@@ -148,7 +179,8 @@ module Potential_Precon_Minim_module
           cycle
         end if
       end if
-      
+     
+      scalingnumer = scalingnumer + 1 
       didcount = didcount+1
       thisneighcount = n_neighbours(am%minim_at,I)
       thisneighcountlocal = n_neighbours(am%minim_at,I,max_dist=this%cutoff)
@@ -199,6 +231,7 @@ module Potential_Precon_Minim_module
                 this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
                 this%preconindices(nearneighcount,I) = thisind
 
+                scalingdenom = scalingdenom + thisdist**2.0
             end if
               
             !this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
@@ -268,11 +301,17 @@ module Potential_Precon_Minim_module
       this%preconindices(1,I) = I
     end do 
     end if
-    
-    !call print(didcount) 
-    if(this%precon_id == 'LJ') then
-  this%preconcoeffs= this%preconcoeffs*1.5
-end if  
+
+    if(this%precon_id == 'LJ' .or. this%precon_id == 'C1') then
+       ! scalingdenom = scalingdenom/3.0
+       ! scalingnumer = 2.0*scalingnumer*this%bulk_modulus/this%number_density
+        !scalingcoeff = scalingnumer/scalingdenom
+        !scalingcoeff =this%bulk_modulus
+
+        !call print(this%number_density)
+        call print(this%mu) 
+        this%preconcoeffs= this%preconcoeffs*this%mu
+    end if  
   am%connectivity_rebuilt = .false.
     !call exit()
 
@@ -296,7 +335,7 @@ end if
     integer :: I, J, target_elements(3), row_elements(3), thisind, am_data_size, K
     real(dp) :: scoeff
 
-    call allocate_precon(pr,at,'C1',125,1.0_dp,1.0_dp,cutoff,10.0_dp**(-10.0),100,20,0.625_dp,0.1_dp)
+    call allocate_precon(pr,at,'C1',125,1.0_dp,1.0_dp,cutoff,10.0_dp**(-10.0),100,20,0.625_dp,0.1_dp,.true.)
     
     am%minim_at => at
     am_data_size = size(transfer(am, am_mold))
@@ -331,7 +370,7 @@ end if
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
        hook, hook_print_interval, &
-   error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,convchoice,bulk_modulus,number_density)
+   error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,convchoice,bulk_modulus,number_density,auto_mu)
     
     implicit none
     
@@ -399,7 +438,8 @@ end if
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting, probably dont need to change this
 
     real(dp), optional :: infoverride !optional override to max step in infinity norm
-    
+    logical, optional :: auto_mu 
+
     character(*), intent(in),optional :: convchoice
 
     integer:: Precon_Potential_Minim
@@ -422,7 +462,7 @@ end if
     real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2, my_bulk_modulus,my_number_density
     integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
     character(10) :: my_precon_id
-    logical ::  doinfnorm
+    logical ::  doinfnorm, my_auto_mu
 
 
     INIT_ERROR(error)
@@ -441,8 +481,9 @@ end if
       call print("Defaulting to 2 norm for convergence")
     end if
 
+
     my_bulk_modulus = optional_default(0.625_dp,bulk_modulus)
-    my_number_density = optional_default(0.1_dp,number_density)
+    my_number_density = optional_default(0.01_dp,number_density)
 
     my_precon_id = optional_default('ID',precon_id)
     if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
@@ -538,13 +579,14 @@ end if
     my_precon_cutoff = optional_default(cutoff(this),precon_cutoff)
     my_res2 = optional_default(10.0_dp**(-5.0_dp),res2)
     my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
+    my_auto_mu = optional_default(.true.,auto_mu)
     my_max_sub = 30
    
     if (my_length_scale < 0.5_dp) then
       call print("WARNING: You have set your atomistic length scale (approximate first neighbour distance) to: "//my_length_scale // " this is very low and probably constitutes an incorrect input",PRINT_ALWAYS)
     end if
 
-    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density)
+    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density,my_auto_mu)
 
     n_iter = preconminim(x, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps, &
       efuncroutine=efuncroutine, linminroutine=linminroutine, hook=hook, hook_print_interval=hook_print_interval, &
@@ -570,7 +612,7 @@ end if
   function Precon_Potential_Dimer(this, at,at2, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
        hook,hook_print_interval,&
-   error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride, bulk_modulus,number_density)
+   error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,bulk_modulus,number_density,auto_mu)
     
     implicit none
     
@@ -636,7 +678,7 @@ end if
 
     real(dp), intent(in), optional :: bulk_modulus
     real(dp), intent(in), optional :: number_density
-
+    logical, optional :: auto_mu
 
     integer:: Precon_Potential_Dimer
 
@@ -658,6 +700,7 @@ end if
     real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2,my_bulk_modulus,my_number_density
     integer :: my_nneigh, my_mat_mult_max_iter, my_max_sub
     character(10) :: my_precon_id
+    logical :: my_auto_mu
 
     real(dp), optional :: infoverride
 
@@ -687,7 +730,7 @@ end if
     vpos = (at%pos - at2%pos)
     
     my_bulk_modulus = optional_default(0.625_dp,bulk_modulus)
-    my_number_density = optional_default(0.1_dp,number_density)
+    my_number_density = optional_default(0.01_dp,number_density)
 
 
     call calc_connect(at)
@@ -774,8 +817,9 @@ end if
     my_res2 = optional_default(10.0_dp**(-5.0_dp),res2)
     my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
     my_max_sub = 30
+    my_auto_mu = optional_default(.true.,auto_mu)
 
-    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density)
+    call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density,my_auto_mu)
     !call print(use_method)   
     n_iter = precondimer(x,v, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
             hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
