@@ -3314,7 +3314,7 @@ contains
     if (present(alt_connect)) then
        call calc_dists(alt_connect, this, parallel, error)
        PASS_ERROR(error)
-    else
+    else if (this%connect%initialised) then
        call calc_dists(this%connect, this, parallel, error)
        PASS_ERROR(error)
     end if
