@@ -219,18 +219,21 @@ call print(auto_mu)
               thiscoeff = 1.0_dp
             end if
           
-	    do_this = .true.
-            if (this%has_fixed) then
-	      !do_this = (am%minim_at%move_mask(thisind) == 1 .and. thisind .ne. I)
-	      do_this = (thisind .ne. I)
-	    end if
+            do_this = (thisind .ne. I)
                   
-	    if (do_this) then
+            if (this%has_fixed) then
+                do_this = (am%minim_at%move_mask(thisind) == 1 .and. dothis)
+            end if
+
+            if (do_this) then
                 nearneighcount = nearneighcount+1
                 this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
                 this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
                 this%preconindices(nearneighcount,I) = thisind
 
+                scalingdenom = scalingdenom + thisdist**2.0
+            else
+                this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
                 scalingdenom = scalingdenom + thisdist**2.0
             end if
               
