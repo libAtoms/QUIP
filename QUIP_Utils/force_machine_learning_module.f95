@@ -127,9 +127,9 @@ end interface
         weight_neighbour = exp(-((r/r0)**m)) /r
      CASE (1)
         weight_neighbour = exp(-((r/r0)**m)) 
-     CASE (2)
-        kernel=sqrt(m*2_dp)*(r/r0)
-        weight_neighbour= (1_dp/GAMMA(m) / (2_dp**(m-1)) ) * (kernel**m) * BESYN(int(m), kernel)  
+     !CASE (2)
+     !   kernel=sqrt(m*2_dp)*(r/r0)
+     !   weight_neighbour= (1_dp/GAMMA(m) / (2_dp**(m-1)) ) * (kernel**m) * BESYN(int(m), kernel)  
      END SELECT
 
  end function weight_neighbour
