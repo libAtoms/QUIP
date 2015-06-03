@@ -222,7 +222,7 @@ call print(auto_mu)
             do_this = (thisind .ne. I)
                   
             if (this%has_fixed) then
-                do_this = (am%minim_at%move_mask(thisind) == 1 .and. dothis)
+                do_this = (am%minim_at%move_mask(thisind) == 1 .and. do_this)
             end if
 
             if (do_this) then
