@@ -877,7 +877,7 @@ def ASEDatabaseReader(filename, format=None):
     conn = connect(filename)
             
     for dct in conn.select(index):
-        at = dict2atoms(at)
+        at = dict2atoms(dct)
         yield at
     
     
