@@ -874,7 +874,6 @@ def ASEDatabaseReader(filename, format=None):
             index = int(index)
 
     conn = connect(filename)
-            
     for row in conn.select(index):
         at = dict2atoms(row)
         yield at
@@ -910,7 +909,7 @@ class ASEDatabaseWriter(object):
 
         params = {}
         data = {}
-        skip_params = ['energy', 'virial', 'calculator'] # filter out duplicate data
+        skip_params = ['energy', 'virial', 'calculator', 'id', 'unique_id'] # filter out duplicate data
         for (key, value) in all_kwargs.items():
             key = key.lower()
             if key in skip_params:
