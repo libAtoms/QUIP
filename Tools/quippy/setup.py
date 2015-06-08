@@ -291,7 +291,8 @@ def find_wrap_sources(makefile, quip_root):
     if do_tools:
         wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95', 'real_space_covariance.f95',
                                                                    'ts_params.f95',
-                                                                   'transition_state.f95']]
+                                                                   'transition_state.f95',
+								   'structure_analysis_traj_routines.f95']]
         wrap_types += ['realspacecovariance', 'tsparams', 'images',
                        'chainofstates', 'ts', 'steinhardtqw']
 
