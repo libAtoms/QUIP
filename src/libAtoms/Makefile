@@ -33,6 +33,7 @@ PROGRAMS = minimal_md xyz2pdb convert
 .PHONY: default all clean docclean
 
 default: libatoms.a 
+
 all: default ${PROGRAMS}
 
 ifeq (${QUIP_ARCH},)
@@ -121,8 +122,7 @@ else
 endif
 
 clean:
-	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
-	-rm libAtoms.depend
+	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc libAtoms.depend
 
 allclean: clean docclean
 
@@ -139,7 +139,7 @@ ifeq (${USE_MAKEDEP},1)
 LIBATOMS_F95_FPP_FILES = ${addsuffix .fpp, ${LIBATOMS_F95_FILES}}
 
 libAtoms.depend: ${LIBATOMS_F95_FPP_FILES}
-	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../libAtoms/,${LIBATOMS_F95_SOURCES}} > libAtoms.depend
+	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/libAtoms/,${LIBATOMS_F95_SOURCES}} > libAtoms.depend
 
 -include libAtoms.depend
 endif

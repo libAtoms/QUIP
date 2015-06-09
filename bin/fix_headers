@@ -1,35 +1,5 @@
 #!/usr/bin/perl -w
 
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# X
-# X   libAtoms+QUIP: atomistic simulation library
-# X
-# X   Portions of this code were written by
-# X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-# X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
-# X
-# X   Copyright 2006-2010.
-# X
-# X   These portions of the source code are released under the GNU General
-# X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-# X
-# X   If you would like to license the source code under different terms,
-# X   please contact Gabor Csanyi, gabor@csanyi.net
-# X
-# X   Portions of this code were written by Noam Bernstein as part of
-# X   his employment for the U.S. Government, and are not subject
-# X   to copyright in the USA.
-# X
-# X
-# X   When using this software, please cite the following reference:
-# X
-# X   http://www.libatoms.org
-# X
-# X  Additional contributions by
-# X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
-# X
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 # this can be used to annotate the entire QUIP distribution by doing
 #  ./fix_headers `find . -type f -not-wholename "*fix_headers" -not -wholename "*.svn*" -not -wholename "*quippy*" -not -wholename "*pyatoms*" -not -wholename "*FoX-4.0.3*"  -print` > fix_headers.out 2>&1
 
@@ -60,182 +30,149 @@ if ($#ARGV < 0) {
  
 my %headers;
 $headers{""} = ["H0", <<'H0text'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   libAtoms+QUIP: atomistic simulation library
-X
-X   Portions of this code were written by
-X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
-X
-X   Copyright 2006-2010.
-X
-X   These portions of the source code are released under the GNU General
-X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-X
-X   If you would like to license the source code under different terms,
-X   please contact Gabor Csanyi, gabor@csanyi.net
-X
-X   Portions of this code were written by Noam Bernstein as part of
-X   his employment for the U.S. Government, and are not subject
-X   to copyright in the USA.
-X
-X
-X   When using this software, please cite the following reference:
-X
-X   http://www.libatoms.org
-X
-X  Additional contributions by
-X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+==============================================================================
+
+   libAtoms+QUIP: atomistic simulation library
+
+   Portions of this code were written by
+
+     Albert Bartok-Partay, Livia Bartok-Partay, Federico Bianchini,
+     Anke Butenuth, Marco Caccin, Silvia Cereda, Gabor Csanyi, Alessio
+     Comisso, Tom Daff, Sebastian John, Chiara Gattinoni, Gianpietro
+     Moras, James Kermode, Letif Mones, Alan Nichol, David Packwood,
+     Lars Pastewka, Giovanni Peralta, Ivan Solt, Oliver Strickson,
+     Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+
+   Copyright 2006-2015.
+
+   These portions of the source code are released under the GNU General
+   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+
+   If you would like to license the source code under different terms,
+   please contact Gabor Csanyi, gc121@cam.ac.uk
+
+   Portions of this code were written by Noam Bernstein as part of
+   his employment for the U.S. Government, and are not subject
+   to copyright in the USA.
+
+
+   When using this software, please cite the following reference:
+
+   http://www.libatoms.org
+
+==============================================================================
 H0text
 
 $headers{"_NO_DISTRIBUTION"} = ["HND", <<'HNDtext'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   libAtoms+QUIP: atomistic simulation library
-X
-X   Portions of this code were written by
-X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
-X
-X   Copyright 2006-2010.
-X
-X   Not for distribution
-X
-X   Portions of this code were written by Noam Bernstein as part of
-X   his employment for the U.S. Government, and are not subject
-X   to copyright in the USA.
-X
-X   When using this software, please cite the following reference:
-X
-X   http://www.libatoms.org
-X
-X  Additional contributions by
-X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+==============================================================================
+
+   libAtoms+QUIP: atomistic simulation library
+
+   Portions of this code were written by
+
+     Albert Bartok-Partay, Livia Bartok-Partay, Federico Bianchini,
+     Anke Butenuth, Marco Caccin, Silvia Cereda, Gabor Csanyi, Alessio
+     Comisso, Tom Daff, Sebastian John, Chiara Gattinoni, Gianpietro
+     Moras, James Kermode, Letif Mones, Alan Nichol, David Packwood,
+     Lars Pastewka, Giovanni Peralta, Ivan Solt, Oliver Strickson,
+     Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+
+   Copyright 2006-2015.
+
+   Not for distribution
+
+   Portions of this code were written by Noam Bernstein as part of
+   his employment for the U.S. Government, and are not subject
+   to copyright in the USA.
+
+   When using this software, please cite the following reference:
+
+   http://www.libatoms.org
+
+==============================================================================
 HNDtext
 
 $headers{"_JAMES"} = ["HJ", <<'HJtext'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   libAtoms+QUIP: atomistic simulation library
-X
-X   Portions of this code were written by
-X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
-X
-X   Copyright 2006-2010.
-X
-X   These portions of the source code are released under the GNU General
-X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-X
-X   If you would like to license the source code under different terms,
-X   please contact Gabor Csanyi, gabor@csanyi.net
-X
-X   Portions of this code were written by Noam Bernstein as part of
-X   his employment for the U.S. Government, and are not subject
-X   to copyright in the USA.
-X
-X
-X   When using this software, please cite the following reference:
-X
-X   http://www.libatoms.org
-X
-X  Additional contributions by
-X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+==============================================================================
+
+   libAtoms+QUIP: atomistic simulation library
+
+   Portions of this code were written by
+     Albert Bartok-Partay, Livia Bartok-Partay, Federico Bianchini,
+     Anke Butenuth, Marco Caccin, Silvia Cereda, Gabor Csanyi, Alessio
+     Comisso, Tom Daff, Sebastian John, Chiara Gattinoni, Gianpietro
+     Moras, James Kermode, Letif Mones, Alan Nichol, David Packwood,
+     Lars Pastewka, Giovanni Peralta, Ivan Solt, Oliver Strickson,
+     Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+
+   Copyright 2006-2015.
+
+   These portions of the source code are released under the GNU General
+   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+
+   If you would like to license the source code under different terms,
+   please contact Gabor Csanyi, gc121@cam.ac.uk
+
+   Portions of this code were written by Noam Bernstein as part of
+   his employment for the U.S. Government, and are not subject
+   to copyright in the USA.
+
+
+   When using this software, please cite the following reference:
+
+   http://www.libatoms.org
+
+
+==============================================================================
 HJtext
 
 $headers{"_LBFGS"} = ["HL", <<'HLtext'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   LBFGS
-X
-X   This code was downloaded from J. Nocedal's web site
-X   URL: http://www.eecs.northwestern.edu/~nocedal/lbfgs.html
-X
-X   Author: J. Nocedal
-X
-X   Condition for Use:
-X     This software is freely available for educational or commercial 
-X     purposes. We expect that all publications describing work using this 
-X     software quote at least one of the references given below.  This 
-X     software is released under the GNU Public License (GPL)
-X
-X   References:
-X     J. Nocedal. Updating Quasi-Newton Matrices with Limited Storage 
-X       (1980), Mathematics of Computation 35, pp. 773-782.
-X     D.C. Liu and J. Nocedal. On the Limited Memory Method for Large 
-X       Scale Optimization (1989), Mathematical Programming B, 45, 3, pp. 
-X       503-528.
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-HLtext
+==============================================================================
 
-$headers{"_PYATOMS"} = ["HP", <<'HJtext'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   pyatoms: atomistic simulations tools
-X
-X   Copyright James Kermode 2010
-X
-X   These portions of the source code are released under the GNU General
-X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-X
-X   If you would like to license the source code under different terms,
-X   please contact James Kermode, james.kermode@gmail.com
-X
-X   When using this software, please cite the following reference:
-X
-X   http://www.jrkermode.co.uk/PyAtoms
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-HJtext
+   LBFGS
+
+   This code was downloaded from J. Nocedal's web site
+   URL: http://www.eecs.northwestern.edu/~nocedal/lbfgs.html
+
+   Author: J. Nocedal
+
+   Condition for Use:
+     This software is freely available for educational or commercial 
+     purposes. We expect that all publications describing work using this 
+     software quote at least one of the references given below.  This 
+     software is released under the GNU Public License (GPL)
+
+   References:
+     J. Nocedal. Updating Quasi-Newton Matrices with Limited Storage 
+       (1980), Mathematics of Computation 35, pp. 773-782.
+     D.C. Liu and J. Nocedal. On the Limited Memory Method for Large 
+       Scale Optimization (1989), Mathematical Programming B, 45, 3, pp. 
+       503-528.
+
+==============================================================================
+HLtext
 
 
 $headers{"_QUIPPY"} = ["HQ", <<'HJtext'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   quippy: Python interface to QUIP atomistic simulation library
-X
-X   Copyright James Kermode 2010
-X
-X   These portions of the source code are released under the GNU General
-X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-X
-X   If you would like to license the source code under different terms,
-X   please contact James Kermode, james.kermode@gmail.com
-X
-X   When using this software, please cite the following reference:
-X
-X   http://www.jrkermode.co.uk/quippy
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+==============================================================================
+
+   quippy: Python interface to QUIP atomistic simulation library
+
+   Copyright James Kermode 2010-2015
+
+   These portions of the source code are released under the GNU General
+   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+
+   If you would like to license the source code under different terms,
+   please contact James Kermode, james.kermode@gmail.com
+
+   When using this software, please cite the following reference:
+
+   http://www.jrkermode.co.uk/quippy
+
+==============================================================================
 HJtext
 
-$headers{"_F90WRAP"} = ["HF", <<'HJtext'];
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-X
-X   f90wrap: F90 to Python interface generator with derived type support
-X
-X   Copyright James Kermode 2011
-X
-X   These portions of the source code are released under the GNU General
-X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
-X
-X   If you would like to license the source code under different terms,
-X   please contact James Kermode, james.kermode@gmail.com
-X
-X   When using this software, please cite the following reference:
-X
-X   http://www.jrkermode.co.uk/f90wrap
-X
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-HJtext
 
 
 foreach my $file (@ARGV) {

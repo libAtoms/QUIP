@@ -36,8 +36,8 @@ NETCDF_LIBS =  -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
 NETCDF4_CURL_LIBS = -lcurl
 MDCORE_LIBS = -lmdcore
-GIT_VERSION := -D'GIT_VERSION="$(shell ${QUIP_ROOT}/utility_scripts/gitversion -n ..)"'
-GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/utility_scripts/gapversion.sh -n ..)'
+GIT_VERSION := -D'GIT_VERSION="$(shell ${QUIP_ROOT}/bin/gitversion -n ..)"'
+GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion.sh -n ..)'
 
 ifndef AR
 	AR = ar
@@ -59,7 +59,7 @@ CPLUSPLUSFLAGS += ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} ${CUSTOM_CPLUSPLUSF
 CFLAGS += ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} ${CUSTOM_CFLAGS}
 
 SYSLIBS += -L${FOX_LIBDIR} ${FOX_LIBS} 
-INCLUDES += -I${QUIP_ROOT}/libAtoms -I${FOX_INCDIR}
+INCLUDES += -I${QUIP_ROOT}/src/libAtoms -I${FOX_INCDIR}
 
 ifeq (${HAVE_NETCDF},1)
   SYSLIBS += $(addprefix -L,${NETCDF_LIBDIR})

@@ -2087,6 +2087,9 @@ contains
     type inoutput_ptr
        type(inoutput), pointer :: p
     end type inoutput_ptr
+#ifndef SIZEOF_FORTRAN_T
+#error "SIZEOF_FORTRAN_T not defined. Check your build scripts, e.g. build/${QUIP_ARCH}/Makefile.inc"
+#endif
     integer, intent(out), dimension(SIZEOF_FORTRAN_T) :: mainlog_ptr, errorlog_ptr
     type(inoutput_ptr) :: mainlog_p, errorlog_p
 
