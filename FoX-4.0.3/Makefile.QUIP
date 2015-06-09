@@ -3,11 +3,11 @@
 
 all: foxlibs
 
-ifeq (${QUIP_ARCH},)
-  include Makefile.arch
-else
-  include Makefile.${QUIP_ARCH}
+ifndef QUIP_ARCH
+$(error "You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.")
 endif
+
+include Makefile.${QUIP_ARCH}
 include Makefile.inc
 include Makefile.rules
 

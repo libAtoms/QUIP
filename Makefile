@@ -53,10 +53,10 @@ ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
 -include ${BUILDDIR}/Makefile.inc   
 endif
 
-# create modules list
-MODULES = libAtoms
+# create modules list 
 
-# add any third party packages
+MODULES=
+# add any third party packages first
 ifeq (${HAVE_THIRDPARTY},1)
    MODULES += ThirdParty
    THIRDPARTY_LIBS := libthirdparty.a
@@ -64,6 +64,8 @@ ifeq (${HAVE_FX},1)
    THIRDPARTY_LIBS += libfx.a
 endif
 endif
+
+MODULES += libAtoms
 
 # add GAP modules if we have them - they need to come before other modules, except for libAtoms
 ifeq (${HAVE_GAP},1)
@@ -75,6 +77,8 @@ endif
 ifeq (${HAVE_GAP_FILLER},1)
 MODULES += GAP-filler
 endif
+
+# now add the rest of the modules
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors 
 
 # diagnostic
@@ -99,7 +103,7 @@ ${BUILDDIR}/Makefile.inc:
 
 ${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
-	make -C ${FOX} -I${PWD} -I${PWD}/arch -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
+	make -C ${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP 
 
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
 FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)
@@ -208,7 +212,7 @@ quippy:
 	make -C quippy install QUIP_ROOT=${QUIP_ROOT}
 
 test:
-	${MAKE} -C Tests -I${PWD} -I${PWD}/arch -I${PWD}/${BUILDDIR}
+	${MAKE} -C Tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 
