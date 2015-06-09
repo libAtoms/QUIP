@@ -807,12 +807,11 @@ class ASEWriter(object):
 AtomsWriters['traj'] = ASEWriter
 AtomsWriters['cfg'] = ASEWriter
 
-def dict2atoms(dct):
-    from ase.db.core import dict2atoms
+def dict2atoms(row):
     from quippy.elasticity import stress_matrix
-    
-    at = dict2atoms(dct)
 
+    at = row.toatoms()
+    
     f = None
     try:
         f = at.get_forces()
@@ -840,15 +839,15 @@ def dict2atoms(dct):
         at.params['virial'] = v
 
     # extract additional info from database
-    at.params['id'] = dct['id']
-    at.params['unique_id'] = dct['unique_id']
-    if 'keywords' in dct:
-        for key in dct['keywords']:
+    at.params['id'] = row['id']
+    at.params['unique_id'] = row['unique_id']
+    if 'keywords' in row:
+        for key in row['keywords']:
             at.params[key] = True
-    if 'key_value_pairs' in dct:
-        at.params.update(dct['key_value_pairs'])
-    if 'data' in dct:
-        for (key, value) in dct['data'].items():
+    if 'key_value_pairs' in row:
+        at.params.update(row['key_value_pairs'])
+    if 'data' in row:
+        for (key, value) in row['data'].items():
             key = str(key) # avoid unicode strings
             value = np.array(value)
             if value.dtype.kind == 'U':
@@ -875,9 +874,8 @@ def ASEDatabaseReader(filename, format=None):
             index = int(index)
 
     conn = connect(filename)
-            
-    for dct in conn.select(index):
-        at = dict2atoms(at)
+    for row in conn.select(index):
+        at = dict2atoms(row)
         yield at
     
     
@@ -911,7 +909,7 @@ class ASEDatabaseWriter(object):
 
         params = {}
         data = {}
-        skip_params = ['energy', 'virial', 'calculator'] # filter out duplicate data
+        skip_params = ['energy', 'virial', 'calculator', 'id', 'unique_id'] # filter out duplicate data
         for (key, value) in all_kwargs.items():
             key = key.lower()
             if key in skip_params:

@@ -72,6 +72,7 @@ implicit none
   real(dp) :: fire_minim_dt_max
   character(len=STRING_LENGTH) precond_minim_method, precond_method, precond_e_method, precond_conv_method
   real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff, precond_res2, precond_infoverride, precond_bulk_modulus,precond_number_density
+  logical::precond_auto_mu
   real(dp) :: tau(3)
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file, dimer_at_file
@@ -196,7 +197,8 @@ implicit none
   call param_register(cli_params, 'precond_cutoff', '-1.0', precond_cutoff, help_string="cutoff distance for sparse preconditioner, cutoff(pot) if < 0.0")
   call param_register(cli_params, 'precond_len_scale', '-1.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
   call param_register(cli_params, 'precond_bulk_modulus', '0.625', precond_bulk_modulus, help_string="bulk modulus for preconditioner scaling")
-  call param_register(cli_params, 'precond_len_number_density', '0.1', precond_number_density, help_string="number density for preconditioner scaling")
+  call param_register(cli_params, 'precond_number_density', '0.01', precond_number_density, help_string="number density for preconditioner scaling")
+  call param_register(cli_params, 'precond_auto_mu', 'true', precond_auto_mu, help_string="use auto mu")
   call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
@@ -422,7 +424,7 @@ implicit none
 		 do_print = .true., print_cinoutput=relax_io, &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 	length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
-     res2=precond_res2, infoverride = precond_infoverride, bulk_modulus=precond_bulk_modulus,number_density=precond_number_density) 
+     res2=precond_res2, infoverride = precond_infoverride,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu) 
               call system_timer('eval/precon_minim')
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')
@@ -436,7 +438,7 @@ implicit none
                          external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride, &
-                     bulk_modulus=precond_bulk_modulus,number_density=precond_number_density)
+                     bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('eval/precon_dimer')
    
               call finalise(dimer_at)
@@ -461,7 +463,7 @@ implicit none
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
-   res2=precond_res2, infoverride = precond_infoverride,convchoice=precond_conv_method)
+   res2=precond_res2, infoverride=precond_infoverride,convchoice=precond_conv_method,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('eval/precon_minim')
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')
@@ -474,7 +476,7 @@ implicit none
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
                          external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
-                         precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride)
+                         precon_id=trim(precond_method), res2=precond_res2,infoverride=precond_infoverride,auto_mu=precond_auto_mu)
               call system_timer('eval/precon_dimer')
               call finalise(dimer_at)
 #else

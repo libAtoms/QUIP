@@ -1,4 +1,0 @@
-{
- 'real':{'dp':'double'},
- 'complex':{'dp':'complex_double', 'qp':'complex_long_double'},
-}

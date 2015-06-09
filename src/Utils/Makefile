@@ -40,7 +40,7 @@ include Makefile.inc
 include Makefile.rules
 
 
-QUIP_UTILS_F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools real_space_covariance structure_analysis_traj_routines
+QUIP_UTILS_F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools force_machine_learning_module real_space_covariance structure_analysis_traj_routines
 QUIP_UTILS_F95_SOURCES = ${addsuffix .f95, ${QUIP_UTILS_F95_FILES}}
 QUIP_UTILS_F95_OBJS = ${addsuffix .o, ${QUIP_UTILS_F95_FILES}}
 
