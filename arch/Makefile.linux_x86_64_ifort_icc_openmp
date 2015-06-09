@@ -30,7 +30,7 @@
 
 # declarations
 
-include Makefiles/Makefile.linux_x86_64_ifort_icc
+include arch/Makefile.linux_x86_64_ifort_icc
 
 DEFINES += -D_OPENMP
 F95FLAGS += -openmp -fPIC

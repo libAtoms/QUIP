@@ -30,7 +30,7 @@
 
 # declarations
 
-include Makefiles/Makefile.linux_x86_64_gfortran_openmp
+include arch/Makefile.linux_x86_64_gfortran_openmp
 
 F77 = mpif77
 F90 = mpif90

@@ -30,7 +30,7 @@
 
 # declarations
 
-include Makefiles/Makefile.cray_xt3
+include arch/Makefile.cray_xt3
 
 F77 = f77
 F90 = ftn
