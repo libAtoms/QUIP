@@ -774,7 +774,7 @@ class AtomResolvedStressField(object):
             self.cij = farray(calc.get_elastic_constants(bulk))
         
 
-    def get_stresses(self, atoms):
+    def get_stresses(self, atoms, cutoff=3.0):
         """
         Returns local stresses on `atoms` as a ``(len(atoms), 3, 3)`` array
         """
@@ -783,6 +783,8 @@ class AtomResolvedStressField(object):
         
         sigma = np.zeros((len(atoms), 3, 3))
         if self.method == 'fortran':
+            atoms.set_cutoff(cutoff)
+            atoms.calc_connect()
             elastic_fields_fortran(atoms, a=self.a, cij=self.cij)
             
             sigma[:,0,0], sigma[:,1,1], sigma[:,2,2], sigma[:,1,2], sigma[:,0,2], sigma[:,0,1] = \
@@ -798,7 +800,6 @@ class AtomResolvedStressField(object):
         sigma[:,2,0] = sigma[:,0,2]
 
         return sigma
-
 
     def get_stress(self, atoms):
         """
