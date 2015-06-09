@@ -28,61 +28,9 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-default: ${MODULES}
-all: default
 
-.PHONY: arch  config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
+.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
 
-ifeq (${QUIP_ROOT},)
-   QUIP_ROOT=${PWD}
-endif
-export QUIP_ROOT
-
-ifneq (${QUIP_ARCH},)
-   export BUILDDIR=build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
-   export QUIP_ARCH
-   $(info Using QUIP_ARCH=$(QUIP_ARCH))
-   include arch/Makefile.${QUIP_ARCH}
-   include Makefile.rules
-   ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
-      -include ${BUILDDIR}/Makefile.inc   
-   endif
-   include Makefile.config
-else
-   BUILDDIR=dummy
-endif
-
-export SCRIPT_PATH=${QUIP_ROOT}/bin
-
-MODULES =
-
-ifeq (${HAVE_THIRDPARTY},1)
-   MODULES += ThirdParty
-   THIRDPARTY_LIBS := libthirdparty.a
-ifeq (${HAVE_FX},1)
-   THIRDPARTY_LIBS += libfx.a
-endif
-endif
-
-MODULES += libAtoms Potentials Utils Programs FilePot_drivers Structure_processors 
-
-ifeq (${HAVE_GAP},1)
-MODULES += GAP 
-GAP += GAP/libgap_predict.a
-else
-GAP = 
-endif
-
-ifeq (${HAVE_GAP_FILLER},1)
-MODULES += GAP-filler
-endif
-
-FOX = FoX-4.0.3
-EXTRA_CLEAN_DIRS = quippy
-
-
-
-arch: 
 ifeq (${QUIP_ARCH},)
 	@echo
 	@echo "You need to define the architecture using the QUIP_ARCH variable"
@@ -91,6 +39,57 @@ ifeq (${QUIP_ARCH},)
 	@exit 1
 endif
 
+# include other makefiles and export env variables
+ifeq (${QUIP_ROOT},)
+   QUIP_ROOT=${PWD}
+endif
+export QUIP_ROOT
+export SCRIPT_PATH=${QUIP_ROOT}/bin
+export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
+export QUIP_ARCH
+include arch/Makefile.${QUIP_ARCH}
+include Makefile.rules
+ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
+   -include ${BUILDDIR}/Makefile.inc   
+endif
+
+
+# create modules list
+MODULES = libAtoms
+
+# add any third party packages
+ifeq (${HAVE_THIRDPARTY},1)
+   MODULES += ThirdParty
+   THIRDPARTY_LIBS := libthirdparty.a
+ifeq (${HAVE_FX},1)
+   THIRDPARTY_LIBS += libfx.a
+endif
+endif
+
+# add GAP modules if we have them - they need to come before other modules, except for libAtoms
+ifeq (${HAVE_GAP},1)
+MODULES += GAP 
+GAP += GAP
+else
+GAP = 
+endif
+ifeq (${HAVE_GAP_FILLER},1)
+MODULES += GAP-filler
+endif
+MODULES += Potentials Utils Programs FilePot_drivers Structure_processors 
+
+# diagnostic
+$(info Using QUIP_ARCH=$(QUIP_ARCH), MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
+
+
+default: ${MODULES}
+all: default
+
+# now we can include the config makefile, it needs to come after the default target
+include Makefile.config
+
+FOX = FoX-4.0.3
+EXTRA_CLEAN_DIRS = quippy
 
 ${BUILDDIR}/Makefile.inc: 
 	@echo
@@ -103,9 +102,9 @@ ${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD} -I${PWD}/arch -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
 
-
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
 FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)
+
 # general rule to make a module
 
 ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR}
@@ -121,7 +120,7 @@ GAP: libAtoms ${FOX}
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler: libAtoms/libatoms.a ${FOX} GAP ${GAP} Potentials Utils
+GAP-filler: libAtoms ${FOX} GAP ${GAP} Potentials Utils
 endif
 
 Potentials: libAtoms ${FOX} ${GAP}
@@ -137,7 +136,7 @@ libquip.a: ThirdParty libAtoms ${FOX} ${GAP} Potentials Utils
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(subst GAP,${BUILDDIR},${GAP}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
-${BUILDDIR}: arch
+${BUILDDIR}: 
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
@@ -219,8 +218,8 @@ git_pull_all:
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
 distribution:
-	./utility_scripts/gitversion > GIT_VERSION
-	./utility_scripts/gapversion.sh > GAP_VERSION
+	./bin/gitversion > GIT_VERSION
+	./bin/gapversion.sh > GAP_VERSION
 	git archive HEAD > ../QUIP.distribution.`date +%Y-%m-%d`.tar
 	tar rvf ../QUIP.distribution.`date +%Y-%m-%d`.tar GIT_VERSION GAP_VERSION
 	bzip2 ../QUIP.distribution.`date +%Y-%m-%d`.tar
