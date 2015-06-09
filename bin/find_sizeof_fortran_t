@@ -33,7 +33,7 @@ program sizeof_fortran_t
 end program sizeof_fortran_t
 EOF
 
-make -I ../Makefiles -I.. sizeof_fortran_t > /dev/null
+make -I ../../arch -I../.. sizeof_fortran_t > /dev/null
 echo SIZEOF_FORTRAN_T=$(./sizeof_fortran_t)
 
 rm sizeof_fortran_t.f90

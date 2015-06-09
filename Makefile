@@ -36,7 +36,7 @@ export QUIP_ROOT
 ifneq (${QUIP_ARCH},)
    export BUILDDIR=build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
    export QUIP_ARCH
-   $(info Configuring with QUIP_ARCH=$(QUIP_ARCH))
+   $(info Using QUIP_ARCH=$(QUIP_ARCH))
    include arch/Makefile.${QUIP_ARCH}
    include Makefile.rules
    ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
