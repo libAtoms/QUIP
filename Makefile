@@ -74,6 +74,7 @@ GAP += GAP
 else
 GAP = 
 endif
+
 ifeq (${HAVE_GAP_FILLER},1)
 MODULES += GAP-filler
 endif
@@ -123,7 +124,7 @@ GAP: libAtoms ${FOX}
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler: libAtoms ${FOX} GAP ${GAP} Potentials Utils
+GAP-filler: libAtoms ${FOX} GAP Potentials Utils
 endif
 
 Potentials: libAtoms ${FOX} ${GAP}
@@ -142,7 +143,7 @@ libquip.a: ThirdParty libAtoms ${FOX} ${GAP} Potentials Utils
 ${BUILDDIR}: 
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-quippy/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
+quippy/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} Potentials Utils FilePot_drivers 
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile	
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/quippy -I${PWD} -I${PWD}/arch $${targ#quippy/}
 	rm ${BUILDDIR}/Makefile
