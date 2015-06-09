@@ -30,7 +30,7 @@
 
 # declarations
 
-include Makefiles/Makefile.darwin_x86_64_gfortran
+include arch/Makefile.darwin_x86_64_gfortran
 
 DEFINES += -D_OPENMP
 F95FLAGS += -fopenmp

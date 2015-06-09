@@ -30,7 +30,7 @@
 
 # declarations
 
-include Makefiles/Makefile.linux_x86_64_gfortran
+include arch/Makefile.linux_x86_64_gfortran
 
 F77 = /usr/bin/gfortran -m64
 F90 = /usr/bin/gfortran -m64

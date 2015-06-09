@@ -30,7 +30,7 @@
 
 # declarations
 
-include Makefiles/Makefile.linux_x86_64_ifort_gcc
+include arch/Makefile.linux_x86_64_ifort_gcc
 
 F77 = mpif77
 F90 = mpif90
