@@ -135,34 +135,6 @@ Programs: libAtoms ${FOX} ${GAP} Potentials Utils FilePot_drivers
 Tests: libAtoms ${FOX} ${GAP} Potentials Utils
 libatoms: libAtoms
 
-ifeq (${HAVE_GAP},1)
-GAP/%: libAtoms ${FOX}
-	rm -f ${BUILDDIR}/Makefile
-	cp ${PWD}/GAP/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP -I${PWD} -I${PWD}/arch $${targ#GAP/}
-	rm ${BUILDDIR}/Makefile
-endif
-
-ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler/%: libAtoms ${FOX} GAP Potentials Utils
-	rm -f ${BUILDDIR}/Makefile
-	cp ${PWD}/GAP-filler/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/GAP-filler -I${PWD} -I${PWD}/arch $${targ#GAP-filler/}
-	rm ${BUILDDIR}/Makefile
-endif
-
-ifeq (${HAVE_THIRDPARTY},1)
-ThirdParty/%: 
-	rm -f ${BUILDDIR}/Makefile
-	cp ${PWD}/ThirdParty/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/ThirdParty -I${PWD} -I${PWD}/arch $${targ#ThirdParty/}
-	rm ${BUILDDIR}/Makefile
-else
-ThirdParty:
-	@echo "Placeholder ThirdParty rule"
-endif
-
-
 libquip: libquip.a
 
 libquip.a: ThirdParty libAtoms ${FOX} ${GAP} Potentials Utils
@@ -245,7 +217,7 @@ quippy:
 test:
 	${MAKE} -C Tests -I${PWD} -I${PWD}/arch -I${PWD}/${BUILDDIR}
 
-GIT_SUBDIRS=GAP GAP-filler ThirdParty
+GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 
 git_pull_all:
 	git pull
