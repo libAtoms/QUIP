@@ -170,7 +170,7 @@ libquip.a: ThirdParty libAtoms ${FOX} ${GAP} Potentials Utils
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}: arch
-	@if [ ! -d build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
+	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 
 clean: ${BUILDDIR}
@@ -210,12 +210,12 @@ install:
 	${MAKE} install-build.QUIP_ARCH install-Tools install-structures install-dtds
 
 install-build.QUIP_ARCH:
-	@echo "installing from build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}"; \
-	for f in `/bin/ls build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$$'`; do \
-	  if [ -x build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ]; then \
-	    if [ build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f -nt ${QUIP_INSTDIR}/$$f ]; then \
+	@echo "installing from build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}"; \
+	for f in `/bin/ls build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$$'`; do \
+	  if [ -x build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ]; then \
+	    if [ build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f -nt ${QUIP_INSTDIR}/$$f ]; then \
 	       echo "copying f $$f to ${QUIP_INSTDIR}"; \
-	       cp build.${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
+	       cp build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
 	    fi; \
 	    if [ $$f == eval ]; then \
 	       rm -f ${QUIP_INSTDIR}/quip_eval; \
