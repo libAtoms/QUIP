@@ -21,10 +21,7 @@ import numpy as np
 
 from quippy import _dictionary
 from quippy._dictionary import *
-from quippy import get_fortran_indexing
-from quippy.oo_fortran import update_doc_string
 from quippy.dictmixin import DictMixin, ParamReaderMixin
-from quippy.farray import *
 
 __doc__ = _dictionary.__doc__
 __all__ = _dictionary.__all__
@@ -96,7 +93,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
 
     def keys(self):
         if self.key_cache_invalid or len(self._keys) != self.n: # HACK to solve shallow copy bug
-            self._keys = [self.get_key(i).strip() for i in frange(self.n)]
+            self._keys = [self.get_key(i+1).strip() for i in range(self.n)]
             self._keys_lower = [k.lower() for k in self._keys]
             self.key_cache_invalid = 0
         return self._keys
@@ -138,7 +135,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
             v.strides = (1, v.shape[0])  # Column-major storage
         elif t == T_LOGICAL_A:
             v,p = self._get_value_l_a(k,s)
-            v = farray(v, dtype=bool)
+            v = np.array(v, dtype=bool)
         elif t == T_INTEGER_A2:
             v,p = self._get_value_i_a2(k, s2[1], s2[2])
         elif t == T_REAL_A2:
@@ -155,8 +152,6 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         import _quippy, arraydata
         if key in self and self.get_type_and_size(key)[0] in Dictionary._array_types:
             a = arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key)
-            if get_fortran_indexing():
-                a = FortranArray(a, parent=self)
             return a
         else:
             raise KeyError('Key "%s" does not correspond to an array entry' % key)

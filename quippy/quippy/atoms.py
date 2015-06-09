@@ -39,7 +39,7 @@ from quippy.units import N_A, MASSCONVERT
 from quippy.periodictable import ElementMass
 from quippy.extendable_str import Extendable_str
 from quippy import QUIPPY_TRUE, QUIPPY_FALSE
-from quippy import available_modules, FortranDerivedTypes, get_fortran_indexing
+from quippy import available_modules, FortranDerivedTypes
 
 atomslog = logging.getLogger('quippy.atoms')
 #atomslog.setLevel(logging.DEBUG)
@@ -53,11 +53,6 @@ topology and neighbour lists, and the :class:`DomainDecomposition` class.
 """)
 
 __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice_params']
-                                   
-if 'ase' in available_modules:
-    import ase
-else:
-    import quippy.miniase as ase
 
 if 'phonopy' in available_modules:
     from phonopy.structure.atoms import Atoms as PhonopyAtoms
@@ -108,8 +103,7 @@ class Connection(_atoms.Connection):
     a particular pair `(i,j)` and has attributes `j`, `distance`,
     `diff`, `cosines` and `shift`.
 
-    If ``fortran_indexing`` is True, atom and neighbour indices
-    start from 1; otherwise they are numbered from zero.
+    Atom and neighbour indices are numbered from zero.
 
     If connectivity information has not already been calculated
     :meth:`calc_connect` will be called automatically. The code to
@@ -177,18 +171,15 @@ class Connection(_atoms.Connection):
         shift = fzeros(3, dtype=np.int32)
 
         res = []
-        if not get_fortran_indexing():
-            i = i+1 # convert to 1-based indexing
+        i = i+1 # convert to 1-based indexing
 
-        for n in frange(self.n_neighbours(i)):
-            j = self.neighbour(self.parent, i, n, distance, diff,
+        for n in range(self.n_neighbours(i)):
+            j = self.neighbour(self.parent, i, n+1,
+                               distance, diff,
                                cosines, shift)
-            if not get_fortran_indexing():
-                j = j-1
+            j = j-1 # convert to 1-based indexing
             res.append(NeighbourInfo(j, distance, diff, cosines, shift))
 
-        if get_fortran_indexing():
-            res = farray(res) # to give 1-based indexing
         return res
 
     def distances(self, Z1=None, Z2=None):
@@ -509,14 +500,9 @@ class Atoms(_atoms.Atoms, ase.Atoms):
     def _indices(self):
         """Return array of atoms indices
 
-        If global ``fortran_indexing`` is True, returns FortranArray containing
-        numbers 1..self.n.  Otherwise, returns a standard numpuy array
-        containing numbers in range 0..(self.n-1)."""
+        Returns a numpy array containing numbers in range 0..(self.n-1)."""
 
-        if get_fortran_indexing():
-            return farray(list(frange(len(self))))
-        else:
-            return np.array(list(range(len(self))))
+        return np.array(list(range(len(self))))
 
     indices = property(_indices)
 
@@ -822,33 +808,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def __hash__(self):
         return hash(self.md5_hash(4))
-
-    #def __getitem__(self, i):
-        # we override ase.Atoms.__getitem__ so we can raise
-        # exception if we're using fortran indexing
-    #    if self.fortran_indexing:
-    #        raise RuntimeError('Atoms[i] inconsistent with fortran indexing')
-    #    return ase.Atoms.__getitem__(self, i)
-
-    def get_atom(self, i):
-        """Return a dictionary containing the properties of the atom with
-           index `i`. If fortran_indexing=True (the default), `i` should be in
-           range 1..self.n, otherwise it should be in range 0..(self.n-1)."""
-        if (get_fortran_indexing() and (i < 1 or i > self.n)) or \
-            (not get_fortran_indexing() and (i < 0 or i > self.n-1)):
-            raise IndexError('Atoms index out of range')
-        atom = {}
-        atom['_index'] = i
-        atom['atoms'] = self
-        for k in self.properties.keys():
-            v = self.properties[k][...,i]
-            if isinstance(v,np.ndarray):
-                if v.dtype.kind == 'S':
-                    v = ''.join(v).strip()
-                elif v.shape == ():
-                    v = v.item()
-            atom[k.lower()] = v
-        return atom
 
     def print_atom(self, i):
         """Pretty-print the properties of the atom with index `i`"""

@@ -1,28 +1,4 @@
-# HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# HND X
-# HND X   libAtoms+QUIP: atomistic simulation library
-# HND X
-# HND X   Portions of this code were written by
-# HND X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-# HND X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
-# HND X
-# HND X   Copyright 2006-2010.
-# HND X
-# HND X   Not for distribution
-# HND X
-# HND X   Portions of this code were written by Noam Bernstein as part of
-# HND X   his employment for the U.S. Government, and are not subject
-# HND X   to copyright in the USA.
-# HND X
-# HND X   When using this software, please cite the following reference:
-# HND X
-# HND X   http://www.libatoms.org
-# HND X
-# HND X  Additional contributions by
-# HND X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
-# HND X
-# HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
+# HQ
 import sys, string, os, operator, itertools, logging, glob, re, shutil
 import numpy as np
 
@@ -33,7 +9,6 @@ from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE
 from quippy.periodictable import atomic_number
 
 from ordereddict import OrderedDict
-from farray import *
 from math import pi
 import xml.dom.minidom
 
@@ -1401,7 +1376,7 @@ class CastepPotential(Potential):
 
 def read_formatted_potential(filename):
     """Load a potential write by CASTEP pot_write_formatted() routine, and convert
-    to a 3-dimensional FortranArray suitable for writing to a .cube file."""
+    to a 3-dimensional array suitable for writing to a .cube file."""
 
     # Read header lines
     header = []
@@ -1440,19 +1415,19 @@ def read_formatted_potential(filename):
     # Rest of file is potential data grid
     pot = np.loadtxt(fh)
     nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
-    data = fzeros((nx,ny,nz))
+    data = np.zeros((nx,ny,nz))
     for (i,j,k,value) in pot:
-        data[int(i),int(j),int(k)] = value
+        data[int(i)-1,int(j)-1,int(k)-1] = value
 
     return data
 
 def read_formatted_density(filename):
     """Load a potential write by CASTEP pot_write_formatted() routine, and convert
-    to a 3-dimensional FortranArray suitable for writing to a .cube file."""
+    to a 3-dimensional array suitable for writing to a .cube file."""
 
     den = np.loadtxt(filename, skiprows=11)
     nx, ny, nz = den[:,0].max(), den[:,1].max(), den[:,2].max()
-    data = fzeros((2,nx,ny,nz))
+    data = np.zeros((2,nx,ny,nz))
     for (i,j,k,charge,spin) in den:
-        data[:,int(i),int(j),int(k)] = charge, spin
+        data[:,int(i)-1,int(j)-1,int(k)-1] = charge, spin
     return data

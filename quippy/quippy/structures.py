@@ -25,8 +25,6 @@ import itertools
 from quippy.atoms import *
 import quippy._structures
 from quippy._structures import *
-from quippy import quippy_array
-from quippy.farray import FortranArray, fidentity, fzeros, frange, farray, gcd
 
 import numpy as np
 
@@ -35,7 +33,7 @@ __all__ = quippy._structures.__all__ + ['orthorhombic_slab', 'rotation_matrix',
                                         'get_quartz_params', 'get_bond_lengths',
                                         'MillerIndex', 'MillerPlane', 'MillerDirection', 'angle_between']
 
-class MillerIndex(quippy_array):
+class MillerIndex(np.ndarray):
     """
     Representation of a three of four index Miller direction or plane
 
@@ -65,7 +63,7 @@ class MillerIndex(quippy_array):
         if isinstance(v, basestring):
             v = MillerIndex.parse(v)
         if len(v) == 3 or len(v) == 4:
-            self = quippy_array.__new__(cls, v)
+            self = np.ndarray.__new__(cls, v)
         else:
             raise ValueError('%s input v should be of length 3 or 4' % cls.__name__)
         self.type = type
@@ -165,7 +163,7 @@ class MillerIndex(quippy_array):
 
     def normalised(self):
         a = self.as3()
-        return a.copy().view(FortranArray)/a.norm()
+        return a.copy()/np.linalg.norm(a)
 
     hat = normalised
 
@@ -322,12 +320,11 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
     if rot is not None:
         at = transform(at, rot)
 
-    xyz = fidentity(3)
+    xyz = np.eye(3)
     nrep = min_nrep-1
     max_dist = fzeros(3)
 
     if periodicity is not None:
-        periodicity = farray(periodicity)
         periodicity = dict(zip((periodicity != 0).nonzero()[0], periodicity[periodicity != 0]))
     else:
         periodicity = {}
@@ -350,12 +347,12 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
         box = orthorhombic_box(sup)
         box.pos[:] = box.pos - np.tile(box.pos.mean(axis=2), [box.n, 1]).T
 
-        for dir in set([1,2,3]) - set(periodicity.keys()):
+        for dir in set([0,1,2]) - set(periodicity.keys()):
 
             if verbose:
                 print '  Direction %d' % dir
 
-            other_dirs = list(set([1,2,3]) - set([dir]))
+            other_dirs = list(set([0,1,2]) - set([dir]))
 
             pos_index = zip(box.pos[dir,:],frange(box.n))
             pos_index.sort()
