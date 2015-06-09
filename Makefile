@@ -31,28 +31,27 @@
 
 .PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
 
-ifeq (${QUIP_ARCH},)
-	@echo
-	@echo "You need to define the architecture using the QUIP_ARCH variable"
-	@echo "Check out the `arch' subdirectory for example architectures."
-	@echo
-	@exit 1
+ifndef QUIP_ARCH
+$(error "You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.")
+else
+include arch/Makefile.${QUIP_ARCH}
 endif
 
 # include other makefiles and export env variables
+export QUIP_ARCH
+
 ifeq (${QUIP_ROOT},)
-   QUIP_ROOT=${PWD}
+QUIP_ROOT=${PWD}
 endif
+
 export QUIP_ROOT
 export SCRIPT_PATH=${QUIP_ROOT}/bin
 export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
-export QUIP_ARCH
-include arch/Makefile.${QUIP_ARCH}
 include Makefile.rules
-ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
-   -include ${BUILDDIR}/Makefile.inc   
-endif
 
+ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
+-include ${BUILDDIR}/Makefile.inc   
+endif
 
 # create modules list
 MODULES = libAtoms
@@ -79,7 +78,7 @@ endif
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors 
 
 # diagnostic
-$(info Using QUIP_ARCH=$(QUIP_ARCH), MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
+$(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 
 
 default: ${MODULES}
