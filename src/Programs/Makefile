@@ -51,7 +51,7 @@ ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
 endif
 
-default: 
+default: all
 
 all: ${PROGRAMS}
 

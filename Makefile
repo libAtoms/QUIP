@@ -28,6 +28,11 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+default: ${MODULES}
+all: default
+
+.PHONY: arch  config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
+
 ifeq (${QUIP_ROOT},)
    QUIP_ROOT=${PWD}
 endif
@@ -75,16 +80,7 @@ endif
 FOX = FoX-4.0.3
 EXTRA_CLEAN_DIRS = quippy
 
-.DEFAULT_GOAL=all
 
-default: ${MODULES}
-
-all: default
-	@for f in ${MODULES} ; do ${MAKE} $$f/all || exit 1; done
-
-
-
-.PHONY: arch ${MODULES} config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
 
 arch: 
 ifeq (${QUIP_ARCH},)

@@ -33,6 +33,7 @@ PROGRAMS = minimal_md xyz2pdb convert
 .PHONY: default all clean docclean
 
 default: libatoms.a 
+
 all: default ${PROGRAMS}
 
 ifeq (${QUIP_ARCH},)

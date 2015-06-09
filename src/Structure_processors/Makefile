@@ -49,6 +49,8 @@ ifeq (${HAVE_TB},1)
   PROGRAMS += make_k_mesh
 endif
 
+default: all
+
 all: ${PROGRAMS}
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
