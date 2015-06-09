@@ -122,8 +122,7 @@ else
 endif
 
 clean:
-	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
-	-rm libAtoms.depend
+	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc libAtoms.depend
 
 allclean: clean docclean
 

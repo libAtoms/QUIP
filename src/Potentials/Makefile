@@ -117,10 +117,7 @@ ${TARGETS}: % :  libquip_core.a %.o
 	${F95} ${LINKFLAGS} -o $@ $@.o libquip_core.a libatoms.a ${LINKOPTS}
 
 clean:
-	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
-	-rm  libquip_core.a quip.dtd
-	-rm -r doctmp
-	-rm -f Potentials.depend
+	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc libquip_core.a quip.dtd  Potentials.depend
 
 LIBS = -L. -lquip_core ${GP_LIB} -latoms
 ifeq (${HAVE_THIRDPARTY},1)

@@ -65,8 +65,7 @@ else
 endif
 
 clean:
-	rm -f *.o *.mod *.mod.save libquiputils.a
-	-rm Utils.depend
+	rm -f *.o *.mod *.mod.save libquiputils.a Utils.depend
 
 allclean: clean
 

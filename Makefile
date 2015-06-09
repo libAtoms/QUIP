@@ -101,7 +101,7 @@ ${BUILDDIR}/Makefile.inc:
 
 ${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
-	make -C ${FOX} -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
+	make -C ${FOX} -I${PWD} -I${PWD}/arch -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
 
 
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
@@ -142,7 +142,7 @@ ${BUILDDIR}: arch
 
 quippy/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} QUIP_Core/libquip_core.a QUIP_Utils QUIP_FilePot_Drivers
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile	
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/quippy -I${PWD} -I${PWD}/Makefiles $${targ#quippy/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/quippy -I${PWD} -I${PWD}/arch $${targ#quippy/}
 	rm ${BUILDDIR}/Makefile
 
 
@@ -151,16 +151,10 @@ clean: ${BUILDDIR}
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
 	  cp ${PWD}/src/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
+	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/arch clean ; \
 	done
 
 deepclean: clean
-	-for mods in  ${MODULES} ; do \
-	  echo "deepclean in $$mods"; \
-          rm -f ${BUILDDIR}/Makefile ; \
-	  cp ${PWD}/src/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/Makefiles deepclean ; \
-	done
 	-for dir in ${EXTRA_CLEAN_DIRS}; do \
 	  cd $$dir; make clean; \
 	done
