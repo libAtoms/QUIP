@@ -19,7 +19,7 @@ endif
 foxlibs:
 ifeq (${QUIP_ARCH},)
 	@echo
-	@echo "You need to define the architecture using the ARCH variable"
+	@echo "You need to define the architecture using the QUIP_ARCH variable"
 	@echo
 	@exit 1
 endif

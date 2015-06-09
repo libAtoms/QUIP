@@ -88,10 +88,6 @@ endif
 
 TEST_TARGETS = test_KP test_Matrix test_TBMatrix test_TBModel test_TBSystem test_TBCalculate  test_RS_SparseMatrix test_DFTB test_Potential test_Self_Consistency test_GreensFunc test_AF   test_ScaLAPACK test_SelfEnergy_passivation test_cat test_QC_QUIP_Wrapper
 
-# UTIL_TARGETS = NRL_TB_to_xml DFTB_to_xml
-# 
-# QUIP_TARGETS = eval
-
 TARGETS = ${TEST_TARGETS}
 
 
@@ -124,7 +120,7 @@ clean:
 	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
 	-rm  libquip_core.a quip.dtd
 	-rm -r doctmp
-	-rm -f QUIP_Core.depend
+	-rm -f Potentials.depend
 
 LIBS = -L. -lquip_core ${GP_LIB} -latoms
 ifeq (${HAVE_THIRDPARTY},1)
@@ -134,10 +130,10 @@ endif
 ifeq (${USE_MAKEDEP},1)
 ALL_F95_FPP_FILES = ${addsuffix .fpp, ${basename ${ALL_F95_FILES}}}
 
-QUIP_Core.depend: ${ALL_F95_FPP_FILES}
-	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Core/,${ALL_F95_FILES}} > QUIP_Core.depend
+Potentials.depend: ${ALL_F95_FPP_FILES}
+	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Potentials/,${ALL_F95_FILES}} > Potentials.depend
 
-#${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Core/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > QUIP_Core.depend
+#${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Potentials/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > Potentials.depend
 
--include QUIP_Core.depend
+-include Potentials.depend
 endif

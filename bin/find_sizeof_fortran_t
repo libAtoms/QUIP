@@ -4,7 +4,7 @@
 # used by quippy and AtomEye for Fortran<->C interoperability
 
 
-cat > build.${QUIP_ARCH}/Makefile <<EOF
+cat > build/${QUIP_ARCH}/Makefile <<EOF
 ifeq (\${QUIP_ARCH},)
   include Makefile.arch
 else
@@ -17,7 +17,7 @@ sizeof_fortran_t: sizeof_fortran_t.f90
 	\${F90} \$< -o \$@
 EOF
 
-cd build.${QUIP_ARCH}
+cd build/${QUIP_ARCH}
 
 cat > sizeof_fortran_t.f90 <<EOF
 program sizeof_fortran_t
