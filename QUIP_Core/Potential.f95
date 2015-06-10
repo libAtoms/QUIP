@@ -1137,7 +1137,17 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     my_eps_guess = optional_default(1.0e-2_dp/at%N, eps_guess)
     if (my_eps_guess .feq. 0.0_dp) my_eps_guess = 1.0e-2_dp/at%N
 
-    call calc_connect(at)
+    if (cutoff(this) > 0.0_dp) then
+       ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
+       ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
+       ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
+       if (at%cutoff < cutoff(this)) then
+          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          call set_cutoff(at, cutoff(this))
+       end if
+       call calc_connect(at)
+    end if
+
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
 
