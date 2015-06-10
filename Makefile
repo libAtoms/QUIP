@@ -75,6 +75,7 @@ GAP += GAP
 else
 GAP = 
 endif
+
 ifeq (${HAVE_GAP_FILLER},1)
 MODULES += GAP-filler
 endif
@@ -124,7 +125,7 @@ GAP: libAtoms ${FOX}
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler: libAtoms ${FOX} GAP ${GAP} Potentials Utils
+GAP-filler: libAtoms ${FOX} GAP Potentials Utils
 endif
 
 Potentials: libAtoms ${FOX} ${GAP}
