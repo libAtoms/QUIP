@@ -2322,7 +2322,7 @@ end subroutine pack_pos_dg
     real(dp), intent(inout) :: virial(3,3)
 
     integer :: error
-    logical :: minim_hydrostatic_strain
+    logical :: minim_hydrostatic_strain, minim_constant_volume
     logical :: minim_lattice_fix_mask(3,3)
     real(dp) :: minim_lattice_fix(3,3)
     real(dp) :: scaled_ident
@@ -2332,10 +2332,15 @@ end subroutine pack_pos_dg
     minim_hydrostatic_strain = .false.
     call get_param_value(at, "Minim_Hydrostatic_Strain", minim_hydrostatic_strain, error=error)
     CLEAR_ERROR(error)
+
     minim_lattice_fix = 0.0_dp
     call get_param_value(at, "Minim_Lattice_Fix", minim_lattice_fix, error=error)
     CLEAR_ERROR(error)
     minim_lattice_fix_mask = (minim_lattice_fix /= 0.0_dp)
+
+    minim_constant_volume = .false.
+    call get_param_value(at, "Minim_Constant_Volume", minim_constant_volume, error=error)
+    CLEAR_ERROR(error)
 
     ! project onto identity
     if (minim_hydrostatic_strain) then
@@ -2349,6 +2354,13 @@ end subroutine pack_pos_dg
     if (any(minim_lattice_fix_mask)) then
        virial = merge(0.0_dp, virial, minim_lattice_fix_mask)
     end if
+
+    if (minim_constant_volume) then
+      virial_trace = virial(1,1) + virial(2,2) + virial(3,3)
+      virial(1,1) = virial(1,1) - virial_trace/3.0
+      virial(2,2) = virial(2,2) - virial_trace/3.0
+      virial(3,3) = virial(3,3) - virial_trace/3.0
+    endif
 
   end subroutine constrain_virial_post
 
