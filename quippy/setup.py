@@ -40,7 +40,7 @@ if (major, minor) < (2, 4):
 
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
-    quip_root = os.path.abspath(os.path.join(os.getcwd(), '../../'))
+    quip_root = os.path.abspath(os.path.join(os.getcwd(), '../'))
     os.environ['QUIP_ROOT'] = quip_root # export to enviroment for Makefile variables
 
     if not 'QUIP_ARCH' in os.environ:
@@ -214,8 +214,8 @@ include Makefile.rules""")
 
     # Dump make database to file
     os.system('make -f Makefile.quippy -I %s -I %s -I %s -p > make.dump' %
-              (os.path.join(quip_root, 'Makefiles'),
-               os.path.join(quip_root, 'build.%s' % quip_arch),
+              (os.path.join(quip_root, 'arch'),
+               os.path.join(quip_root, 'build/%s' % quip_arch),
                quip_root))
 
     # Parse dumped file
@@ -244,7 +244,7 @@ def find_wrap_sources(makefile, quip_root):
     libraries = []
     targets = []
 
-    libatoms_dir   = os.path.join(quip_root, 'libAtoms/')
+    libatoms_dir   = os.path.join(quip_root, 'src/libAtoms/')
     wrap_sources += [os.path.join(libatoms_dir, s) for s in
                      ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95', 'Quaternions.f95', 
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
@@ -255,10 +255,10 @@ def find_wrap_sources(makefile, quip_root):
                    'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str', 'spline']
     source_dirs.append(libatoms_dir)
     libraries.append('atoms')
-    targets.append((quip_root, 'libAtoms/libatoms.a'))
+    targets.append((quip_root, 'libAtoms'))
 
     if 'HAVE_GAP' in makefile and int(makefile['HAVE_GAP']) == 1:
-        gp_dir = os.path.join(quip_root, 'GAP')
+        gp_dir = os.path.join(quip_root, 'src/GAP')
         source_dirs.append(gp_dir)
         libraries.append('gap_predict')
         targets.extend([(quip_root, 'GAP')])
@@ -266,27 +266,27 @@ def find_wrap_sources(makefile, quip_root):
         wrap_types += ['descriptor']
 
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
-        gp_dir = os.path.join(quip_root, 'GAP-filler/')
+        gp_dir = os.path.join(quip_root, 'src/GAP-filler/')
         source_dirs.append(gp_dir)
         targets.extend([(quip_root, 'GAP-filler')])
 
-    quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
+    quip_core_dir = os.path.join(quip_root, 'src/Potentials/')
     source_dirs.append(quip_core_dir)
     wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Functions.f95', 'Potential.f95', 'ElectrostaticEmbed.f95', 'AdjustablePotential.f95']]
     wrap_types += ['potential']
     if 'HAVE_THIRDPARTY' in makefile and int(makefile['HAVE_THIRDPARTY']) == 1:
         libraries = ['thirdparty'] + libraries
     libraries = ['quip_core'] + libraries
-    targets.append((quip_root, 'QUIP_Core/libquip_core.a'))
+    targets.append((quip_root, 'Potentials'))
 
     do_tools = not 'QUIPPY_NO_TOOLS' in makefile or ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))
     do_crack = not 'QUIPPY_NO_CRACK' in makefile or ('QUIPPY_NO_CRACK' in makefile and not int(makefile['QUIPPY_NO_CRACK']))
        
     if do_tools or do_crack:
-        quip_utils_dir = os.path.join(quip_root, 'QUIP_Utils/')
+        quip_utils_dir = os.path.join(quip_root, 'src/Utils/')
         source_dirs.append(quip_utils_dir)
         libraries = ['quiputils'] + libraries
-        targets.append((quip_root, 'QUIP_Utils'))
+        targets.append((quip_root, 'Utils'))
 
     if do_tools:
         wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95', 'real_space_covariance.f95',
@@ -301,7 +301,7 @@ def find_wrap_sources(makefile, quip_root):
         wrap_types += ['crackparams', 'crackmdparams']
 
     if 'HAVE_CP2K' in makefile and int(makefile['HAVE_CP2K']) == 1:
-	quip_filepot_drivers_dir = os.path.join(quip_root, 'QUIP_FilePot_Drivers')
+	quip_filepot_drivers_dir = os.path.join(quip_root, 'src/FilePot_Drivers')
 	source_dirs.append(quip_filepot_drivers_dir)
         targets.append((quip_root, 'QUIP_FilePot_Drivers'))
         wrap_sources.append(os.path.join(quip_filepot_drivers_dir, 'cp2k_driver_module.f95'))
@@ -313,8 +313,10 @@ def find_wrap_sources(makefile, quip_root):
 type_map = {}
 
 quip_root, quip_arch = find_quip_root_and_arch()
+print 'QUIP_ROOT', quip_root
+print 'QUIP_ARCH', quip_arch
 
-if not os.path.isdir(os.path.join(quip_root, 'libAtoms')):
+if not os.path.isdir(os.path.join(quip_root, 'src', 'libAtoms')):
     raise ValueError('Cannot find libAtoms directory under %s - please set QUIP_ROOT env var' % quip_root)
 
 makefile = read_arch_makefiles_and_environment(quip_root, quip_arch)
@@ -345,7 +347,7 @@ if 'QUIPPY_LDFLAGS' in makefile:
     extra_link_args.extend(makefile['QUIPPY_LDFLAGS'].split())
 
 # Preprocessor macros
-macros = [('GIT_VERSION',r'\"%s\"' % os.popen('%s/utility_scripts/gitversion' % quip_root).read().strip())]
+macros = [('GIT_VERSION',r'\"%s\"' % os.popen('%s/bin/gitversion' % quip_root).read().strip())]
 for defn in makefile['DEFINES'].split():
     if defn[:2] == '-D':
         if '=' in defn:
@@ -423,8 +425,8 @@ include_dirs.extend(source_dirs)
 libraries = quip_libraries + libraries
 
 # Add build.${QUIP_ARCH} to include and library paths
-include_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
-library_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
+include_dirs.append(os.path.join(quip_root, 'build/%s' % quip_arch))
+library_dirs.append(os.path.join(quip_root, 'build/%s' % quip_arch))
 
 # arraydata extension module
 f2py_info = get_info('f2py')

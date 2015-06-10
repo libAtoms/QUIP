@@ -1,8 +1,2 @@
-TESTS = test_eval test_md test_md_velo
-
-all: $(TESTS)
-
-.PHONY: $(TESTS)
-
-$(TESTS):
-	./$@
+all:
+	QUIP_ARCH=${QUIP_ARCH} python run_tests.py

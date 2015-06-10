@@ -145,10 +145,7 @@ ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy: libquip.a
-	rm -f ${BUILDDIR}/Makefile
-	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile	
-	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/quippy -I${PWD} -I${PWD}/arch quippy
-	rm ${BUILDDIR}/Makefile
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch
 
 
 clean: ${BUILDDIR}
@@ -211,8 +208,8 @@ install-structures:
 install-dtds:
 	cd dtds; ${MAKE} QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-dtds 
 
-test:
-	${MAKE} -C Tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
+test: quippy
+	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 

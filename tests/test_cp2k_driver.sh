@@ -13,13 +13,13 @@ if [ -z $QUIP_ARCH ]; then
 fi
 
 mydir=`dirname $0`
-bindir=$mydir/../build.$QUIP_ARCH
+bindir=$mydir/../build/$QUIP_ARCH
 
 if [ ! -x $bindir/cp2k_driver ]; then
-   (cd $QUIP_ROOT && make QUIP_FilePot_Drivers/cp2k_driver) || exit 2
+   (cd $QUIP_ROOT && make QUIP_FilePot_Drivers) || exit 2
 fi
 
-TEST=test_cp2k_driver
+TEST=test_cp2k_driver.sh
 
 cat<<EOF_LIB > $TEST.all_res.CHARMM.lib
 %residue H2O1 TIP3 WAT

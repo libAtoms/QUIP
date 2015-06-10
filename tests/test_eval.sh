@@ -11,13 +11,13 @@ if [ -z $QUIP_ARCH ]; then
    exit 1
 fi
 
-TEST=test_eval
+TEST=test_eval.sh
 
 mydir=`dirname $0`
-bindir=$mydir/../build.$QUIP_ARCH
+bindir=$mydir/../build/$QUIP_ARCH
 
 if [ ! -x $bindir/eval ]; then
-   (cd $QUIP_ROOT && make QUIP_Programs/eval) || exit 2
+   (cd $QUIP_ROOT && make Programs) || exit 2
 fi
 
 cat<<EOF > ${TEST}.in.xyz
@@ -35,7 +35,7 @@ EOF
 
 error=0
 echo -n "$0: "
-${MPIRUN} $bindir/eval at_file=${TEST}.in.xyz E F V init_args='{IP SW}' test param_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml | grep 'test is OK' || error=1
+${MPIRUN} $bindir/eval at_file=${TEST}.in.xyz E F V init_args='{IP SW}' test param_file=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml | grep 'test is OK' || error=1
 
 rm -f ${TEST}.*
 exit $error
