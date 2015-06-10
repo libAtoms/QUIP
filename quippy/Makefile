@@ -33,7 +33,7 @@ F90WRAP_FILES = $(addprefix f90wrap_,$(addsuffix .f90,${WRAP_SOURCES}))
 
 .PHONY: python clean install
 
-python: _quippy.so
+quippy: _quippy.so
 
 clean:
 	-rm _quippy.so ${F90WRAP_FILES}
