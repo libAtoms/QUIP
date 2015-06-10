@@ -1643,8 +1643,9 @@ end subroutine undo_travel
     real(dp) :: deform_grad(3,3), virial(3,3), deform_grad_inv(3,3)
     real(dp), allocatable :: f(:,:)
     real(dp) :: max_atom_rij_change
-    integer :: t_i(2), i
+    integer :: t_i(2), i, j
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    integer, pointer, dimension(:,:) :: move_mask_3
     real(dp), pointer :: minim_applied_force(:,:)
 
     type(potential_minimise) :: am
@@ -1713,6 +1714,13 @@ end subroutine undo_travel
        do i=1,am%minim_at%N
           if (move_mask(i) == 0) f(:,i) = 0.0_dp
        end do
+    endif
+    if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
+       do i=1,am%minim_at%N
+	  do j=1, 3
+	     if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
+	  end do
+       end do
     end if
 
     ! add extra forces
@@ -1774,7 +1782,7 @@ end subroutine undo_travel
     integer :: i, jj, j
     real(dp) :: max_atom_rij_change
     integer :: n_nearest
-    integer, pointer :: move_mask(:)
+    integer, pointer :: move_mask(:), move_mask_3(:,:)
 
     INIT_ERROR(error)
 
@@ -1839,6 +1847,17 @@ end subroutine undo_travel
 	  endif
        end do
     endif
+    if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
+       do i=1,am%minim_at%N
+	  do j=1, 3
+	     if (move_mask_3(j,i) == 0) then
+	       P(3*(i-1)+j:3*(i-1)+j,:) = 0.0_dp
+	       P(:,3*(i-1)+j:3*(i-1)+j) = 0.0_dp
+	       P(3*(i-1)+j,3*(i-1)+j) = 1.0_dp
+	     endif
+	  end do
+       end do
+    endif
 
     P_g(1:9) = g(1:9)
     call symmetric_linear_solve(P, g(10:10+am%minim_at%N*3-1), P_g(10:10+am%minim_at%N*3-1))
@@ -1857,8 +1876,9 @@ end subroutine undo_travel
     real(dp) :: deform_grad(3,3), virial(3,3), deform_grad_inv(3,3)
     real(dp), allocatable :: f(:,:)
     real(dp) :: max_atom_rij_change
-    integer :: t_i(2), i
+    integer :: t_i(2), i, j
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    integer, pointer, dimension(:,:) :: move_mask_3
     real(dp), pointer :: minim_applied_force(:,:)
 
     type(potential_minimise) :: am
@@ -1956,6 +1976,13 @@ endif
     if (assign_pointer(am%minim_at, 'move_mask', move_mask)) then
        do i=1,am%minim_at%N
           if (move_mask(i) == 0) f(:,i) = 0.0_dp
+       end do
+    end if
+    if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
+       do i=1,am%minim_at%N
+	  do j=1, 3
+	     if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
+	  end do
        end do
     end if
 
