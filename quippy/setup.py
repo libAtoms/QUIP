@@ -377,7 +377,7 @@ default_options= {
     },
 
     'build': {
-    'build_base': 'build.%s' % quip_arch,
+    'build_base': 'build/%s' % quip_arch,
     'debug':     int(makefile.get('QUIPPY_DEBUG',1))
    
     },

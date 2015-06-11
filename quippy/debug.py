@@ -24,4 +24,4 @@ if opt.execute is not None:
     sys.argv.insert(2, '--execute=' + opt.execute)
 
 setup(name='quippy', cmdclass = {'test': test, 'interact' : interact},
-      options={'build': { 'build_base': 'build.%s' % os.environ['QUIP_ARCH']}})
+      options={'build': { 'build_base': 'build/%s' % os.environ['QUIP_ARCH']}})
