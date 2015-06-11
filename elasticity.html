@@ -191,7 +191,7 @@ for non-cubic cells.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stress" title="quippy.elasticity.AtomResolvedStressField.get_stress"><code class="xref py py-obj docutils literal"><span class="pre">get_stress</span></code></a>(atoms)</td>
 <td>Returns total stress on <cite>atoms</cite>, as a 6-element array</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="quippy.elasticity.AtomResolvedStressField.get_stresses"><code class="xref py py-obj docutils literal"><span class="pre">get_stresses</span></code></a>(atoms)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="quippy.elasticity.AtomResolvedStressField.get_stresses"><code class="xref py py-obj docutils literal"><span class="pre">get_stresses</span></code></a>(atoms[,&nbsp;cutoff])</td>
 <td>Returns local stresses on <cite>atoms</cite> as a <code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array</td>
 </tr>
 </tbody>
@@ -204,7 +204,7 @@ for non-cubic cells.</p>
 
 <dl class="method">
 <dt id="quippy.elasticity.AtomResolvedStressField.get_stresses">
-<code class="descname">get_stresses</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_stresses</code><span class="sig-paren">(</span><em>atoms</em>, <em>cutoff=3.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField.get_stresses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns local stresses on <cite>atoms</cite> as a <code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array</p>
 </dd></dl>
 
@@ -528,7 +528,7 @@ Rayleight speed returned is along the first (x) axis.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 09, 2015.
+      Last updated on Jun 11, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
