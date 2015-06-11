@@ -301,7 +301,7 @@ def find_wrap_sources(makefile, quip_root):
         wrap_types += ['crackparams', 'crackmdparams']
 
     if 'HAVE_CP2K' in makefile and int(makefile['HAVE_CP2K']) == 1:
-        quip_filepot_drivers_dir = os.path.join(quip_root, 'src/FilePot_Drivers')
+        quip_filepot_drivers_dir = os.path.join(quip_root, 'src/FilePot_drivers')
         source_dirs.append(quip_filepot_drivers_dir)
         targets.append((quip_root, 'FilePot_drivers'))
         wrap_sources.append(os.path.join(quip_filepot_drivers_dir, 'cp2k_driver_module.f95'))
