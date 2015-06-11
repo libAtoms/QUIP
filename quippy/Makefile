@@ -29,7 +29,7 @@ include Makefile.rules
 .PHONY: build install clean test
 
 build:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py build ${QUIPPY_INSTALL_OPTIONS}
+	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py build
 
 install:
 	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py install ${QUIPPY_INSTALL_OPTIONS}

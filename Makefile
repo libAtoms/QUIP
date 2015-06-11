@@ -147,6 +147,8 @@ ${BUILDDIR}:
 quippy: libquip.a
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch
 
+quippy_install: 
+
 
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
