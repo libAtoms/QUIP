@@ -58,6 +58,7 @@ endif
 MODULES=
 # add any third party packages first
 ifeq (${HAVE_THIRDPARTY},1)
+   THIRDPARTY = ThirdParty
    MODULES += ThirdParty
    THIRDPARTY_LIBS := libthirdparty.a
 ifeq (${HAVE_FX},1)
@@ -136,17 +137,15 @@ libatoms: libAtoms
 
 libquip: libquip.a
 
-libquip.a: ThirdParty libAtoms ${FOX} ${GAP} Potentials Utils
+libquip.a: ${THIRDPARTY} libAtoms ${FOX} ${GAP} Potentials Utils
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(subst GAP,${BUILDDIR},${GAP}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}: 
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-quippy/%: ThirdParty libAtoms/libatoms.a ${FOX} ${GAP} Potentials Utils FilePot_drivers 
-	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile	
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/quippy -I${PWD} -I${PWD}/arch $${targ#quippy/}
-	rm ${BUILDDIR}/Makefile
+quippy: libquip.a
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch
 
 
 clean: ${BUILDDIR}
@@ -209,11 +208,8 @@ install-structures:
 install-dtds:
 	cd dtds; ${MAKE} QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-dtds 
 
-quippy:
-	make -C quippy install QUIP_ROOT=${QUIP_ROOT}
-
-test:
-	${MAKE} -C Tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
+test: quippy
+	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 

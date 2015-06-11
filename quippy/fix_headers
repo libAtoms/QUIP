@@ -1,3 +1,4 @@
+#!/bin/sh
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
@@ -16,23 +17,4 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# include other makefiles and export env variables
-export QUIP_ARCH
-
-ifeq (${QUIP_ROOT},)
-QUIP_ROOT=${PWD}/..
-endif
-include Makefile.${QUIP_ARCH}
-include ${BUILDDIR}/Makefile.inc
-include Makefile.rules
-
-.PHONY: build install clean test
-
-install:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py install ${QUIPPY_INSTALL_OPTIONS}
-
-clean:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py clean
-
-test:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py test ${QUIPPY_TEST_OPTIONS}
+../../fix_headers $(find . -type f -not -wholename '*.svn*' -not -wholename '*.pyc' -not -wholename './build*' -not -wholename './doc/_build*' -not -wholename '*.png')

@@ -48,7 +48,9 @@ def make_test(script, env=None):
 
     return run_script
 
-scripts =  [script for script in glob.glob(os.path.join(QUIP_ROOT, 'Tests/test_*')) if '.' not in script and not script.endswith('~')]
+test_glob = os.path.join(QUIP_ROOT, 'tests/test_*.sh')
+scripts = glob.glob(test_glob)
+print test_glob, scripts
 
 if 'mpi' in quippy.available_modules:
     for script in scripts:

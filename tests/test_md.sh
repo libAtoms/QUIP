@@ -12,13 +12,13 @@ if [ -z $QUIP_ARCH ]; then
 fi
 
 mydir=`dirname $0`
-bindir=$mydir/../build.$QUIP_ARCH
+bindir=$mydir/../build/$QUIP_ARCH
 
 if [ ! -x $bindir/md ]; then
-   (cd $QUIP_ROOT && make QUIP_Programs/md) || exit 2
+   (cd $QUIP_ROOT && make Programs) || exit 2
 fi
 
-TEST=test_md
+TEST=test_md.sh
 
 cat<<EOF > ${TEST}.in.xyz
 8

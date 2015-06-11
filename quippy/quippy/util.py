@@ -109,7 +109,7 @@ def quip_xml_parameters(name, label=None):
     from xml.parsers.expat import ExpatError
     from xml.dom.minidom import Element
 
-    param_dir = os.path.join(QUIP_ROOT, 'QUIP_Core/parameters')
+    param_dir = os.path.join(QUIP_ROOT, 'share/Parameters')
 
     if name.lower().startswith('filepot') or name.lower().startswith('callbackpot'):
         # FilePot and CallbackPot don't need XML params

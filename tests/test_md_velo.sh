@@ -12,13 +12,13 @@ if [ -z $QUIP_ARCH ]; then
 fi
 
 mydir=`dirname $0`
-bindir=$mydir/../build.$QUIP_ARCH
+bindir=$mydir/../build/$QUIP_ARCH
 
 if [ ! -x $bindir/md ]; then
-   (cd $QUIP_ROOT && make QUIP_Programs/md) || exit 2
+   (cd $QUIP_ROOT && make Programs) || exit 2
 fi
 
-TEST=test_md_velo
+TEST=test_md_velo.sh
 
 cat<<EOF > ${TEST}.in.xyz
 8
@@ -59,7 +59,7 @@ STAT       10.00    501.9522    310.5966    0.48E+02      0.00000000E+00      0.
 STAT       10.00    501.9522    310.5966    0.48E+02      0.00000000E+00      0.00000000E+00      0.51906185E+00     -0.33901334E+02     -0.33901334E+02
 EOF3
 
-${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 dt=1.0 N_steps=10 rng_seed=1 < ${TEST}.in.xyz > ${TEST}.out.raw
+${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 dt=1.0 N_steps=10 rng_seed=1 < ${TEST}.in.xyz > ${TEST}.out.raw
 egrep '^ST' ${TEST}.out.raw > ${TEST}.out
 tail -8 ${TEST}.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > ${TEST}.traj_pos.xyz
 

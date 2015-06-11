@@ -16,23 +16,32 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# include other makefiles and export env variables
-export QUIP_ARCH
-
 ifeq (${QUIP_ROOT},)
-QUIP_ROOT=${PWD}/..
+   QUIP_ROOT = ${PWD}/../..
 endif
-include Makefile.${QUIP_ARCH}
-include ${BUILDDIR}/Makefile.inc
-include Makefile.rules
 
 .PHONY: build install clean test
 
+build:
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py build
+
+WRAP_FPP_FILES = $(addsuffix .fpp,${WRAP_SOURCES})
+F90WRAP_FILES = $(addprefix f90wrap_,$(addsuffix .f90,${WRAP_SOURCES}))
+###
+
+.PHONY: python clean install
+
 install:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py install ${QUIPPY_INSTALL_OPTIONS}
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py install ${QUIPPY_INSTALL_OPTIONS}
 
 clean:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py clean
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py clean
 
 test:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py test ${QUIPPY_TEST_OPTIONS}
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; env QUIP_ROOT=${QUIP_ROOT} python setup.py test ${QUIPPY_TEST_OPTIONS}
+
+
