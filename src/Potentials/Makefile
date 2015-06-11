@@ -128,9 +128,9 @@ ifeq (${USE_MAKEDEP},1)
 ALL_F95_FPP_FILES = ${addsuffix .fpp, ${basename ${ALL_F95_FILES}}}
 
 Potentials.depend: ${ALL_F95_FPP_FILES}
-	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Potentials/,${ALL_F95_FILES}} > Potentials.depend
+	${SCRIPT_PATH}/${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Potentials/,${ALL_F95_FILES}} > Potentials.depend
 
-#${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Potentials/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > Potentials.depend
+#${SCRIPT_PATH}/${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Potentials/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > Potentials.depend
 
 -include Potentials.depend
 endif

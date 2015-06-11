@@ -73,7 +73,7 @@ ifeq (${USE_MAKEDEP},1)
 QUIP_UTILS_F95_FPP_FILES = ${addsuffix .fpp, ${QUIP_UTILS_F95_FILES}}
 
 Utils.depend: ${QUIP_UTILS_F95_FPP_FILES}
-	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Utils/,${QUIP_UTILS_F95_SOURCES}} > Utils.depend
+	${SCRIPT_PATH}/${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../src/Utils/,${QUIP_UTILS_F95_SOURCES}} > Utils.depend
 
 -include Utils.depend
 endif
