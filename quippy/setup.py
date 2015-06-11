@@ -266,7 +266,7 @@ def find_wrap_sources(makefile, quip_root):
         wrap_types += ['descriptor']
 
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
-        gp_dir = os.path.join(quip_root, 'src/GAP-filler/')
+        gp_dir = os.path.join(quip_root, 'src/GAP-filler')
         source_dirs.append(gp_dir)
         targets.extend([(quip_root, 'GAP-filler')])
 
@@ -283,7 +283,7 @@ def find_wrap_sources(makefile, quip_root):
     do_crack = not 'QUIPPY_NO_CRACK' in makefile or ('QUIPPY_NO_CRACK' in makefile and not int(makefile['QUIPPY_NO_CRACK']))
        
     if do_tools or do_crack:
-        quip_utils_dir = os.path.join(quip_root, 'src/Utils/')
+        quip_utils_dir = os.path.join(quip_root, 'src/Utils')
         source_dirs.append(quip_utils_dir)
         libraries = ['quiputils'] + libraries
         targets.append((quip_root, 'Utils'))
