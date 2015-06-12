@@ -145,9 +145,11 @@ ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy: libquip.a
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
 
-quippy_install: 
+install-quippy: quippy
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
+
 
 clean: ${BUILDDIR}
 	for mods in ${MODULES} ${EXTRA_CLEAN_DIRS} ; do \
