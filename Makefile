@@ -167,12 +167,6 @@ deepclean: clean
 distclean: deepclean
 	rm -rf build
 
-install-quippy: quippy
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
-
-clean-quippy: quippy
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
-
 install-structures:
 	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install
 
