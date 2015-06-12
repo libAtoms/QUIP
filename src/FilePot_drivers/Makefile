@@ -45,6 +45,7 @@ PROGRAMS = evb_driver
 evb_driver : % :  %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
+
 ifeq ($(HAVE_CP2K), 1)
    PROGRAMS += cp2k_driver
    CP2K_LIB_OBJS = cp2k_driver_module.o

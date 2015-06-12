@@ -52,9 +52,6 @@ default: all
 all: ${PROGRAMS}
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
-ifeq (${HAVE_CP2K},1)
-  LIBS += -lcp2k_driver
-endif
 ifeq (${HAVE_THIRDPARTY},1)
   LIBS += -lthirdparty
 endif
