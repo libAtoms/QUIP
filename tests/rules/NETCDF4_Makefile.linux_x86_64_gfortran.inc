@@ -5,8 +5,6 @@
 # DEBUG=-g -traceback -DDUMP_CORE_ON_ABORT 
 # CDEBUG=
 MATH_LINKOPTS=-llapack -lopenblas
-FOX_LIBDIR=${QUIP_ROOT}/FoX-4.0.3/objs.${QUIP_ARCH}/lib
-FOX_INCDIR=${QUIP_ROOT}/FoX-4.0.3/objs.${QUIP_ARCH}/finclude
 NETCDF_LIBDIR=/usr/lib
 NETCDF4=1
 NETCDF4_CURL=1
