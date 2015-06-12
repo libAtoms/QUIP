@@ -28,11 +28,7 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-ifeq (${QUIP_ARCH},)
-  include Makefile.arch
-else
-  include Makefile.${QUIP_ARCH}
-endif
+include Makefile.${QUIP_ARCH}
 include Makefile.inc
 include Makefile.rules
 

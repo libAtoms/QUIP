@@ -47,11 +47,8 @@ endif
 export QUIP_ROOT
 export SCRIPT_PATH=${QUIP_ROOT}/bin
 export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
-include Makefile.rules
 
-ifneq ("$(wildcard $(BUILDDIR)/Makefile.inc)","")
 -include ${BUILDDIR}/Makefile.inc   
-endif
 
 # create modules list 
 
@@ -83,18 +80,21 @@ endif
 # now add the rest of the modules
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors 
 
+
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 
+# the first target
+all: ${MODULES}
 
-default: ${MODULES}
-all: default
+FOX = FoX-4.0.3
+export FOX_LIBDIR=${QUIP_ROOT}/src/FoX-4.0.3/objs.${QUIP_ARCH}/lib
+export FOX_INCDIR=${QUIP_ROOT}/src/FoX-4.0.3/objs.${QUIP_ARCH}/finclude
+EXTRA_CLEAN_DIRS = quippy
 
 # now we can include the config makefile, it needs to come after the default target
 include Makefile.config
-
-FOX = FoX-4.0.3
-EXTRA_CLEAN_DIRS = quippy
+include Makefile.rules
 
 ${BUILDDIR}/Makefile.inc: 
 	@echo
@@ -103,16 +103,16 @@ ${BUILDDIR}/Makefile.inc:
 	@exit 1
 
 
-${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
-${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
-	make -C ${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP 
+${FOX}: src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
+src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
+	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP 
 
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
 FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)
 
 # general rule to make a module
 
-${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR}
+${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/src/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$@ -I${PWD} -I${PWD}/arch
@@ -121,23 +121,23 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR}
 # dependencies between modules
 
 ifeq (${HAVE_GAP},1)
-GAP: libAtoms ${FOX}
+GAP: libAtoms 
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler: libAtoms ${FOX} GAP Potentials Utils
+GAP-filler: libAtoms GAP Potentials Utils
 endif
 
-Potentials: libAtoms ${FOX} ${GAP}
-Utils: libAtoms ${FOX} ${GAP} Potentials
-FilePot_drivers: libAtoms ${FOX} ${GAP} Potentials Utils
-Programs: libAtoms ${FOX} ${GAP} Potentials Utils FilePot_drivers
-Tests: libAtoms ${FOX} ${GAP} Potentials Utils
+Potentials: libAtoms  ${GAP}
+Utils:  libAtoms ${GAP} Potentials
+FilePot_drivers:  libAtoms  Potentials Utils
+Programs: libAtoms ${GAP} Potentials Utils FilePot_drivers
+Tests: libAtoms  ${GAP} Potentials Utils
 libatoms: libAtoms
 
 libquip: libquip.a
 
-libquip.a: ${THIRDPARTY} libAtoms ${FOX} ${GAP} Potentials Utils
+libquip.a: ${MODULES}
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(subst GAP,${BUILDDIR},${GAP}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
@@ -160,10 +160,10 @@ clean: ${BUILDDIR}
 
 deepclean: clean
 	-for dir in ${EXTRA_CLEAN_DIRS}; do \
-	  cd $$dir; make clean; \
+	   ${MAKE} -C $$dir USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch clean; \
 	done
-	-if [[ -d ${FOX}/objs.${QUIP_ARCH} ]]; then \
-	  rm -rf ${FOX}/objs.${QUIP_ARCH} ; \
+	-if [[ -d src/${FOX}/objs.${QUIP_ARCH} ]]; then \
+	  rm -rf src/${FOX}/objs.${QUIP_ARCH} ; \
 	fi
 
 distclean: deepclean
