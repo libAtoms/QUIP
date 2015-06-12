@@ -66,3 +66,12 @@ clean:
 
 allclean : clean
 
+install-scripts:
+	@echo "installing from Structure_processors"; \
+	for f in `/bin/ls src/Structure_processors | egrep -v '\.f95|Makefile*'`; do \
+	  if [ -f src/Structure_processors/$$f ] && [ -x src/Structure_processors/$$f ]; then \
+	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
+	    cp src/Structure_processors/$$f ${QUIP_INSTDIR}; \
+	  fi; \
+	done
+
