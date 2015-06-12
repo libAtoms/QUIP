@@ -105,19 +105,21 @@ not encountered many problems past version 11.
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
     
-4.  Compile all modules, libraries and programs with
+4.  Compile all modules, libraries and programs with:
     
 		make
-        
-    Other useful make targets include
 
-  		- `make quippy` : compile the Python wrappers to `QUIP`
-	    - `make install` : copies all compiled programs it can find to
+	From the top-level `QUIP` directory. All object files and programs
+    are built under `build/${QUIP_ARCH}/libquip.a`.
+
+    Other useful make targets include:
+
+	- `make install` : copies all compiled programs it can find to
 		`QUIP_INSTALLDIR`, if it's defined and is a directory
-	    - `make libquip`:   Compile QUIP as a library and link to it. 
-		  This will make all the various libraries and combine them into one:
-		  `build.${QUIP_ARCH}/libquip.a`, which is what you need to link (and
-		  of course LAPACK).
+	- `make libquip`:   Compile QUIP as a library and link to it. 
+	  This will make all the various libraries and combine them into one:
+	  `build/${QUIP_ARCH}/libquip.a`, which is what you need to link (and
+	  of course LAPACK).
     
 5.  QUIP is a "developer's" code, and is not for the faint
     hearted. A good start is to use the `quip` program, which is under
@@ -143,8 +145,24 @@ not encountered many problems past version 11.
     list of potential model  types (and some combinations). The parsing
     is recursive,  so `init_args=IP --help`  will then proceed  to list
     the types of interatomic potentials (IP) that are available.
+
+6.  To compile the Python wrappers (`quippy`), run
+
+		make quippy
+
+	`quippy` depends on Python and [numpy](http://www.numpy.org), the
+	[Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/)
+	(ASE) and some features require [scipy](http://www.scipy.org)
+	and/or [matscipy](https://github.com/libAtoms/matscipy).
+	
+	More details on the quippy installation process are available in
+	the [online documentation](http://libatoms.github.io/QUIP/).
+
+7.  To run the unit and regression tests, which depend on `quippy`:
+
+		make test
     
-6.  Some functionality is only available if you check out other
+8.  Some functionality is only available if you check out other
 	modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
 	(DFTB parameters, TTM3f water model), `GAP` (Gaussian
 	Approximation Potential models) and `GAP-filler` (Gaussian
