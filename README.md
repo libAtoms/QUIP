@@ -71,18 +71,17 @@ The following external packages can be called:
  - ASE (latest svn trunk recommended)
  - Molpro
 
-## Code Philosophy
+## Code philosophy and goals
 
-We try to strike a compromise between readability of code and
-efficiency, and think of QUIP/libAtoms as a "developer's code": nice
-when you want to try new ideas quickly, but not competitive in
-efficiency with other major md codes such as LAMMPS, Gromacs etc. We
-use several extensions to the Fortran 95 standard in order to make the
-coding style more object oriented. Several compilers support all the
-necessary extensions in their recent versions, e.g. GNU v4.4 and
-later. Support in the Intel compiler suite is there in principle, but
-not every recent version has correct implementation, although we have
-not encountered many problems past version 11.
+QUIP was born because of the need to efficiently tie together a wide
+variety of different models, both empirical and quantum mechanical. It
+will not be competitive in terms of performance with codes such as LAMMPS
+and Gromacs, but has a number of unique features: 
+
+- Deep access to most of the Fortran types and routines from Python via the `quippy' package
+- Support for Gaussian Approximation Potentials (GAP)
+- Does not assume minimum image convention, so interatomic potentials can have cutoffs that are larger than the unit cell size
+
 
 ## Compilation Instructions
 
