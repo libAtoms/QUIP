@@ -75,13 +75,13 @@ not encountered many problems past version 11.
 
 ## Compilation Instructions
 
-1.  Decide your architecture by looking at the Makefiles/README, and
+1.  Decide your architecture by looking in the arch/ directory, and
     define an environmental variable QUIP_ARCH, e.g.
     
 		export QUIP_ARCH=linux_x86_64_ifort_icc
     
     You may well need to create your own
-    `Makefiles/Makefile.${QUIP_ARCH}` file based on an existing file.
+    `arch/Makefile.${QUIP_ARCH}` file based on an existing file.
     
 2.  Ensure that you have sufficiently up-to-date compilers. If you are
     using GNU compiler suite, you need version 4.4 or later. From
