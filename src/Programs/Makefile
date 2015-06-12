@@ -34,7 +34,7 @@ include Makefile.rules
 
 OBJS = vacancy_map_mod.o
 
-PROGRAMS = eval md \
+PROGRAMS = quip md \
   FC_to_xml analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
   local_E_fd wrap align local_random_search \
