@@ -90,7 +90,6 @@ all: ${MODULES}
 FOX = FoX-4.0.3
 export FOX_LIBDIR=${QUIP_ROOT}/src/FoX-4.0.3/objs.${QUIP_ARCH}/lib
 export FOX_INCDIR=${QUIP_ROOT}/src/FoX-4.0.3/objs.${QUIP_ARCH}/finclude
-EXTRA_CLEAN_DIRS = quippy
 
 # now we can include the config makefile, it needs to come after the default target
 include Makefile.config
@@ -150,9 +149,11 @@ quippy: libquip.a
 install-quippy: quippy
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
 
+clean-quippy:
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean	
 
-clean: ${BUILDDIR}
-	for mods in ${MODULES} ${EXTRA_CLEAN_DIRS} ; do \
+clean: ${BUILDDIR} clean-quippy
+	for mods in ${MODULES} ; do \
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
 	  cp ${PWD}/src/$$mods/Makefile ${BUILDDIR}/Makefile ; \
