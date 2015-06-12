@@ -167,38 +167,31 @@ deepclean: clean
 distclean: deepclean
 	rm -rf build
 
-install:
-	@if [ "x${QUIP_INSTDIR}" == "x" ]; then \
-	  echo "make install needs QUIP_INSTDIR defined"; \
-	  exit 1; \
-	fi; \
-	if [ ! -d ${QUIP_INSTDIR} ]; then \
-	  echo "make install QUIP_INSTDIR '${QUIP_INSTDIR}' doesn't exist or isn't a directory"; \
-	  exit 1; \
-	fi
-	${MAKE} install-build.QUIP_ARCH install-Tools install-structures
+install-quippy: quippy
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
 
-install-build.QUIP_ARCH:
-	@echo "installing from build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}"; \
-	for f in `/bin/ls build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$$'`; do \
-	  if [ -x build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ]; then \
-	    if [ build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f -nt ${QUIP_INSTDIR}/$$f ]; then \
-	       echo "copying f $$f to ${QUIP_INSTDIR}"; \
-	       cp build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}/$$f ${QUIP_INSTDIR}; \
-	    fi; \
-	    if [ $$f == eval ]; then \
-	       rm -f ${QUIP_INSTDIR}/quip_eval; \
-	       ln -s ${QUIP_INSTDIR}/eval ${QUIP_INSTDIR}/quip_eval; \
-	    fi; \
-	  fi; \
-	done
-
-install-Structure_processors: install-Tools
-install-Tools:
-	${MAKE} -C src/Structure_processors install -I${PWD} -I${PWD}/arch -I${BUILDDIR}
+clean-quippy: quippy
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 
 install-structures:
-	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install-structures 
+	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install
+
+install: ${MODULES} install-structures
+ifeq (${QUIP_INSTALLDIR},)
+	@echo "make install needs QUIP_INSTALLDIR defined"
+else
+	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
+	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
+	  exit 1; \
+	else	 \
+	  for mods in ${MODULES} ; do \
+	    rm -f ${BUILDDIR}/Makefile ;\
+	    cp ${PWD}/src/$$mods/Makefile ${BUILDDIR}/Makefile ;\
+	    ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch install ;\
+	    rm ${BUILDDIR}/Makefile ;\
+	  done ;\
+	fi
+endif
 
 test: quippy
 	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}

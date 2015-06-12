@@ -39,15 +39,18 @@ PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_ne
   structure_analysis_traj mean_var_correl angle_distr coordination_number \
   make_bulk_supercell \
   extract_cv extract_EVB mean_var_decorrelated_err rings UI_integrate solvate \
-  merge_traj test_ran diffusion xyz2residue_library make_surface_slab_vasp
+  merge_traj test_ran diffusion xyz2residue_library make_surface_slab_vasp convert xyz2pdb
 
 ifeq (${HAVE_TB},1)
   PROGRAMS += make_k_mesh
 endif
 
+INSTALL_SCRIPTS = f90wrap_semicol nc2movie temperature_by_kind vel_power_spectrum xyz2ecfg.awk xyz2movie
+
 default: all
 
 all: ${PROGRAMS}
+
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
 ifeq (${HAVE_THIRDPARTY},1)
@@ -66,12 +69,19 @@ clean:
 
 allclean : clean
 
-install-scripts:
-	@echo "installing from Structure_processors"; \
-	for f in `/bin/ls src/Structure_processors | egrep -v '\.f95|Makefile*'`; do \
-	  if [ -f src/Structure_processors/$$f ] && [ -x src/Structure_processors/$$f ]; then \
-	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
-	    cp src/Structure_processors/$$f ${QUIP_INSTDIR}; \
-	  fi; \
-	done
+install:
+	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
+	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
+	  exit 1; \
+	else	\
+	  for f in ${PROGRAMS} ; do \
+	    echo "Copying $$f to ${QUIP_INSTALLDIR}" ; \
+	    cp $$f ${QUIP_INSTALLDIR} ; \
+	  done ;\
+	  for f in ${INSTALL_SCRIPTS} ; do \
+	    echo "Copying $$f to ${QUIP_INSTALLDIR}" ; \
+	    cp ${QUIP_ROOT}/src/Structure_processors/$$f ${QUIP_INSTALLDIR} ;\
+	  done ;\
+	fi
+
 

@@ -1,12 +1,12 @@
 default:
 
-install-structures:
+install:
 	@if [[ -z "${QUIP_STRUCTS_DIR}" ]]; then \
 	  if [[ -d ${HOME}/share/quip_structures ]]; then \
-	    echo "QUIP_STRUCTS_DIR not defined, copying structures into HOME/share/quip_structures"; \
+	    echo "QUIP_STRUCTS_DIR not defined, copying structures into ${HOME}/share/quip_structures"; \
 	    cp *xyz ${HOME}/share/quip_structures; \
 	  else \
-	    echo "QUIP_STRUCTS_DIR not defined and HOME/share/quip_structures does not exist or is not a directory"; \
+	    echo "QUIP_STRUCTS_DIR not defined and ${HOME}/share/quip_structures does not exist or is not a directory"; \
 	  fi; \
 	else \
 	  if [[ -e "${QUIP_STRUCTS_DIR}" && ! -d "${QUIP_STRUCTS_DIR}" ]]; then \
