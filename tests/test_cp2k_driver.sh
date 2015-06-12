@@ -16,7 +16,7 @@ mydir=`dirname $0`
 bindir=$mydir/../build/$QUIP_ARCH
 
 if [ ! -x $bindir/cp2k_driver ]; then
-   (cd $QUIP_ROOT && make QUIP_FilePot_Drivers) || exit 2
+   (cd $QUIP_ROOT && make FilePot_drivers) || exit 2
 fi
 
 TEST=test_cp2k_driver.sh
@@ -49,7 +49,7 @@ EOF_CP2K
 
 chmod +x $TEST.cp2k
 
-cp $QUIP_ROOT/QUIP_FilePot_Drivers/cp2k_driver/cp2k_input.template $TEST.cp2k_input.template
+cp $QUIP_ROOT/src/FilePot_drivers/cp2k_driver/cp2k_input.template $TEST.cp2k_input.template
 
 $bindir/cp2k_driver $TEST.in.xyz $TEST.out.xyz Run_Type=MM cp2k_program=../$TEST.cp2k PSF_print=DRIVER_PRINT_AND_SAVE cp2k_template_file=$TEST.cp2k_input.template
 
