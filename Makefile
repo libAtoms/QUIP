@@ -130,7 +130,7 @@ endif
 Potentials: libAtoms  ${GAP}
 Utils:  libAtoms ${GAP} Potentials
 FilePot_drivers:  libAtoms  Potentials Utils
-Programs: libAtoms ${GAP} Potentials Utils FilePot_drivers
+Programs: libAtoms ${GAP} Potentials Utils
 Tests: libAtoms  ${GAP} Potentials Utils
 libatoms: libAtoms
 
