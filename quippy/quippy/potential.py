@@ -195,10 +195,14 @@ with `atoms` to the new :class:`Potential` instance, by calling
         if atoms is not None:
             atoms.set_calculator(self)
 
-
+        self.name = init_args     
+        
     __init__.__doc__ = _potential.Potential.__init__.__doc__
 
+    def todict(self):
+        return {}
 
+    
     def calc(self, at, energy=None, force=None, virial=None,
              local_energy=None, local_virial=None,
              args_str=None, error=None, **kwargs):

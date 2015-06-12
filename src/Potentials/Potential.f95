@@ -1141,7 +1141,17 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     my_eps_guess = optional_default(1.0e-2_dp/at%N, eps_guess)
     if (my_eps_guess .feq. 0.0_dp) my_eps_guess = 1.0e-2_dp/at%N
 
-    call calc_connect(at)
+    if (cutoff(this) > 0.0_dp) then
+       ! For Potentials which need connectivity information, ensure Atoms cutoff is >= Potential cutoff
+       ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
+       ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
+       if (at%cutoff < cutoff(this)) then
+          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          call set_cutoff(at, cutoff(this))
+       end if
+       call calc_connect(at)
+    end if
+
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
 
@@ -1637,8 +1647,9 @@ end subroutine undo_travel
     real(dp) :: deform_grad(3,3), virial(3,3), deform_grad_inv(3,3)
     real(dp), allocatable :: f(:,:)
     real(dp) :: max_atom_rij_change
-    integer :: t_i(2), i
+    integer :: t_i(2), i, j
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    integer, pointer, dimension(:,:) :: move_mask_3
     real(dp), pointer :: minim_applied_force(:,:)
 
     type(potential_minimise) :: am
@@ -1707,6 +1718,13 @@ end subroutine undo_travel
        do i=1,am%minim_at%N
           if (move_mask(i) == 0) f(:,i) = 0.0_dp
        end do
+    endif
+    if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
+       do i=1,am%minim_at%N
+	  do j=1, 3
+	     if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
+	  end do
+       end do
     end if
 
     ! add extra forces
@@ -1768,7 +1786,7 @@ end subroutine undo_travel
     integer :: i, jj, j
     real(dp) :: max_atom_rij_change
     integer :: n_nearest
-    integer, pointer :: move_mask(:)
+    integer, pointer :: move_mask(:), move_mask_3(:,:)
 
     INIT_ERROR(error)
 
@@ -1833,6 +1851,17 @@ end subroutine undo_travel
 	  endif
        end do
     endif
+    if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
+       do i=1,am%minim_at%N
+	  do j=1, 3
+	     if (move_mask_3(j,i) == 0) then
+	       P(3*(i-1)+j:3*(i-1)+j,:) = 0.0_dp
+	       P(:,3*(i-1)+j:3*(i-1)+j) = 0.0_dp
+	       P(3*(i-1)+j,3*(i-1)+j) = 1.0_dp
+	     endif
+	  end do
+       end do
+    endif
 
     P_g(1:9) = g(1:9)
     call symmetric_linear_solve(P, g(10:10+am%minim_at%N*3-1), P_g(10:10+am%minim_at%N*3-1))
@@ -1851,8 +1880,9 @@ end subroutine undo_travel
     real(dp) :: deform_grad(3,3), virial(3,3), deform_grad_inv(3,3)
     real(dp), allocatable :: f(:,:)
     real(dp) :: max_atom_rij_change
-    integer :: t_i(2), i
+    integer :: t_i(2), i, j
     integer, pointer, dimension(:) :: move_mask, fixed_pot
+    integer, pointer, dimension(:,:) :: move_mask_3
     real(dp), pointer :: minim_applied_force(:,:)
 
     type(potential_minimise) :: am
@@ -1950,6 +1980,13 @@ endif
     if (assign_pointer(am%minim_at, 'move_mask', move_mask)) then
        do i=1,am%minim_at%N
           if (move_mask(i) == 0) f(:,i) = 0.0_dp
+       end do
+    end if
+    if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
+       do i=1,am%minim_at%N
+	  do j=1, 3
+	     if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
+	  end do
        end do
     end if
 
@@ -2289,7 +2326,7 @@ end subroutine pack_pos_dg
     real(dp), intent(inout) :: virial(3,3)
 
     integer :: error
-    logical :: minim_hydrostatic_strain
+    logical :: minim_hydrostatic_strain, minim_constant_volume
     logical :: minim_lattice_fix_mask(3,3)
     real(dp) :: minim_lattice_fix(3,3)
     real(dp) :: scaled_ident
@@ -2299,10 +2336,15 @@ end subroutine pack_pos_dg
     minim_hydrostatic_strain = .false.
     call get_param_value(at, "Minim_Hydrostatic_Strain", minim_hydrostatic_strain, error=error)
     CLEAR_ERROR(error)
+
     minim_lattice_fix = 0.0_dp
     call get_param_value(at, "Minim_Lattice_Fix", minim_lattice_fix, error=error)
     CLEAR_ERROR(error)
     minim_lattice_fix_mask = (minim_lattice_fix /= 0.0_dp)
+
+    minim_constant_volume = .false.
+    call get_param_value(at, "Minim_Constant_Volume", minim_constant_volume, error=error)
+    CLEAR_ERROR(error)
 
     ! project onto identity
     if (minim_hydrostatic_strain) then
@@ -2316,6 +2358,13 @@ end subroutine pack_pos_dg
     if (any(minim_lattice_fix_mask)) then
        virial = merge(0.0_dp, virial, minim_lattice_fix_mask)
     end if
+
+    if (minim_constant_volume) then
+      virial_trace = virial(1,1) + virial(2,2) + virial(3,3)
+      virial(1,1) = virial(1,1) - virial_trace/3.0
+      virial(2,2) = virial(2,2) - virial_trace/3.0
+      virial(3,3) = virial(3,3) - virial_trace/3.0
+    endif
 
   end subroutine constrain_virial_post
 
