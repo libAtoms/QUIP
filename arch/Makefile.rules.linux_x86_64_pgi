@@ -1,2 +1,0 @@
-.f95.o:
-	${F95} ${F95FLAGS} -I$(<D) -E $< | $(QUIP_ROOT)/Tools/f90wrap_semicol > $*.f90 && ${F95} ${F95FLAGS} -I$(<D) -c $*.f90 -o $@

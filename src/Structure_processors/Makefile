@@ -45,7 +45,7 @@ ifeq (${HAVE_TB},1)
   PROGRAMS += make_k_mesh
 endif
 
-INSTALL_SCRIPTS = f90wrap_semicol nc2movie temperature_by_kind vel_power_spectrum xyz2ecfg.awk xyz2movie
+INSTALL_SCRIPTS = nc2movie temperature_by_kind vel_power_spectrum xyz2ecfg.awk xyz2movie
 
 default: all
 
