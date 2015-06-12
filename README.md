@@ -1,6 +1,6 @@
 # QUIP - QUantum mechanics and Interatomic Potentials
 
-The QUIP package is a software library written in Fortran 95+ for the
+The `QUIP` package is a software library written in Fortran 95+ for the
 purposes of carrying out molecular dynamics simulations. The code
 implements a wide variety of interatomic potentials and tight binding
 quantum mechanics, and is also able to call external packages. Various
@@ -8,18 +8,19 @@ hybrid combinations are also supported in the style of QM/MM.
 
 For more details, see the [online documentation](http://libatoms.github.io/QUIP).
 
+Portions of this code were written by: Albert Bartok-Partay, Livia
+Bartok-Partay, Federico Bianchini, Anke Butenuth, Marco Caccin,
+Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, Sebastian
+John, Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif
+Mones, Alan Nichol, David Packwood, Lars Pastewka, Giovanni
+Peralta, Ivan Solt, Oliver Strickson, Wojciech Szlachta, Csilla
+Varnai, Steven Winfield.
+
+Copyright 2006-2015.
+
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
 domain.
-
-The main libAtoms/QUIP contributors are:
-
- - University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan
-   Nichol, Letif Mones, Wojciech Szlachta
- - University of Warwick: James Kermode
- - King's College London: Alessandro De Vita
- - Naval Research Laboratory, Washington DC: Noam Bernstein
- - Fraunhofer IWM, Freiburg: Lars Pastewka
 
 ## Features
 
@@ -104,41 +105,26 @@ not encountered many problems past version 11.
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
     
-4.  make something:
+4.  Compile all modules, libraries and programs with
     
-		make libAtoms
-    
-    or (usually)
-    
-        make QUIP_Programs/<progname>
-    
-    Note that the `make` command has to be executed from the top level
-    directory, even for targets in subdirectories.
-    
-    Most useful make targets include
-    
-    `all` : pretty much every vaguely useful top level program
-	`QUIP_Programs/eval` : evaluate energies, forces, minimize energy etc
-	`QUIP_Programs/md` : basic md program
-	`QUIP_Core` : generates everything that is necessary to use QUIP as a library
-	`install` : copies all compiled programs it can find to `QUIP_INSTDIR`,
-    	        if it's defined and is a directory
+		make
         
-    You can also use QUIP and libAtoms as a library and link to it. To
-    make the library version only, execute
-    
-    	    make libquip
-    
-    This will make all the various libraries and combine them into one:
-    `build.${QUIP_ARCH}/libquip.a`, which is what you need to link (and
-    of course LAPACK).
+    Other useful make targets include
+
+  		- `make quippy` : compile the Python wrappers to `QUIP`
+	    - `make install` : copies all compiled programs it can find to
+		`QUIP_INSTALLDIR`, if it's defined and is a directory
+	    - `make libquip`:   Compile QUIP as a library and link to it. 
+		  This will make all the various libraries and combine them into one:
+		  `build.${QUIP_ARCH}/libquip.a`, which is what you need to link (and
+		  of course LAPACK).
     
 5.  QUIP is a "developer's" code, and is not for the faint
-    hearted. A good start is to use the `eval` program, which is under
-    `QUIP_Programs`, and allows the evaluation of properties of an atomic
+    hearted. A good start is to use the `quip` program, which is under
+    `src/Programs`, and allows the evaluation of properties of an atomic
     configuration using a variety of models. For example:
     
-    		eval at_file=test.xyz init_args='IP LJ' \
+    		quip at_file=test.xyz init_args='IP LJ' \
     			param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
     
     assuming that you have a file called `test.xyz` with the following
@@ -151,14 +137,15 @@ not encountered many problems past version 11.
     The Lennard-Jones parameters in the above example is defined in the
     `ip.parms.LJ.xml` file. 
     
-    Most string arguments can be replaced by '--help' and QUIP programs
+    Most string arguments can be replaced by `--help` and QUIP programs
     will  then print  a  list  of allowable  keywords  with brief  help
     messages as to their usage,  so e.g. `init_args=--help` will give a
     list of potential model  types (and some combinations). The parsing
     is recursive,  so `init_args=IP --help`  will then proceed  to list
     the types of interatomic potentials (IP) that are available.
     
-6.  Some functionality is only available if you check out other packages
-    within the QUIP tree, e.g. the `ThirdParty` (DFTB parameters, TTM3f
-    water model), `GAP` (Gaussian Approximation Potential models) and
-    `GAP-filler` (Gaussian Approximation Potential model training).
+6.  Some functionality is only available if you check out other
+	modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
+	(DFTB parameters, TTM3f water model), `GAP` (Gaussian
+	Approximation Potential models) and `GAP-filler` (Gaussian
+	Approximation Potential model training).
