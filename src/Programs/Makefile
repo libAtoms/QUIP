@@ -67,6 +67,7 @@ MINIM_PROGRAMS = minimtest1 dimertest1
 EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test QMMM_CP2K_md QMMM_md_buf annealing deval_dphonon crack analytical_free_E_UI DTDE_GP_free_E DTDE_grad_GP_free_E ABF_GP_free_E fgp
 -include Makefile.extra
 
+
 ${PROGRAMS} ${EXTRA_PROGRAMS} ${MINIM_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
@@ -74,3 +75,14 @@ clean:
 	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} ${MINIM_PROGRAMS} crack makecrack
 
 allclean : clean
+
+install:
+	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
+	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
+	  exit 1; \
+	else	\
+	  for f in ${PROGRAMS} ; do \
+	    echo "Copying $$f to ${QUIP_INSTALLDIR}" ; \
+	    cp $$f ${QUIP_INSTALLDIR} ; \
+	  done ;\
+	fi

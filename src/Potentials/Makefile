@@ -132,3 +132,5 @@ Potentials.depend: ${ALL_F95_FPP_FILES}
 
 -include Potentials.depend
 endif
+
+install: 

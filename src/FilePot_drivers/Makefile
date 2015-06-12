@@ -28,20 +28,11 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-ifeq (${QUIP_ARCH},)
-  include Makefile.arch
-else
-  include Makefile.${QUIP_ARCH}
-endif
+include Makefile.${QUIP_ARCH}
 include Makefile.inc
 include Makefile.rules
 
-# default: all
-ifeq ($(HAVE_CP2K), 1)
-default: libcp2k_driver.a
-else
-default:
-endif
+default: all
 
 LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
 ifeq (${HAVE_THIRDPARTY},1)
@@ -81,9 +72,24 @@ vasp_driver:
 	echo "VASP support not active" 1>&2 && exit 1
 endif
 
-.PHONY: clean allclean test
+.PHONY: clean allclean test install
 
+ifeq ($(HAVE_CP2K), 1)
+all: libcp2k_driver.a ${PROGRAMS}
+else
 all: ${PROGRAMS}
+endif
+
+install:
+	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
+	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
+	  exit 1; \
+	else	\
+	  for f in ${PROGRAMS} ; do \
+	    echo "Copying $$f to ${QUIP_INSTALLDIR}" ; \
+	    cp $$f ${QUIP_INSTALLDIR} ; \
+	  done ;\
+	fi
 
 clean:	
 	-rm -f ${CLEAN_OBJS} ${CLEAN_LIBS} ${PROGRAMS} ${addsuffix .o, ${PROGRAMS}}

@@ -143,3 +143,5 @@ libAtoms.depend: ${LIBATOMS_F95_FPP_FILES}
 
 -include libAtoms.depend
 endif
+
+install:

@@ -77,3 +77,5 @@ Utils.depend: ${QUIP_UTILS_F95_FPP_FILES}
 
 -include Utils.depend
 endif
+
+install: 
