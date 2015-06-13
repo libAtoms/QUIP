@@ -22,11 +22,8 @@ defined in QUIP available from Python scripts.
 Quick-start:
  $ export QUIP_ARCH=linux_x86_64_gfortran
  $ cd ${QUIP_ROOT}
- $ make
- $ cd Tools/quippy
- $ python setup.py build
- $ python setup.py test
- $ python setup.py install [--prefix=PREFIX]
+ $ make quippy
+ $ make install-quippy
 
 For more details, see documentation in doc/ subdirectory, which is in
 reStructredText format.
