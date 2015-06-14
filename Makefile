@@ -97,7 +97,7 @@ include Makefile.rules
 
 ${BUILDDIR}/Makefile.inc: 
 	@echo
-	@echo "Perhaps you forgot to run \`make config'?"
+	@echo "${BUILDDIR}/Makefile.inc not found. Perhaps you forgot to run \`make config'?"
 	@echo
 	@exit 1
 
