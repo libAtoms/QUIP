@@ -49,6 +49,7 @@ module quaternions_module
 
   public :: quaternion, initialise, finalise, print
   public :: rotate, rotation, rotation_matrix, orientation, assignment(=)
+  public :: rotation_parameters
   public :: operator(.dot.), operator(*), operator(+), operator(.conj.)
 
   type Quaternion

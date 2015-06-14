@@ -164,7 +164,7 @@ clean: ${BUILDDIR} clean-quippy
 
 deepclean: clean
 
-distclean: deepclean
+distclean: clean
 	rm -rf build
 
 install-structures:
