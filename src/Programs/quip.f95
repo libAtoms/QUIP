@@ -30,7 +30,7 @@
 
 #include "error.inc"
 
-program eval
+program quip
 
 use libAtoms_module
 #ifdef HAVE_TB
@@ -131,7 +131,7 @@ implicit none
 
   call initialise(cli_params)
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level")
-  if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary eval CLI arguments")) then
+  if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary quip CLI arguments")) then
     call system_abort("Nearly impossible failure to look for verbosity argument in preliminary parse")
   end if
   call verbosity_push(verbosity_of_str(trim(verbosity)))
@@ -230,11 +230,11 @@ implicit none
   call param_register(cli_params, 'real_format', '%16.8f', real_format, help_string="real format in XYZ file")
 
 
-  if (.not. param_read_args(cli_params, task="eval CLI arguments", did_help=did_help)) then
-    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)]",PRINT_ALWAYS)
+  if (.not. param_read_args(cli_params, task="quip CLI arguments", did_help=did_help)) then
+    call print("Usage: quip [at_file=file(stdin)] [param_file=file(quip_params.xml)]",PRINT_ALWAYS)
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
     call print("", PRINT_ALWAYS)
-    call print("There are lots of other options, type `eval --help' for a full list.", PRINT_ALWAYS)
+    call print("There are lots of other options, type `quip --help' for a full list.", PRINT_ALWAYS)
     call system_abort("")
   end if
   call finalise(cli_params)
@@ -341,7 +341,9 @@ implicit none
 	call set_cutoff(at, cutoff(pot), cutoff_skin=mycutoff_skin)
      endif
 
-     call calc_connect(at)
+     if(at%cutoff > 0.0_dp) then
+        call calc_connect(at)
+     endif
 
      if (do_create_residue_labels) then
        call create_residue_labels_arb_pos(at, do_CHARMM=.true., pos_field_for_connectivity="pos", error=error)
@@ -418,20 +420,20 @@ implicit none
            call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
       if(trim(minim_method) == 'precond') then
 #ifdef HAVE_PRECON
-              call system_timer('eval/precon_minim')
+              call system_timer('quip/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .true., print_cinoutput=relax_io, &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 	length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
      res2=precond_res2, infoverride = precond_infoverride,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu) 
-              call system_timer('eval/precon_minim')
+              call system_timer('quip/precon_minim')
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')
 #endif
       elseif(trim(minim_method) == 'precond_dimer') then
 #ifdef HAVE_PRECON
-              call system_timer('eval/precon_dimer')
+              call system_timer('quip/precon_dimer')
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
@@ -439,61 +441,63 @@ implicit none
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride, &
                      bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
-              call system_timer('eval/precon_dimer')
+              call system_timer('quip/precon_dimer')
    
               call finalise(dimer_at)
 #else
               call system_abort('minim_method=precond_dimer but HAVE_PRECON=0')
 #endif
         else
-              call system_timer('eval/minim')
+              call system_timer('quip/minim')
 	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
 		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
-              call system_timer('eval/minim')
+              call system_timer('quip/minim')
 	   endif
 	   call finalise(relax_io) 
   else
            if(trim(minim_method) == 'precond') then
 #ifdef HAVE_PRECON
-              call system_timer('eval/precon_minim')
+              call system_timer('quip/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
 		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
    res2=precond_res2, infoverride=precond_infoverride,convchoice=precond_conv_method,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
-              call system_timer('eval/precon_minim')
+              call system_timer('quip/precon_minim')
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')
 #endif
             elseif(trim(minim_method) == 'precond_dimer') then
 #ifdef HAVE_PRECON
-              call system_timer('eval/precon_dimer')
+              call system_timer('quip/precon_dimer')
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
                          external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2,infoverride=precond_infoverride,auto_mu=precond_auto_mu)
-              call system_timer('eval/precon_dimer')
+              call system_timer('quip/precon_dimer')
               call finalise(dimer_at)
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')
 #endif
           else
-              call system_timer('eval/minim')
+              call system_timer('quip/minim')
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
                    fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
-              call system_timer('eval/minim')
+              call system_timer('quip/minim')
            end if
         endif
         !! call write(at,'stdout', prefix='RELAXED_POS', properties='species:pos')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
-        call calc_connect(at)
+        if (at%cutoff > 0.0_dp) then
+           call calc_connect(at)
+        end if
      end if
 
      if (do_c0ij .or. do_cij) then
