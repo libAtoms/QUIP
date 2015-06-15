@@ -98,7 +98,7 @@ def quip_xml_parameters(name, label=None):
     """Search for an QUIP XML parameter set matching `name' and, optionally `label`.
 
     Result is the XML stanza as a string. Looks under
-    ${QUIP_ROOT}/QUIP_Core/parameters for a file matching `name`,
+    ${QUIP_ROOT}/share/Parameters for a file matching `name`,
     `name`.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If
     `label` is given, it should be a text string matching the label
     attribute of a QUIP <params> XML stanza. If a matching parameter
