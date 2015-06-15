@@ -34,7 +34,7 @@ class Video(Directive):
         d['height'] = int(self.arguments[2])
         try:
             d['movie_host_path'] = self.arguments[3]
-        except KeyError:
+        except IndexError:
             d['movie_host_path'] = default_movie_host_path
 
         lines = (r""".. raw:: html
