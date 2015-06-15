@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # this can be used to annotate the entire QUIP distribution by doing
-#  ./fix_headers `find . -type f -not-wholename "*fix_headers" -not -wholename "*.svn*" -not -wholename "*quippy*" -not -wholename "*pyatoms*" -not -wholename "*FoX-4.0.3*"  -print` > fix_headers.out 2>&1
+#  ./fix_headers `find . -type f -not -wholename "*fix_headers" -not -wholename "*.git*" -not -wholename "*quippy*" -not -wholename "*FoX-4.0.3*"  -print` > fix_headers.out 2>&1
 
 my $usage=<<USAGE;
 Replaces header strings with the appropriate header.
