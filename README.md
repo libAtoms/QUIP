@@ -6,7 +6,7 @@ potentials and tight binding quantum mechanics, and is also able to
 call external packages, and serve as plugins to other software such as
 [LAMMPS](http://lammps.sandia.gov), [CP2K](http://www.cp2k.org) 
 and also the python framework [ASE](https://wiki.fysik.dtu.dk/ase). Various hybrid
-combinations are also supported in the style of QM/MM, the with a
+combinations are also supported in the style of QM/MM, with a
 particular focus on materials systems such as metals and
 semiconductors.
 
