@@ -81,6 +81,7 @@ and max 1-based atom indices. Using a reduced atom range dramatically
 speeds up reading of large XYZ trajectories.""", nargs=2)
 p.add_option('-l', '--load-all', action='store_true', help="""Read all frames before starting processing. Allows frame indexing for file types which do not support random access (e.g. .castep)""")
 p.add_option('-t', '--time-ordered-series', action='store_true', help="""Join all input files, ordering by time and discarding duplicates""")
+p.add_option('--debug', action='store_true', help="""Debug mode- implies --verbose plus re-raising of any exceptions caught""")
 
 # Options related to rendering of images with AtomEye
 p.add_option('-V', '--view', action='store', help='Load view from AtomEye command script')
@@ -96,7 +97,16 @@ p.add_option('-S', '--split-output', action='store', help="Split into multiple f
 p.add_option('--cell-template', action='store', help='Template .cell file, to be used when writing CASTEP .cell files')
 p.add_option('--param-template', action='store', help='Template .param file, to be used when writing CASTEP .cell files')
 
+
 opt, args = p.parse_args()
+
+if opt.debug:    
+    opt.verbose = True
+    import logging
+    logging.root.setLevel(logging.DEBUG)
+
+if opt.verbose:
+    verbosity_push(PRINT_VERBOSE)
 
 # check for conflicts with -o|--output
 if opt.no_print_at or opt.extract_params:
@@ -412,4 +422,7 @@ try:
             pass
 
 except (IndexError, ValueError, RuntimeError, IOError), re:
-    p.error(str(re))
+    if opt.debug:
+        raise
+    else:
+        p.error(str(re))
