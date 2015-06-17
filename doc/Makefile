@@ -44,7 +44,7 @@ help:
 	@echo "  linkcheck to check all external links for integrity"
 	@echo "  doctest   to run all doctests embedded in the documentation (if enabled)"
 
-BUILDDIR = ../../../../QUIP-pages
+BUILDDIR = ../../QUIP-pages
 
 clean:
 	rm -rf $(BUILDDIR)/*

@@ -24,24 +24,41 @@ QUIP and quippy documentation
 
 .. module:: quippy
 
-The QUIP package is a software library written in Fortran 95+ for the
-purposes of carrying out molecular dynamics simulations. The code
-implements a wide variety of interatomic potentials and tight binding
-quantum mechanics, and is also able to call external packages. Various
-hybrid combinations are also supported in the style of QM/MM.
+The `QUIP` package (`GitHub <https://github.com/libAtoms/QUIP>`_) is a
+collection of software tools to carry out molecular dynamics
+simulations. It implements a variety of interatomic potentials and
+tight binding quantum mechanics, and is also able to call external
+packages, and serve as plugins to other software such as `LAMMPS
+<http://lammps.sandia.gov>`_, `CP2K <http://www.cp2k.org>`_ and also
+the python framework `ASE <https://wiki.fysik.dtu.dk/ase>`_.  Various
+hybrid combinations are also supported in the style of QM/MM, with a
+particular focus on materials systems such as metals and
+semiconductors.
 
-quippy is a Python interface to the `libAtoms/QUIP <https://github.com/libAtoms/QUIP>`_
-molecular dynamics framework.  
+`quippy` is a Python interface to `QUIP` that provides deep access to most
+of the Fortran types and routines. The quippy interface is principally
+maintained by `James Kermode <http://www.warwick.ac.uk/jrkermode>`_.
 
-The main libAtoms/QUIP contributors are:
+Long term support of the package is ensured by:
+ - Noam Bernstein (Naval Research Laboratory)
+ - Gabor Csanyi (University of Cambridge)
+ - Alessandro De Vita (King's College London)
+ - James Kermode (University of Warwick)
+ - Lars Pastewka (Fraunhofer IWM)
 
-* University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan Nichol, Letif Mones, Wojciech Szlachta
-* University of Warwick: James Kermode
-* King's College London: Alessandro De Vita
-* Naval Research Laboratory, Washington DC: Noam Bernstein
-* Fraunhofer IWM, Freiburg: Lars Pastewka
+Portions of this code were written by: Albert Bartok-Partay, Livia
+Bartok-Partay, Federico Bianchini, Anke Butenuth, Marco Caccin,
+Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, Sebastian
+John, Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif
+Mones, Alan Nichol, David Packwood, Lars Pastewka, Giovanni
+Peralta, Ivan Solt, Oliver Strickson, Wojciech Szlachta, Csilla
+Varnai, Steven Winfield.
 
-The quippy interface is principally maintained by `James Kermode <http://www.jrkermode.co.uk>`_.  
+Copyright 2006-2015.
+
+Most of the publicly available version is released under the GNU
+General Public license, version 2, with some portions in the public
+domain.
 
 Features
 ========
@@ -89,6 +106,7 @@ Contents
 
    intro.rst
    install.rst
+   Examples/index.rst
    tutorials.rst
    quippy.rst
    visualisation.rst

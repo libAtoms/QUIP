@@ -841,9 +841,6 @@ def dict2atoms(row):
     # extract additional info from database
     at.params['id'] = row['id']
     at.params['unique_id'] = row['unique_id']
-    if 'keywords' in row:
-        for key in row['keywords']:
-            at.params[key] = True
     if 'key_value_pairs' in row:
         at.params.update(row['key_value_pairs'])
     if 'data' in row:
@@ -904,7 +901,6 @@ class ASEDatabaseWriter(object):
         if stress is not None:
             stress = -stress.view(np.ndarray)/at.get_volume()
         
-        keywords = []
         orig_calc = at.get_calculator()
 
         params = {}
@@ -914,11 +910,6 @@ class ASEDatabaseWriter(object):
             key = key.lower()
             if key in skip_params:
                 continue
-            if value is None:
-                keywords.append(key)
-            if key == 'config_type':
-                keywords.append(value)
-                
             if (isinstance(value, int)   or isinstance(value, basestring) or
                 isinstance(value, float) or isinstance(value, bool)):
                 # scalar key/value pairs
@@ -943,7 +934,7 @@ class ASEDatabaseWriter(object):
             at.set_calculator(calc)
 
             database = ase.db.connect(self.dbfile)
-            database.write(at, keywords, data=data, **params)
+            database.write(at, key_value_pairs=params, data=data)
         finally:
             at.set_calculator(orig_calc)
 

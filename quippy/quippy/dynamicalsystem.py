@@ -156,7 +156,7 @@ class Dynamics(object):
 
         if self.atoms.has('masses'):
             if self.atoms.has_property('mass'):
-                if abs(self.atoms.mass/MASSCONVERT - self.atoms.get_masses()) > 1e-3:
+                if np.max(np.abs(self.atoms.mass/MASSCONVERT - self.atoms.get_masses())) > 1e-3:
                     raise RuntimeError('Dynamics confused as atoms has inconsistent "mass" and "masses" arrays')
             else:
                 self.atoms.add_property('mass', self.atoms.get_masses()*MASSCONVERT)
@@ -168,7 +168,7 @@ class Dynamics(object):
         
         if self.atoms.has('momenta'):
             if self.atoms.has_property('velo'):
-                if abs(self.atoms.velo*sqrt(MASSCONVERT) - self.atoms.get_velocities().T).max() > 1e-3:
+                if np.max(np.abs(self.atoms.velo*sqrt(MASSCONVERT) - self.atoms.get_velocities().T)) > 1e-3:
                     raise RuntimeError('Dynamics confused as atoms has inconsistent "velo" and "momenta" arrays')
             else:
                 self.atoms.add_property('velo', (self.atoms.get_velocities()/sqrt(MASSCONVERT)).T)
@@ -183,9 +183,9 @@ class Dynamics(object):
         self._ds = DynamicalSystem(self.atoms)
 
         if initialtemperature is not None:
-            if not all(abs(self._ds.atoms.velo) < 1e-3):
+            if np.max(np.abs(self._ds.atoms.velo)) > 1e-3:
                 msg = ('initialtemperature given but Atoms already '+
-                       'have non-zero velocities!')
+                       'has non-zero velocities!')
                 raise RuntimeError(msg)
             self._ds.rescale_velo(initialtemperature)
 
