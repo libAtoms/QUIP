@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation &mdash; quippy  documentation</title>
+    <title>Installation of QUIP and quippy &mdash; quippy  documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -53,19 +53,17 @@
             </a></p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#">Installation of QUIP and quippy</a><ul>
 <li><a class="reference internal" href="#quick-start">Quick start</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#getting-quippy">Getting quippy</a></li>
 <li><a class="reference internal" href="#configuring-quippy">Configuring quippy</a><ul>
-<li><a class="reference internal" href="#mandatory-settings">Mandatory settings</a></li>
-<li><a class="reference internal" href="#optional-settings">Optional settings</a></li>
+<li><a class="reference internal" href="#custom-settings">Custom settings</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#compilation">Compilation</a></li>
 <li><a class="reference internal" href="#testing">Testing</a></li>
-<li><a class="reference internal" href="#id3">Installation</a></li>
-<li><a class="reference internal" href="#installing-the-ipython-profile">Installing the ipython profile</a></li>
+<li><a class="reference internal" href="#id2">Installation</a></li>
 <li><a class="reference internal" href="#common-problems">Common Problems</a><ul>
 <li><a class="reference internal" href="#permission-errors-when-installing">Permission errors when installing</a></li>
 <li><a class="reference internal" href="#installating-on-mac-os-x-with-macports">Installating on Mac OS X with macports</a></li>
@@ -75,7 +73,7 @@
 <li><a class="reference internal" href="#error-compiling-ipmodel-gap">Error compiling IPModel_GAP</a></li>
 <li><a class="reference internal" href="#warning-about-quippy-castep-when-importing-quippy">Warning about <code class="docutils literal"><span class="pre">quippy.castep</span></code> when importing quippy</a></li>
 <li><a class="reference internal" href="#internal-compiler-error-with-ifort">Internal compiler error with <cite>ifort</cite></a></li>
-<li><a class="reference internal" href="#linking-error-on-mac-os-x-lion-10-7">Linking error on Mac OS X Lion (10.7)</a></li>
+<li><a class="reference internal" href="#linking-error-on-mac-os-x">Linking error on Mac OS X</a></li>
 </ul>
 </li>
 </ul>
@@ -116,25 +114,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation">
-<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>The aim of quippy is to make all the functions, subroutines and types
-defined in QUIP available from Python scripts. We do this by creating
-a Python extension which wraps all of these routines automatically
-using <a class="reference external" href="http://www.scipy.org/F2py">f2py</a>, part of
-<a class="reference external" href="http://numpy.scipy.org">numpy</a>. f2py is a very useful tool, but it does
-not yet support Fortran 90 extensions such as derived types, so quippy
-has to do a little more work to allow us to use them transparently.</p>
+  <div class="section" id="installation-of-quip-and-quippy">
+<span id="installation"></span><h1>Installation of QUIP and quippy<a class="headerlink" href="#installation-of-quip-and-quippy" title="Permalink to this headline">¶</a></h1>
+<p>These intructions provide more details on the compilation and
+installation of <cite>QUIP</cite> (Fortran library and main programs) and
+<cite>quippy</cite> (Python interface). They should be read in conjunction with
+the main <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>.</p>
 <div class="section" id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <p>For people who don&#8217;t read manuals:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ export QUIP_ARCH=linux_x86_64_gfortran
-$ cd ${QUIP_ROOT}
+<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/libAtoms/QUIP.git
+$ cd QUIP
+$ export QUIP_ARCH=linux_x86_64_gfortran
+$ make config
 $ make
-$ cd Tools/quippy
-$ python setup.py build
-$ python setup.py test
-$ python setup.py install [--prefix=PREFIX]
+$ make quippy
+$ make install-quippy
 </pre></div>
 </div>
 <p>Then add the installation directory to your <span class="target" id="index-0"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code></a>.</p>
@@ -144,9 +139,9 @@ $ python setup.py install [--prefix=PREFIX]
 <dl class="docutils">
 <dt>Essential:</dt>
 <dd><ul class="first last simple">
-<li><a class="reference external" href="http://www.python.org">Python 2.4</a> or later</li>
-<li><a class="reference external" href="http://numpy.scipy.org">numpy</a>  - version 1.2.1 or later</li>
-<li>A fortran compiler:<ul>
+<li><a class="reference external" href="http://www.python.org">Python 2.6</a> or later</li>
+<li><a href="#id3"><span class="problematic" id="id4">`numpy`_</span></a>  - version 1.2.1 or later</li>
+<li>A working fortran compiler:<ul>
 <li>ifort 10 or later (tested with 10.1.015 and 11.0.084)</li>
 <li>gfortran 4.3.3 or later</li>
 <li>Others that should work but haven&#8217;t been tested: <cite>pathf95</cite>, <cite>g95</cite>, <cite>pgf95</cite>, <cite>xlf95</cite></li>
@@ -184,18 +179,6 @@ to the root of the QUIP tree:</p>
 <code class="file docutils literal"><span class="pre">QUIP_Programs</span></code> directories contain Fortran 95 source
 code. quippy itself lives in the <code class="file docutils literal"><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy</span></code>
 directory.</p>
-<p>If you want to use the <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> extension, you should check it
-out and compile it as a Python extension module:</p>
-<div class="highlight-python"><div class="highlight"><pre>git clone https://www.github.com/jameskermode/AtomEye
-cd AtomEye/Python
-python setup.py install
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">If you&#8217;ve previously compiled AtomEye as an exectuable, you should do
-a <cite>make clean</cite> first.</p>
-</div>
 </div>
 <div class="section" id="configuring-quippy">
 <h2>Configuring quippy<a class="headerlink" href="#configuring-quippy" title="Permalink to this headline">¶</a></h2>
@@ -218,23 +201,17 @@ do:</p>
 </pre></div>
 </div>
 <p>Otherwise you&#8217;ll have to make a new <code class="file docutils literal"><span class="pre">Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></code>,
-containing some of the variables defined below</p>
-<div class="section" id="mandatory-settings">
-<h3>Mandatory settings<a class="headerlink" href="#mandatory-settings" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><strong class="makevar">QUIPPY_FCOMPILER</strong></dt>
-<dd><p class="first">Fortran compiler to use. The shell command:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ f2py -c --help-fcompiler
+containing some of the variables defined below. The next step is to
+answer a number of questions about your system:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ make config
 </pre></div>
 </div>
-<p class="last">will print a list of detected compilers on your system. Use <code class="docutils literal"><span class="pre">gnu95</span></code> for gfortran,
-<code class="docutils literal"><span class="pre">intel</span></code> for ifort on 32-bit platforms and <code class="docutils literal"><span class="pre">intelem</span></code> for ifort on 64-bit platforms.</p>
-</dd>
-<dt><strong class="makevar">QUIPPY_DEFINES</strong> Preprocessor macros which should be defined</dt>
-<dd>when compiling quippy. Note that since the Fortran source files are
-preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, it&#8217;s
-important to put all the <cite>-D</cite> options needed here and not in
-<strong class="makevar">QUIPPY_F90FLAGS</strong>.</dd>
+<p>This generates a configurtion file <cite>build/${QUIP_ARCH}/Makefile.inc</cite>
+which you can subsequently edit if you need to customize any of the
+options described below.</p>
+<div class="section" id="custom-settings">
+<h3>Custom settings<a class="headerlink" href="#custom-settings" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
 <dt><strong class="makevar">MATHS_LINKOPTS</strong></dt>
 <dd><p class="first">Library options needed to link to BLAS and LAPACK libraries. Any working
 BLAS/LAPACK installation is fine. If you are using Linux, ATLAS is
@@ -249,12 +226,20 @@ framework, which you can use by entering</p>
 </dd>
 <dt><strong class="makevar">FOX_LIBDIR</strong>, <strong class="makevar">FOX_INCDIR</strong> and <strong class="makevar">FOX_LIBS</strong></dt>
 <dd>Directories containing FoX libraries and header files, and required link options.
-Should be read automatically from QUIP Makefiles.&lt;</dd>
-</dl>
+Should be read automatically from QUIP Makefiles.</dd>
+<dt><strong class="makevar">QUIPPY_FCOMPILER</strong></dt>
+<dd><p class="first">Fortran compiler to use. The shell command:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ f2py -c --help-fcompiler
+</pre></div>
 </div>
-<div class="section" id="optional-settings">
-<h3>Optional settings<a class="headerlink" href="#optional-settings" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
+<p class="last">will print a list of detected compilers on your system. Use <code class="docutils literal"><span class="pre">gnu95</span></code> for gfortran,
+<code class="docutils literal"><span class="pre">intel</span></code> for ifort on 32-bit platforms and <code class="docutils literal"><span class="pre">intelem</span></code> for ifort on 64-bit platforms.</p>
+</dd>
+<dt><strong class="makevar">QUIPPY_DEFINES</strong> Preprocessor macros which should be defined</dt>
+<dd>when compiling quippy. Note that since the Fortran source files are
+preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, it&#8217;s
+important to put all the <cite>-D</cite> options needed here and not in
+<strong class="makevar">QUIPPY_F90FLAGS</strong>.</dd>
 <dt><strong class="makevar">QUIPPY_F90FLAGS</strong> and <strong class="makevar">QUIPPY_F77FLAGS</strong></dt>
 <dd>Extra flags to pass to Fortran 90 and 77 compilers</dd>
 <dt><strong class="makevar">QUIPPY_OPT</strong></dt>
@@ -292,19 +277,11 @@ export QUIP_ARCH=linux_x86_64_gfortran
 make
 </pre></div>
 </div>
-<p>You may be asked a couple of questions about your system libraries:
-you can mostly accept the suggested defaults.</p>
 <p>After this, it&#8217;s time to compile quippy itself</p>
-<div class="highlight-python"><div class="highlight"><pre>cd ${QUIP_ROOT}/Tools/quippy
-python setup.py build
+<div class="highlight-python"><div class="highlight"><pre>make quippy
 </pre></div>
 </div>
-<p>to compile quippy. You can add various command line argument to
-override the settings described above: run</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py --help
-</pre></div>
-</div>
-<p>for details. The compilation process is quite long; here is an
+<p>to compile quippy. The compilation process is quite long; here is an
 overview of the various steps that are performed.</p>
 <ul class="simple">
 <li><code class="xref py py-mod docutils literal"><span class="pre">patch_f2py</span></code> is invoked to patch the <code class="xref py py-mod docutils literal"><span class="pre">numpy.f2py</span></code>
@@ -339,50 +316,37 @@ libraries such as NetCDF and LAPACK, to create
 <code class="file docutils literal"><span class="pre">_quippy.so</span></code>, the Python extension module.</li>
 </ul>
 <p>If the compilation fails with an error message, please send the full
-output to me at <a class="reference external" href="mailto:james&#46;kermode&#37;&#52;&#48;kcl&#46;ac&#46;uk">james<span>&#46;</span>kermode<span>&#64;</span>kcl<span>&#46;</span>ac<span>&#46;</span>uk</a> and I&#8217;ll do my best to work
+output to me at <a class="reference external" href="mailto:j&#46;r&#46;kermode&#37;&#52;&#48;warwick&#46;ac&#46;uk">j<span>&#46;</span>r<span>&#46;</span>kermode<span>&#64;</span>warwick<span>&#46;</span>ac<span>&#46;</span>uk</a> and I&#8217;ll do my best to work
 out what&#8217;s going wrong.</p>
 </div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>Once quippy is successfully compiled, you should run the test suite to
 check everything is working correctly:</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py test
+<div class="highlight-python"><div class="highlight"><pre>make test
 </pre></div>
 </div>
-<p>You can also specify which tests to run by module, class or even choose
-a specific test case, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py test --test=test_atoms
-python setup.py test --test=test_atoms.TestGeometry
-python setup.py test --test=test_atoms.TestGeometry.test_cell_volume
-</pre></div>
+<p>The tests themselves can be found in <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/tests/test*.py</span></code>.
+If any of the tests fail please send me (<a class="reference external" href="mailto:j&#46;r&#46;kermode&#37;&#52;&#48;warwick&#46;ac&#46;uk">j<span>&#46;</span>r<span>&#46;</span>kermode<span>&#64;</span>warwick<span>&#46;</span>ac<span>&#46;</span>uk</a>) the output.</p>
 </div>
-<p>The tests themselves can be found in <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy/tests/test*.py</span></code>.
-If any of the tests fail please send me (<a class="reference external" href="mailto:james&#46;kermode&#37;&#52;&#48;kcl&#46;ac&#46;uk">james<span>&#46;</span>kermode<span>&#64;</span>kcl<span>&#46;</span>ac<span>&#46;</span>uk</a>) the output.</p>
-</div>
-<div class="section" id="id3">
-<h2>Installation<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h2>Installation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>Once all the tests have passed, run</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+<div class="highlight-python"><div class="highlight"><pre>make quippy-install
 </pre></div>
 </div>
 <p>to install in the standard place for Python extension modules on your
 system (this will probably be something like
-<code class="file docutils literal"><span class="pre">/usr/local/lib/python-2.</span><em><span class="pre">x</span></em><span class="pre">/site-packages</span></code>), or</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py install --prefix=PREFIX
+<code class="file docutils literal"><span class="pre">/usr/local/lib/python-2.</span><em><span class="pre">x</span></em><span class="pre">/site-packages</span></code>). To install
+elsewhere, edit the <cite>Makefile.inc</cite> to include the line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">QUIPPY_INSTALL_OPTIONS</span><span class="o">=--</span><span class="n">prefix</span><span class="o">=</span><span class="n">PREFIX</span>
 </pre></div>
 </div>
-<p>to install to a specific location such as <code class="file docutils literal"><span class="pre">/usr/local</span></code>. A useful
-option for users without root access is:</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py install --home=$HOME
-</pre></div>
-</div>
-<p>which will install everything in your home directory. You will need to
-add the installation directory containing the Python modules to
-your <span class="target" id="index-6"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code></a> environment variable, e.g. by adding the
-following line your your <cite>~/.bashrc</cite> or <cite>~/.profile</cite> file:</p>
-<div class="highlight-python"><div class="highlight"><pre>export PYTHONPATH=${HOME}/lib/python:${PYTHONPATH}
-</pre></div>
-</div>
+<p>to install to a specific location such as <code class="file docutils literal"><span class="pre">/usr/local</span></code> or your
+home directory. You will need to add the installation directory
+containing the Python modules to your <span class="target" id="index-6"></span><a class="reference external" href="http://docs.python.org/2.7/using/cmdline.html#envvar-PYTHONPATH" title="(in Python v2.7)"><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code></a> environment
+variable, e.g. by adding the following line your your <cite>~/.bashrc</cite> or
+<cite>~/.profile</cite> file:</p>
 <p>To test if the installation was successful, change out of the source
 directory, start Python and try to import everything from the quippy
 package:</p>
@@ -394,25 +358,13 @@ $ python
 <p>If you have any problems as this stage such as unresolved linking
 dependencies, consult the list of <a class="reference internal" href="#install-faq"><span>Common Problems</span></a> below.</p>
 </div>
-<div class="section" id="installing-the-ipython-profile">
-<h2>Installing the ipython profile<a class="headerlink" href="#installing-the-ipython-profile" title="Permalink to this headline">¶</a></h2>
-<p>If you use <a class="reference external" href="http://ipython.scipy.org">ipython</a> and have installed <a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>, there&#8217;s a
-special quippy profile you can install. Copy the files
-<code class="file docutils literal"><span class="pre">quippy_load.py</span></code> and <code class="file docutils literal"><span class="pre">ipythonrc-quippy</span></code> from
-<code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Tools/quippy</span></code> to your <code class="file docutils literal"><span class="pre">~/.ipython</span></code> directory.
-Invoking ipython as <code class="docutils literal"><span class="pre">ipython</span> <span class="pre">-p</span> <span class="pre">quippy</span></code> sets up matplotlib and
-imports all the quippy functionality when you start ipython. This is
-equivalent to <code class="docutils literal"><span class="pre">ipython</span> <span class="pre">-pylab</span></code> followed by <code class="docutils literal"><span class="pre">from</span> <span class="pre">quippy</span> <span class="pre">import</span> <span class="pre">*</span></code>.</p>
-<p>I use a shell alias which maps <code class="docutils literal"><span class="pre">ipythonq</span></code> to <code class="docutils literal"><span class="pre">ipython</span> <span class="pre">-p</span> <span class="pre">quippy</span></code>
-to save typing.</p>
-</div>
 <div class="section" id="common-problems">
 <span id="install-faq"></span><h2>Common Problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="permission-errors-when-installing">
 <h3>Permission errors when installing<a class="headerlink" href="#permission-errors-when-installing" title="Permalink to this headline">¶</a></h3>
 <p>If you are installing as root, you may need to make sure the value of
 the <span class="target" id="index-7"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> gets through to the install script, e.g.</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo QUIP_ARCH=darwin_x86_64_gfortran python setup.py install
+<div class="highlight-python"><div class="highlight"><pre>sudo QUIP_ARCH=darwin_x86_64_gfortran make install-quippy
 </pre></div>
 </div>
 </div>
@@ -519,8 +471,8 @@ backend signals
 setting <strong class="makevar">QUIPPY_NO_CRACK</strong> =1 in Makefile.inc should solve the
 problem, at the cost of excluding the fracture utilities from quippy.</p>
 </div>
-<div class="section" id="linking-error-on-mac-os-x-lion-10-7">
-<h3>Linking error on Mac OS X Lion (10.7)<a class="headerlink" href="#linking-error-on-mac-os-x-lion-10-7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="linking-error-on-mac-os-x">
+<h3>Linking error on Mac OS X<a class="headerlink" href="#linking-error-on-mac-os-x" title="Permalink to this headline">¶</a></h3>
 <p>When recompiling quippy on top of a previous compilation, you may see
 errors like this:</p>
 <div class="highlight-python"><div class="highlight"><pre>collect2: ld returned 1 exit status ld: in
@@ -563,7 +515,7 @@ problem.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 16, 2015.
+      Last updated on Jun 17, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

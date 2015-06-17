@@ -88,22 +88,40 @@
             
   <div class="section" id="module-quippy">
 <span id="quip-and-quippy-documentation"></span><h1>QUIP and quippy documentation<a class="headerlink" href="#module-quippy" title="Permalink to this headline">¶</a></h1>
-<p>The QUIP package is a software library written in Fortran 95+ for the
-purposes of carrying out molecular dynamics simulations. The code
-implements a wide variety of interatomic potentials and tight binding
-quantum mechanics, and is also able to call external packages. Various
-hybrid combinations are also supported in the style of QM/MM.</p>
-<p>quippy is a Python interface to the <a class="reference external" href="https://github.com/libAtoms/QUIP">libAtoms/QUIP</a>
-molecular dynamics framework.</p>
-<p>The main libAtoms/QUIP contributors are:</p>
-<ul class="simple">
-<li>University of Cambridge: Albert P. Bartók, Gábor Csányi, Alan Nichol, Letif Mones, Wojciech Szlachta</li>
-<li>University of Warwick: James Kermode</li>
-<li>King&#8217;s College London: Alessandro De Vita</li>
-<li>Naval Research Laboratory, Washington DC: Noam Bernstein</li>
-<li>Fraunhofer IWM, Freiburg: Lars Pastewka</li>
+<p>The <cite>QUIP</cite> package (<a class="reference external" href="https://github.com/libAtoms/QUIP">GitHub</a>) is a
+collection of software tools to carry out molecular dynamics
+simulations. It implements a variety of interatomic potentials and
+tight binding quantum mechanics, and is also able to call external
+packages, and serve as plugins to other software such as <a class="reference external" href="http://lammps.sandia.gov">LAMMPS</a>, <a class="reference external" href="http://www.cp2k.org">CP2K</a> and also
+the python framework <cite>ASE &lt;https://wiki.fysik.dtu.dk/ase&gt;</cite>.  Various
+hybrid combinations are also supported in the style of QM/MM, with a
+particular focus on materials systems such as metals and
+semiconductors.</p>
+<p><cite>quippy</cite> is a Python interface to <cite>QUIP</cite> that provides deep access to most
+of the Fortran types and routines. The quippy interface is principally
+maintained by <a href="#id1"><span class="problematic" id="id2">`James Kermode &lt;http://www.warwick.ac.uk/jrkermode`_</span></a>.</p>
+<dl class="docutils">
+<dt>Long term support of the package is ensured by:</dt>
+<dd><ul class="first last simple">
+<li>Noam Bernstein (Naval Research Laboratory)</li>
+<li>Gabor Csanyi (University of Cambridge)</li>
+<li>Alessandro De Vita (King&#8217;s College London)</li>
+<li>James Kermode (University of Warwick)</li>
+<li>Lars Pastewka (Fraunhofer IWM)</li>
 </ul>
-<p>The quippy interface is principally maintained by <a class="reference external" href="http://www.jrkermode.co.uk">James Kermode</a>.</p>
+</dd>
+</dl>
+<p>Portions of this code were written by: Albert Bartok-Partay, Livia
+Bartok-Partay, Federico Bianchini, Anke Butenuth, Marco Caccin,
+Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, Sebastian
+John, Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif
+Mones, Alan Nichol, David Packwood, Lars Pastewka, Giovanni
+Peralta, Ivan Solt, Oliver Strickson, Wojciech Szlachta, Csilla
+Varnai, Steven Winfield.</p>
+<p>Copyright 2006-2015.</p>
+<p>Most of the publicly available version is released under the GNU
+General Public license, version 2, with some portions in the public
+domain.</p>
 </div>
 <div class="section" id="features">
 <h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
@@ -156,15 +174,14 @@ molecular dynamics framework.</p>
 <li class="toctree-l2"><a class="reference internal" href="intro.html#references">References</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#quick-start">Quick start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#getting-quippy">Getting quippy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#configuring-quippy">Configuring quippy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#compilation">Compilation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#testing">Testing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#id3">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#installing-the-ipython-profile">Installing the ipython profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#id2">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#common-problems">Common Problems</a></li>
 </ul>
 </li>
@@ -236,7 +253,7 @@ molecular dynamics framework.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 16, 2015.
+      Last updated on Jun 17, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

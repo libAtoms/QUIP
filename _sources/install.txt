@@ -18,40 +18,38 @@
 
 .. _installation:
 
-Installation
-************
+Installation of QUIP and quippy
+*******************************
 
-The aim of quippy is to make all the functions, subroutines and types
-defined in QUIP available from Python scripts. We do this by creating
-a Python extension which wraps all of these routines automatically
-using `f2py <http://www.scipy.org/F2py>`_, part of 
-`numpy <http://numpy.scipy.org>`_. f2py is a very useful tool, but it does
-not yet support Fortran 90 extensions such as derived types, so quippy
-has to do a little more work to allow us to use them transparently.
+These intructions provide more details on the compilation and
+installation of `QUIP` (Fortran library and main programs) and
+`quippy` (Python interface). They should be read in conjunction with
+the main `README
+<https://github.com/libAtoms/QUIP/blob/public/README.md>`_.
+
 
 Quick start
 -----------
 
 For people who don't read manuals::
 
+ $ git clone https://github.com/libAtoms/QUIP.git
+ $ cd QUIP
  $ export QUIP_ARCH=linux_x86_64_gfortran
- $ cd ${QUIP_ROOT}
+ $ make config
  $ make
- $ cd Tools/quippy
- $ python setup.py build
- $ python setup.py test
- $ python setup.py install [--prefix=PREFIX]
+ $ make quippy
+ $ make install-quippy
 
 Then add the installation directory to your :envvar:`PYTHONPATH`.
-
 
 Requirements
 ------------
 
 Essential:
- * `Python 2.4 <http://www.python.org>`_ or later
+ * `Python 2.6 <http://www.python.org>`_ or later
  * `numpy`_  - version 1.2.1 or later
- * A fortran compiler:
+ * A working fortran compiler:
 
    * ifort 10 or later (tested with 10.1.015 and 11.0.084)
    * gfortran 4.3.3 or later
@@ -86,17 +84,6 @@ The :file:`libAtoms`, :file:`QUIP_Core`, :file:`QUIP_Util` and
 code. quippy itself lives in the :file:`{QUIP_ROOT}/Tools/quippy`
 directory.
 
-If you want to use the :mod:`atomeye` extension, you should check it
-out and compile it as a Python extension module::
-
-  git clone https://www.github.com/jameskermode/AtomEye
-  cd AtomEye/Python
-  python setup.py install
-
-.. note::
-   If you've previously compiled AtomEye as an exectuable, you should do
-   a `make clean` first.
-
 Configuring quippy
 ------------------
 
@@ -119,24 +106,17 @@ do::
   $ export QUIP_ARCH=darwin_x86_64_gfortran
 
 Otherwise you'll have to make a new :file:`Makefile.${QUIP_ARCH}`,
-containing some of the variables defined below
+containing some of the variables defined below. The next step is to
+answer a number of questions about your system::
 
-Mandatory settings
-^^^^^^^^^^^^^^^^^^
+  $ make config
 
-:makevar:`QUIPPY_FCOMPILER`
-   Fortran compiler to use. The shell command::
+This generates a configurtion file `build/${QUIP_ARCH}/Makefile.inc`
+which you can subsequently edit if you need to customize any of the
+options described below.
 
-     $ f2py -c --help-fcompiler 
-
-   will print a list of detected compilers on your system. Use ``gnu95`` for gfortran, 
-   ``intel`` for ifort on 32-bit platforms and ``intelem`` for ifort on 64-bit platforms.
-
-:makevar:`QUIPPY_DEFINES` Preprocessor macros which should be defined
-   when compiling quippy. Note that since the Fortran source files are
-   preprocessed *before* being scanned by :mod:`f90doc`, it's
-   important to put all the `-D` options needed here and not in
-   :makevar:`QUIPPY_F90FLAGS`.
+Custom settings
+^^^^^^^^^^^^^^^
 
 :makevar:`MATHS_LINKOPTS`
    Library options needed to link to BLAS and LAPACK libraries. Any working
@@ -152,11 +132,23 @@ Mandatory settings
 
 :makevar:`FOX_LIBDIR`, :makevar:`FOX_INCDIR` and :makevar:`FOX_LIBS`
   Directories containing FoX libraries and header files, and required link options. 
-  Should be read automatically from QUIP Makefiles.<
+  Should be read automatically from QUIP Makefiles.
 
-Optional settings
-^^^^^^^^^^^^^^^^^
+:makevar:`QUIPPY_FCOMPILER`
+   Fortran compiler to use. The shell command::
 
+     $ f2py -c --help-fcompiler 
+
+   will print a list of detected compilers on your system. Use ``gnu95`` for gfortran, 
+   ``intel`` for ifort on 32-bit platforms and ``intelem`` for ifort on 64-bit platforms.
+
+:makevar:`QUIPPY_DEFINES` Preprocessor macros which should be defined
+   when compiling quippy. Note that since the Fortran source files are
+   preprocessed *before* being scanned by :mod:`f90doc`, it's
+   important to put all the `-D` options needed here and not in
+   :makevar:`QUIPPY_F90FLAGS`.
+
+	    
 :makevar:`QUIPPY_F90FLAGS` and :makevar:`QUIPPY_F77FLAGS`
    Extra flags to pass to Fortran 90 and 77 compilers
 
@@ -203,20 +195,11 @@ directory after setting :envvar:`QUIP_ARCH` appropriately, e.g. ::
   export QUIP_ARCH=linux_x86_64_gfortran
   make
 
-You may be asked a couple of questions about your system libraries:
-you can mostly accept the suggested defaults.
-
 After this, it's time to compile quippy itself ::
 
-  cd ${QUIP_ROOT}/Tools/quippy	
-  python setup.py build
-
-to compile quippy. You can add various command line argument to
-override the settings described above: run ::
-
-  python setup.py --help
-
-for details. The compilation process is quite long; here is an
+  make quippy
+  
+to compile quippy. The compilation process is quite long; here is an
 overview of the various steps that are performed.
 
 - :mod:`patch_f2py` is invoked to patch the :mod:`numpy.f2py`
@@ -257,7 +240,7 @@ overview of the various steps that are performed.
   :file:`_quippy.so`, the Python extension module. 
 
 If the compilation fails with an error message, please send the full
-output to me at james.kermode@kcl.ac.uk and I'll do my best to work
+output to me at j.r.kermode@warwick.ac.uk and I'll do my best to work
 out what's going wrong.
 
 Testing
@@ -266,42 +249,30 @@ Testing
 Once quippy is successfully compiled, you should run the test suite to 
 check everything is working correctly::
 
-   python setup.py test
+   make test
 
-You can also specify which tests to run by module, class or even choose
-a specific test case, e.g.::
-  
-  python setup.py test --test=test_atoms
-  python setup.py test --test=test_atoms.TestGeometry
-  python setup.py test --test=test_atoms.TestGeometry.test_cell_volume
-
-The tests themselves can be found in :file:`${QUIP_ROOT}/Tools/quippy/tests/test*.py`.
-If any of the tests fail please send me (james.kermode@kcl.ac.uk) the output.
+The tests themselves can be found in :file:`${QUIP_ROOT}/tests/test*.py`.
+If any of the tests fail please send me (j.r.kermode@warwick.ac.uk) the output.
 
 Installation
 ------------
 
 Once all the tests have passed, run ::
 
-   python setup.py install
+   make quippy-install
 
 to install in the standard place for Python extension modules on your
 system (this will probably be something like
-:file:`/usr/local/lib/python-2.{x}/site-packages`), or ::
+:file:`/usr/local/lib/python-2.{x}/site-packages`). To install
+elsewhere, edit the `Makefile.inc` to include the line::
 
-  python setup.py install --prefix=PREFIX
+  QUIPPY_INSTALL_OPTIONS=--prefix=PREFIX
 
-to install to a specific location such as :file:`/usr/local`. A useful
-option for users without root access is::
-
-  python setup.py install --home=$HOME
-
-which will install everything in your home directory. You will need to
-add the installation directory containing the Python modules to
-your :envvar:`PYTHONPATH` environment variable, e.g. by adding the
-following line your your `~/.bashrc` or `~/.profile` file::
-
-   export PYTHONPATH=${HOME}/lib/python:${PYTHONPATH}
+to install to a specific location such as :file:`/usr/local` or your
+home directory. You will need to add the installation directory
+containing the Python modules to your :envvar:`PYTHONPATH` environment
+variable, e.g. by adding the following line your your `~/.bashrc` or
+`~/.profile` file::
 
 To test if the installation was successful, change out of the source
 directory, start Python and try to import everything from the quippy
@@ -314,20 +285,6 @@ package::
 If you have any problems as this stage such as unresolved linking
 dependencies, consult the list of :ref:`install_faq` below.
 
-Installing the ipython profile
-------------------------------
-
-If you use `ipython`_ and have installed `matplotlib`_, there's a
-special quippy profile you can install. Copy the files
-:file:`quippy_load.py` and :file:`ipythonrc-quippy` from
-:file:`${QUIP_ROOT}/Tools/quippy` to your :file:`~/.ipython` directory.
-Invoking ipython as ``ipython -p quippy`` sets up matplotlib and
-imports all the quippy functionality when you start ipython. This is
-equivalent to ``ipython -pylab`` followed by ``from quippy import *``.
-
-I use a shell alias which maps ``ipythonq`` to ``ipython -p quippy``
-to save typing.
-
 .. _install_faq:
 
 Common Problems
@@ -339,7 +296,7 @@ Permission errors when installing
 If you are installing as root, you may need to make sure the value of
 the :envvar:`QUIP_ARCH` gets through to the install script, e.g. ::
 
-   sudo QUIP_ARCH=darwin_x86_64_gfortran python setup.py install
+   sudo QUIP_ARCH=darwin_x86_64_gfortran make install-quippy
 
 
 Installating on Mac OS X with macports
@@ -451,8 +408,8 @@ setting :makevar:`QUIPPY_NO_CRACK` =1 in Makefile.inc should solve the
 problem, at the cost of excluding the fracture utilities from quippy.
 
 
-Linking error on Mac OS X Lion (10.7)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Linking error on Mac OS X
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When recompiling quippy on top of a previous compilation, you may see
 errors like this::
