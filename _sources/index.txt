@@ -30,14 +30,14 @@ simulations. It implements a variety of interatomic potentials and
 tight binding quantum mechanics, and is also able to call external
 packages, and serve as plugins to other software such as `LAMMPS
 <http://lammps.sandia.gov>`_, `CP2K <http://www.cp2k.org>`_ and also
-the python framework `ASE <https://wiki.fysik.dtu.dk/ase>`.  Various
+the python framework `ASE <https://wiki.fysik.dtu.dk/ase>`_.  Various
 hybrid combinations are also supported in the style of QM/MM, with a
 particular focus on materials systems such as metals and
 semiconductors.
 
 `quippy` is a Python interface to `QUIP` that provides deep access to most
 of the Fortran types and routines. The quippy interface is principally
-maintained by `James Kermode <http://www.warwick.ac.uk/jrkermode`_.
+maintained by `James Kermode <http://www.warwick.ac.uk/jrkermode>`_.
 
 Long term support of the package is ensured by:
  - Noam Bernstein (Naval Research Laboratory)
