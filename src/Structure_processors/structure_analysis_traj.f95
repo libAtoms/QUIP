@@ -266,8 +266,8 @@ subroutine analysis_read(this, prev, args_str)
 
   if (.not. present(prev)) then
     ! rdfd
-    call param_register(params, 'rdfd_zone_center', '0.0 0.0 0.0', this%rdfd_zone_center, help_string="Cartesian position to center zones for rdfd (ignored in rdfd_zone_center is usable)")
-    call param_register(params, 'rdfd_zone_atom_center', '0', this%rdfd_zone_atom_center, help_string="If > 0, atom to center zones for rdfd")
+    call param_register(params, 'rdfd_zone_center', '0.0 0.0 0.0', this%rdfd_zone_center, help_string="Cartesian position to center zones for rdfd (ignored if rdfd_zone_atom_center is given)")
+    call param_register(params, 'rdfd_zone_atom_center', '0', this%rdfd_zone_atom_center, help_string="If > 0, index of atom to center zones for rdfd")
     call param_register(params, 'rdfd_zone_width', '-1.0', this%rdfd_zone_width, help_string="Width of zones for rdfd")
     call param_register(params, 'rdfd_n_zones', '1', this%rdfd_n_zones, help_string="Number of zones for rdfd")
     call param_register(params, 'rdfd_bin_width', '-1', this%rdfd_bin_width, help_string="Width of bin (or distance between sample points) in each rdfd")
@@ -292,17 +292,17 @@ subroutine analysis_read(this, prev, args_str)
 
   if (.not. present(prev)) then
     ! adfd
-    call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_zone_width', '-1.0', this%adfd_zone_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_n_zones', '1', this%adfd_n_zones, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_dist_bin_width', '-1', this%adfd_dist_bin_width, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_n_dist_bins', '-1', this%adfd_n_dist_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_n_angle_bins', '-1', this%adfd_n_angle_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_center_mask', '', this%adfd_center_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_neighbour_1_mask', '', this%adfd_neighbour_1_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_neighbour_1_max_dist', '-1.0', this%adfd_neighbour_1_max_dist, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_neighbour_2_mask', '', this%adfd_neighbour_2_mask_str, help_string="No help yet.  This source file was $LastChangedBy$")
-    call param_register(params, 'adfd_dist_bin_rc2', '', this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbor2, otherwise to r_neighbor1-neighbor2")
+    call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center, help_string="Cartesian position to center zones for adfd (ignored if rdfd_zone_atom_center is given)")
+    call param_register(params, 'adfd_zone_width', '-1.0', this%adfd_zone_width, help_string="Width of zones for adfd")
+    call param_register(params, 'adfd_n_zones', '1', this%adfd_n_zones, help_string="Number of zones for adfd")
+    call param_register(params, 'adfd_dist_bin_width', '-1', this%adfd_dist_bin_width, help_string="Width of distance bin in adfd")
+    call param_register(params, 'adfd_n_dist_bins', '-1', this%adfd_n_dist_bins, help_string="Number of distance bins in adfd")
+    call param_register(params, 'adfd_n_angle_bins', '-1', this%adfd_n_angle_bins, help_string="Number of angular bins in adfd")
+    call param_register(params, 'adfd_center_mask', '', this%adfd_center_mask_str, help_string="Mask for atoms that are considered for adfd centers")
+    call param_register(params, 'adfd_neighbour_1_mask', '', this%adfd_neighbour_1_mask_str, help_string="Mask for atoms that are considered for the first neighbour in adfd")
+    call param_register(params, 'adfd_neighbour_1_max_dist', '-1.0', this%adfd_neighbour_1_max_dist, help_string="Cutoff distance for atoms considered as the first neighbour")
+    call param_register(params, 'adfd_neighbour_2_mask', '', this%adfd_neighbour_2_mask_str, help_string="Mask for atoms that are considered for the second neighbour in adfd")
+    call param_register(params, 'adfd_dist_bin_rc2', '', this%adfd_dist_bin_rc2, help_string="If true, apply distance binning to r_center-neighbour2, otherwise to r_neighbour1-neighbour2")
   else
     ! adfd
     call param_register(params, 'adfd_zone_center', ''//prev%adfd_zone_center, this%adfd_zone_center, help_string="")
