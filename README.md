@@ -21,11 +21,11 @@ Long term support of the package is ensured by:
 
 Portions of this code were written by: Albert Bartok-Partay, Livia
 Bartok-Partay, Federico Bianchini, Anke Butenuth, Marco Caccin,
-Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, Sebastian
-John, Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif
-Mones, Alan Nichol, David Packwood, Lars Pastewka, Giovanni
-Peralta, Ivan Solt, Oliver Strickson, Wojciech Szlachta, Csilla
-Varnai, Steven Winfield.
+Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, ST John,
+Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif Mones,
+Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
+Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
+Winfield.
 
 Copyright 2006-2015.
 
