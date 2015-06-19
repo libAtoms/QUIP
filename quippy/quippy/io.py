@@ -810,7 +810,7 @@ AtomsWriters['cfg'] = ASEWriter
 def dict2atoms(row):
     from quippy.elasticity import stress_matrix
 
-    at = row.toatoms()
+    at = row.toatoms(add_additional_information=True)
     
     f = None
     try:
@@ -838,23 +838,17 @@ def dict2atoms(row):
     if v is not None:
         at.params['virial'] = v
 
-    # extract additional info from database
-    at.params['id'] = row['id']
-    at.params['unique_id'] = row['unique_id']
-    if 'key_value_pairs' in row:
-        at.params.update(row['key_value_pairs'])
-    if 'data' in row:
-        for (key, value) in row['data'].items():
-            key = str(key) # avoid unicode strings
-            value = np.array(value)
-            if value.dtype.kind == 'U':
-                value = value.astype(str)
-            if value.dtype.kind != 'S':
-                value = value.T
-            try:
-                at.add_property(key, value)
-            except (TypeError, RuntimeError):
-                at.params[key] = value
+    for (key, value) in row['data'].items():
+        key = str(key) # avoid unicode strings
+        value = np.array(value)
+        if value.dtype.kind == 'U':
+            value = value.astype(str)
+        if value.dtype.kind != 'S':
+            value = value.T
+        try:
+            at.add_property(key, value)
+        except (TypeError, RuntimeError):
+            at.params[key] = value
 
     return at
 
