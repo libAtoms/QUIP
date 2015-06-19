@@ -5,9 +5,9 @@ molecular dynamics simulations. It implements a variety of interatomic
 potentials and tight binding quantum mechanics, and is also able to
 call external packages, and serve as plugins to other software such as
 [LAMMPS](http://lammps.sandia.gov), [CP2K](http://www.cp2k.org) 
-and also the python framework [ASE](https://wiki.fysik.dtu.dk/ase). Various hybrid
-combinations are also supported in the style of QM/MM, with a
-particular focus on materials systems such as metals and
+and also the python framework [ASE](https://wiki.fysik.dtu.dk/ase).
+Various hybrid combinations are also supported in the style of QM/MM,
+with a particular focus on materials systems such as metals and
 semiconductors.
 
 For more details, see the [online documentation](http://libatoms.github.io/QUIP).
@@ -128,8 +128,8 @@ and Gromacs, but has a number of unique features:
 		`QUIP_INSTALLDIR`, if it's defined and is a directory
 	- `make libquip`:   Compile QUIP as a library and link to it. 
 	  This will make all the various libraries and combine them into one:
-	  `build/${QUIP_ARCH}/libquip.a`, which is what you need to link with (as
-	  well as LAPACK).
+	  `build/${QUIP_ARCH}/libquip.a`, which is what you need to link with
+	  (as well as LAPACK).
     
 5.  A good starting point is to use the `quip` program, which can 
     calculate the properties of an atomic configuration using a
@@ -148,11 +148,13 @@ and Gromacs, but has a number of unique features:
     The Lennard-Jones parameters in the above example is defined in the
     `ip.parms.LJ.xml` file under share/Parameters. The format of the atomic
     configuration is given in [Extended XYZ](http://libatoms.github.io/QUIP/io.html#extendedxyz)
-    format, in which the first line is the number of atoms, the second line is a series of
-    key=value pairs, which must at least contain the Lattice key giving the periodic bounding box and
-    the Properties key that describes the remaining lines. The value of Properties is a sequence
-    of triplets separated by a colon (:), that give the name, type and number of columns, with the
-    type given by I for integers, R for reals, S for strings. 
+    format, in which the first line is the number of atoms, the second line
+    is a series of key=value pairs, which must at least contain the Lattice
+    key giving the periodic bounding box and the Properties key that
+    describes the remaining lines. The value of Properties is a sequence of
+    triplets separated by a colon (:), that give the name, type and number
+    of columns, with the type given by I for integers, R for reals, S for
+    strings. 
     
     Most string arguments can be replaced by `--help` and QUIP programs
     will  then print  a  list  of allowable  keywords  with brief  help
