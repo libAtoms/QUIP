@@ -69,6 +69,7 @@ MODULES += libAtoms
 ifeq (${HAVE_GAP},1)
 MODULES += GAP 
 GAP += GAP
+GAP_LIBS += libgap_predict.a
 else
 GAP = 
 endif
@@ -120,7 +121,7 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 # dependencies between modules
 
 ifeq (${HAVE_GAP},1)
-GAP: libAtoms 
+GAP: libAtoms ${FOX}
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
@@ -137,7 +138,7 @@ libatoms: libAtoms
 libquip: libquip.a
 
 libquip.a: ${MODULES}
-	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(subst GAP,${BUILDDIR},${GAP}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
+	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBS}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}: 

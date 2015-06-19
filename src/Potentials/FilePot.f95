@@ -258,7 +258,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   if (present(args_str)) my_args_str = args_str
 
   call initialise(cli)
-  call param_register(cli, "FilePot_log", "F", FilePot_log, help_string="if True, save logfile of all the filepot.xyz and filepot.out")
+  call param_register(cli, "FilePot_log", "T", FilePot_log, help_string="if True, save logfile of all the filepot.xyz and filepot.out")
   call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list, help_string="extra properties to read from filepot.out. Overrides init_args version.")
   call param_register(cli, "read_extra_param_list", trim(this%read_extra_param_list), read_extra_param_list, help_string="extra params to read from filepot.out. Overrides init_args version.")
   call param_register(cli, "run_suffix", '', run_suffix, help_string="suffix to apply to property names in this%property_list_prefixes")
@@ -479,7 +479,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   end if
 
   if (my_filepot_log) then
-     call write(at_out, "FilePot_force_log.xyz", append=.true.)
+     call write(at_out, "FilePot_out_log.xyz", append=.true.)
   endif
 
   call finalise(at_out)
