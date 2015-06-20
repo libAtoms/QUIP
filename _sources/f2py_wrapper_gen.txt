@@ -25,7 +25,7 @@
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
 
 This module is used to write intermediary Fortran 90 wrapper files 
-to allow a code which makes use of derived-types to be wrapped with f2py.
+to allow a code which makes use of derived types to be wrapped with f2py.
 
 All routines which accept derived types arguments are wrapped by
 equivalent routines which instead accept integer arrays as opaque

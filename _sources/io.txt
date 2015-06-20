@@ -126,13 +126,13 @@ Extended XYZ
 .. module:: quippy.xyz
   :synopsis: Python reference implementation of Extended XYZ I/O
 
-Extended XYZ format is a enhanced version of the `basic XYZ format
+Extended XYZ format is an enhanced version of the `basic XYZ format
 <http://en.wikipedia.org/wiki/XYZ_file_format>`_ that allows extra
-columns to be present in the file for additonal per atom properties as
+columns to be present in the file for additonal per-atom properties as
 well as standardising the format of the comment line to include the
-cell lattice and other per frame parameters.
+cell lattice and other per-frame parameters.
 
-It's  easiest to  describe  the  format with  an  example.  Here is  a
+It's easiest to describe the format with an example.  Here is a
 standard XYZ file containing a bulk cubic 8 atom silicon cell ::
 
   8
