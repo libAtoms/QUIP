@@ -53,7 +53,7 @@ module paramreader_module
 
   public :: param_register, PARAM_MANDATORY, param_read_line, param_read_args, param_print_help, param_print, param_check, param_write_string
 
-  integer, parameter, private :: MAX_N_FIELDS = 1000       !% Maximum number of fields during parsing
+  integer, parameter, private :: MAX_N_FIELDS = 100       !% Maximum number of fields during parsing
 
   integer, parameter :: PARAM_NO_VALUE = 0 !% Special parameter type that doesn't get parsed
   integer, parameter :: PARAM_REAL = 1 !% Real (double precision) parameter
