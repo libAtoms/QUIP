@@ -259,7 +259,7 @@ Installation
 
 Once all the tests have passed, run ::
 
-   make quippy-install
+   make install-quippy
 
 to install in the standard place for Python extension modules on your
 system (this will probably be something like
