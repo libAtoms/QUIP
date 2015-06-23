@@ -838,17 +838,23 @@ def dict2atoms(row):
     if v is not None:
         at.params['virial'] = v
 
-    for (key, value) in row['data'].items():
-        key = str(key) # avoid unicode strings
-        value = np.array(value)
-        if value.dtype.kind == 'U':
-            value = value.astype(str)
-        if value.dtype.kind != 'S':
-            value = value.T
-        try:
-            at.add_property(key, value)
-        except (TypeError, RuntimeError):
-            at.params[key] = value
+    if 'key_value_pairs' in atoms.params:
+        atoms.params.update(atoms.params['key_value_pairs'])
+        del atoms.params['key_value_pairs']
+
+    if 'data' in atoms.params:
+        for (key, value) in atoms.params['data'].items():
+            key = str(key) # avoid unicode strings
+            value = np.array(value)
+            if value.dtype.kind == 'U':
+                value = value.astype(str)
+            if value.dtype.kind != 'S':
+                value = value.T
+            try:
+                at.add_property(key, value)
+            except (TypeError, RuntimeError):
+                at.params[key] = value
+        
 
     return at
 
