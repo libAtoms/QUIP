@@ -91,7 +91,7 @@ module Potential_Precon_Minim_module
     elseif (this%dense .eqv. .true.) then
       allocate(this%preconcoeffs(nneigh+1,at%N,6))
     end if
-call print(auto_mu)
+    call print('allocate_precon: auto_mu='//auto_mu)
     if (auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
         this%mu=25.5/(this%cutoff**2.0)
     elseif (.not. auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
@@ -112,10 +112,11 @@ call print(auto_mu)
       scalingnumer = scalingnumer*bulk_modulus/number_density
       this%mu = (2.0*scalingnumer)/(scalingdenom/3.0)
     else
-        this%mu=1.0
-    end if
+      this%mu=1.0
+   end if
+   call print('allocate_precon: selected mu='//this%mu)
 
-  end subroutine
+ end subroutine allocate_precon
   
   subroutine build_precon(this,am_data)
   
@@ -131,7 +132,7 @@ call print(auto_mu)
     real(dp) :: thisdist, thiscoeff
     real(dp) :: thisdiff(3) 
     integer :: nearneighcount
-    logical :: did_rebuild, do_this
+    logical :: did_rebuild, fixed_neighbour
     integer :: didcount 
     real(dp) :: scalingcoeff, scalingnumer, scalingdenom
 
@@ -202,7 +203,7 @@ call print(auto_mu)
       do J = 1,thisneighcount
 
         thisind = neighbour(am%minim_at,I,J,distance=thisdist,diff=thisdiff,index=thisind2) 
-        if (thisind > 0 .and. (thisdist <= this%cutoff)) then 
+        if (thisind > 0 .and. (thisdist <= this%cutoff) .and. thisind /= I) then
           !call print(thisdist // ' ' // this%cutoff)
           !call print(  I  // ' '// J // ' '// thisneighcount// ' ' // thisind // ' ' // thisdist)
           !call print(  I  //  ' ' // thisind // ' ' //thisind2 // ' ' // thisdist)
@@ -218,23 +219,15 @@ call print(auto_mu)
             else if (this%precon_id == "C1") then
               thiscoeff = 1.0_dp
             end if
-          
-            do_this = (thisind .ne. I)
-                  
-            if (this%has_fixed) then
-                do_this = (am%minim_at%move_mask(thisind) == 1 .and. do_this)
-            end if
 
-            if (do_this) then
-                nearneighcount = nearneighcount+1
-                this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
+            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff
+            scalingdenom = scalingdenom + thisdist**2.0
+            
+            fixed_neighbour = this%has_fixed .and. (am%minim_at%move_mask(thisind) /= 1)
+            if (.not. fixed_neighbour) then
+                nearneighcount = nearneighcount+1                
                 this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
                 this%preconindices(nearneighcount,I) = thisind
-
-                scalingdenom = scalingdenom + thisdist**2.0
-            else
-                this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
-                scalingdenom = scalingdenom + thisdist**2.0
             end if
               
             !this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
@@ -312,10 +305,10 @@ call print(auto_mu)
         !scalingcoeff =this%bulk_modulus
 
         !call print(this%number_density)
-        call print(this%mu) 
+        call print('build_precon: using mu='//this%mu, PRINT_VERBOSE)
         this%preconcoeffs= this%preconcoeffs*this%mu
     end if  
-  am%connectivity_rebuilt = .false.
+    am%connectivity_rebuilt = .false.
     !call exit()
 
     this%cell_coeff = 1.0_dp/(sum(this%preconcoeffs(1,:,1))/size(this%preconcoeffs,2))
