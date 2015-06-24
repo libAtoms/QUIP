@@ -40,7 +40,7 @@ PROGRAMS = quip md \
   local_E_fd wrap align local_random_search \
   metapot_test tabletest ts_calculation \
   fix_traj_latest randomise_calc \
-  quip_wrapper_example quip_wrapper2_example \
+  quip_wrapper_example \
   slice_sample order_atoms_as_molecules 
 
 ifeq (${HAVE_TB},1)

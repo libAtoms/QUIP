@@ -65,7 +65,7 @@ IP_F95_FILES += IP
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = FilePot CallbackPot SocketPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed quip_unified_wrapper quip_wrapper quip_lammps_wrapper quip_wrapper2 
+POT_F95_FILES = FilePot CallbackPot SocketPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed quip_unified_wrapper quip_wrapper quip_lammps_wrapper
 ifeq (${HAVE_PRECON},1)
   POT_F95_FILES += Potential_Precon_Minim
 endif
