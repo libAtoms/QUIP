@@ -156,7 +156,7 @@ module Potential_Precon_Minim_module
 !:    end if
     !conconstant = 1.0_dp/am%minim_at%N
     !conconstant = 1.0_dp
-    conconstant = 0.1_dp
+    conconstant = 0.01_dp ! stabilisation parameter
 
     scalingnumer = 0.0
     scalingdenom = 0.0
