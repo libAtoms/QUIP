@@ -198,7 +198,7 @@ implicit none
   call param_register(cli_params, 'precond_len_scale', '-1.0', precond_len_scale, help_string="len scale for preconditioner, cutoff(pot) if <= 0.0")
   call param_register(cli_params, 'precond_bulk_modulus', '0.625', precond_bulk_modulus, help_string="bulk modulus for preconditioner scaling")
   call param_register(cli_params, 'precond_number_density', '0.01', precond_number_density, help_string="number density for preconditioner scaling")
-  call param_register(cli_params, 'precond_auto_mu', 'true', precond_auto_mu, help_string="use auto mu")
+  call param_register(cli_params, 'precond_auto_mu', 'F', precond_auto_mu, help_string="use auto mu")
   call param_register(cli_params, 'precond_e_scale', '5.0', precond_e_scale, help_string="energy scale for preconditioner")
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
