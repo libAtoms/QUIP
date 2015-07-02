@@ -19,7 +19,7 @@ module Potential_Precon_Minim_module
   use connection_module, only : connection
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer, diff_min_image, distance_min_image
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, set_lattice, is_nearest_neighbour, &
-   get_param_value, remove_property, calc_connect, set_cutoff, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
+   get_param_value, remove_property, calc_connect, set_cutoff_minimum, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
   use cinoutput_module, only : cinoutput, write
   use dynamicalsystem_module, only : dynamicalsystem, ds_print_status, advance_verlet1, advance_verlet2
   use clusters_module, only : HYBRID_ACTIVE_MARK, HYBRID_NO_MARK, HYBRID_BUFFER_MARK, create_embed_and_fit_lists_from_cluster_mark, create_embed_and_fit_lists, &
@@ -66,7 +66,6 @@ module Potential_Precon_Minim_module
     this%bulk_modulus = bulk_modulus
     this%number_density = number_density
 
-
     if (has_property(at, 'move_mask')) then
        this%has_fixed = .TRUE.
     else
@@ -85,6 +84,9 @@ module Potential_Precon_Minim_module
       call exit()
     end if
     
+
+    call set_cutoff_minimum(at, this%cutoff)
+    call calc_connect(at)
 
     if (this%multI .eqv. .true.) then
       allocate(this%preconcoeffs(nneigh+1,at%N,1))
@@ -140,7 +142,7 @@ module Potential_Precon_Minim_module
     am = transfer(am_data,am)
         
     call atoms_repoint(am%minim_at)    
-    call set_cutoff(am%minim_at, max(am%minim_at%cutoff, this%cutoff)) ! JRK do not decrease Atoms%cutoff
+    call set_cutoff_minimum(am%minim_at, this%cutoff)
     
     call calc_connect(am%minim_at,did_rebuild=did_rebuild)
     if (did_rebuild .eqv. .true.) then    
