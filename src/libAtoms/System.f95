@@ -2207,6 +2207,8 @@ contains
     integer :: n
     integer, allocatable :: seed_a(:)
 
+    integer :: i, ran_dummy
+
 #ifdef _OPENMP
     !$omp parallel
     idum=seed*(omp_get_thread_num()+1)
@@ -2221,6 +2223,12 @@ contains
     call random_seed(put=seed_a) !fortran 90 generator
     deallocate(seed_a)
 
+    ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
+!$OMP parallel
+    do i = 1, 100
+       ran_dummy = ran()
+    enddo
+!$OMP end parallel
   end subroutine system_set_random_seeds
 
   !% Called by 'system_initialise' to print welcome messages and
@@ -2231,7 +2239,7 @@ contains
     !% If 'common_seed' is true (default), random seed will be the same for each
     !% MPI process.
 !$  character(len=SYSTEM_STRING_LENGTH) :: omp_stacksize
-    integer:: actual_seed, i, ran_dummy
+    integer:: actual_seed
     integer:: values(20) ! for time inquiry function
     logical :: use_common_seed
     integer :: np=1, myp=0
@@ -2284,13 +2292,6 @@ contains
 
     call print('libAtoms::Hello World: Random Seed = '//actual_seed)
     call system_set_random_seeds(actual_seed)
-
-    ! The first seed tends to give very small random numbers. The loop below decorrelates the seed from the initial value so it can be trusted to be uniform.
-!$OMP parallel
-    do i = 1, 100
-       ran_dummy = ran()
-    enddo
-!$OMP end parallel
 
     call print('libAtoms::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
     call print('')
