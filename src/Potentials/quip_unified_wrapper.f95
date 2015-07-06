@@ -37,31 +37,6 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,virial,do_energy,do_force,do_virial)
-
-  use system_module, only : dp
-  use quip_unified_wrapper_module
-  
-  implicit none
-
-  integer, intent(in) :: N
-  real(dp), dimension(3,3), intent(inout) :: lattice
-  character(len=3), dimension(N), intent(in) :: symbol
-  integer, intent(in) :: args_str_len
-  character(len=args_str_len) :: args_str
-  real(dp), dimension(3,N), intent(in) :: pos
-  real(dp), intent(out) :: energy
-  real(dp), dimension(3,N), intent(out) :: force
-  real(dp), dimension(3,3), intent(out) :: virial
-  logical, intent(in) :: do_energy, do_force, do_virial
-
-  call quip_unified_wrapper(N=N,lattice=lattice,symbol=symbol,pos=pos,init_args_str=args_str,init_args_str_len=args_str_len, &
-                            energy=energy,force=force,virial=virial,do_energy=do_energy,do_force=do_force,do_virial=do_virial, &
-                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="",calc_args_str_len=0)
-
-
-endsubroutine quip_wrapper
-
 module quip_unified_wrapper_module
 
 use system_module, only : dp, print, system_initialise, system_abort, PRINT_NORMAL, PRINT_SILENT, verbosity_push, &
@@ -179,3 +154,28 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
 end subroutine quip_unified_wrapper
 
 end module quip_unified_wrapper_module
+
+subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,virial,do_energy,do_force,do_virial)
+
+  use system_module, only : dp
+  use quip_unified_wrapper_module
+  
+  implicit none
+
+  integer, intent(in) :: N
+  real(dp), dimension(3,3), intent(inout) :: lattice
+  character(len=3), dimension(N), intent(in) :: symbol
+  integer, intent(in) :: args_str_len
+  character(len=args_str_len) :: args_str
+  real(dp), dimension(3,N), intent(in) :: pos
+  real(dp), intent(out) :: energy
+  real(dp), dimension(3,N), intent(out) :: force
+  real(dp), dimension(3,3), intent(out) :: virial
+  logical, intent(in) :: do_energy, do_force, do_virial
+
+  call quip_unified_wrapper(N=N,lattice=lattice,symbol=symbol,pos=pos,init_args_str=args_str,init_args_str_len=args_str_len, &
+                            energy=energy,force=force,virial=virial,do_energy=do_energy,do_force=do_force,do_virial=do_virial, &
+                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="",calc_args_str_len=0)
+
+
+endsubroutine quip_wrapper
