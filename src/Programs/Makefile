@@ -41,7 +41,7 @@ PROGRAMS = quip md \
   metapot_test tabletest ts_calculation \
   fix_traj_latest randomise_calc \
   quip_wrapper_example \
-  slice_sample order_atoms_as_molecules 
+  slice_sample order_atoms_as_molecules md_gid
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
