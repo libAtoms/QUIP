@@ -378,7 +378,7 @@ contains
     integer, pointer :: cluster_mark_p(:), at_prop_ptr_i(:), cluster_prop_ptr_i(:)
     integer, pointer :: old_cluster_mark_p(:)
     character(len=STRING_LENGTH) :: run_suffix
-    logical :: force_using_fd
+    logical :: force_using_fd, use_ridders
     real(dp) :: force_fd_delta
     logical :: virial_using_fd
     real(dp) :: virial_fd_delta
@@ -387,6 +387,14 @@ contains
     character(len=STRING_LENGTH) :: read_extra_param_list, read_extra_property_list
     character(STRING_LENGTH) :: tmp_params_array(100), copy_keys(100)
     integer :: n_copy, n_params, prop_j
+
+    integer, parameter :: ridders_ntab = 10
+    real(dp), parameter :: ridders_con = 1.4_dp
+    real(dp), parameter :: ridders_con2 = ridders_con**2
+    real(dp), parameter :: ridders_safe = 2.0_dp
+    integer :: ridders_itab, ridders_jtab
+    real(dp) :: ridders_hh, ridders_error, ridders_errort, ridders_fac, ridders_a(ridders_ntab,ridders_ntab)
+
 
     INIT_ERROR(error)
 
@@ -423,6 +431,8 @@ contains
       help_string="rescale calculated positions (and correspondingly forces) by this factor")
     call param_register(params, 'E_scale', '1.0_dp', E_scale, has_value_target=do_rescale_E, &
       help_string="rescale calculate energies (and correspondingly forces) by this factor")
+    call param_register(params, 'use_ridders', 'F', use_ridders, &
+      help_string="If true and using numerical derivatives, use the Ridders method.")
     call param_register(params, 'force_using_fd', 'F', force_using_fd, &
       help_string="If true, and if 'force' is also present in the argument list, calculate forces using finite difference.")
     call param_register(params, 'force_fd_delta', '1.0e-4', force_fd_delta, &
@@ -1277,24 +1287,85 @@ contains
           call finalise(params)
 
 
-          do i=1,at%N
-             do k=1,3
-                pos_save = at%pos(k,i)
-                at%pos(k,i) = pos_save + force_fd_delta
-                call calc_dists(at)
-                call calc(this, at, args_str=new_args_str, error=error)
-		call get_param_value(at, "fd_energy", e_plus, error=error)
-	        PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
-                at%pos(k,i) = pos_save - force_fd_delta
-                call calc_dists(at)
-                call calc(this, at, args_str=new_args_str, error=error)
-		call get_param_value(at, "fd_energy", e_minus, error=error)
-		PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
-                at%pos(k,i) = pos_save
-                call calc_dists(at)
-                at_force_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*force_fd_delta) ! force is -ve gradient
+          if(use_ridders) then
+             do i = 1, at%N
+                do k = 1, 3
+                   pos_save = at%pos(k,i)
+                   ridders_hh = force_fd_delta
+
+                   at%pos(k,i) = pos_save + ridders_hh
+                   call calc_dists(at)
+                   call calc(this, at, args_str=new_args_str, error=error)
+                   call get_param_value(at, "fd_energy", e_plus, error=error)
+                   PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
+
+                   at%pos(k,i) = pos_save - ridders_hh
+                   call calc_dists(at)
+                   call calc(this, at, args_str=new_args_str, error=error)
+                   call get_param_value(at, "fd_energy", e_minus, error=error)
+                   PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
+
+                   ridders_a(1,1) = (e_plus - e_minus) / (2.0_dp*ridders_hh)
+                   ridders_error = huge(1.0_dp)
+
+                   do ridders_itab = 2, ridders_ntab
+                      ridders_hh = ridders_hh / ridders_con
+
+                      at%pos(k,i) = pos_save + ridders_hh
+                      call calc_dists(at)
+                      call calc(this, at, args_str=new_args_str, error=error)
+                      call get_param_value(at, "fd_energy", e_plus, error=error)
+                      PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
+
+                      at%pos(k,i) = pos_save - ridders_hh
+                      call calc_dists(at)
+                      call calc(this, at, args_str=new_args_str, error=error)
+                      call get_param_value(at, "fd_energy", e_minus, error=error)
+                      PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
+
+                      ridders_a(1,ridders_itab) = (e_plus - e_minus) / (2.0_dp*ridders_hh)
+                      ridders_fac = ridders_con2
+
+                      do ridders_jtab = 2, ridders_itab
+                         ridders_a(ridders_jtab,ridders_itab) = (ridders_a(ridders_jtab-1,ridders_itab)*ridders_fac - &
+                            ridders_a(ridders_jtab-1,ridders_itab-1))/(ridders_fac-1.0_dp)
+                         ridders_fac = ridders_con2*ridders_fac
+                         ridders_errort = max(abs(ridders_a(ridders_jtab,ridders_itab)-ridders_a(ridders_jtab-1,ridders_itab)), &
+                            abs(ridders_a(ridders_jtab,ridders_itab)-ridders_a(ridders_jtab-1,ridders_itab-1)))
+
+                         if( ridders_errort <= ridders_error ) then
+                            ridders_error = ridders_errort
+                            at_force_ptr(k,i) = -ridders_a(ridders_jtab,ridders_itab)
+                         endif
+                      enddo ! jtab
+
+                      if( abs(ridders_a(ridders_itab,ridders_itab)-ridders_a(ridders_itab-1,ridders_itab-1) ) >= ridders_SAFE*ridders_error) exit
+                   enddo ! itab
+                   at%pos(k,i) = pos_save
+                   !error_force(alpha,i) = abs(error)
+                enddo ! k
+             enddo ! i
+          else
+             do i=1,at%N
+                do k=1,3
+                   pos_save = at%pos(k,i)
+                   at%pos(k,i) = pos_save + force_fd_delta
+                   call calc_dists(at)
+                   call calc(this, at, args_str=new_args_str, error=error)
+                   call get_param_value(at, "fd_energy", e_plus, error=error)
+                   PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
+                   at%pos(k,i) = pos_save - force_fd_delta
+                   call calc_dists(at)
+                   call calc(this, at, args_str=new_args_str, error=error)
+                   call get_param_value(at, "fd_energy", e_minus, error=error)
+                   PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
+                   at%pos(k,i) = pos_save
+                   call calc_dists(at)
+                   at_force_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*force_fd_delta) ! force is -ve gradient
+                end do
              end do
-          end do
+          endif
+
           call remove_value(at%params, "fd_energy")
           call print("Done with finite difference force calculation", PRINT_VERBOSE)
        end if
