@@ -148,6 +148,12 @@ ifeq (${HAVE_METIS},1)
   SYSLIBS += $(addprefix -L,${METIS_LIBDIR})
   SYSLIBS += -lmetis
 endif
+ifeq (${HAVE_SCME},1)
+  DEFINES += -DHAVE_SCME
+  INCLUDES += $(addprefix -I,${SCME_DIR}/mod)
+  SYSLIBS += $(addprefix -L,${SCME_DIR}/obj)
+  SYSLIBS += -lscme
+endif
 ifeq (${HAVE_LMTO_TBE},1)
   DEFINES += -DHAVE_LMTO_TBE
   INCLUDES += $(addprefix -I,${LMTO_TBE_LIBDIR}/mods)

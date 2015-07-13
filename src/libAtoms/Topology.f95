@@ -3000,6 +3000,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      call find_monomer_pairs(at,pairs_one_three,diffs_one_three,map_one_three,monomer_one_index,monomer_three_index,one_three_identical,double_count,pairwise_cutoff,shifts_one_three,error)
      ! for any equivalent monomer types we have to append the negative self-pairs since these are excluded by find_monomer_pairs
 
+      if (.not. allocated(monomer_triplets)) allocate(monomer_triplets(3,0))
+      if (.not. allocated(triplets_diffs)) allocate(triplets_diffs(6,0))
+      if (.not. allocated(triplets_diffs_map)) allocate(triplets_diffs_map(0))
+      if (.not. allocated(triplets_shifts)) allocate(triplets_shifts(6,0))
+
      !! make triplets
      do pos_ij=1,size(map_one_two)     ! loop over pairs (i,j) of 1 and 2
        i=pairs_one_two( 1, map_one_two(pos_ij) )
