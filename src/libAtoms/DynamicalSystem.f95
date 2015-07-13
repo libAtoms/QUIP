@@ -936,7 +936,7 @@ contains
 
    end subroutine ds_remove_thermostat
 
-   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, NHL_tau, NHL_mu, massive, region_i)
+   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell, p, bulk_modulus_estimate, cell_oscillation_time, NHL_tau, NHL_mu, massive, region_i)
 
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
@@ -945,12 +945,14 @@ contains
      real(dp), optional,    intent(in)    :: Q
      real(dp), optional,    intent(in)    :: tau
      real(dp), optional,    intent(in)    :: tau_cell
+     real(dp), optional,    intent(in)    :: bulk_modulus_estimate
+     real(dp), optional,    intent(in)    :: cell_oscillation_time
      real(dp), optional,    intent(in)    :: p
      real(dp), optional,    intent(in)    :: NHL_tau, NHL_mu
      logical, optional,     intent(in)    :: massive
      integer, optional,     intent(out)   :: region_i
 
-     real(dp) :: w_p, gamma_cell, mass1, mass2, volume_0
+     real(dp) :: w_p, gamma_cell, volume_0, my_bulk_modulus_estimate, my_cell_oscillation_time !, mass1, mass2
      real(dp) :: gamma_eff, NHL_gamma_eff
 
      if (.not. present(Q)) then
@@ -975,21 +977,20 @@ contains
        if (NHL_tau > 0.0_dp) NHL_gamma_eff = 1.0_dp/NHL_tau
      endif
 
+     volume_0 = cell_volume(this%atoms)
+
      if(present(p)) then
         if(present(tau_cell)) then
            gamma_cell = 1.0_dp / tau_cell
         else
            gamma_cell = gamma_eff * 0.1_dp
         endif
-        select case(type)
-        case(THERMOSTAT_LANGEVIN_NPT,THERMOSTAT_NPH_ANDERSEN,THERMOSTAT_LANGEVIN_NPT_NB)
-           mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((gamma_cell*2*PI)**2)
-           mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)
-           w_p = max(mass1,mass2)
-        case(THERMOSTAT_LANGEVIN_PR,THERMOSTAT_NPH_PR)
-           w_p = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)/3.0_dp
-        endselect
-        volume_0 = cell_volume(this%atoms)
+
+        my_cell_oscillation_time = optional_default(10.0_dp/gamma_cell,cell_oscillation_time)
+        my_bulk_modulus_estimate = optional_default(100.0_dp/GPA,bulk_modulus_estimate)
+
+        w_p = 3.0_dp * my_bulk_modulus_estimate * volume_0 * my_cell_oscillation_time**2 / ((2.0_dp*PI)**2)
+        
      endif
      call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0, &
         NHL_gamma=NHL_gamma_eff, NHL_mu=NHL_mu, massive=massive, region_i=region_i)
@@ -1075,28 +1076,12 @@ contains
      real(dp), optional,    intent(in)    :: p
      integer,  optional,    intent(in)    :: i
 
-     real(dp) :: w_p, mass1, mass2, my_T
+     !real(dp) :: w_p, mass1, mass2, my_T
      integer :: my_i
 
      my_i = optional_default(1,i)
 
-     if(present(p)) then
-        
-        my_T = optional_default(this%thermostat(my_i)%T,T)
-        
-        select case(this%thermostat(my_i)%type)
-        case(THERMOSTAT_LANGEVIN_NPT,THERMOSTAT_NPH_ANDERSEN,THERMOSTAT_LANGEVIN_NPT_NB)
-           mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
-           mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)
-           w_p = max(mass1,mass2)
-        case(THERMOSTAT_LANGEVIN_PR,THERMOSTAT_NPH_PR)
-           w_p = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(my_T,MIN_TEMP)/((this%thermostat(my_i)%gamma_p*2*PI)**2)/3.0_dp
-        case default
-           call print_warning('Pressure passed but thermostat does not have barostat.')
-        endselect
-     endif
-
-     call update_thermostat(this%thermostat(my_i),T=T,p=p,w_p=w_p)
+     call update_thermostat(this%thermostat(my_i),T=T,p=p)
      
    end subroutine ds_update_thermostat
 
