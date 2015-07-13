@@ -51,7 +51,7 @@ module Potential_Precon_Minim_module
     character(*) :: precon_id
     integer :: nneigh,max_iter,max_sub
     real(dp) :: energy_scale, length_scale, cutoff,res2,bulk_modulus,number_density
-    real(dp) :: scalingnumer, scalingdenom, thisdist
+    real(dp) :: scalingnumer, scalingdenom, thisdist, this_r2
     logical :: auto_mu
     integer :: I,J, thisind, thisneighcount
 
@@ -96,27 +96,36 @@ module Potential_Precon_Minim_module
     call print('allocate_precon: auto_mu='//auto_mu)
     if (auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
         this%mu=25.5/(this%cutoff**2.0)
-    elseif (.not. auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
-      scalingnumer = 0.0_dp
-      scalingdenom = 0.0_dp
-      do I = 1,(at%N)
-        scalingnumer = scalingnumer + 1.0
-        thisneighcount = n_neighbours(at,I)
-        do J = 1,thisneighcount
-          thisind = neighbour(at,I,J,distance=thisdist) 
-          if (thisind > 0 .and. (thisdist <= this%cutoff)) then 
-            if (this%precon_id == "LJ" .or. this%precon_id == "C1") then
-              scalingdenom = scalingdenom + thisdist**2.0
-            end if
-          end if
+     elseif (.not. auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
+        ! compute approximation to best \mu using
+        ! C1: mu = 3  (bulk-mod) * \sum_n vol[n] / \sum_{n, r} |r|^2
+        ! LJ: mu = 3  (bulk-mod) * \sum_n vol[n] / \sum_{n, r} C(|r|) |r|^2
+        !   where C(|r|) is the preconditioner coefficient for this bond
+        scalingnumer = 0.0_dp
+        scalingdenom = 0.0_dp
+        do I = 1,(at%N)
+           scalingnumer = scalingnumer + 1.0
+           thisneighcount = n_neighbours(at,I)
+           do J = 1,thisneighcount
+              thisind = neighbour(at,I,J,distance=thisdist) 
+              if (thisind > 0 .and. (thisdist <= this%cutoff)) then 
+                 if (this%precon_id == "LJ" .or. this%precon_id == "C1") then
+                    this_r2 = thisdist**2.0
+                    if (this%precon_id == "LJ") then
+                       ! if preconditoner is LJ, we scale the coefficient by C(|r|)
+                       this_r2 = this_r2 * (thisdist/this%length_scale)**(-6.0_dp)
+                    end if
+                    scalingdenom = scalingdenom + this_r2
+                 end if
+              end if
+           end do
         end do
-      end do
-      scalingnumer = scalingnumer*bulk_modulus/number_density
-      this%mu = (2.0*scalingnumer)/(scalingdenom/3.0)
-    else
-      this%mu=1.0
-   end if
-   call print('allocate_precon: selected mu='//this%mu)
+        scalingnumer = scalingnumer*bulk_modulus/number_density
+        this%mu = (2.0*scalingnumer)/(scalingdenom/3.0)
+     else
+        this%mu=1.0
+     end if
+     call print('allocate_precon: selected mu='//this%mu)
 
  end subroutine allocate_precon
   
