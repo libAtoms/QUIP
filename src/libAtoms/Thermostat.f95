@@ -130,7 +130,7 @@ module thermostat_module
      real(dp) :: epsilon_f2 = 0.0_dp !% Force on barostat variable
      real(dp) :: volume_0 = 0.0_dp !% Reference volume
      real(dp), dimension(3,3) :: lattice_v = 0.0_dp
-     real(dp), dimension(3,3) :: lattice_f = 0.0_dp
+     real(dp), dimension(3,3) :: lattice_f, lattice_f2 = 0.0_dp
      logical :: massive = .false.
 
   end type thermostat
@@ -222,6 +222,7 @@ contains
     this%p = 0.0_dp
     this%lattice_v = 0.0_dp
     this%lattice_f = 0.0_dp
+    this%lattice_f2 = 0.0_dp
 
     use_Q = optional_default(-1.0_dp, Q)
 
@@ -394,6 +395,7 @@ contains
     this%epsilon_f2 = 0.0_dp
     this%lattice_v = 0.0_dp
     this%lattice_f = 0.0_dp
+    this%lattice_f2 = 0.0_dp
     this%massive = .false.
     
   end subroutine thermostat_finalise
@@ -438,6 +440,7 @@ contains
     to%volume_0 = from%volume_0
     to%lattice_v = from%lattice_v
     to%lattice_f = from%lattice_f
+    to%lattice_f2 = from%lattice_f2
     to%massive = from%massive
 
   end subroutine thermostat_assignment
@@ -1000,7 +1003,7 @@ contains
 
        ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
 
-       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
+       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof + this%lattice_f2
        this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
 
        if (this%Q > 0.0_dp) then
@@ -1456,9 +1459,9 @@ contains
     real(dp), dimension(3,3), intent(in), optional :: virial
 
     real(dp) :: decay, K, volume_p, f_cell, rv_mag, OU_dv(3)
-    real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
+    real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix, random_lattice
     real(dp), dimension(3) :: decay_matrix_eigenvalues
-    integer  :: i
+    integer  :: i, j
     integer, pointer, dimension(:) :: prop_ptr
     real(dp) :: delta_K
     real(dp) :: OU_random_dv_mag
@@ -1701,13 +1704,23 @@ contains
 	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
        
+       do i = 1, 3
+          do j = 1, 3
+             random_lattice(j,i) = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
+          enddo
+       enddo
+       random_lattice = ( random_lattice + transpose(random_lattice) ) / 2.0_dp
+
        volume_p = cell_volume(at)
        ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
-       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
+       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof + random_lattice
 
-       this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
+       this%lattice_v = ( this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p ) / ( 1.0_dp + 0.5_dp * dt * this%gamma_p )
+
        lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
        call set_lattice(at,lattice_p, scale_positions=.false.)
+
+       this%lattice_f2 = random_lattice - this%gamma_p * this%lattice_v * this%W_p
 
     case(THERMOSTAT_NPH_ANDERSEN)
 
