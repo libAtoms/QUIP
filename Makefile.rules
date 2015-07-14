@@ -150,7 +150,7 @@ ifeq (${HAVE_METIS},1)
 endif
 ifeq (${HAVE_SCME},1)
   DEFINES += -DHAVE_SCME
-  SYSLIBS += -lscme
+  SYSLIBS += -lscme -lstdc++
 endif
 ifeq (${HAVE_LMTO_TBE},1)
   DEFINES += -DHAVE_LMTO_TBE
