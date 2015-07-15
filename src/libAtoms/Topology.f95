@@ -2468,7 +2468,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
               end do
               if(h1 == 0 .or. h2 == 0) then
                  RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2//" with cutoff of "//my_monomer_cutoff//" A", error)
-!                 call write(at, "stdout")
+                 !call write(at, "stdout")
               end if
               H_associated(h1) = .true.
               H_associated(h2) = .true.
@@ -2821,9 +2821,24 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
               monomer_index(:,monomers_found) = indices
            end if
         end do
-      else
-        RAISE_ERROR("Finding general monomers without order checking not supported", error)
-      end if
+      else ! do_general_ordercheck = .false.
+        n = size(signature)
+        do i = 1, at%N
+          if(.not. any(is_associated(i:i+n-1)) .and. all(signature(:) .eq. at%Z(i:i+n-1))) then
+            monomers_found = monomers_found + 1 ! number of monomers found so far
+            indices = (/(i+k, k=0,n-1)/)
+	    is_associated(i:i+n-1) = .true.
+
+            deallocate(monomer_index_working)
+            allocate(monomer_index_working(size(monomer_index,1), size(monomer_index,2)))
+            monomer_index_working = monomer_index
+            deallocate(monomer_index)
+            allocate(monomer_index(size(monomer_index_working,1), size(monomer_index_working,2)+1))
+            monomer_index(:,:monomers_found-1) = monomer_index_working
+            monomer_index(:,monomers_found) = indices
+          end if
+        enddo
+      end if ! do_general_ordercheck
 
       deallocate(monomer_index_working)
       deallocate(r)
