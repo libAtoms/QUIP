@@ -58,7 +58,10 @@ STAT        9.00    291.0607     12.8390    0.52E+02      0.00000000E+00      0.
 STAT       10.00    320.1768     15.8971    0.48E+02      0.00000000E+00      0.00000000E+00      0.33109042E+00     -0.34190241E+02     -0.34190241E+02
 STAT       10.00    320.1768     15.8971    0.48E+02      0.00000000E+00      0.00000000E+00      0.33109042E+00     -0.34190241E+02     -0.34190241E+02
 EOF3
-${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 dt=1.0 N_steps=10 rng_seed=1 atoms_in_file=${TEST}.in.xyz > ${TEST}.out.raw
+# originally the test used rng_seed=1
+# after the change in commit 8facdc861fa3e26f87ccb38bad4e64267bd9a8a3 this needed changing
+# rng_seed=2065775975 gives 1 after 100 iterations
+${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 dt=1.0 N_steps=10 rng_seed=2065775975 atoms_in_file=${TEST}.in.xyz > ${TEST}.out.raw
 egrep '^ST' ${TEST}.out.raw > ${TEST}.out
 tail -8 ${TEST}.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > ${TEST}.traj_pos.xyz
 
