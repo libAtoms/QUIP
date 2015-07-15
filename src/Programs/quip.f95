@@ -540,21 +540,21 @@ implicit none
         if (do_dipole_moment) then
            allocate(IR_intensities(at%N*3))
            if (do_force_const_mat) then
-              call phonons(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+              call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    IR_intensities=IR_intensities, do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation, &
 		   force_const_mat=force_const_mat)
            else
-              call phonons(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+              call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    IR_intensities=IR_intensities, zero_rotation=do_phonons_zero_rotation, &
 		   do_parallel=do_parallel_phonons)
            endif
         else
            if (do_force_const_mat) then
-              call phonons(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+              call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation, &
 		   force_const_mat=force_const_mat)
            else
-              call phonons(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+              call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation)
            endif
         endif
@@ -629,11 +629,11 @@ implicit none
         if( .not. has_phonon_supercell_fine ) phonon_supercell_fine = phonon_supercell
         
         if (has_phonons_path_start .and. has_phonons_path_end) then
-           call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
+           call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
                 & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
                 & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, phonons_path_steps=phonons_path_steps)
         else
-           call phonons_fine(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
+           call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
                 & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine)
         endif
      endif ! do_fine_phonons
