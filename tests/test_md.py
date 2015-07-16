@@ -27,7 +27,7 @@ if hasattr(quippy, 'Potential'):
 
       def setUp(self):
          verbosity_push(PRINT_SILENT)
-         system_reseed_rng(1)
+         system_reseed_rng(2065775975)
          s = supercell(diamond(5.44, 14), 2, 2, 2)
          s.set_cutoff(5.0)
          s.calc_connect()

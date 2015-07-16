@@ -55,7 +55,7 @@ if hasattr(quippy, 'Potential'):
          </SW_params>
          """
 
-         system_reseed_rng(1)
+         system_reseed_rng(2065775975)
          self.pot = Potential('IP SW', param_str=xml)
 
          self.at = diamond(5.44, 14)
@@ -5000,7 +5000,7 @@ if hasattr(quippy, 'Potential'):
          </SW_params>
          """
 
-         system_reseed_rng(1)
+         system_reseed_rng(2065775975)
          # self.pot = Potential('IP SW', xml)
          # self.pot = Potential'Simple', self.pot)
          self.pot = Potential('IP SW', param_str=xml)

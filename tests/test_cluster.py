@@ -572,7 +572,7 @@ class TestCluster_Rescale(QuippyTestCase):
 class TestCluster_RandomiseBuffer(QuippyTestCase):
 
    def setUp(self):
-      system_reseed_rng(1)
+      system_reseed_rng(2065775975)
       
       self.dia = diamond(5.44, 14)
       self.at = supercell(self.dia, 3, 3, 3)
@@ -2641,7 +2641,7 @@ if hasattr(quippy, 'Potential'):
          </SW_params>
          """
 
-         system_reseed_rng(1)
+         system_reseed_rng(2065775975)
          self.pot = Potential('IP SW', param_str=self.xml)
 
          self.at = supercell(diamond(5.44, 14), 4, 4, 4)

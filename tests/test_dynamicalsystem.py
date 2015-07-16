@@ -54,7 +54,7 @@ else:
 class GenericTestDynamics(object):
    def common_init(self):
       random.seed(1)
-      system_reseed_rng(1)
+      system_reseed_rng(2065775975)
       self.at1 = diamond(5.44, 14)
       self.at1.rattle(0.01)
       self.at2 = ase.Atoms(self.at1)
@@ -213,7 +213,7 @@ class TestDynamics_Thermostat(GenericTestDynamics, QuippyTestCase):
    def setUp(self):
       self.common_init()
 
-      system_reseed_rng(1)
+      system_reseed_rng(2065775975)
       self.ds.add_thermostat(THERMOSTAT_LANGEVIN, 300.0, tau=500.0)
       
       # advance 10 steps with the DynamicalSystem + quippy Atoms
@@ -222,7 +222,7 @@ class TestDynamics_Thermostat(GenericTestDynamics, QuippyTestCase):
       verbosity_pop()
 
       # we need same sequence of thermostat random forces
-      system_reseed_rng(1)
+      system_reseed_rng(2065775975)
       self.dyn.add_thermostat(THERMOSTAT_LANGEVIN, 300.0, tau=500.0)
 
       # Advance 10 steps with the Dynamics wrapper

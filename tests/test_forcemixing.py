@@ -83,7 +83,7 @@ if hasattr(quippy, 'Potential'):
 
 </quip_params>"""
 
-         system_reseed_rng(2)
+         system_reseed_rng(1984068303)
          self.pot1 = Potential('IP SW label="PRB_31_plus_H"', param_str=xml)
          self.pot2 = Potential('IP SW label="eps_2.6"', param_str=xml)
          self.pot3 = Potential('IP SW label="eps_2.6" little_clusters=T', param_str=xml)
