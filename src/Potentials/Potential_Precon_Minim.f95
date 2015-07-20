@@ -75,7 +75,7 @@ module Potential_Precon_Minim_module
     allocate(this%preconrowlengths(at%N))
     allocate(this%preconindices(nneigh+1,at%N))
     
-    if (trim(precon_id) == "LJ" .OR. trim(precon_id) == "ID" .OR. trim(precon_id) == "C1") then
+    if (trim(precon_id) == "LJ" .OR. trim(precon_id) == "ID" .OR. trim(precon_id) == "C1" .OR. trim(precon_id) == "exp") then
       this%multI = .TRUE.
     elseif (trim(precon_id) == "LJdense") then
       this%dense = .true.
@@ -94,9 +94,9 @@ module Potential_Precon_Minim_module
       allocate(this%preconcoeffs(nneigh+1,at%N,6))
     end if
     call print('allocate_precon: auto_mu='//auto_mu)
-    if (auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
+    if (auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ" .or. trim(precon_id) == "exp")) then
         this%mu=25.5/(this%cutoff**2.0)
-     elseif (.not. auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ")) then
+    elseif (.not. auto_mu .and. (trim(precon_id) == "C1" .or. trim(precon_id) == "LJ" .or. trim(precon_id) == "exp")) then
         ! compute approximation to best \mu using
         ! C1: mu = 3  (bulk-mod) * \sum_n vol[n] / \sum_{n, r} |r|^2
         ! LJ: mu = 3  (bulk-mod) * \sum_n vol[n] / \sum_{n, r} C(|r|) |r|^2
@@ -109,11 +109,13 @@ module Potential_Precon_Minim_module
            do J = 1,thisneighcount
               thisind = neighbour(at,I,J,distance=thisdist) 
               if (thisind > 0 .and. (thisdist <= this%cutoff)) then 
-                 if (this%precon_id == "LJ" .or. this%precon_id == "C1") then
+                 if (this%precon_id == "LJ" .or. this%precon_id == "C1" .or. this%precon_id == "exp") then
                     this_r2 = thisdist**2.0
                     if (this%precon_id == "LJ") then
                        ! if preconditoner is LJ, we scale the coefficient by C(|r|)
                        this_r2 = this_r2 * (thisdist/this%length_scale)**(-6.0_dp)
+                    else if (this%precon_id == "exp") then
+                       this_r2 = this_r2 * exp(-thisdist/this%length_scale)
                     end if
                     scalingdenom = scalingdenom + this_r2
                  end if
@@ -221,14 +223,16 @@ module Potential_Precon_Minim_module
           
 
           !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs0.dat')
-          if (this%precon_id == "LJ" .or. this%precon_id == "C1") then
+          if (this%precon_id == "LJ" .or. this%precon_id == "C1" .or. this%precon_id == "exp") then
               
             if (this%precon_id == "LJ") then
               thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
              ! thiscoeff = 1.0_dp!max(min(thiscoeff,10.0_dp),0.1_dp)
               !call print(thiscoeff)
+            else if (this%precon_id == "exp") then
+               thiscoeff = exp(-thisdist/this%length_scale)
             else if (this%precon_id == "C1") then
-              thiscoeff = 1.0_dp
+               thiscoeff = 1.0_dp
             end if
 
             this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff
@@ -309,7 +313,7 @@ module Potential_Precon_Minim_module
     end do 
     end if
 
-    if(this%precon_id == 'LJ' .or. this%precon_id == 'C1') then
+    if(this%precon_id == 'LJ' .or. this%precon_id == 'C1' .or. this%precon_id == 'exp') then
        ! scalingdenom = scalingdenom/3.0
        ! scalingnumer = 2.0*scalingnumer*this%bulk_modulus/this%number_density
         !scalingcoeff = scalingnumer/scalingdenom
