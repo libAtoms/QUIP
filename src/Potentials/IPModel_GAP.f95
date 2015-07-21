@@ -252,6 +252,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp) :: r_scale, E_scale
 
   real(dp), dimension(:), allocatable :: sparseScore
+  real(dp) :: sparseScore_reg
   logical :: do_rescale_r, do_rescale_E, do_sparseScore
 
   type(descriptor_data) :: my_descriptor_data
@@ -306,9 +307,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, &
      help_string="Name of a logical property in the atoms object. For atoms where this property is true, energies, forces, virials etc. are " // &
       "calculated")
-     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
-     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
+     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
      call param_register(params, 'sparseScore', 'F', do_sparseScore, help_string="Compute score for each test point.")
+     call param_register(params, 'sparseScore_reg', '0.001', sparseScore_reg, help_string="Regularisation value for sparseScore.")
 
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
      call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
@@ -357,7 +359,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
      if(do_sparseScore) then
-        call gpCoordinates_initialise_SparseScore(this%my_gp%coordinate(i_coordinate))
+        call gpCoordinates_initialise_SparseScore(this%my_gp%coordinate(i_coordinate), sparseScore_reg)
      endif
 
      if(present(f) .or. present(virial) .or. present(local_virial)) then
