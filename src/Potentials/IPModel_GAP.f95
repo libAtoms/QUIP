@@ -424,7 +424,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end parallel
      if(do_sparseScore) then
         do i = 1, size(my_descriptor_data%x)
-           call print('DESCRIPTOR '//i//' SPARSE_SCORE = '//sparseScore(i))
+           call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE '//i//' = '//sparseScore(i))
         enddo
      endif
      if(allocated(sparseScore)) deallocate(sparseScore)
