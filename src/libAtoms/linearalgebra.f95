@@ -134,6 +134,7 @@ module linearalgebra_module
 
   interface assignment(=)
      module procedure LA_Matrix_Initialise
+     module procedure LA_Matrix_Initialise_Copy
   end interface assignment(=)
 
   interface Finalise
@@ -2125,6 +2126,37 @@ CONTAINS
      this%initialised = .true.
 
   endsubroutine LA_Matrix_Initialise
+
+  subroutine LA_Matrix_Initialise_Copy(this, from)
+
+     type(LA_Matrix), intent(inout) :: this
+     type(LA_Matrix), intent(in) :: from
+
+     if(this%initialised) call finalise(this)
+
+     if (allocated(from%matrix)) then
+       allocate(this%matrix(size(from%matrix,1), size(from%matrix,2)))
+       this%matrix = from%matrix
+     end if
+     if (allocated(from%factor)) then
+       allocate(this%factor(size(from%factor,1), size(from%factor,2)))
+       this%factor = from%factor
+     end if
+     if (allocated(from%s)) then
+       allocate(this%s(size(from%s)))
+       this%s = from%s
+     end if
+     if (allocated(from%tau)) then
+       allocate(this%tau(size(from%tau)))
+       this%tau = from%tau
+     end if
+     this%n = from%n
+     this%m = from%m
+     this%initialised = from%initialised
+     this%equilibrated = from%equilibrated
+     this%factorised = from%factorised
+
+  endsubroutine LA_Matrix_Initialise_Copy
 
   subroutine LA_Matrix_Update(this,matrix)
 
