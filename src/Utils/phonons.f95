@@ -43,6 +43,7 @@ public :: Phonon_fine
 type Phonon_fine
    integer :: n_qvectors, n_modes
    real(dp), dimension(:,:), allocatable :: q, frequency
+   complex(dp), dimension(:,:,:,:), allocatable :: eigenvector
    logical :: initialised = .false.
 endtype Phonon_fine
 
@@ -88,13 +89,19 @@ contains
 
       INIT_ERROR(error)
 
+      if( mod(n_modes,3) /= 0 ) then
+         RAISE_ERROR('Phonon_fine_allocate: number of modes must be multiple of 3, n_modes = '//n_modes, error)
+      endif
+
       if(this%initialised) call finalise(this,error)
       this%n_qvectors = n_qvectors
       this%n_modes = n_modes
       allocate(this%q(3,this%n_qvectors))
       allocate(this%frequency(this%n_modes,this%n_qvectors))
+      allocate(this%eigenvector(3,n_modes/3,n_modes,n_qvectors))
 
       this%initialised = .true.
+
    endsubroutine Phonon_fine_allocate
 
    subroutine Phonon_fine_finalise(this,error)
@@ -106,6 +113,7 @@ contains
       if(.not. this%initialised) return
       if(allocated(this%q)) deallocate( this%q )
       if(allocated(this%frequency)) deallocate( this%frequency )
+      if(allocated(this%eigenvector)) deallocate( this%eigenvector )
       this%n_qvectors = 0
       
       this%initialised = .false.
@@ -379,6 +387,7 @@ contains
 
          call diagonalise(dmft, evals, evecs)
          this%frequency(:,k) = sign(sqrt(abs(evals)),evals)/2.0_dp/PI
+         this%eigenvector(:,:,:,k) = reshape( evecs, (/3, at_in%N, 3*at_in%N /) )
       enddo ! k
       !$omp end do
       deallocate(dmft)
