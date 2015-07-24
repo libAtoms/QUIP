@@ -43,7 +43,7 @@ public :: Phonon_fine
 type Phonon_fine
    integer :: n_qvectors, n_modes
    real(dp), dimension(:,:), allocatable :: q, frequency
-   complex(dp), dimension(:,:,:,:), allocatable :: eigenvector
+   real(dp), dimension(:,:,:,:), allocatable :: eigenvector
    logical :: initialised = .false.
 endtype Phonon_fine
 
@@ -387,7 +387,8 @@ contains
 
          call diagonalise(dmft, evals, evecs)
          this%frequency(:,k) = sign(sqrt(abs(evals)),evals)/2.0_dp/PI
-         this%eigenvector(:,:,:,k) = reshape( evecs, (/3, at_in%N, 3*at_in%N /) )
+         this%eigenvector(:,:,:,k) = real( reshape( evecs, (/3, at_in%N, 3*at_in%N /) ), dp )
+
       enddo ! k
       !$omp end do
       deallocate(dmft)
