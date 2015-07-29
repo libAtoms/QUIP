@@ -224,7 +224,6 @@ contains
          enddo
       endif
     
-      allocate(evals(at_in%N*3), evecs(at_in%N*3,at_in%N*3))
       allocate(pos0(3,at%N))
     
       if (dx == 0.0_dp) then
@@ -237,6 +236,7 @@ contains
     
       allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
     
+      call print("Starting force calculations")
       do i = 1, at_in%N
          call print('Displacing atom '//i//' of '//at_in%N)
          do alpha = 1, 3
@@ -251,6 +251,7 @@ contains
             call calc(pot, at, force=fm0(:,:,alpha,i), args_str=calc_args)
          enddo
       enddo
+      call print("Finished force calculations")
     
       at%pos = pos0
       call calc_dists(at)
@@ -346,9 +347,11 @@ contains
          deallocate(at_fine_mapped, map_at)
       endif
     
+      call print("Starting phonon calculations")
     
-      !$omp parallel private(dmft)
+      !$omp parallel private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx)
       allocate(dmft(at_in%N*3,at_in%N*3))
+      allocate(evals(at_in%N*3), evecs(at_in%N*3,at_in%N*3))
       !$omp do private(k,i,j,alpha,beta,diff_ij,n1,n2,n3,pp,jn)
       do k = 1, this%n_qvectors
          dmft = CPLX_ZERO
@@ -392,9 +395,10 @@ contains
       enddo ! k
       !$omp end do
       deallocate(dmft)
-      !$omp end parallel  
-      
       deallocate(evecs,evals)
+      !$omp end parallel  
+      call print("Finished phonon calculations")
+      
       deallocate(fp0, fp0_fine, fm0, fm0_fine)
       call finalise(at,at_fine)
    endsubroutine Phonon_fine_calc
