@@ -255,6 +255,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp) :: sparseScore_reg
   logical :: do_rescale_r, do_rescale_E, do_sparseScore
 
+  logical :: had_sparseScore
+
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: my_args_str
   real(dp), dimension(:), allocatable :: gradPredict
@@ -352,6 +354,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
+  had_sparseScore = .false.
   do i_coordinate = 1, this%my_gp%n_coordinate
 
      if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
@@ -364,7 +367,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      if(present(f) .or. present(virial) .or. present(local_virial)) then
         if (allocated(gradPredict)) deallocate(gradPredict)
-	allocate(gradPredict(d))
+        allocate(gradPredict(d))
      end if     
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
         do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
@@ -425,6 +428,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(do_sparseScore) then
         do i = 1, size(my_descriptor_data%x)
            call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE '//i//' = '//sparseScore(i))
+           if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
+           had_sparseScore = .true.
         enddo
      endif
      if(allocated(sparseScore)) deallocate(sparseScore)
@@ -432,6 +437,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call finalise(my_descriptor_data)
 
   enddo
+
+  if (do_sparseScore .and. .not. had_sparseScore) then
+    call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE NOT FOUND')
+  end if
 
   if(present(f)) f = f_in
   if(present(e)) e = sum(local_e_in)
@@ -524,10 +533,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      
      if(len(trim(parse_ip%label)) > 0) then ! we were passed in a label
         if(value == parse_ip%label) then ! exact match
- 	   parse_matched_label = .true.
- 	   parse_in_ip = .true.
+           parse_matched_label = .true.
+           parse_in_ip = .true.
         else ! no match
- 	   parse_in_ip = .false.
+           parse_in_ip = .false.
         endif
      else ! no label passed in
         parse_in_ip = .true.
@@ -544,9 +553,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_ip%xml_version = string_to_int(value)
         if( parse_ip%xml_version > gap_version ) &
         call system_abort( &
-	   'Database was created with a later version of the code.' // &
-	   'Version of code used to generate the database is '//trim(value)//'.'// &
-	   'Version of current code is '//gap_version//'. Please update your code.')
+           'Database was created with a later version of the code.' // &
+           'Version of code used to generate the database is '//trim(value)//'.'// &
+           'Version of current code is '//gap_version//'. Please update your code.')
      else
         parse_ip%xml_version = 0
      endif
