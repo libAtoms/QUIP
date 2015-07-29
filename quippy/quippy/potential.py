@@ -357,11 +357,6 @@ with `atoms` to the new :class:`Potential` instance, by calling
 		self._prev_atoms.pos[...] = self.atoms.pos
 		self._prev_atoms.lattice[...] = self.atoms.lattice
 
-        # do a calc_connect(), setting cutoff_skin so full reconnect will only be done when necessary
-        self.atoms.set_cutoff(self.cutoff(), cutoff_skin=self.cutoff_skin)
-        potlog.debug('Potential doing calc_connect() with cutoff %f cutoff_skin %r' % (self.atoms.cutoff, self.cutoff_skin))
-        self.atoms.calc_connect()
-
     # Synonyms for `update` for compatibility with ASE calculator interface
     def initialize(self, atoms):
         self.update(atoms)
@@ -724,9 +719,6 @@ class Minim(Optimizer):
                 self.atoms.set_positions(self._atoms.get_positions())
             if self.do_lat:
                 self.atoms.set_cell(self._atoms.get_cell())
-
-        self.atoms.set_cutoff(self.potential.cutoff(), cutoff_skin=self.cutoff_skin)
-        self.atoms.calc_connect()
 
         # check for constraints, only FixAtoms is supported for now
         if self.atoms.constraints:
