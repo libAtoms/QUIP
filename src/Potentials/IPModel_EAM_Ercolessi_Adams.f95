@@ -187,8 +187,9 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
   real(dp), pointer :: w_e(:)
   integer :: i, ji, j, ti, tj
   real(dp) :: r_ij_mag, r_ij_hat(3)
-  real(dp) :: F_n, dF_n
-  real(dp) :: spline_rho_d_val, spline_V_d_val, virial_factor(3,3), virial_i(3,3)
+  real(dp) :: F_n, dF_n, e_in
+  real(dp) :: spline_rho_d_val, spline_V_d_val, virial_factor(3,3), virial_i(3,3), virial_in(3,3)
+  real(dp), allocatable, dimension(:,:) :: f_in
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
@@ -249,6 +250,16 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
   if (do_rescale_r) call print('IPModel_Tersoff_Calc: rescaling distances by factor '//r_scale, PRINT_VERBOSE)
   if (do_rescale_E) call print('IPModel_Tersoff_Calc: rescaling energy by factor '//E_scale, PRINT_VERBOSE)
 
+  ! Has to be allocated because it is in the reduction clause
+  allocate(f_in(3,at%N))
+  f_in = 0.0_dp
+  e_in = 0.0_dp
+  virial_in = 0.0_dp
+
+!$omp parallel do default(none) shared(this,at,mpi,atom_mask_pointer,do_rescale_r,r_scale,w_e,e,f,virial,local_e,local_virial) &
+!$omp private(i,j,ti,tj,ji,w_f,rho_i,drho_i_dri,drho_i_drj,drho_i_drij_outer_rij,r_ij_mag,r_ij_hat,V_r,rho_r,de,virial_i) &
+!$omp private(spline_rho_d_val,spline_V_d_val,F_n,dF_n,virial_factor) &
+!$omp reduction(+:e_in,f_in,virial_in)
   do i=1, at%N
     if (present(mpi)) then
        if (mpi%active) then
@@ -289,7 +300,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
 
       de = 0.5_dp*V_r
 #ifdef PAIR
-      if (present(e)) e = e + de*w_f
+      if (present(e)) e_in = e_in + de*w_f
       if (present(local_e)) local_e(i) = local_e(i) + de
 #endif
 
@@ -300,8 +311,8 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
          if (present(f)) then
             drho_i_dri = drho_i_dri + spline_rho_d_val*r_ij_hat
 #ifdef PAIR
-            f(:,i) = f(:,i) + 0.5_dp*w_f*spline_V_d_val*r_ij_hat
-            f(:,j) = f(:,j) - 0.5_dp*w_f*spline_V_d_val*r_ij_hat
+            f_in(:,i) = f_in(:,i) + 0.5_dp*w_f*spline_V_d_val*r_ij_hat
+            f_in(:,j) = f_in(:,j) - 0.5_dp*w_f*spline_V_d_val*r_ij_hat
 #endif
          endif
          if (present(virial) .or. present(local_virial)) then
@@ -310,7 +321,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
             virial_i = 0.5_dp * w_f*spline_V_d_val*virial_factor
          endif
 #ifdef PAIR
-         if (present(virial) ) virial = virial - virial_i
+         if (present(virial) ) virial_in = virial_in - virial_i
          if (present(local_virial) ) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 #endif
       endif
@@ -324,16 +335,16 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
       F_n = eam_spline_F(this, ti, rho_i)
       F_n = F_n + this%V_F_shift(ti)*rho_i
       de = F_n
-      if (present(e)) e = e + de*w_f
+      if (present(e)) e_in = e_in + de*w_f
       if (present(local_e)) local_e(i) = local_e(i) + de
     endif
 
     if (present(f) .or. present(virial) .or. present(local_virial)) then
       dF_n = eam_spline_F_d(this, ti, rho_i) 
       dF_n = dF_n + this%V_F_shift(ti)
-      if (present(f)) f(:,i) = f(:,i) + w_f*dF_n*drho_i_dri
+      if (present(f)) f_in(:,i) = f_in(:,i) + w_f*dF_n*drho_i_dri
       if (present(virial) .or. present(local_virial)) virial_i = w_f*dF_n*drho_i_drij_outer_rij
-      if (present(virial))  virial = virial - virial_i
+      if (present(virial))  virial_in = virial_in - virial_i
       if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
       if (present(f)) then
@@ -347,7 +358,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
 	  tj = get_type(this%type_of_atomic_num, at%Z(j))
 
 	  drho_i_drj = -eam_spline_rho_d(this, tj, r_ij_mag)*r_ij_hat
-	  f(:,j) = f(:,j) + w_f*dF_n*drho_i_drj
+	  f_in(:,j) = f_in(:,j) + w_f*dF_n*drho_i_drj
 	end do
       end if
 
@@ -359,8 +370,14 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
   if (present(mpi)) then
      if (present(e)) e = sum(mpi, e)
      if (present(local_e)) call sum_in_place(mpi, local_e)
-     if (present(f)) call sum_in_place(mpi, f)
-     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(f)) then
+        call sum_in_place(mpi, f_in)
+        f = f_in
+     endif
+     if (present(virial)) then
+        call sum_in_place(mpi, virial_in)
+        virial = virial_in
+     endif
      if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
 
@@ -375,6 +392,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
      if (present(virial)) virial=virial*E_scale
      if (present(local_virial)) local_virial=local_virial*E_scale
   end if
+  if(allocated(f_in)) deallocate(f_in)
 
 end subroutine IPModel_EAM_ErcolAd_Calc
 
