@@ -187,6 +187,17 @@ void fread_array_d_(int *size, double *v, char *filename) {
    fclose(fp);
 }
 
+void fread_array_i_(int *size, int *v, char *filename) {
+   FILE *fp;
+   int i;
+
+   fp = fopen(filename, "r");
+   for (i=0; i < *size; i++) {
+      fscanf(fp, "%i", v+i);
+   }
+   fclose(fp);
+}
+
 void fwc_l_(char *filename, int *size) {
    FILE *fp;
 
