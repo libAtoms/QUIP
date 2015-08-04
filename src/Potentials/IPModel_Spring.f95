@@ -63,6 +63,7 @@ public :: IPModel_Spring
 type IPModel_Spring
   real(dp) :: cutoff = 0.0_dp
   real(dp) :: kconf = 0.0_dp
+  real(dp) :: left = 0.0_dp
   real(dp) :: right = 0.0_dp
   integer,allocatable,dimension(:) :: spring_indices1
   integer,allocatable,dimension(:) :: spring_indices2
@@ -104,6 +105,7 @@ subroutine IPModel_Spring_Initialise_str(this, args_str, param_str, error)
   call initialise(params)
   call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on atoms. potential is kconf*(rO)^2')
   call param_register(params, 'right', '0.0', this%right, help_string='distance up to which the confinement potential is flat')
+  call param_register(params, 'left', '0.0', this%left, help_string='distance from where the confinement potential is flat')
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string='cutoff')
   call param_register(params, 'indices1', PARAM_MANDATORY, indices1_string, help_string="Indices (1-based) of the first group of atoms you wish to tether, format {i1 i2 i3 ...}")
   call param_register(params, 'indices2', PARAM_MANDATORY, indices2_string, help_string="Indices (1-based) of the second group of atoms you wish to tether, format {i1 i2 i3 ...}")
@@ -194,6 +196,24 @@ subroutine IPModel_Spring_Calc(this, at, e, local_e, f, virial, local_virial, ar
      end do
    end if
 
+   if (r .flt. this%left) then
+     disp = r - this%left
+     dr = diff_min_image(at, com1, com2) / r
+     ! Harmonic confining potential on tethered atoms
+     ! energy
+     energy = energy + this%kConf*disp**2
+
+     ! force
+     theforce = ( 2.0_dp*this%kConf*disp ) * dr
+     do i=1,n_group1
+       force(:,this%spring_indices1(i)) = theforce / n_group1
+     end do
+     do i=1,n_group2
+       force(:,this%spring_indices2(i)) = - theforce / n_group2
+     end do
+   end if
+
+
    if (present(e)) e = energy
    if (present(local_e)) then
       call check_size('Local_E',local_e,(/at%N/),'IPModel_Spring_Calc', error)
@@ -220,6 +240,7 @@ subroutine IPModel_Spring_Print(this, file)
   call Print("IPModel_Spring : cutoff = " // this%cutoff, file=file)
   call Print("IPModel_Spring : kconf = " // this%kconf, file=file)
   call Print("IPModel_Spring : right = " // this%right, file=file)
+  call Print("IPModel_Spring : left = " // this%left, file=file)
   call Print("IPModel_Spring : group 1 atoms = " // this%spring_indices1, file=file)
   call Print("IPModel_Spring : group 2 atoms = " // this%spring_indices2, file=file)
 
