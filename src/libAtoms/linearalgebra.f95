@@ -74,6 +74,8 @@ module linearalgebra_module
        2432902008176640000.0_dp/)
    public :: factorial, factorial_int, factorial2, binom, oscillate
 
+   real(dp), public, parameter :: TOL_SVD = 1e-13_dp
+
    public :: cos_cutoff_function, dcos_cutoff_function
 
    interface coordination_function
@@ -6534,6 +6536,7 @@ CONTAINS
     call print('entering svdfact', verbosity=PRINT_VERBOSE)
 
     n_dimension = size(in_matrix(:,1))
+    if (size(in_matrix(:,2)) /= n_dimension) call system_abort("svdfact only implemented for square matrices")
     !call print('Dimension of the Matrix : '//n_dimension, verbosity=PRINT_VERBOSE)
 
     allocate(s(n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
@@ -6578,86 +6581,92 @@ CONTAINS
 
   subroutine inverse_svd_threshold(in_matrix, thresh, result_inv, u_out, vt_out)
 
-   real(dp), intent(in)                                               ::         in_matrix(:,:), thresh
-   real(dp), dimension(:,:), optional, intent(out)                    ::         u_out, vt_out
-   real(dp), intent(out), dimension(:,:), optional                    ::         result_inv
-   real(dp), allocatable                                              ::         w(:), sigmainv(:,:), u(:,:), vt(:,:)
-   real(dp), allocatable                                              ::         work(:)
-   real(dp), parameter                                                ::         TOL_SVD = 1e-13_dp
-   integer                                                            ::         n_dimension, info, i, lwork, j
+    real(dp), intent(in)                            :: in_matrix(:,:)
+    real(dp), intent(in), optional                  :: thresh
+    real(dp), intent(out), dimension(:,:), optional :: u_out, vt_out
+    real(dp), intent(out), dimension(:,:), optional :: result_inv
 
-   real(dp) :: thresh_use
+    real(dp), allocatable                           :: w(:), sigmainv(:,:), u(:,:), vt(:,:)
+    real(dp), allocatable                           :: work(:)
+    integer                                         :: n, m, k, info, i, lwork, j
 
-   call print('entering inverse_svd_threshold', verbosity=PRINT_VERBOSE)
+    real(dp) :: thresh_use
 
-   n_dimension = size(in_matrix(:,1))
-!   call print('Dimension of the Matrix : '//n_dimension, verbosity=PRINT_VERBOSE)
+    call print('entering inverse_svd_threshold', verbosity=PRINT_VERBOSE)
 
-   allocate(w(n_dimension), sigmainv(n_dimension,n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
-   lwork = -1
-   allocate(work(1))
-   call DGESVD('A','A',n_dimension,n_dimension,in_matrix,n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
+    m = size(in_matrix,1)
+    n = size(in_matrix,2)
+    k = min(m, n)
+    !call print('Dimension of the Matrix : '//m//' x '//n, verbosity=PRINT_VERBOSE)
 
-   lwork = work(1)
-   deallocate(work)
-   allocate(work(lwork))
+    allocate(w(k), sigmainv(n,m), u(m,m), vt(n,n))
 
-   call DGESVD('A','A',n_dimension, n_dimension, in_matrix, n_dimension,w,u,n_dimension,vt,n_dimension, work, lwork, info)
-   call print("DGESVD finished with exit code "//info, verbosity=PRINT_VERBOSE)
-   deallocate(work)
+    lwork = -1
+    allocate(work(1))
+    call DGESVD('A','A', m,n,in_matrix,m, w, u,m, vt,n, work, lwork, info)
 
- if (present(result_inv)) then
+    lwork = work(1)
+    deallocate(work)
+    allocate(work(lwork))
+
+    call DGESVD('A','A', m,n,in_matrix,m, w, u,m, vt,n, work, lwork, info)
+    call print("DGESVD finished with exit code "//info, verbosity=PRINT_VERBOSE)
+    deallocate(work)
+
+    if (present(result_inv)) then
  
-   if (info /= 0) then
-          if (info < 0) then
-                 write(line,'(a,i0)')'SVD: Problem with argument ',-info
-                 call system_abort(line)
-          else
-                 call system_abort('SVD: DBDSQR (called from DGESVD) did not converge')
-          end if
-   end if
+      if (info /= 0) then
+        if (info < 0) then
+          write(line,'(a,i0)')'SVD: Problem with argument ',-info
+          call system_abort(line)
+        else
+          call system_abort('SVD: DBDSQR (called from DGESVD) did not converge')
+        end if
+      end if
 
-   do j=1, size(w)
-      call print("svd values "// j//" "//w(j), verbosity=PRINT_VERBOSE)
-   end do
-   call print("smallest, largest value : "//minval(abs(w))//" "//maxval(abs(w)), verbosity=PRINT_VERBOSE)
+      do j=1, size(w)
+        call print("svd values "// j//" "//w(j), verbosity=PRINT_VERBOSE)
+      end do
+      call print("smallest, largest value : "//minval(abs(w))//" "//maxval(abs(w)), verbosity=PRINT_VERBOSE)
 
-   if (thresh >= 0.0) then
-      thresh_use = thresh*TOL_SVD
-   else
-      thresh_use = abs(thresh)*TOL_SVD*w(1)
-   endif
+      if (present(thresh)) then
+        if (thresh >= 0.0) then
+          thresh_use = thresh*TOL_SVD
+        else
+          thresh_use = abs(thresh)*TOL_SVD*w(1)
+        endif
+      else
+        thresh_use = real(max(m, n), kind=dp) * epsilon(1.0_dp) * w(1)
+      endif
 
-   sigmainv = 0.0_dp
-   j = 0
-   do i=1, n_dimension
-       if (w(i) < thresh_use) then
-            sigmainv(i,i) = 0.0_dp
-            j = j + 1
-       else
-           sigmainv(i,i) = 1.0_dp/w(i)
-       end if
-   end do
- 
-   call print("the number of zero singular values : "//j, verbosity=PRINT_VERBOSE)
+      sigmainv = 0.0_dp
+      j = 0
+      do i=1, k
+        if (w(i) < thresh_use) then
+          sigmainv(i,i) = 0.0_dp
+          j = j + 1
+        else
+          sigmainv(i,i) = 1.0_dp/w(i)
+        end if
+      end do
 
-  if (n_dimension<=3) then  ! DEBUGGING use
-  endif
-  result_inv = transpose(vt) .mult. sigmainv .mult. transpose(u)
+      call print("the number of zero singular values : "//j, verbosity=PRINT_VERBOSE)
 
-end if !on condition of matrix inverting  
+      result_inv = transpose(vt) .mult. sigmainv .mult. transpose(u)
 
-   if (present(u_out))      u_out=u
-   if (present(vt_out))     vt_out=vt
+    end if ! on condition of matrix inverting  
 
-   deallocate(w)
-   deallocate(sigmainv)
-   deallocate(u)
-   deallocate(vt)
+    if (present(u_out))    u_out = u
+    if (present(vt_out))   vt_out = vt
 
-   call print('finished  inverse_svd_threshold')
+    deallocate(w)
+    deallocate(sigmainv)
+    deallocate(u)
+    deallocate(vt)
 
- end subroutine inverse_svd_threshold
+    call print('finished inverse_svd_threshold', verbosity=PRINT_VERBOSE)
+
+  end subroutine inverse_svd_threshold
 
   pure function frobenius_norm(this) result(norm)
     real(dp), dimension(:,:), intent(in) :: this
