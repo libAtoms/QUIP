@@ -107,7 +107,7 @@ module linearalgebra_module
   public :: angle, unit_vector, random_unit_vector, arrays_lt, is_symmetric, permutation_symbol
   public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
-  public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold
+  public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold, svdfact
   public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
@@ -6522,7 +6522,61 @@ CONTAINS
   endsubroutine find_nonzero_chunk_real1d
 
 
- subroutine inverse_svd_threshold(in_matrix, thresh, result_inv, u_out, vt_out)
+  subroutine svdfact(in_matrix, u_out, s_out, vt_out)
+
+    real(dp), intent(in)                  :: in_matrix(:,:)
+    real(dp), dimension(:), intent(out)   :: s_out
+    real(dp), dimension(:,:), intent(out) :: u_out, vt_out
+    real(dp), allocatable                 :: s(:), u(:,:), vt(:,:)
+    real(dp), allocatable                 :: work(:)
+    integer                               :: n_dimension, info, i, lwork, j
+
+    call print('entering svdfact', verbosity=PRINT_VERBOSE)
+
+    n_dimension = size(in_matrix(:,1))
+    !call print('Dimension of the Matrix : '//n_dimension, verbosity=PRINT_VERBOSE)
+
+    allocate(s(n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
+    lwork = -1
+    allocate(work(1))
+    call DGESVD('A','A', n_dimension,n_dimension,in_matrix, n_dimension,s, u,n_dimension, vt,n_dimension, work, lwork, info)
+
+    lwork = work(1)
+    deallocate(work)
+
+    allocate(work(lwork))
+    call DGESVD('A','A', n_dimension,n_dimension,in_matrix, n_dimension,s, u,n_dimension, vt,n_dimension, work, lwork, info)
+    deallocate(work)
+
+    call print("DGESVD finished with exit code "//info, verbosity=PRINT_VERBOSE)
+
+    if (info /= 0) then
+      if (info < 0) then
+        write(line,'(a,i0)')'SVD: Problem with argument ',-info
+        call system_abort(line)
+      else
+        call system_abort('SVD: DBDSQR (called from DGESVD) did not converge')
+      end if
+    end if
+
+    do j=1, size(s)
+      call print("svd values "// j//" "//s(j), verbosity=PRINT_VERBOSE)
+    end do
+    call print("smallest, largest value : "//minval(abs(s))//" "//maxval(abs(s)), verbosity=PRINT_VERBOSE)
+
+    s_out = s
+    u_out = u
+    vt_out = vt
+
+    deallocate(s)
+    deallocate(u)
+    deallocate(vt)
+
+    call print('finished svdfact', PRINT_VERBOSE)
+
+  end subroutine svdfact
+
+  subroutine inverse_svd_threshold(in_matrix, thresh, result_inv, u_out, vt_out)
 
    real(dp), intent(in)                                               ::         in_matrix(:,:), thresh
    real(dp), dimension(:,:), optional, intent(out)                    ::         u_out, vt_out
