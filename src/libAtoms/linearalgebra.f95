@@ -100,6 +100,7 @@ module linearalgebra_module
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
   public :: operator(.feq.), operator(.fne.), operator(.fgt.), operator(.fle.), operator(.flt.), operator(.fge.)
   public :: norm, normsq, operator(.mult.), operator(.dot.)
+  public :: frobenius_norm
   public :: heap_sort, is_orthogonal, find_in_array, is_in_array, trace, trace_mult, diag
   public :: ran_normal3, matrix_exp, matrix3x3_det, matrix3x3_inverse, operator(.outer.), operator(.cross.)
   public :: check_size, sort_array, trapezoidintegral, print, int_array_ge, int_array_gt, int_array_lt
@@ -6603,6 +6604,20 @@ end if !on condition of matrix inverting
    call print('finished  inverse_svd_threshold')
 
  end subroutine inverse_svd_threshold
+
+  pure function frobenius_norm(this) result(norm)
+    real(dp), dimension(:,:), intent(in) :: this
+    real(dp) :: norm
+    integer :: i, j
+
+    norm = 0.0_dp
+    do j=1, size(this,2)
+      do i=1, size(this,1)
+        norm = norm + this(i,j)**2
+      end do
+    end do
+    norm = sqrt(norm)
+  end function frobenius_norm
 
   ! polynomial switching function for implementing a cutoff - 
   ! a sigmoid going from 1 to zero smoothly.
