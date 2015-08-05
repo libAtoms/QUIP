@@ -67,7 +67,7 @@ public :: next_motif, find_motif_backbone
              QMMM_RUN_CORE, &
              QMMM_RUN_EXTENDED, &
              find_water_monomer, find_A2_monomer, find_AB_monomer, &
-	     find_molecule_ids, &
+             find_molecule_ids, &
              find_general_monomer, &
              find_monomer_pairs, &
              find_monomer_triplets, &
@@ -2823,11 +2823,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
         end do
       else ! do_general_ordercheck = .false.
         n = size(signature)
-        do i = 1, at%N
+        do i = 1, at%N-n+1
           if(.not. any(is_associated(i:i+n-1)) .and. all(signature(:) .eq. at%Z(i:i+n-1))) then
             monomers_found = monomers_found + 1 ! number of monomers found so far
             indices = (/(i+k, k=0,n-1)/)
-	    is_associated(i:i+n-1) = .true.
+            is_associated(i:i+n-1) = .true.
 
             deallocate(monomer_index_working)
             allocate(monomer_index_working(size(monomer_index,1), size(monomer_index,2)))
