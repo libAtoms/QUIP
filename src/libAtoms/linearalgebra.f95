@@ -6531,6 +6531,7 @@ CONTAINS
     real(dp), dimension(:,:), intent(out) :: u_out, vt_out
     real(dp), allocatable                 :: s(:), u(:,:), vt(:,:)
     real(dp), allocatable                 :: work(:)
+    integer, allocatable                  :: iwork(:)
     integer                               :: n_dimension, info, i, lwork, j
 
     call print('entering svdfact', verbosity=PRINT_VERBOSE)
@@ -6540,25 +6541,27 @@ CONTAINS
     !call print('Dimension of the Matrix : '//n_dimension, verbosity=PRINT_VERBOSE)
 
     allocate(s(n_dimension), u(n_dimension,n_dimension), vt(n_dimension,n_dimension))
+    allocate(iwork(8*n_dimension))
     lwork = -1
     allocate(work(1))
-    call DGESVD('A','A', n_dimension,n_dimension,in_matrix, n_dimension,s, u,n_dimension, vt,n_dimension, work, lwork, info)
+    call DGESDD('A', n_dimension,n_dimension,in_matrix,n_dimension, s, u,n_dimension, vt,n_dimension, work, lwork, iwork, info)
 
     lwork = work(1)
     deallocate(work)
 
     allocate(work(lwork))
-    call DGESVD('A','A', n_dimension,n_dimension,in_matrix, n_dimension,s, u,n_dimension, vt,n_dimension, work, lwork, info)
+    call DGESDD('A', n_dimension,n_dimension,in_matrix,n_dimension, s, u,n_dimension, vt,n_dimension, work, lwork, iwork, info)
     deallocate(work)
+    deallocate(iwork)
 
-    call print("DGESVD finished with exit code "//info, verbosity=PRINT_VERBOSE)
+    call print("DGESDD finished with exit code "//info, verbosity=PRINT_VERBOSE)
 
     if (info /= 0) then
       if (info < 0) then
         write(line,'(a,i0)')'SVD: Problem with argument ',-info
         call system_abort(line)
       else
-        call system_abort('SVD: DBDSQR (called from DGESVD) did not converge')
+        call system_abort('SVD: DBDSDC (called from DGESDD) did not converge')
       end if
     end if
 
