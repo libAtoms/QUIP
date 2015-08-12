@@ -10,15 +10,17 @@ program md_gid
   type(Potential)       :: pot
   type(Atoms) :: at1, at2
   type(DynamicalSystem) :: ds1, ds2
+  type(CInoutput) :: savexyz
 
   real(dp) :: p0, p_init, p, temp_init, temp, dt, deltaTemp, deltaBeta, &
      lnP0, lnP, beta0, beta, deltaV, deltaH, f0, f1, tau, tau_cell, cell_oscillation_time, &
      bulk_modulus_estimate1, bulk_modulus_estimate2
-  integer :: nTotal, nSteps, nCorrector, nSmooth
-  logical :: iso1, iso2, restart
+  integer :: nTotal, nSteps, nCorrector, nSmooth, nPrint
+  logical :: iso1, iso2, restart, has_trajectory_file
   character(STRING_LENGTH) :: at_file1, at_file2, param_file, init_args
   integer :: i, j
   real(dp), dimension(:,:), allocatable :: vol, kine, pote, enth, tp
+  character(STRING_LENGTH) :: trajectory_file
 
   call system_initialise(verbosity=PRINT_NORMAL, enable_timing=.false.)
 
@@ -30,7 +32,7 @@ program md_gid
   call param_register(params, 'p_init', PARAM_MANDATORY,p_init,"Initial pressure (GPa) at a coexistence point")
   call param_register(params, 'temp_init', PARAM_MANDATORY,temp_init,"Initial temperature at a coexistence point")
   call param_register(params, 'iso1', "false",iso1,"Allow only isotropic lattice deformation in phase 1")
-  call param_register(params, 'iso2', "false",iso1,"Allow only isotropic lattice deformation in phase 2")
+  call param_register(params, 'iso2', "false",iso2,"Allow only isotropic lattice deformation in phase 2")
   call param_register(params, 'tau', "100.0",tau,"Thermostat time constant")
   call param_register(params, 'tau_cell', "2000.0",tau_cell,"Barostat time constant")
   call param_register(params, 'cell_oscillation_time', "1000.0",cell_oscillation_time,"Cell vibration time period")
@@ -41,8 +43,10 @@ program md_gid
   call param_register(params, 'ncorrector', "6",ncorrector,"GD integration corrector steps")
   call param_register(params, 'ntotal', "15000",ntotal,"MD steps per GD integration iteration")
   call param_register(params, 'nsmooth', "5000",nSmooth,"Time constant (in steps) for averaging")
+  call param_register(params, 'nprint', "100",nPrint,"Status print")
   call param_register(params, 'dt', "1.0",dt,"MD time step")
   call param_register(params, 'deltatemp', "25",deltatemp,"temperature step in GD integration")
+  call param_register(params, 'trajectory_file', "",trajectory_file,"file to save trajectory along integration",has_value_target=has_trajectory_file)
 
   if (.not. param_read_args(params, check_mandatory = .true.)) then
      call print("Usage: md_gid ")
@@ -57,6 +61,8 @@ program md_gid
 
   call initialise(mpi_glob)
   call Potential_Filename_Initialise(pot, args_str=trim(init_args), param_filename=trim(param_file), mpi_obj=mpi_glob)
+
+  if(has_trajectory_file) call initialise(savexyz,trim(trajectory_file),action=OUTPUT,mpi=mpi_glob)
 
   p = p_init/GPA
   temp = temp_init
@@ -105,12 +111,14 @@ program md_gid
      call runMD(ds1, ds2, pot, temp,p,vol,kine,pote,nTotal)
      enth = kine + pote + p*vol
 
-     deltaV = expav(vol(1,:),dt*nSmooth) - expav(vol(2,:),dt*nSmooth)
-     deltaH = expav(enth(1,:),dt*nSmooth) - expav(enth(2,:),dt*nSmooth)
+     !deltaV = expav(vol(1,:),dt*nSmooth) - expav(vol(2,:),dt*nSmooth)
+     !deltaH = expav(enth(1,:),dt*nSmooth) - expav(enth(2,:),dt*nSmooth)
+     deltaV = runav(vol(1,:),nSmooth) - runav(vol(2,:),nSmooth)
+     deltaH = runav(enth(1,:),nSmooth) - runav(enth(2,:),nSmooth)
      
      !f0=-deltaH/(beta*p*deltaV)
      f0=-deltaH/(beta*deltaV)
-     print*, "delta in predictor", deltaV, deltaH, f0
+     call print("delta in predictor "//deltaV//"  "//deltaH//"  "//f0)
 
      temp = temp + deltaTemp
      beta=1.0_dp/(BOLTZMANN_K*temp)
@@ -120,26 +128,36 @@ program md_gid
      lnP = log(p)
      !lnP = lnP0+f0*deltaBeta
      !p = exp(lnP)
-     print*, "temperature", temp
-     print*, "pressure in predictor step", p*GPA, lnP
+     call print("temperature  "//temp)
+     call print("pressure in predictor step   "//p*GPA//"   "//lnP)
 
      do i = 1, nCorrector
         call runMD(ds1, ds2, pot,temp,p,vol,kine,pote,nTotal)
         enth = kine + pote + p*vol
 
-        deltaV = expav(vol(1,:),dt*nSmooth) - expav(vol(2,:),dt*nSmooth)
-        deltaH = expav(enth(1,:),dt*nSmooth) - expav(enth(2,:),dt*nSmooth)
+        !deltaV = expav(vol(1,:),dt*nSmooth) - expav(vol(2,:),dt*nSmooth)
+        !deltaH = expav(enth(1,:),dt*nSmooth) - expav(enth(2,:),dt*nSmooth)
+        deltaV = runav(vol(1,:),nSmooth) - runav(vol(2,:),nSmooth)
+        deltaH = runav(enth(1,:),nSmooth) - runav(enth(2,:),nSmooth)
 
         !f1=-deltaH/(beta*p*deltaV)
         f1=-deltaH/(beta*deltaV)
-        print*, "delta in corrector", i, deltaV, deltaH, f1
+        call print("delta in predictor "//i//"   "//deltaV//"  "//deltaH//"  "//f0)
         p = p0 + (f0+f1)*deltaBeta/2.0_dp
         lnP = log(p)
         !lnP = lnP0 + (f0+f1)*deltaBeta/2.0_dp
         !p = exp(lnP)
-        print*, "pressure in corrector step", p*GPA, lnP
+        call print("pressure in corrector step   "//p*GPA//"   "//lnP)
         tp(:,j) = (/temp,p*GPA/)
      enddo
+     if(has_trajectory_file) then
+        call set_value(ds1%atoms%params, 'temperature', "" // temp)
+        call set_value(ds2%atoms%params, 'temperature', "" // temp)
+        call set_value(ds1%atoms%params, 'pressure', "" // p)
+        call set_value(ds2%atoms%params, 'pressure', "" // p)
+        call write(ds1%atoms,savexyz,properties="species:pos:velo:travel:force")
+        call write(ds2%atoms,savexyz,properties="species:pos:velo:travel:force")
+     endif
   enddo
 
   call print("final coexistence (T,p)")
@@ -187,9 +205,18 @@ program md_gid
            vol(:,i) = (/cell_volume(ds1%atoms),cell_volume(ds2%atoms)/)
            kine(:,i) = (/[kinetic_energy(ds1),kinetic_energy(ds2)]/)
            pote(:,i) = (/energy1,energy2/)
+           if(mod(i,nPrint)==0) then
+              call ds_print_status(ds1,label="SYS1",epot=energy1,instantaneous=.true.,mpi_obj=mpi_glob)
+              call ds_print_status(ds2,label="SYS2",epot=energy2,instantaneous=.true.,mpi_obj=mpi_glob)
+           endif
         enddo
         call map_into_cell(ds1%atoms)
         call map_into_cell(ds2%atoms)
+
+        call set_value(ds1%atoms%params, 'Energy', "" // energy1)
+        call set_value(ds2%atoms%params, 'Energy', "" // energy2)
+        call set_value(ds1%atoms%params, 'Virial', "" // reshape(virial1,(/9/)) )
+        call set_value(ds2%atoms%params, 'Virial', "" // reshape(virial2,(/9/)) )
      endsubroutine runMD
 
      function expav(x,time)
@@ -211,5 +238,17 @@ program md_gid
 
         expav = ave
      endfunction expav
+
+     function runav(x,time)
+        real(dp), dimension(:), intent(in) :: x
+        integer, intent(in) :: time
+        real(dp) :: runav
+
+        integer :: n
+
+        n = min(size(x,1), time)
+        runav = sum(x(size(x,1)-n+1:)) / n
+
+     endfunction runav
 
 endprogram md_gid
