@@ -66,15 +66,16 @@ def calculator_callback_factory(calculator):
     return callback
 
 
-class Potential(_potential.Potential):
+from ase.calculators.calculator import Calculator, all_changes, all_properties
+
+
+class Potential(_potential.Potential, Calculator):
     __doc__ = update_doc_string(_potential.Potential.__doc__, r"""
 The :class:`Potential` class also implements the ASE
 :class:`ase.calculators.interface.Calculator` interface via the
 the :meth:`get_forces`, :meth:`get_stress`, :meth:`get_stresses`,
 :meth:`get_potential_energy`, :meth:`get_potential_energies`
-methods. This simplifies calculation since there is no need
-to set the cutoff or to call :meth:`~quippy.atoms.Atoms.calc_connect`,
-as this is done internally. The example above reduces to::
+methods. For example::
 
     atoms = diamond(5.44, 14)
     atoms.rattle(0.01)
@@ -104,8 +105,6 @@ the `calculator` argument to the :class:`Potential` constructor, e.g.::
    from ase.calculators.morse import MorsePotential
    pot = Potential(calculator=MorsePotential)
 
-`cutoff_skin` is used to set the :attr:`cutoff_skin` attribute.
-
 `atoms` if given, is used to set the calculator associated
 with `atoms` to the new :class:`Potential` instance, by calling
 :meth:'.Atoms.set_calculator`.
@@ -125,31 +124,25 @@ with `atoms` to the new :class:`Potential` instance, by calling
     array in :attr:`.Atoms.arrays` containing volumes for each atom.
 
 """,
-    signature='Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms, calculation_always_required])')
+    signature='Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, atoms, calculation_always_required])')
 
     callback_map = {}
 
+    implemented_properties = ['energy', 'energies', 'forces', 'stress', 'stresses',
+                              'numeric_forces', 'elastic_constants',
+                              'unrelaxed_elastic_constants']
+
     def __init__(self, init_args=None, pot1=None, pot2=None, param_str=None,
                  param_filename=None, bulk_scale=None, mpi_obj=None,
-                 callback=None, calculator=None, cutoff_skin=1.0, atoms=None,
-		 calculation_always_required=False,
+                 callback=None, calculator=None, atoms=None,
+                 calculation_always_required=False,
                  fpointer=None, finalise=True,
                  error=None, **kwargs):
 
-        self.atoms = None
-        self._prev_atoms = None
-        self.energy = None
-        self.energies = None
-        self.forces = None
-        self.stress = None
-        self.stresses = None
-        self.elastic_constants = None
-        self.unrelaxed_elastic_constants = None
-        self.numeric_forces = None
-        self._calc_args = {}
-        self._default_quantities = []
-        self.cutoff_skin = cutoff_skin
+        self._calc_args = {}        
+        self._default_properties = []
         self.calculation_always_required = calculation_always_required
+        Calculator.__init__(self, atoms=atoms)        
 
         if callback is not None or calculator is not None:
             if init_args is None:
@@ -199,10 +192,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
         
     __init__.__doc__ = _potential.Potential.__init__.__doc__
 
-    def todict(self):
-        return {}
 
-    
     def calc(self, at, energy=None, force=None, virial=None,
              local_energy=None, local_virial=None,
              args_str=None, error=None, **kwargs):
@@ -279,7 +269,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
         used to set the callback function. `callback` should be a Python
         function (or other callable, such as a bound method or class
         instance) which takes a single argument, of type
-        :class:`~quippy.atoms.Atoms`. Information about which quantities should be
+        :class:`~quippy.atoms.Atoms`. Information about which properties should be
         computed can be obtained from the `calc_energy`, `calc_local_e`,
         `calc_force`, and `calc_virial` keys in `at.params`. Results
         should be returned either as `at.params` entries (for energy and
@@ -305,91 +295,33 @@ with `atoms` to the new :class:`Potential` instance, by calling
         Potential.callback_map[str(id(self))] = callback
 
 
-    def wipe(self):
-        """
-        Mark all quantities as needing to be recalculated
-        """
-        self.energy = None
-        self.energies = None
-        self.forces = None
-        self.stress = None
-        self.stresses = None
-        self.numeric_forces = None
-        self.elastic_constants = None
-        self.unrelaxed_elastic_constants = None
+    def check_state(self, atoms, tol=1e-15):
+        if self.calculation_always_required:
+            return all_changes
+        return Calculator.check_state(self, atoms, tol)
+        
 
-
-    def update(self, atoms):
-        """
-        Set the :class:`~quippy.atoms.Atoms` object associated with this :class:`Potential` to `atoms`.
-
-        Called internally by :meth:`get_potential_energy`,
-        :meth:`get_forces`, etc.  Only a weak reference to `atoms` is
-        kept, to prevent circular references.  If `atoms` is not a
-        :class:`quippy.atoms.Atoms` instance, then a copy is made and a
-        warning will be printed.
-        """
+    def calculate(self, atoms, properties, system_changes):
+        Calculator.calculate(self, atoms, properties, system_changes)
+        
         # we will do the calculation in place, to minimise number of copies,
         # unless atoms is not a quippy Atoms
         if isinstance(atoms, Atoms):
-            self.atoms = weakref.proxy(atoms)
+            self.quippy_atoms = weakref.proxy(atoms)
         else:
             potlog.debug('Potential atoms is not quippy.Atoms instance, copy forced!')
-            self.atoms = Atoms(atoms)
+            self.quippy_atoms = Atoms(atoms)
 
-        # check if atoms has changed since last call
-	if not self.calculation_always_required:
-	    if self._prev_atoms is not None and self._prev_atoms.equivalent(self.atoms):
-		return
+        if properties is None:
+            properties = ['energy', 'forces', 'stress']
 
-        # Mark all quantities as needing to be recalculated
-        self.wipe()
+        # Add any default properties
+        properties = set(self.get_default_properties() + properties)
 
-        # do we need to reinitialise _prev_atoms?
-	if not self.calculation_always_required:
-	    if self._prev_atoms is None or len(self._prev_atoms) != len(self.atoms) or not self.atoms.connect.initialised:
-		self._prev_atoms = Atoms()
-		self._prev_atoms.copy_without_connect(self.atoms)
-		self._prev_atoms.add_property('orig_pos', self.atoms.pos)
-	    else:
-		# _prev_atoms is OK, update it in place
-		self._prev_atoms.z[...] = self.atoms.z
-		self._prev_atoms.pos[...] = self.atoms.pos
-		self._prev_atoms.lattice[...] = self.atoms.lattice
-
-    # Synonyms for `update` for compatibility with ASE calculator interface
-    def initialize(self, atoms):
-        self.update(atoms)
-
-    def set_atoms(self, atoms):
-        self.update(atoms)
-
-    def calculation_required(self, atoms, quantities):
-        self.update(atoms)
-        for quantity in quantities:
-            if getattr(self, quantity) is None:
-                return True
-        return False
-
-
-    def calculate(self, atoms, quantities=None):
-        """
-        Perform a calculation of `quantities` for `atoms` using this Potential.
-
-        Automatically determines if a new calculation is required or if previous
-        results are still appliciable (i.e. if the atoms haven't moved since last call)
-        Called internally by :meth:`get_potential_energy`, :meth:`get_forces`, etc.
-        """
-        if quantities is None:
-            quantities = ['energy', 'forces', 'stress']
-
-        # Add any default quantities
-        quantities = set(self.get_default_quantities() + quantities)
-
-        if len(quantities) == 0:
+        if len(properties) == 0:
             raise RuntimeError('Nothing to calculate')
 
-        if not self.calculation_required(atoms, quantities):
+        if not self.calculation_required(atoms, properties):
             return
 
         args_map = {
@@ -405,114 +337,84 @@ with `atoms` to the new :class:`Potential` instance, by calling
             'unrelaxed_elastic_constants': {}
             }
 
-        # list of quantities that require a call to Potential.calc()
-        calc_quantities = ['energy', 'energies', 'forces', 'numeric_forces', 'stress', 'stresses']
+        # list of properties that require a call to Potential.calc()
+        calc_properties = ['energy', 'energies', 'forces', 'numeric_forces', 'stress', 'stresses']
 
-        # list of other quantities we know how to calculate
-        other_quantities = ['elastic_constants', 'unrelaxed_elastic_constants']
+        # list of other properties we know how to calculate
+        other_properties = ['elastic_constants', 'unrelaxed_elastic_constants']
 
         calc_args = {}
         calc_required = False
-        for quantity in quantities:
-            if quantity in calc_quantities:
+        for property in properties:
+            if property in calc_properties:
                 calc_required = True
-                calc_args.update(args_map[quantity])
-            elif quantity not in other_quantities:
-                raise RuntimeError("Don't know how to calculate quantity '%s'" % quantity)
+                calc_args.update(args_map[property])
+            elif property not in other_properties:
+                raise RuntimeError("Don't know how to calculate property '%s'" % property)
 
         if calc_required:
-            self.calc(self.atoms, args_str=dict_to_args_str(calc_args))
+            self.calc(self.quippy_atoms, args_str=dict_to_args_str(calc_args))
 
-        if 'energy' in quantities:
-            self.energy = float(self.atoms.energy)
-        if 'energies' in quantities:
-            self.energies = self.atoms.local_energy.view(np.ndarray)
-        if 'forces' in quantities:
-            self.forces = self.atoms.force.view(np.ndarray).T
-        if 'numeric_forces' in quantities:
-            self.numeric_forces = self.atoms.numeric_force.view(np.ndarray).T
-        if 'stress' in quantities:
-            stress = -self.atoms.virial.view(np.ndarray)/self.atoms.get_volume()
+        if 'energy' in properties:
+            self.results['energy'] = float(self.quippy_atoms.energy)
+        if 'energies' in properties:
+            self.results['energies'] = self.quippy_atoms.local_energy.view(np.ndarray)
+        if 'forces' in properties:
+            self.results['forces'] = self.quippy_atoms.force.view(np.ndarray).T
+        if 'numeric_forces' in properties:
+            self.results['numeric_forces'] = self.quippy_atoms.numeric_force.view(np.ndarray).T
+        if 'stress' in properties:
+            stress = -self.quippy_atoms.virial.view(np.ndarray)/self.quippy_atoms.get_volume()
             # convert to 6-element array in Voigt order
-            self.stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
-                                    stress[1, 2], stress[0, 2], stress[0, 1]])
-        if 'stresses' in quantities:
-            lv = np.array(self.atoms.local_virial) # make a copy
-            vol_per_atom = self.get('vol_per_atom', self.atoms.get_volume()/len(atoms))
+            self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
+                                               stress[1, 2], stress[0, 2], stress[0, 1]])
+        if 'stresses' in properties:
+            lv = np.array(self.quippy_atoms.local_virial) # make a copy
+            vol_per_atom = self.get('vol_per_atom', self.quippy_atoms.get_volume()/len(atoms))
             if isinstance(vol_per_atom, basestring):
-                vol_per_atom = self.atoms.arrays[vol_per_atom]
-            self.stresses = -lv.T.reshape((len(atoms), 3, 3), order='F')/vol_per_atom
+                vol_per_atom = self.quippy_atoms.arrays[vol_per_atom]
+            self.results['stresses'] = -lv.T.reshape((len(atoms), 3, 3), order='F')/vol_per_atom
 
-        if 'elastic_constants' in quantities:
+        if 'elastic_constants' in properties:
             cij_dx = self.get('cij_dx', 1e-2)
             cij = fzeros((6,6))
-            self.calc_elastic_constants(self.atoms, fd=cij_dx,
+            self.calc_elastic_constants(self.quippy_atoms, fd=cij_dx,
                                         args_str=self.get_calc_args_str(),
                                         c=cij, relax_initial=False, return_relaxed=False)
             if not get_fortran_indexing():
                 cij = cij.view(np.ndarray)
-            self.elastic_constants = cij
+            self.results['elastic_constants'] = cij
 
-        if 'unrelaxed_elastic_constants' in quantities:
+        if 'unrelaxed_elastic_constants' in properties:
             cij_dx = self.get('cij_dx', 1e-2)
             c0ij = fzeros((6,6))
-            self.calc_elastic_constants(self.atoms, fd=cij_dx,
+            self.calc_elastic_constants(self.quippy_atoms, fd=cij_dx,
                                         args_str=self.get_calc_args_str(),
                                         c0=c0ij, relax_initial=False, return_relaxed=False)
             if not get_fortran_indexing():
                 c0ij = c0ij.view(np.ndarray)
-            self.unrelaxed_elastic_constants = c0ij
-
-
-    def get_potential_energy(self, atoms):
-        """
-        Return potential energy of `atoms` calculated with this Potential
-        """
-        self.calculate(atoms, ['energy'])
-        return self.energy
+            self.results['unrelaxed_elastic_constants'] = c0ij
 
 
     def get_potential_energies(self, atoms):
         """
         Return array of atomic energies calculated with this Potential
         """
-        self.calculate(atoms, ['energies'])
-        return self.energies.copy()
-
-
-    def get_forces(self, atoms):
-        """
-        Return forces on `atoms` calculated with this Potential
-        """
-        self.calculate(atoms, ['forces'])
-        return self.forces.copy()
+        return self.get_property('energies', atoms)
 
 
     def get_numeric_forces(self, atoms):
         """
         Return forces on `atoms` computed with finite differences of the energy
         """
-        self.calculate(atoms, ['numeric_forces'])
-        return self.numeric_forces.copy()
-
-
-    def get_stress(self, atoms):
-        """
-        Return stress tensor for `atoms` computed with this Potential
-
-        Result is a 6-element array in Voigt notation:
-           [sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy]
-        """
-        self.calculate(atoms, ['stress'])
-        return self.stress.copy()
+        return self.get_property('numeric_forces', atoms)
 
 
     def get_stresses(self, atoms):
         """
         Return the per-atoms virial stress tensors for `atoms` computed with this Potential
         """
-        self.calculate(atoms, ['stresses'])
-        return self.stresses.copy()
+        return self.get_property('stresses', atoms)
 
 
     def get_elastic_constants(self, atoms):
@@ -526,8 +428,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
         negative strains of magnitude the `cij_dx` entry in
         ``calc_args``.
         """
-        self.calculate(atoms, ['elastic_constants'])
-        return self.elastic_constants.copy()
+        return self.get_property('elastic_constants', atoms)
 
 
     def get_unrelaxed_elastic_constants(self, atoms):
@@ -541,18 +442,17 @@ with `atoms` to the new :class:`Potential` instance, by calling
         negative strains of magnitude the `cij_dx` entry in
         :attr:`calc_args`.
         """
-        self.calculate(atoms, ['unrelaxed_elastic_constants'])
-        return self.unrelaxed_elastic_constants.copy()
+        return self.get_property('unrelaxed_elastic_constants', atoms)
 
 
-    def get_default_quantities(self):
-        "Get the list of quantities to be calculated by default"
-        return self._default_quantities[:]
+    def get_default_properties(self):
+        "Get the list of properties to be calculated by default"
+        return self._default_properties[:]
 
 
-    def set_default_quantities(self, quantities):
-        "Set the list of quantities to be calculated by default"
-        self._default_quantities = quantities[:]
+    def set_default_properties(self, properties):
+        "Set the list of properties to be calculated by default"
+        self._default_properties = properties[:]
 
 
     def get(self, param, default=None):
@@ -574,11 +474,11 @@ with `atoms` to the new :class:`Potential` instance, by calling
         All calc_args are passed to :meth:`calc` whenever energies,
         forces or stresses need to be computed.
 
-        After updating the calc_args, :meth:`set` calls :meth:`wipe`
-        to mark all quantities as needing to be recaculated.
+        After updating the calc_args, :meth:`set` calls :meth:`reset`
+        to mark all properties as needing to be recaculated.
         """
         self._calc_args.update(kwargs)
-        self.wipe()
+        self.reset()
 
 
     def get_calc_args(self):
@@ -605,12 +505,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(potential)'] = Potential
 
-
-try:
-    from ase.optimize import Optimizer
-except ImportError:
-    Optimizer = object
-
+from ase.optimize.optimize import Optimizer
 
 class Minim(Optimizer):
     """
@@ -657,7 +552,7 @@ class Minim(Optimizer):
                  eps_guess=None,
                  fire_dt0=None, fire_dt_max=None,
                  external_pressure=None,
-                 use_precond=None, cutoff_skin=1.0):
+                 use_precond=None):
 
         calc = atoms.get_calculator()
         if calc is None:
@@ -692,7 +587,6 @@ class Minim(Optimizer):
         self.fire_dt_max = fire_dt_max
         self.external_pressure = external_pressure
         self.use_precond = use_precond
-        self.cutoff_skin = cutoff_skin
 
 
     def run(self, fmax=0.05, steps=100000000, convergence_tol=None):
@@ -765,13 +659,13 @@ class ForceMixingPotential(Potential):
     """
 
     def __init__(self, pot1, pot2, bulk_scale=None, mpi_obj=None,
-                 callback=None, calculator=None, cutoff_skin=1.0, atoms=None,
+                 callback=None, calculator=None, atoms=None,
                  qm_list=None, fpointer=None, finalise=True, error=None, **kwargs):
 
         args_str = 'ForceMixing'
         Potential.__init__(self, args_str,
                            pot1=pot1, pot2=pot2, bulk_scale=bulk_scale,
-                           mpi_obj=mpi_obj, cutoff_skin=cutoff_skin,
+                           mpi_obj=mpi_obj, 
                            atoms=atoms, fpointer=fpointer, finalise=finalise,
                            error=error)
         if qm_list is not None:

@@ -178,7 +178,7 @@ class CInOutputReader(object):
             raise AttributeError('Attribute %s not found' % name)
 
 
-AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
+AtomsReaders['extxyz'] = AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
 @atoms_reader('stdin')
 def CInOutputStdinReader(source='stdin', format=None):
@@ -211,9 +211,8 @@ class CInOutputWriter(object):
     def close(self):
         self.dest.close()
 
-AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
+AtomsWriters['extxyz'] = AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
 
-    
 
 class CInOutputStringReader(CInOutputReader):
     def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, no_compute_index=False,
