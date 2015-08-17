@@ -79,14 +79,15 @@ calc_args_str = parse_params(args_str) #sits in util module, turns key=val pairs
 print("Using calc args: {!s:}".format(calc_args_str))
 
 stem = os.path.basename(xyzfile)
-# os.path.splitext() does this as well - MV
-if stem[-4:] == '.xyz': # Remove extension
-   stem = stem[:-4]
+stem_split = os.path.splitext(stem)
+if stem_split[1] == '.xyz': # Remove extension
+   stem = stem_split[0]
 logfile=stem+".log.xyz"
 
 # remove old input file, if it's there
-if os.path.exists(stem+'/'+stem):
-   os.remove(stem+'/'+stem)
+old_input_fname = os.path.join(stem, stem)
+if os.path.isfile(old_input_fname):
+   os.remove(old_input_fname)
 
 #----------------------------------------------------------------
 # Parameters
@@ -151,7 +152,7 @@ BATCH_QUEUE=False
 
 #----------------------------------------------------------------
 
-if MOLPRO_TEMPLATE[-4:] != '.xml':
+if os.path.splitext(MOLPRO_TEMPLATE)[1] != '.xml':
     # Read template input file
    try:
       datafile = molpro.MolproDatafile(MOLPRO_TEMPLATE)
@@ -173,22 +174,22 @@ if os.path.exists(outfile):
    os.remove(outfile)
 
 
-path = WORKING_DIR+'/'+stem
-# ...or use os.path.join() - MV
+work_dir = os.path.join(WORKING_DIR, stem)
 
 # Make working directory if necessary
-if not os.path.isdir(path):
-   os.mkdir(path)
-os.chdir(path)
+if not os.path.isdir(work_dir):
+   os.mkdir(work_dir)
+os.chdir(work_dir)
 
 if not BATCH_READ:
    # Load up old cluster, if it's there
-   if os.path.exists(stem+'.xyz.old'):
-      log.info('found old cluster in file %s' % stem+'.xyz.old')
+   old_cluster_fname = stem + '.xyz.old'
+   if os.path.exists(old_cluster_fname):
+      log.info('found old cluster in file %s' % old_cluster_fname)
       try:
-         old_cluster = Atoms(stem+'.xyz.old', format='xyz')
+         old_cluster = Atoms(old_cluster_fname, format='xyz')
       except IOError:
-         die('error opening old cluster file %s' % stem+'.xyz.old')
+         die('error opening old cluster file %s' % old_cluster_fname)
 
       if (cluster.n == old_cluster.n):
          log.info('RMS position difference is %.3f A' % rms_diff(cluster.pos, old_cluster.pos))
@@ -207,7 +208,7 @@ if not BATCH_READ:
       if 'MEMORY' in datafile._keys:
          temp['MEMORY'] =datafile['MEMORY']
       temp['GEOM'] = []
-      temp['GEOM'].append('='+geom)
+      temp['GEOM'].append('=' + geom)
       for key in datafile._keys:
          if key != 'MEMORY':
             temp[key]=datafile[key]
@@ -239,14 +240,16 @@ if not BATCH_READ and not BATCH_QUEUE:
       log.error('molpro run failed')
 
 # parse the XML output for energy, forces
-cluster = molpro.read_xml_output(stem+'.xml', energy_from=ENERGY_FROM, extract_forces=extract_forces, datafile=datafile, cluster=cluster)
+cluster = molpro.read_xml_output(
+    stem + '.xml', energy_from=ENERGY_FROM, extract_forces=extract_forces,
+    datafile=datafile, cluster=cluster)
 
-oldxyzfile=stem+'.xyz.old'
+oldxyzfile = stem + '.xyz.old'
 # Save cluster for comparison with next time
 cluster.write(oldxyzfile, format='xyz')
 # Also append it to the log file
-logfile=open(logfile,'a')
-oldxyzfile=open(oldxyzfile,'r')
+logfile=open(logfile, 'a')
+oldxyzfile=open(oldxyzfile, 'r')
 logfile.writelines(oldxyzfile.readlines())
 
 # Finally change back to original working directory and write output file
