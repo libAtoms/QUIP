@@ -386,9 +386,9 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
                 while my_energy in cluster.params.iterkeys():
                     i_en+=1
                     my_energy='_'.join([energy_param_name,str(i_en)])
-                cluster.params[my_energy] = float(energy_param)*27.21138386
+                cluster.params[my_energy] = float(energy_param) * HARTREE
                 if prop_method == energy_from:
-                    cluster.params['Energy']=float(energy_param)*27.21138386
+                    cluster.params['Energy']=float(energy_param) * HARTREE
                     energy_found=True
             elif extract_dipole and prop_name=='Dipole moment':
                 dipole_param_name="_".join([prop_method,prop_name])
@@ -415,7 +415,8 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
                 force_matrix.remove([])
             except ValueError:
                 break
-        force_matrix = [[(-27.2113961/0.529177249)*float(j) for j in i] for i in force_matrix] # check this negative sign
+        force_matrix = [[(-1.0 * HARTREE / BOHR) * float(j) for j in i]
+                        for i in force_matrix]
        
         cluster.force[:] =farray(force_matrix).T
 
@@ -429,7 +430,8 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
                         force_matrix.remove([])
                     except ValueError:
                         break
-                force_matrix = [[(-27.2113961/0.529177249)*float(j) for j in i] for i in force_matrix]
+                force_matrix = [[(-1.0 * HARTREE / BOHR) * float(j) for j in i]
+                                for i in force_matrix]
                 cluster.add_property(my_force,farray(force_matrix).T)
 
     return cluster
