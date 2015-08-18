@@ -1240,7 +1240,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call print("minim relax w.r.t. both n_iter " // n_iter, PRINT_VERBOSE)
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
-    call calc_connect(am%minim_at)
+    if(am%minim_at%cutoff > 0.0_dp) then
+       call calc_connect(am%minim_at)
+    end if
     n_iter_tot = n_iter
     done = .true.
     deallocate(am%last_connect_x)
@@ -1272,8 +1274,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     if(at%cutoff < cutoff(this)) call set_cutoff(at,cutoff(this))
 
-    call calc_connect(at)
-
+    if(at%cutoff > 0.0_dp) then
+       call calc_connect(at)
+    end if
+    
     allocate(tmp_local_virial(9,at%N), local_virial(3,3,at%N), local_virial_fd(3,3,at%N), &
        local_energy_p(at%N), local_energy_m(at%N), pos0(3,at%N))
 
@@ -1295,16 +1299,22 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
           do alpha = 1, 3
              at%pos(alpha,i) = pos0(alpha,i) + dx
-             call calc_connect(at)
+             if(at%cutoff > 0.0_dp) then
+                call calc_connect(at)
+             end if
              call calc(this,at,local_energy=local_energy_p,args_str=args_str)
 
              at%pos(alpha,i) = pos0(alpha,i) - dx
-             call calc_connect(at)
+             if(at%cutoff > 0.0_dp) then
+                call calc_connect(at)
+             end if
              call calc(this,at,local_energy=local_energy_m,args_str=args_str)
 
              at%pos(alpha,i) = pos0(alpha,i) 
-             call calc_connect(at)
-
+             if(at%cutoff > 0.0_dp) then
+                call calc_connect(at)
+             end if
+             
              do n = 1, n_neighbours(at,i)
                 k = neighbour(at,i,n,distance = r_ik, diff = diff_ik)
 
@@ -1605,7 +1615,9 @@ end subroutine undo_travel
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
       call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
         "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-      call calc_connect(am%minim_at)
+      if(am%minim_at%cutoff > 0.0_dp) then
+         call calc_connect(am%minim_at)
+      end if
       am%last_connect_x = x
     else
       call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
@@ -1682,7 +1694,9 @@ end subroutine undo_travel
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
       call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
         "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-      call calc_connect(am%minim_at)
+     if(am%minim_at%cutoff > 0.0_dp) then
+        call calc_connect(am%minim_at)
+     end if
       am%last_connect_x = x
     else
       call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
@@ -1807,7 +1821,9 @@ end subroutine undo_travel
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
       call print("apply_precond_func: Do calc_connect, atoms moved " // max_atom_rij_change // "*1.1 >= buffer " // &
         (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-      call calc_connect(am%minim_at)
+      if(am%minim_at%cutoff > 0.0_dp) then
+         call calc_connect(am%minim_at)
+      end if
       am%last_connect_x = x
     else
       call print("apply_precond_func: Do calc_dists, atoms moved " // max_atom_rij_change // " *1.1 < buffer " // &
@@ -1918,7 +1934,9 @@ end subroutine undo_travel
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_pot)) then
       call print("both_func: Do calc_connect, atoms moved " // max_atom_rij_change // "*1.1 >= buffer " // &
         (am%minim_at%cutoff - cutoff(am%minim_pot)), PRINT_NERD)
-      call calc_connect(am%minim_at)
+     if(am%minim_at%cutoff > 0.0_dp) then
+        call calc_connect(am%minim_at)
+     end if
       am%last_connect_x = x
     else
       call print("both_func: Do calc_dists, atoms moved " // max_atom_rij_change // " *1.1 < buffer " // &
@@ -2295,7 +2313,7 @@ end subroutine pack_pos_dg
 
        if (my_hook_interval > 0 .and. mod(n,my_hook_interval) == 0) call hook()
        if (present(trajectory) .and. my_write_interval > 0 .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
-       if (cutoff(pot) > 0.0_dp) call calc_connect(this%atoms)
+       if (cutoff(pot) > 0.0_dp .and. this%atoms%cutoff > 0.0_dp) call calc_connect(this%atoms)
     end do
 
   end subroutine DynamicalSystem_run
