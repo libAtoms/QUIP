@@ -54,7 +54,7 @@
 module Potential_simple_module
 
   use error_module
-  use system_module, only : dp, inoutput, PRINT_VERBOSE, PRINT_NERD, PRINT_ALWAYS, PRINT_ANAL, current_verbosity, INPUT, optional_default, parse_string
+  use system_module, only : dp, inoutput, PRINT_VERBOSE, PRINT_NERD, PRINT_ALWAYS, PRINT_ANAL, current_verbosity, INPUT, optional_default, parse_string, verbosity_push, verbosity_pop
   use extendable_str_module
   use dictionary_module
   use paramreader_module
@@ -1262,6 +1262,7 @@ contains
 
           if (len_trim(calc_energy) /= 0) then
              call set_value(at%params, trim(calc_energy), energy)
+             call print("Setting parameter `"//trim(calc_energy)//"' to "//energy, PRINT_VERBOSE)
           end if
           if (len_trim(calc_virial) /= 0) then
              call set_value(at%params, trim(calc_virial), virial)
@@ -1385,6 +1386,8 @@ contains
           new_args_str = write_string(params, real_format='f16.8')
           call finalise(params)
 
+          call print("Virial finite difference calculation: new_args_str=`"//new_args_str//"'", PRINT_VERBOSE)
+          
           allocate(allpos_save(3,at%N))
           allpos_save = at%pos
           lat_save = at%lattice
@@ -1397,7 +1400,13 @@ contains
                 if(i /= j) deform(j,i) = deform(j,i) + virial_fd_delta
                 call set_lattice(at, matmul(deform,lat_save), scale_positions=.true.)
                 call calc_dists(at)
-                call calc(this, at, args_str=new_args_str, error=error)
+!                call verbosity_push(PRINT_ANAL)
+!                call print(at)
+!                call verbosity_pop()
+                 call calc(this, at, args_str=new_args_str, error=error)
+!                call verbosity_push(PRINT_ANAL)
+!                call print(at)
+!                call verbosity_pop()
                 call get_param_value(at, "fd_energy", e_plus, error=error)
                 PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd virial failed to get energy property fd_energy", error)
                 
@@ -1417,8 +1426,10 @@ contains
           call set_value(at%params, trim(calc_virial), virial)
           at%pos = allpos_save
           call set_lattice(at, lat_save, scale_positions=.false.)
+          call remove_value(at%params, "fd_energy")
           call calc_dists(at)
           deallocate(allpos_save)
+          call print("Done with finite difference virial calculation", PRINT_VERBOSE)
        end if
     end if
 
