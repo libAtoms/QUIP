@@ -77,7 +77,7 @@ implicit none
   character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file, dimer_at_file
   integer relax_iter, relax_print_interval
-  real(dp) :: relax_tol, relax_eps
+  real(dp) :: relax_tol, relax_eps, relax_rattle
   type(CInOutput) :: relax_io
   type(CInOutput) :: infile
   real(dp) :: absorption_polarization_in(6)
@@ -179,6 +179,7 @@ implicit none
   call param_register(cli_params, 'relax_iter', '1000', relax_iter, help_string="max number of iterations for relaxation")
   call param_register(cli_params, 'relax_tol', '0.001', relax_tol, help_string="tolerance for convergence of relaxation")
   call param_register(cli_params, 'relax_eps', '0.0001', relax_eps, help_string="estimate of energy reduction for first step of relaxation")
+  call param_register(cli_params, 'relax_rattle', '0.0', relax_rattle, help_string="rattle the atomic positions with a uniform random variate of this magnitude before relaxing")
   call param_register(cli_params, 'relax_print_interval', '1', relax_print_interval, help_string="Frequency for printing trajectory")
   call param_register(cli_params, 'init_args', '', init_args, help_string="string arguments for initializing potential")
   call param_register(cli_params, 'bulk_scale', '', bulk_scale_file, help_string="optional bulk structure for calculating space and energy rescaling", has_value_target=has_bulk_scale)
@@ -390,18 +391,24 @@ implicit none
 
      if (do_relax) then
 	did_anything = .true.
-	do_calc = .true.
-	call set_param_value(at, "Minim_Hydrostatic_Strain", relax_hydrostatic_strain)
+        do_calc = .true.
+        call set_param_value(at, "Minim_Hydrostatic_Strain", relax_hydrostatic_strain)
 	! call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
 	call set_param_value(at, "Minim_Lattice_Fix", reshape(relax_lattice_fix, (/ 3, 3 /)) )
-	if (len_trim(pre_relax_calc_args) > 0) then
+        if(relax_rattle > 0.0) then
+           call randomise(at%pos, relax_rattle)
+           if(do_V) then
+              call randomise(at%lattice, relax_rattle)
+           end if
+        end if
+        if (len_trim(pre_relax_calc_args) > 0) then
 	   extra_calc_args = ""
 	   if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
 	   if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
 	   if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
            if (do_local) then
               if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
-              if (do_v) extra_calc_args = trim(extra_calc_args)//" local_virial"
+              if (do_V) extra_calc_args = trim(extra_calc_args)//" local_virial"
            endif
 	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
 	   HANDLE_ERROR(error)
