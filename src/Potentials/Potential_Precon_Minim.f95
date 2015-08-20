@@ -86,7 +86,7 @@ module Potential_Precon_Minim_module
     
 
     call set_cutoff_minimum(at, this%cutoff)
-    call calc_connect(at)
+    if(at%cutoff > 0.0_dp) call calc_connect(at)
 
     if (this%multI .eqv. .true.) then
       allocate(this%preconcoeffs(nneigh+1,at%N,1))
@@ -155,7 +155,7 @@ module Potential_Precon_Minim_module
     call atoms_repoint(am%minim_at)    
     call set_cutoff_minimum(am%minim_at, this%cutoff)
     
-    call calc_connect(am%minim_at,did_rebuild=did_rebuild)
+    if(am%minim_at%cutoff > 0.0_dp) call calc_connect(am%minim_at,did_rebuild=did_rebuild)
     if (did_rebuild .eqv. .true.) then    
       call print("Connectivity rebuilt by preconditioner")
       am%connectivity_rebuilt = .true.
@@ -514,7 +514,7 @@ module Potential_Precon_Minim_module
 
     use_method = trim(method)
 
-    call calc_connect(at)
+    if(at%cutoff > 0.0_dp) call calc_connect(at)
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
 
@@ -607,7 +607,7 @@ module Potential_Precon_Minim_module
     
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
-    call calc_connect(am%minim_at)
+    if(am%minim_at%cutoff > 0.0_dp) call calc_connect(am%minim_at)
     n_iter_tot = n_iter
     done = .true.
     deallocate(am%last_connect_x)
@@ -744,7 +744,7 @@ module Potential_Precon_Minim_module
     my_number_density = optional_default(0.01_dp,number_density)
 
 
-    call calc_connect(at)
+    if(at%cutoff > 0.0_dp) call calc_connect(at)
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
 
@@ -840,7 +840,7 @@ module Potential_Precon_Minim_module
     
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
-    call calc_connect(am%minim_at)
+    if(am%minim_at%cutoff > 0.0_dp ) call calc_connect(am%minim_at)
     n_iter_tot = n_iter
     done = .true.
     deallocate(am%last_connect_x)
@@ -1120,7 +1120,7 @@ module Potential_Precon_Minim_module
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
-    call calc_connect(am%minim_at,did_rebuild=did_rebuild)
+    if(am%minim_at%cutoff > 0.0_dp) call calc_connect(am%minim_at,did_rebuild=did_rebuild)
     am%last_connect_x = x
 
     if (did_rebuild .eqv. .true.) then
