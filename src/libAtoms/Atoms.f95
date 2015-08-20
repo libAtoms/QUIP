@@ -881,6 +881,8 @@ contains
       
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
+         call verbosity_push(PRINT_ANAL)
+         call print(this)
 	 RAISE_ERROR("atoms_get_param_value failed to get real value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_real
