@@ -76,8 +76,10 @@
 <span class="sd">object.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">numbers</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
@@ -85,7 +87,7 @@
 <span class="kn">from</span> <span class="nn">ase.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
 <span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">chemical_symbols</span><span class="p">,</span> <span class="n">atomic_masses</span>
 <span class="kn">from</span> <span class="nn">ase.utils</span> <span class="kn">import</span> <span class="nb">basestring</span>
-<span class="kn">from</span> <span class="nn">ase.utils.geometry</span> <span class="kn">import</span> <span class="n">wrap_positions</span>
+<span class="kn">from</span> <span class="nn">ase.utils.geometry</span> <span class="kn">import</span> <span class="n">wrap_positions</span><span class="p">,</span> <span class="n">find_mic</span>
 
 
 <span class="k">class</span> <span class="nc">Atoms</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -240,6 +242,8 @@
                 <span class="n">constraint</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">calculator</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">calculator</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -280,13 +284,13 @@
         
         <span class="bp">self</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">momenta</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_masses</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_initial_magnetic_moments</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">magmoms</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_initial_charges</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">charges</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">pbc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">pbc</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_pbc</span><span class="p">(</span><span class="n">pbc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">momenta</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
@@ -684,15 +688,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Atoms.get_calculation_done"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_calculation_done">[docs]</a>    <span class="k">def</span> <span class="nf">get_calculation_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Let the calculator calculate its thing,</span>
-<span class="sd">           using the current input.</span>
-<span class="sd">           &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Atoms object has no calculator.&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-</div>
 <div class="viewcode-block" id="Atoms.get_potential_energy"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_potential_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_consistent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                              <span class="n">apply_constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate potential energy.</span>
@@ -820,7 +815,6 @@
 </div>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a copy.&quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">copy</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
 
         <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span> <span class="o">=</span> <span class="p">{}</span>
@@ -924,7 +918,7 @@
 <span class="sd">        the indexing in the subset returned.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
             <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">natoms</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">natoms</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;Index out of range.&#39;</span><span class="p">)</span>
@@ -949,7 +943,7 @@
         <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">FixConstraint</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">con</span><span class="o">.</span><span class="n">index_shuffle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">con</span><span class="o">.</span><span class="n">index_shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
                     <span class="n">condel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">condel</span><span class="p">:</span>
@@ -1414,43 +1408,7 @@
         <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">positions</span> <span class="o">+</span>
                            <span class="n">rs</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">stdev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-        </div>
-    <span class="k">def</span> <span class="nf">_mic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
-        <span class="n">D_len</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Di</span><span class="p">)</span> <span class="k">for</span> <span class="n">Di</span> <span class="ow">in</span> <span class="n">D</span><span class="p">)</span>
-
-        <span class="n">longest</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">Di_len</span> <span class="ow">in</span> <span class="n">D_len</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">Di_len</span> <span class="o">&gt;</span> <span class="n">longest</span><span class="p">:</span>
-                <span class="n">longest</span> <span class="o">=</span> <span class="n">Di_len</span>
-
-        <span class="n">normal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-            <span class="n">normal</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span><span class="p">])</span>
-            <span class="n">normal</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">normal</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-            <span class="n">vert</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">normal</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span><span class="p">]))</span>
-            <span class="n">n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">longest</span> <span class="o">/</span> <span class="n">vert</span><span class="p">))</span>
-        <span class="n">n</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span>
-
-        <span class="n">shortest_len</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">D_len</span><span class="p">)</span>
-        <span class="n">shortest</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">na</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">nb</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                    <span class="n">nc</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                    <span class="n">D_new</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">na</span> <span class="o">+</span> <span class="n">nb</span> <span class="o">+</span> <span class="n">nc</span>
-                    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">Di_new</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">D_new</span><span class="p">):</span>
-                        <span class="n">Di_new_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Di_new</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">Di_new_len</span> <span class="o">&lt;</span> <span class="n">shortest_len</span><span class="p">[</span><span class="n">m</span><span class="p">]:</span>
-                            <span class="n">shortest</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">Di_new</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                            <span class="n">shortest_len</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">Di_new_len</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shortest</span><span class="p">)</span>
-
+</div>
 <div class="viewcode-block" id="Atoms.get_distance"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">vector</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return distance between two atoms.</span>
 
@@ -1459,12 +1417,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span>
-        <span class="n">D</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]])</span>
         <span class="k">if</span> <span class="n">mic</span><span class="p">:</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mic</span><span class="p">((</span><span class="n">D</span><span class="p">,))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">D</span><span class="p">,</span> <span class="n">D_len</span> <span class="o">=</span> <span class="n">find_mic</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">D_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())])</span>
         <span class="k">if</span> <span class="n">vector</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">D</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">D_len</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_distances"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_distances">[docs]</a>    <span class="k">def</span> <span class="nf">get_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">vector</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return distances of atom No.i with a list of atoms.</span>
@@ -1476,10 +1437,12 @@
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span>
         <span class="n">D</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">mic</span><span class="p">:</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mic</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+            <span class="n">D</span><span class="p">,</span> <span class="n">D_len</span> <span class="o">=</span> <span class="n">find_mic</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">D_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">vector</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">D</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">D_len</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_all_distances"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_all_distances">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return distances of all of the atoms with all of the atoms.</span>
@@ -1490,16 +1453,21 @@
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span>
 
         <span class="n">D</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
-            <span class="n">D</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">R</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">D</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">mic</span><span class="p">:</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mic</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+            <span class="n">D</span><span class="p">,</span> <span class="n">D_len</span> <span class="o">=</span> <span class="n">find_mic</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">D_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
-        <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">results</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">results</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">D_len</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">start</span> <span class="o">+</span> <span class="n">L</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">start</span> <span class="o">+=</span> <span class="n">L</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">results</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">T</span>
 </div>
 <div class="viewcode-block" id="Atoms.set_distance"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_distance">[docs]</a>    <span class="k">def</span> <span class="nf">set_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">fix</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the distance between two atoms.</span>
@@ -1510,12 +1478,15 @@
 <span class="sd">        atom and *fix=0.5* (default) to fix the center of the bond.&quot;&quot;&quot;</span>
 
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span>
-        <span class="n">D</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]])</span>
+
         <span class="k">if</span> <span class="n">mic</span><span class="p">:</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mic</span><span class="p">((</span><span class="n">D</span><span class="p">,))[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">distance</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-        <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">fix</span><span class="p">)</span> <span class="o">*</span> <span class="n">D</span>
-        <span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fix</span><span class="p">))</span> <span class="o">*</span> <span class="n">D</span>
+            <span class="n">D</span><span class="p">,</span> <span class="n">D_len</span> <span class="o">=</span> <span class="n">find_mic</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">D_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">distance</span> <span class="o">/</span> <span class="n">D_len</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">fix</span><span class="p">)</span> <span class="o">*</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fix</span><span class="p">))</span> <span class="o">*</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_scaled_positions"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_scaled_positions">[docs]</a>    <span class="k">def</span> <span class="nf">get_scaled_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get positions relative to unit cell.</span>
@@ -1798,7 +1769,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Aug 21, 2015.
+      Last updated on Aug 22, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
