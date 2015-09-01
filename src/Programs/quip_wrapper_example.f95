@@ -26,11 +26,15 @@ program quip_wrapper_example
   coord(1,5) = -8.188371d0; coord(2,5) = -5.684074d0; coord(3,5) = -0.942021d0;
   coord(1,6) = -8.927810d0; coord(2,6) = -6.879853d0; coord(3,6) = -0.621913d0;
 
-  args_str="IP GAP label=GAP_2010_9_18_60_1_34_16_996"
+  args_str="IP PartridgeSchwenke force_using_fd"
   args_str_length = len_trim(args_str)
 
-  call quip_wrapper(n,lattice,symbol,coord,trim(args_str),args_str_length,energy,force,virial,.true.,.true.,.true.)
-
+  
+  call quip_wrapper(n,lattice,symbol,coord,args_str,args_str_length,energy,force,virial,.true.,.true.,.false.)
+  
+  
   print*,'Energy = ', energy
-
+  print*, "forces:"
+  print*, force
+  
 endprogram quip_wrapper_example
