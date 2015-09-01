@@ -39,7 +39,7 @@
 
 module quip_unified_wrapper_module
 
-use system_module, only : dp, print, system_initialise, system_abort, PRINT_NORMAL, PRINT_SILENT, verbosity_push, &
+use system_module, only : dp, print, system_initialise, system_abort, PRINT_ANAL, PRINT_VERBOSE, PRINT_NORMAL, PRINT_SILENT, verbosity_push, &
    verbosity_pop, optional_default
 use dictionary_module, only : dictionary, STRING_LENGTH
 use periodictable_module, only : atomic_number_from_symbol
@@ -126,8 +126,7 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
      at%pos = matmul(at%lattice,frac_pos)
   endif
 
-  call set_cutoff(at,cutoff(pot)+0.01_dp)
-  call calc_connect(at)
+  if(at%cutoff > 0) call calc_connect(at)
 
   use_calc_args = trim(calc_args_str)
   use_do_energy = optional_default(present(energy), do_energy)
@@ -141,7 +140,7 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   if(use_do_virial) use_calc_args = trim(use_calc_args)//" virial=quip_wrapper_virial "
 
   call calc(pot,at,args_str=trim(use_calc_args))
-
+  
   if(use_do_energy) call get_param_value(at, "quip_wrapper_energy", energy)
   if(use_do_virial) call get_param_value(at, "quip_wrapper_virial", virial)
   if(use_do_force) then
@@ -175,7 +174,7 @@ subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,
 
   call quip_unified_wrapper(N=N,lattice=lattice,symbol=symbol,pos=pos,init_args_str=args_str,init_args_str_len=args_str_len, &
                             energy=energy,force=force,virial=virial,do_energy=do_energy,do_force=do_force,do_virial=do_virial, &
-                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="",calc_args_str_len=0)
+                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="force_using_fd",calc_args_str_len=14)
 
 
 endsubroutine quip_wrapper
