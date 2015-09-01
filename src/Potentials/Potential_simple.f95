@@ -1279,13 +1279,15 @@ contains
           call read_string(params, my_args_str)
           call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
           call remove_value(params, 'force_using_fd')
-          call remove_value(params, trim(calc_force))
-          call remove_value(params, trim(calc_energy))
-          call remove_value(params, trim(calc_local_energy))
-          call remove_value(params, trim(calc_virial))
+          call remove_value(params, 'force')
+          call remove_value(params, 'energy')
+          call remove_value(params, 'local_energy')
+          call remove_value(params, 'virial')
 	  call set_value(params, "energy", "fd_energy")
           new_args_str = write_string(params, real_format='f16.8')
           call finalise(params)
+          call print("calc_force="//trim(calc_force), PRINT_ANAL)
+          call print("New_args_str: "//new_args_str, PRINT_ANAL)
 
 
           if(use_ridders) then
@@ -1295,13 +1297,13 @@ contains
                    ridders_hh = force_fd_delta
 
                    at%pos(k,i) = pos_save + ridders_hh
-                   call calc_dists(at)
+                   if(at%cutoff > 0) call calc_dists(at)
                    call calc(this, at, args_str=new_args_str, error=error)
                    call get_param_value(at, "fd_energy", e_plus, error=error)
                    PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
 
                    at%pos(k,i) = pos_save - ridders_hh
-                   call calc_dists(at)
+                   if(at%cutoff > 0) call calc_dists(at)
                    call calc(this, at, args_str=new_args_str, error=error)
                    call get_param_value(at, "fd_energy", e_minus, error=error)
                    PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
@@ -1313,13 +1315,13 @@ contains
                       ridders_hh = ridders_hh / ridders_con
 
                       at%pos(k,i) = pos_save + ridders_hh
-                      call calc_dists(at)
+                      if(at%cutoff > 0) call calc_dists(at)
                       call calc(this, at, args_str=new_args_str, error=error)
                       call get_param_value(at, "fd_energy", e_plus, error=error)
                       PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
 
                       at%pos(k,i) = pos_save - ridders_hh
-                      call calc_dists(at)
+                      if(at%cutoff > 0) call calc_dists(at)
                       call calc(this, at, args_str=new_args_str, error=error)
                       call get_param_value(at, "fd_energy", e_minus, error=error)
                       PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
@@ -1351,17 +1353,17 @@ contains
                 do k=1,3
                    pos_save = at%pos(k,i)
                    at%pos(k,i) = pos_save + force_fd_delta
-                   call calc_dists(at)
+                   if(at%cutoff > 0) call calc_dists(at)
                    call calc(this, at, args_str=new_args_str, error=error)
                    call get_param_value(at, "fd_energy", e_plus, error=error)
                    PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
                    at%pos(k,i) = pos_save - force_fd_delta
-                   call calc_dists(at)
+                   if(at%cutoff > 0) call calc_dists(at)
                    call calc(this, at, args_str=new_args_str, error=error)
                    call get_param_value(at, "fd_energy", e_minus, error=error)
                    PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd forces failed to get energy property fd_energy", error)
                    at%pos(k,i) = pos_save
-                   call calc_dists(at)
+                   if(at%cutoff > 0) call calc_dists(at)
                    at_force_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*force_fd_delta) ! force is -ve gradient
                 end do
              end do
@@ -1378,10 +1380,10 @@ contains
           call read_string(params, my_args_str)
           call set_value(params, 'run_suffix', run_suffix) ! ensure that run_suffix doesn't have value T_NONE
           call remove_value(params, 'virial_using_fd')
-          call remove_value(params, trim(calc_force))
-          call remove_value(params, trim(calc_energy))
-          call remove_value(params, trim(calc_local_energy))
-          call remove_value(params, trim(calc_virial))
+          call remove_value(params, 'force')
+          call remove_value(params, 'energy')
+          call remove_value(params, 'local_energy')
+          call remove_value(params, 'virial')
           call set_value(params, "energy", "fd_energy")
           new_args_str = write_string(params, real_format='f16.8')
           call finalise(params)
@@ -1399,7 +1401,7 @@ contains
                 deform(i,j) = deform(i,j) + virial_fd_delta
                 if(i /= j) deform(j,i) = deform(j,i) + virial_fd_delta
                 call set_lattice(at, matmul(deform,lat_save), scale_positions=.true.)
-                call calc_dists(at)
+                if(at%cutoff > 0) call calc_dists(at)
 !                call verbosity_push(PRINT_ANAL)
 !                call print(at)
 !                call verbosity_pop()
@@ -1415,7 +1417,7 @@ contains
                 deform(i,j) = deform(i,j) - virial_fd_delta
                 if(i /= j) deform(j,i) = deform(j,i) - virial_fd_delta
                 call set_lattice(at, matmul(deform,lat_save), scale_positions=.true.)
-                call calc_dists(at)
+                if(at%cutoff > 0) call calc_dists(at)
                 call calc(this, at, args_str=new_args_str, error=error)
                 call get_param_value(at, "fd_energy", e_minus, error=error)
                 PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd virial failed to get energy property fd_energy", error)
@@ -1427,7 +1429,7 @@ contains
           at%pos = allpos_save
           call set_lattice(at, lat_save, scale_positions=.false.)
           call remove_value(at%params, "fd_energy")
-          call calc_dists(at)
+          if(at%cutoff > 0) call calc_dists(at)
           deallocate(allpos_save)
           call print("Done with finite difference virial calculation", PRINT_VERBOSE)
        end if
