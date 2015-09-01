@@ -2110,7 +2110,11 @@ contains
     integer entry_i
 
     entry_i = lookup_entry_i(this, key)
-    if (entry_i > 0) call remove_entry(this, entry_i)
+    if (entry_i > 0) then
+       call remove_entry(this, entry_i)
+    else
+       call print("WARNING: dictionary_remove_value() could not find entry `"//key//"' in dictionary", PRINT_ANAL)
+    end if
 
   end subroutine dictionary_remove_value
 
