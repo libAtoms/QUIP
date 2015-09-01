@@ -174,7 +174,7 @@ subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,
 
   call quip_unified_wrapper(N=N,lattice=lattice,symbol=symbol,pos=pos,init_args_str=args_str,init_args_str_len=args_str_len, &
                             energy=energy,force=force,virial=virial,do_energy=do_energy,do_force=do_force,do_virial=do_virial, &
-                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="force_using_fd",calc_args_str_len=14)
+                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="",calc_args_str_len=0)
 
 
 endsubroutine quip_wrapper
