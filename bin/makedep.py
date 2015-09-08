@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import sys, os, cPickle, f90doc
 from distutils.dep_util import newer
