@@ -98,7 +98,7 @@ module linearalgebra_module
    endinterface d3coordination_function
    public :: d3coordination_function
 
-  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, la_matrix_qr_solve_vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
+  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, LA_Matrix_QR_Solve_Vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
   public :: operator(.feq.), operator(.fne.), operator(.fgt.), operator(.fle.), operator(.flt.), operator(.fge.)
   public :: norm, normsq, operator(.mult.), operator(.dot.)
@@ -110,7 +110,7 @@ module linearalgebra_module
   public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
   public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold, svdfact
-  public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
+  public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_RL_sub
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
   public :: is_diagonal

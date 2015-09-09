@@ -271,7 +271,7 @@ contains
     real(dp), intent(inout) :: pot(:,:,:)
     integer, optional, intent(out) :: error
 
-    integer i,j,k,a,igrid, nsurface, cell_image_na, cell_image_nb, cell_image_nc
+    integer i,j,k,a,igrid, nsurface, cell_image_Na, cell_image_Nb, cell_image_Nc
     logical save_is_periodic(3), dir_mask(3)
     real(dp) :: cutoff, surface_avg, d(3), fc, dfc, masked_d
     logical, dimension(:), allocatable :: atom_mask

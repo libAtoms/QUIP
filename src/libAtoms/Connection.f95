@@ -801,7 +801,7 @@ contains
 
     ! Estimate number of neighbours of each atom. Factor of 1/2 assumes
     ! half will go in neighbour1, half in neighbour2.
-    nn_guess = int(0.5_dp*4.0_dp/3.0_dp*PI*cutoff**3*at%N/cell_volume(at%lattice)*cell_image_na*cell_image_nb*cell_image_nc)
+    nn_guess = int(0.5_dp*4.0_dp/3.0_dp*PI*cutoff**3*at%N/cell_volume(at%lattice)*cell_image_Na*cell_image_Nb*cell_image_Nc)
 
     call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, PRINT_NERD)
 
@@ -1447,9 +1447,9 @@ contains
       endif
       
       if (current_verbosity() >= PRINT_ANAL) then
-         call print('get_min_max_images cell_image_na min='//min_cell_image_na//' max='//max_cell_image_na, PRINT_ANAL)
-         call print('get_min_max_images cell_image_nb min='//min_cell_image_nb//' max='//max_cell_image_nb, PRINT_ANAL)
-         call print('get_min_max_images cell_image_nc min='//min_cell_image_nc//' max='//max_cell_image_nc, PRINT_ANAL)
+         call print('get_min_max_images cell_image_Na min='//min_cell_image_Na//' max='//max_cell_image_Na, PRINT_ANAL)
+         call print('get_min_max_images cell_image_Nb min='//min_cell_image_Nb//' max='//max_cell_image_Nb, PRINT_ANAL)
+         call print('get_min_max_images cell_image_Nc min='//min_cell_image_Nc//' max='//max_cell_image_Nc, PRINT_ANAL)
       end if
 
    end subroutine get_min_max_images

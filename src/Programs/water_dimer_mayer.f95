@@ -212,10 +212,10 @@ contains
     at%pos(:,6) = at%pos(:,4) + (/0.0_dp, 0.0_dp, rOH + (vec(4)-0.5_dp)*2.0_dp*drOH/)
     
     ! change OH angles
-    quat = rotation( (/1.0_dp,0.0_dp,0.0_dp/), (HOH + (vec(5)-0.5_dp)*2.0_dp*dHoH)/180.0_dp*PI)
+    quat = rotation( (/1.0_dp,0.0_dp,0.0_dp/), (HOH + (vec(5)-0.5_dp)*2.0_dp*dHOH)/180.0_dp*PI)
     at%pos(:,2) = at%pos(:,1)+ rotate(at%pos(:,2)-at%pos(:,1), quat)
     
-    quat = rotation( (/1.0_dp,0.0_dp,0.0_dp/), (HOH + (vec(6)-0.5_dp)*2.0_dp*dHoH)/180.0_dp*PI)
+    quat = rotation( (/1.0_dp,0.0_dp,0.0_dp/), (HOH + (vec(6)-0.5_dp)*2.0_dp*dHOH)/180.0_dp*PI)
     at%pos(:,5) = at%pos(:,4)+ rotate(at%pos(:,5)-at%pos(:,4), quat)
 
     ! uniform random rotation. formula from:
