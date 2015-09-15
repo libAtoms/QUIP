@@ -124,10 +124,11 @@ def PuPyXYZReader(xyz, format=None):
         del params['Lattice']
 
         # Get speccial params entries:
-        #   nneightol, cutoff, cutoff_break, cutoff_factor, cutoff_break_factor
+        #   nneightol, cutoff, cutoff_break, cutoff_factor, cutoff_break_factor, pbc
         special_params = {}
         for key in ['nneightol', 'cutoff', 'cutoff_break',
-                    'cutoff_factor', 'cutoff_break_factor']:
+                    'cutoff_factor', 'cutoff_break_factor',
+                    'pbc']:
             special_params[key] = params.get(key)
             if key in params:
                 del params[key]
@@ -159,6 +160,8 @@ def PuPyXYZReader(xyz, format=None):
             at.set_cutoff(special_params['cutoff'], special_params['cutoff_break'])
         elif special_params.get('cutoff_factor'):
             at.set_cutoff_factor(special_params['cutoff_factor'], special_params['cutoff_break_factor'])
+        if special_params.get('pbc'):
+            at.pbc = special_params['pbc']
 
         for p in properties:
             ptype, cols = properties[p]
@@ -277,6 +280,7 @@ class PuPyXYZWriter(object):
         params = at.params.copy()
         params['nneightol'] = at.nneightol
         params['cutoff'] = at.cutoff
+        params['pbc'] = at.pbc
 
         props_str, comment = properties_comment(at, props, params)
 

@@ -170,7 +170,7 @@ module CInOutput_module
      !% Read an Atoms object from this CInOutput stream.
      !%
      !% Important :attr:`~.Atoms.properties` which may be present (non-exhaustive list):
-     !% 
+     !%
      !% * **species**, str, 1 col -- atomic species, e.g. Si or H
      !% * **pos**, real, 3 cols -- cartesian positions, in A
      !% * **Z**, int, 1 col -- atomic numbers
@@ -179,7 +179,7 @@ module CInOutput_module
      !% * **acc**, real, 3 cols -- accelerations, in A/fs$^2$
      !% * **hybrid**, int, 1 col -- one for QM atoms and zero for hybrid atoms
      !% * **frac_pos**, real, 3 cols -- fractional positions of atoms
-     !% 
+     !%
      !% Along with all :attr:`~Atoms.params` entries, the
      !% :attr:`~.Atoms.lattice`, :attr:`~.Atoms.cutoff`, and
      !% attr:`~Atoms.nneightol` attributes are read from the comment
@@ -281,7 +281,7 @@ contains
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
        if (this%one_frame_per_file) then
           n_file = 0
-          do 
+          do
              write (my_filename, fmt) trim(this%basename), n_file, trim(this%extension)
              inquire(file=my_filename, exist=file_exists)
              if (.not. file_exists) exit
@@ -369,6 +369,7 @@ contains
     character(len=100) :: tmp_properties_array(100), fmt
     character(len=1024) :: filename
     type(Extendable_Str), dimension(:), allocatable :: filtered_keys
+    logical, dimension(3) :: pbc
 
     real, parameter :: vacuum = 10.0_dp ! amount of vacuum to add if no lattice found in file
 
@@ -510,9 +511,13 @@ contains
           call set_cutoff(at, cutoff)
        end if
 
+       if (get_value(tmp_params, 'pbc', pbc)) then
+          at%is_periodic = pbc
+       end if
+
        if (get_value(tmp_params, 'nneightol', nneightol)) at%nneightol = nneightol
 
-       ! Copy tmp_params into at%params, removing "Lattice", "Properties", "cutoff", 
+       ! Copy tmp_params into at%params, removing "Lattice", "Properties", "cutoff",
        ! and "nneightol"entries
        allocate(filtered_keys(tmp_params%N))
        j = 1
@@ -520,7 +525,8 @@ contains
           if (string(tmp_params%keys(i)) == 'Lattice' .or. &
               string(tmp_params%keys(i)) == 'Properties' .or. &
               string(tmp_params%keys(i)) == 'cutoff' .or. &
-              string(tmp_params%keys(i)) == 'nneightol') cycle
+              string(tmp_params%keys(i)) == 'nneightol' .or. &
+              string(tmp_params%keys(i)) == 'pbc') cycle
 
           call initialise(filtered_keys(j), tmp_params%keys(i))
           j = j + 1
@@ -560,7 +566,7 @@ contains
                    end do
                 end do
              end do
-          
+
              do k=1,3
                 at%lattice(k,k) = maxlen(k) + vacuum
              end do
@@ -696,13 +702,13 @@ contains
        ! we may need to rotate atomic positions to align cell vector a
        ! with x axis and cell vector b lies in x-y plane.
        ! This transformation preserves the fractional coordinates.
-       
+
        orig_lattice = at%lattice
        call lattice_xyz_to_abc(at%lattice, cell_lengths, cell_angles)
        call lattice_abc_to_xyz(cell_lengths, cell_angles, new_lattice)
 
        cell_rotated = 0
-       if (maxval(abs(orig_lattice - new_lattice)) > LATTICE_TOL) then 
+       if (maxval(abs(orig_lattice - new_lattice)) > LATTICE_TOL) then
           cell_rotated = 1
           call transform_basis(at, new_lattice .mult. at%g)
        end if
@@ -731,6 +737,7 @@ contains
 
     call set_value(tmp_params, 'cutoff', at%cutoff)
     call set_value(tmp_params, 'nneightol', at%nneightol)
+    call set_value(tmp_params, 'pbc', at%is_periodic)
 
     params_ptr%p => tmp_params
     properties_ptr%p => at%properties
@@ -767,7 +774,7 @@ contains
           ! Revert to original basis
           call transform_basis(at, orig_lattice .mult. at%g)
        end if
-       
+
     else
        ! Put "species" in first column and "pos" in second
        if (selected_properties%n > 1) then
