@@ -28,6 +28,7 @@ program descriptors_wrapper_example
   descriptor_str ="soap n_max=10 l_max=10 atom_sigma=0.5 cutoff=3.0 cutoff_transition_width=0.5"
   calc_args_str = ""
 
+#ifdef HAVE_GAP
   call descriptors_wrapper_distances(n,lattice,symbol,coord,descriptor_str,len(descriptor_str),calc_args_str,len(calc_args_str),0,.false.,.true.,distances)
   print*,'initial calc, Distances'
   print*, sum(distances)/n
@@ -52,5 +53,6 @@ program descriptors_wrapper_example
 
   print*,'Distances'
   print*, sum(distances)/n
+#endif
 
 endprogram descriptors_wrapper_example
