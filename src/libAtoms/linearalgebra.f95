@@ -98,7 +98,8 @@ module linearalgebra_module
    endinterface d3coordination_function
    public :: d3coordination_function
 
-  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, LA_Matrix_QR_Solve_Vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
+  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, LA_Matrix_QR_Solve_Vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically, la_matrix_svd
+
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
   public :: operator(.feq.), operator(.fne.), operator(.fgt.), operator(.fle.), operator(.flt.), operator(.fge.)
   public :: norm, normsq, operator(.mult.), operator(.dot.)
@@ -2885,6 +2886,102 @@ CONTAINS
     deallocate(Q, R, R_inv, Q_T)
 
   end subroutine LA_Matrix_QR_inverse
+
+  subroutine LA_Matrix_SVD(this,s,u,v,error)
+
+    type(LA_Matrix), intent(in) :: this
+    real(dp), dimension(:), intent(out) :: s
+    real(dp), dimension(:,:), intent(out), target, optional :: u, v
+    integer, optional, intent(out) :: error
+
+    real(dp), dimension(:,:), allocatable :: a
+    real(dp), dimension(:), allocatable :: work
+    real(dp), dimension(:,:), pointer :: my_u, my_vt
+    real(dp) :: tmp
+    character(len=1) :: jobu, jobvt
+    integer :: lwork, info, i, j
+
+
+    if(.not.this%initialised) then
+       RAISE_ERROR('LA_Matrix_SVD: not initialised',error)
+    endif
+
+    call check_size('s',s,min(this%n,this%m),'LA_Matrix_SVD',error=error)
+
+    allocate(a(this%n,this%m))
+    a = this%matrix
+
+    if(present(u)) then
+       if(this%n <= this%m) then
+          call check_size('u',u,(/this%n,this%n/),'LA_Matrix_SVD',error=error)
+          jobu = "A"
+          my_u => u
+       else
+          call check_size('u',u,(/this%n,this%m/),'LA_Matrix_SVD',error=error)
+          jobu = "S"
+          my_u => u
+       endif
+    else
+       jobu = "N"
+       my_u => null()
+    endif
+
+    if(present(v)) then
+       if(this%n <= this%m) then
+          call check_size('v',v,(/this%m,this%n/),'LA_Matrix_SVD',error=error)
+          jobvt = "O"
+          my_vt => null()
+       else
+          call check_size('v',v,(/this%m,this%m/),'LA_Matrix_SVD',error=error)
+          jobvt = "A"
+          my_vt => v
+       endif
+    else
+       jobvt = "N"
+       my_vt => null()
+    endif
+
+    allocate(work(1))
+    lwork = -1
+    call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, s, my_u, this%n, my_vt, this%m, work, lwork, info)
+    lwork = ceiling(work(1))
+    deallocate(work)
+
+    allocate(work(lwork))
+    call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, s, my_u, this%n, my_vt, this%m, work, lwork, info)
+    deallocate(work)
+
+    if( this%n <= this%m ) then
+       if(present(v)) then
+          do i = 1, this%n
+             do j = 1, this%m
+                v(j,i) = a(i,j)
+             enddo
+          enddo
+       endif
+    else
+       if(present(v)) then
+          do i = 1, this%m
+             do j = i+1, this%m
+                tmp = v(i,j)
+                v(i,j) = v(j,i)
+                v(j,i) = tmp
+             enddo
+          enddo
+       endif
+    endif
+
+    if(allocated(a)) deallocate(a)
+    my_u => null()
+    my_vt => null()
+
+    if(info < 0) then
+       RAISE_ERROR('LA_Matrix_SVD: '//(-info)//'-th parameter had an illegal value.',error)
+    elseif( info > 0) then
+       RAISE_ERROR('LA_Matrix_SVD: singular value decomposition of the bidiagonal matrix did not converge, '//info//' superdiagonals did not converge to zero.',error)
+    endif
+
+  endsubroutine LA_Matrix_SVD
 
   subroutine house_qp(x,v,beta)
      real(qp), dimension(:), intent(in) :: x
