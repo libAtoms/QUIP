@@ -2948,6 +2948,7 @@ CONTAINS
     real(dp), dimension(:), allocatable :: work
     real(dp), dimension(:), pointer :: my_s
     real(dp), dimension(:,:), pointer :: my_u, my_vt
+    real(dp), dimension(1,1), target :: dummy_u, dummy_vt
     real(dp) :: tmp
     character(len=1) :: jobu, jobvt
     integer :: lwork, info, i, j
@@ -2958,16 +2959,15 @@ CONTAINS
        RAISE_ERROR('LA_Matrix_SVD: not initialised',error)
     endif
 
+    allocate(a(this%n,this%m))
+    a = this%matrix
+
     if(present(s)) then
        call check_size('s',s,min(this%n,this%m),'LA_Matrix_SVD',error=error)
        my_s => s
     else
        allocate(my_s(min(this%n,this%m)))
     endif
-
-
-    allocate(a(this%n,this%m))
-    a = this%matrix
 
     if(present(u)) then
        if(this%n <= this%m) then
@@ -2981,14 +2981,14 @@ CONTAINS
        endif
     else
        jobu = "N"
-       my_u => null()
+       my_u => dummy_u
     endif
 
     if(present(v)) then
        if(this%n <= this%m) then
           call check_size('v',v,(/this%m,this%n/),'LA_Matrix_SVD',error=error)
           jobvt = "O"
-          my_vt => null()
+          my_vt => dummy_vt
        else
           call check_size('v',v,(/this%m,this%m/),'LA_Matrix_SVD',error=error)
           jobvt = "A"
@@ -2996,7 +2996,7 @@ CONTAINS
        endif
     else
        jobvt = "N"
-       my_vt => null()
+       my_vt => dummy_vt
     endif
 
     allocate(work(1))
