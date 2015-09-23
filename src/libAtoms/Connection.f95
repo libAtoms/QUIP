@@ -1029,9 +1029,16 @@ contains
        RAISE_ERROR('calc_connect: Negative cutoff radius ' // at%cutoff, error)
     end if
 
-    if ((at%cutoff .feq. 0.0_dp)) then
-       RAISE_ERROR('calc_connect: at%cutoff==0.0. Call set_cutoff() first!', error)
+    ! The default is -1.0, so catch the unset-cutoff case explicitly
+    if ((at%cutoff .feq. -1.0_dp)) then
+       RAISE_ERROR('calc_connect: at%cutoff==-1.0. Call set_cutoff() first!', error)
     endif
+
+    ! The value 0.0 means "don't compute neighbours" - should this still output a message?
+    if ((at%cutoff .feq. 0.0_dp)) then
+       return
+    endif
+
     !Calculate the cutoff value we should use in dividing up the simulation cell
     cutoff = at%cutoff
     if (present(cutoff_skin)) then
