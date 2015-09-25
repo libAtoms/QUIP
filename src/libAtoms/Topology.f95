@@ -2769,7 +2769,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      logical, dimension(:), intent(inout) :: is_associated
      logical :: do_general_ordercheck, my_use_smooth_cutoff
 
-     my_use_smooth_cutoff = optional_default(.false.,use_smooth_cutoff) 
+     my_use_smooth_cutoff = optional_default(.false.,use_smooth_cutoff)
      do_general_ordercheck = optional_default(.true.,general_ordercheck)
 
      allocate(monomer_index(size(signature),0))
@@ -2846,8 +2846,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
 
    end subroutine find_general_monomer
 
-   subroutine find_monomer_pairs(at_in,monomer_pairs,mean_pos_diffs,pairs_diffs_map,monomer_one_index,monomer_two_index,monomers_identical,double_count,cutoff,pairs_shifts,error)
-   ! finds pairs of monomers combined into dimer if *any pair* of atoms are within cutoff. Returns 2 by n array of pairs, 
+   subroutine find_monomer_pairs(at_in,monomer_pairs,mean_pos_diffs,pairs_diffs_map,monomer_one_index,monomer_two_index,monomers_identical,double_count,cutoff,pairs_shifts,error,use_com)
+   ! finds pairs of monomers combined into dimer if *any pair* of atoms are within cutoff. Returns 2 by n array of pairs,
    ! the elements of which refer to the second index of the monomer_one_index and monomer_two_index matrices respectively.
    ! also returns a set of diffs, which are vectors between the mean positions of the shifted versions of these pairs.
      type(atoms), intent(in) :: at_in
@@ -2859,6 +2859,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      real(dp), intent(in) :: cutoff
      integer, dimension(:,:), allocatable, intent(out), optional :: pairs_shifts
      integer, intent(out), optional :: error
+     logical, intent(in), optional :: use_com
 
      type(atoms) :: at
      integer, dimension(:,:), allocatable ::  mean_pos_shifts
@@ -2871,6 +2872,9 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      integer, dimension(2) :: temp2d
      integer, dimension(1) :: temp1d
      logical, dimension(:), allocatable :: shifts_mask
+     logical :: do_use_com
+
+     do_use_com = optional_default(.false., use_com)
 
      ! make a copy of the atoms object
      at = at_in
@@ -2893,14 +2897,18 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      n_pairs=0
 
      ! loop over all occurences of first monomer
-     do i=1,size(monomer_one_index,2)
+     loop_monomer_one: do i=1,size(monomer_one_index,2)
        atomic_index_one = monomer_one_index(:,i)
-       mean_pos_one = calc_mean_pos(at,atomic_index_one)  
+       if (do_use_com) then
+         mean_pos_one = centre_of_mass(at,index_list=atomic_index_one)
+       else
+         mean_pos_one = calc_mean_pos(at,atomic_index_one)
+       endif
 
        !loop over neighbours of each atom, check at least one pair of heavy atoms within cutoff and belong to an occurrence of monomer_two
-       do i_atomic =1,size(monomer_one_index,1)
+       loop_monomer_one_atoms: do i_atomic=1,size(monomer_one_index,1)
          if (at%Z(atomic_index_one(i_atomic)) == 1) cycle
-         do n = 1, n_neighbours(at,atomic_index_one(i_atomic))
+         loop_monomer_one_atom_neighbours: do n = 1, n_neighbours(at,atomic_index_one(i_atomic))
 
            i_neighbour = neighbour(at,atomic_index_one(i_atomic),n,distance=r_one_two,shift=shift_one_two)
            if (at%Z(i_neighbour) == 1 ) cycle
@@ -2909,16 +2917,20 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
            if (any(temp2d .eq. 0)) cycle                                     ! atom i_neighbour does not belong to the type of monomer we're looking for
            j = temp2d(2)                                                     ! atom i_neighbour belongs to monomer j
            atomic_index_two = monomer_two_index(:,j)
-           mean_pos_two = calc_mean_pos(at,atomic_index_two)
-  
+           if (do_use_com) then
+             mean_pos_two = centre_of_mass(at,index_list=atomic_index_two)
+           else
+             mean_pos_two = calc_mean_pos(at,atomic_index_two)
+           endif
+
            temp_dist = distance_min_image(at,i_neighbour,mean_pos_two,shift=shift_two)
            shift_one_two = shift_one_two + shift_two
 
-           ! get the diff vector between the shifted mean positions                                                                                                                                                                                                             
+           ! get the diff vector between the shifted mean positions
            min_dist = distance_min_image(at,mean_pos_one,mean_pos_two,shift=min_image_shift)
            diff_one_two = diff_min_image(at,mean_pos_one,mean_pos_two) + matmul(at%lattice,shift_one_two-min_image_shift)
 
-           ! this makes sure we don't double count. All monomer pairs in the unit cell are found, 
+           ! this makes sure we don't double count. All monomer pairs in the unit cell are found,
            ! as are half of the monomer pairs in which one of the monomers is from a neighbour cell
            if (monomers_identical) then
              if (all(shift_one_two .eq. 0)) then
@@ -2926,27 +2938,27 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
              else
                if (i .gt. j) cycle
                if (i == j) then
-                 temp1d = maxloc(monomer_pairs(1,:), monomer_pairs(1,:) .eq. i .and. monomer_pairs(2,:) .eq. i)                                                      
+                 temp1d = maxloc(monomer_pairs(1,:), monomer_pairs(1,:) .eq. i .and. monomer_pairs(2,:) .eq. i)
                  k=temp1d(1)
-                 if (k > 0) then       
+                 if (k > 0) then
                    shifts_mask =(/ mean_pos_shifts(1,:) .eq. -shift_one_two(1)/) .and. &
                                 (/ mean_pos_shifts(2,:) .eq. -shift_one_two(2)/) .and. &
                                 (/ mean_pos_shifts(3,:) .eq. -shift_one_two(3)/)
-                   if (count( (/pairs_diffs_map .eq. k /) .and. shifts_mask) > 0)   cycle !  cycle if negative shift already present  
+                   if (count( (/pairs_diffs_map .eq. k /) .and. shifts_mask) > 0)   cycle !  cycle if negative shift already present
                  end if
                end if
              end if
            end if
 
            ! check if this combination of monomers was already found
-           temp1d = maxloc(monomer_pairs(1,:), monomer_pairs(2,:) .eq. j .and. monomer_pairs(1,:) .eq. i) 
+           temp1d = maxloc(monomer_pairs(1,:), monomer_pairs(2,:) .eq. j .and. monomer_pairs(1,:) .eq. i)
            k=temp1d(1)                                                                                    ! if so, pair is at (:,k) in the monomer_pairs array , else equals 0
 
-           if (k > 0 ) then   ! have found this pair before    
+           if (k > 0 ) then   ! have found this pair before
              shifts_mask =(/ mean_pos_shifts(1,:) .eq. shift_one_two(1)/) .and. &
                           (/ mean_pos_shifts(2,:) .eq. shift_one_two(2)/) .and. &
                           (/ mean_pos_shifts(3,:) .eq. shift_one_two(3)/)
-             if (count( (/pairs_diffs_map .eq. k/) .and. shifts_mask) > 0) cycle ! cycle if we've already found this pair with this shift 
+             if (count( (/pairs_diffs_map .eq. k/) .and. shifts_mask) > 0) cycle ! cycle if we've already found this pair with this shift
 
            else               ! new pair
              n_pairs = n_pairs + 1
@@ -2964,13 +2976,13 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
              call reallocate(pairs_diffs_map,i_desc,copy=.true.)
              call reallocate(shifts_mask,i_desc)
              mean_pos_shifts(:,i_desc) = shift_one_two
-             mean_pos_diffs(:,i_desc) = diff_one_two 
+             mean_pos_diffs(:,i_desc) = diff_one_two
              pairs_diffs_map(i_desc) = k
-
            end do
-         end do
-       end do
-     end do
+
+         end do loop_monomer_one_atom_neighbours
+       end do loop_monomer_one_atoms
+     end do loop_monomer_one
 
      if (present(pairs_shifts)) then
        allocate(pairs_shifts(3,size(mean_pos_shifts,2)))
@@ -2982,7 +2994,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      deallocate(atomic_index_two)
      deallocate(shifts_mask)
 
-   end subroutine find_monomer_pairs  
+   end subroutine find_monomer_pairs
 
    subroutine find_monomer_triplets(at,monomer_triplets,triplets_diffs,triplets_diffs_map,monomer_one_index,monomer_two_index,monomer_three_index,one_two_identical,one_three_identical,two_three_identical,cutoff,error)
    ! loops through pairs of monomers made by find_monomer_pairs above and makes trimers if a third monomer is within cutoff. Returns 3 by n array, 
