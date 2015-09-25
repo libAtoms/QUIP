@@ -2055,7 +2055,7 @@ contains
 
      INIT_ERROR(error)
      if (.not. has_property(at, 'mass')) then
-        RAISE_ERROR('center_of_mass: Atoms has no mass property', error)
+        RAISE_ERROR('centre_of_mass: Atoms has no mass property', error)
      end if
 
      if (present(index_list) .and. present(mask)) then
@@ -2064,17 +2064,13 @@ contains
 
      if (present(origin)) then
         if (origin > at%N .or. origin < 0) then
-           RAISE_ERROR('Centre_Of_Mass: Invalid origin atom', error)
+           RAISE_ERROR('centre_of_mass: Invalid origin atom', error)
         end if
         my_origin = origin
      else
         if (present(index_list)) then
            my_origin = index_list(1)
-        else
-           my_origin = 1
-        end if
-
-        if (present(mask)) then
+        else if (present(mask)) then
            i = 1
            do while (.not. mask(i) .and. i <= at%N)
               i = i+1
@@ -2095,7 +2091,7 @@ contains
 
         do i = 1, size(index_list)
            if (index_list(i) > at%N .or. index_list(i) < 1) then
-              RAISE_ERROR('Centre_Of_Mass: Invalid atom in index_list', error)
+              RAISE_ERROR('centre_of_mass: Invalid atom in index_list', error)
            end if
 	   if (my_origin > 0) then
 	      CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
