@@ -139,10 +139,10 @@ with `atoms` to the new :class:`Potential` instance, by calling
                  fpointer=None, finalise=True,
                  error=None, **kwargs):
 
-        self._calc_args = {}        
+        self._calc_args = {}
         self._default_properties = []
         self.calculation_always_required = calculation_always_required
-        Calculator.__init__(self, atoms=atoms)        
+        Calculator.__init__(self, atoms=atoms)
 
         if callback is not None or calculator is not None:
             if init_args is None:
@@ -175,7 +175,7 @@ with `atoms` to the new :class:`Potential` instance, by calling
                                          mpi_obj=mpi_obj,
                                          fpointer=fpointer, finalise=finalise,
                                          error=error)
-        
+
         if init_args is not None and init_args.lower().startswith('callbackpot'):
             _potential.Potential.set_callback(self, Potential.callback)
 
@@ -188,8 +188,8 @@ with `atoms` to the new :class:`Potential` instance, by calling
         if atoms is not None:
             atoms.set_calculator(self)
 
-        self.name = init_args     
-        
+        self.name = init_args
+
     __init__.__doc__ = _potential.Potential.__init__.__doc__
 
 
@@ -299,11 +299,11 @@ with `atoms` to the new :class:`Potential` instance, by calling
         if self.calculation_always_required:
             return all_changes
         return Calculator.check_state(self, atoms, tol)
-        
+
 
     def calculate(self, atoms, properties, system_changes):
         Calculator.calculate(self, atoms, properties, system_changes)
-        
+
         # we will do the calculation in place, to minimise number of copies,
         # unless atoms is not a quippy Atoms
         if isinstance(atoms, Atoms):
@@ -358,13 +358,13 @@ with `atoms` to the new :class:`Potential` instance, by calling
         if 'energy' in properties:
             self.results['energy'] = float(self.quippy_atoms.energy)
         if 'energies' in properties:
-            self.results['energies'] = self.quippy_atoms.local_energy.view(np.ndarray)
+            self.results['energies'] = self.quippy_atoms.local_energy.copy().view(np.ndarray)
         if 'forces' in properties:
-            self.results['forces'] = self.quippy_atoms.force.view(np.ndarray).T
+            self.results['forces'] = self.quippy_atoms.force.copy().view(np.ndarray).T
         if 'numeric_forces' in properties:
-            self.results['numeric_forces'] = self.quippy_atoms.numeric_force.view(np.ndarray).T
+            self.results['numeric_forces'] = self.quippy_atoms.numeric_force.copy().view(np.ndarray).T
         if 'stress' in properties:
-            stress = -self.quippy_atoms.virial.view(np.ndarray)/self.quippy_atoms.get_volume()
+            stress = -self.quippy_atoms.virial.copy().view(np.ndarray)/self.quippy_atoms.get_volume()
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
@@ -665,7 +665,7 @@ class ForceMixingPotential(Potential):
         args_str = 'ForceMixing'
         Potential.__init__(self, args_str,
                            pot1=pot1, pot2=pot2, bulk_scale=bulk_scale,
-                           mpi_obj=mpi_obj, 
+                           mpi_obj=mpi_obj,
                            atoms=atoms, fpointer=fpointer, finalise=finalise,
                            error=error)
         if qm_list is not None:
@@ -690,9 +690,9 @@ class ForceMixingPotential(Potential):
             raise RuntimeError('No atoms assocated with this ForceMixingPotential!')
         if not self.atoms.has_property('hybrid'):
             self.atoms.add_property('hybrid', HYBRID_NO_MARK)
-        self.atoms.hybrid[:] = HYBRID_NO_MARK 
+        self.atoms.hybrid[:] = HYBRID_NO_MARK
         self.atoms.hybrid[qm_list] = HYBRID_ACTIVE_MARK
-         
+
 
 
 def force_test(at, p, dx=1e-4):
