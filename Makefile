@@ -61,6 +61,9 @@ ifeq (${HAVE_THIRDPARTY},1)
 ifeq (${HAVE_FX},1)
    THIRDPARTY_LIBS += libfx.a
 endif
+ifeq (${HAVE_SCME},1)
+   THIRDPARTY_LIBS += libscme.a
+endif
 endif
 
 MODULES += libAtoms

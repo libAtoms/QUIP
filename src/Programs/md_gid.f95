@@ -62,7 +62,7 @@ program md_gid
   call initialise(mpi_glob)
   call Potential_Filename_Initialise(pot, args_str=trim(init_args), param_filename=trim(param_file), mpi_obj=mpi_glob)
 
-  if(has_trajectory_file) call initialise(savexyz,trim(trajectory_file),action=OUTPUT,mpi=mpi_glob)
+  if(has_trajectory_file) call initialise(savexyz,trim(trajectory_file),action=OUTPUT,append=.true.,mpi=mpi_glob)
 
   p = p_init/GPA
   temp = temp_init
@@ -113,8 +113,8 @@ program md_gid
 
      !deltaV = expav(vol(1,:),dt*nSmooth) - expav(vol(2,:),dt*nSmooth)
      !deltaH = expav(enth(1,:),dt*nSmooth) - expav(enth(2,:),dt*nSmooth)
-     deltaV = runav(vol(1,:),nSmooth) - runav(vol(2,:),nSmooth)
-     deltaH = runav(enth(1,:),nSmooth) - runav(enth(2,:),nSmooth)
+     deltaV = runav(vol(1,:),nSmooth) / ds1%atoms%n - runav(vol(2,:),nSmooth) / ds2%atoms%n
+     deltaH = runav(enth(1,:),nSmooth) / ds1%atoms%n - runav(enth(2,:),nSmooth) / ds2%atoms%n
      
      !f0=-deltaH/(beta*p*deltaV)
      f0=-deltaH/(beta*deltaV)
@@ -137,8 +137,8 @@ program md_gid
 
         !deltaV = expav(vol(1,:),dt*nSmooth) - expav(vol(2,:),dt*nSmooth)
         !deltaH = expav(enth(1,:),dt*nSmooth) - expav(enth(2,:),dt*nSmooth)
-        deltaV = runav(vol(1,:),nSmooth) - runav(vol(2,:),nSmooth)
-        deltaH = runav(enth(1,:),nSmooth) - runav(enth(2,:),nSmooth)
+        deltaV = runav(vol(1,:),nSmooth) / ds1%atoms%n - runav(vol(2,:),nSmooth) / ds2%atoms%n
+        deltaH = runav(enth(1,:),nSmooth) / ds1%atoms%n - runav(enth(2,:),nSmooth) / ds2%atoms%n
 
         !f1=-deltaH/(beta*p*deltaV)
         f1=-deltaH/(beta*deltaV)

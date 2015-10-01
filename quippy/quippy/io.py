@@ -76,7 +76,7 @@ class AtomsReaderMixin(object):
         given it is inferred from the file extension of `dest` (see
         :ref:`fileformats`). If `properties` is present, it should be a list
         of property names to include in the output file, e.g. `['species', 'pos']`.
-      
+
         `progress`, `progress_width`, `update_interval` and `show_value`
         are used to control a textual progress bar. The extra arguments
         in `*args` and `**kwargs` are passed along to the underlying
@@ -126,7 +126,7 @@ class AtomsReader(AtomsReaderMixin):
     """
     An :class:`AtomsReader` reads a series of :class:`Atoms` objects
     from the trajectory `source` which should be one of the following:
-    
+
      * a filename - in this case `format` is inferred from the file
        extension -- see :ref:`fileformats`
      * a shell-style glob pattern e.g. `"*.xyz"`
@@ -137,33 +137,33 @@ class AtomsReader(AtomsReaderMixin):
      * any Python `iterator
        <http://docs.python.org/library/stdtypes.html#iterator-types>`_
        which yields a sequence of :class:`Atoms` objects
-    
+
     `start`, `stop` and `step` can be used to restrict the range of frames
     read from `source`. The first frame in the file has index zero.
-    
+
     `cache_limit` determines how many configurations will be stored in
     memory. If more than `cache_limit` configurations are read in, the
     least recently accessed configurations are thrown away. To store
     everything, use an :class:`AtomsList` instead.
-    
+
     Some `sources` understand additional keyword arguments from
     `**kwargs`. For example the CASTEP file reader can take an
     `atoms_ref` argument which is a reference :class:`Atoms` object
     which is used to fill in information which is missing from the
     input file.
-    
+
     All :class:`AtomsReaders` support iteration, so you can loop over
     the contents using a :keyword:`for` loop::
-    
+
        al = AtomsReader('input-file.xyz')
        for at in al:
           # process Atoms object `at`
           print at.energy
-    
+
     or using list comprehension::
-    
+
        print [at.energy for at in al]
-    
+
     In addition to iteration, some sources allow random access. To find
     out if an :class:`AtomsReader` supports random access, either try
     to get it's length with :func:`len`, or check if the
@@ -171,7 +171,7 @@ class AtomsReader(AtomsReaderMixin):
     enough to store all the frames in the file, all
     :class:`AtomsReaders` will allow random access once the entire
     trajectory has been loaded.
-    
+
     If :attr:`randomaccess` is true, you can access individual frames
     by indexing and slicing, e.g. ``al[i]`` is the i\ :sup:`th`
     :class:`Atoms` object within ``al`` and ``al[i:j]`` returns objects
@@ -222,7 +222,7 @@ class AtomsReader(AtomsReaderMixin):
                             frames = slice(frames, frames-1,-1)
 
                     self._start, self._stop, self._step = frames.start, frames.stop, frames.step
-                
+
             self.filename = self.reader
             self.opened = True
             if self.reader in AtomsReaders:
@@ -238,7 +238,7 @@ class AtomsReader(AtomsReaderMixin):
                 else:
                     self.reader = glob_list[0]
                     filename, self.reader, new_format = infer_format(self.reader, format, AtomsReaders)
-                    
+
                     if format is None:
                         format = new_format
 
@@ -333,7 +333,7 @@ class AtomsReader(AtomsReaderMixin):
         if self.cache_mem_limit is not None:
             if self.cache_mem_limit == -1:
                 self.cache_mem_limit = min(10*at.mem_estimate(), 100*1024**2)
-            
+
             if self.cache_mem_limit == 0:
                 while len(self._cache_dict) > 1:
                     logging.debug('Reducing AtomsReader cache size from %d' % len(self._cache_dict))
@@ -379,7 +379,7 @@ class AtomsReader(AtomsReaderMixin):
         """
         Return an interator over all the frames in this trajectory. This
         is the default iterator for an :class:`AtomsReader` instance
-        `al`, and can be accessed with ``iter(al)``. 
+        `al`, and can be accessed with ``iter(al)``.
 
         If `reverse=True` then the iteration starts with the last frame
         and goes backwards through the file. This is only possible if
@@ -406,7 +406,7 @@ class AtomsReader(AtomsReaderMixin):
             if self._start is not None or self._stop is not None or self._step is not None:
                 if (self._start is not None and self._start < 0) or (self._stop is not None and self._stop < 0):
                     raise IndexError('Cannot use negative start or stop indices for an AtomsReader which does not support random access')
-                
+
                 frames = itertools.islice(frames, self._start or 0, self._stop or None, self._step or 1)
                 atoms  = itertools.islice(atoms, self._start or 0, self._stop or None, self._step or 1)
 
@@ -456,32 +456,32 @@ class AtomsList(AtomsReaderMixin, list):
     that all frames are read in on initialiased and then stored in
     memory. This is equivalent to an :class:`AtomsReader` with a
     `cache_limit` of `None` so an :class:`AtomsList` always
-    supports random access.  
-    
+    supports random access.
+
     The :class:`AtomsList` allows configurations to be added, removed
     or reordered using the standard Python methods for `mutable
     sequence types
     <http://docs.python.org/library/stdtypes.html#mutable-sequence-types>`_
     (e.g. :meth:`append`, :meth:`extend`, :meth:`index`, etc).
-    
+
     The attributes of the component :class:`Atoms` can be accessed as a
     single array, using the frame number as the first array index. Note
     that the first index runs from 0 to `len(al)-1`, unlike the other
     indices which are one-based since the :class:`Atoms` attributes are
     stored in a :class:`FortranArray`.
-    
+
     For example the following statements are all true::
-    
+
        al.energy      ==  [at.energy for at in al] # energies of all atoms
        al.energy[0]   ==  al[0].energy             # energy of first frame
        all(al.velo[0] ==  al[0].velo)              # velocities of all atoms in first frame
        al.velo[0,-1]  ==  al[0].velo[-1]           # velocity of last atom in first frame
-    
+
     In addition to the standard Python list methods and those of
     :class:`AtomsReader`, :class:`AtomsList` defined a couple of extras
     methods.
     """
-    
+
     def __init__(self, source=[], format=None, start=None, stop=None, step=None,
                  rename=None, **kwargs):
         self.source = source
@@ -550,9 +550,9 @@ class AtomsList(AtomsReaderMixin, list):
         :meth:`list.sort` method, except for the additional `attr`
         argument. If this is present then the sorted list will be
         ordered by the :class:`Atoms` attribute `attr`, e.g.::
-        
+
            al.sort(attr='energy')
-        
+
         will order the configurations by their `energy` (assuming that
         :attr:`Atoms.params` contains an entry named `energy` for each
         configuration; otherwise an :exc:`AttributError` will be raised).
@@ -654,9 +654,9 @@ class AtomsReaderCopier(object):
         elif isinstance(index, slice):
             return [at.copy() for at in self.source[index]]
         else:
-            raise IndexError('indexing object should be either int or slice')            
+            raise IndexError('indexing object should be either int or slice')
 
-    
+
 
 def read(filename, **readargs):
     """
@@ -754,7 +754,7 @@ def ASEReader(source, format=None):
     images = read(source, index=slice(None,None,None), format=format)
     if isinstance(images, AseAtoms):
         images = [images]
-    
+
     for at in images:
         f = None
         try:
@@ -781,13 +781,19 @@ def ASEReader(source, format=None):
             at.params['energy'] = e
         if v is not None:
             at.params['virial'] = v
-            
+
+        yield at
+
+@atoms_reader('pupyxyz')
+def ASEExtendedXYZReader(source):
+    for at in ASEReader(source, format='extxyz'):
         yield at
 
 class ASEWriter(object):
 
-    def __init__(self, filename, translate=None):
+    def __init__(self, filename, format=None, translate=None):
         self.filename = filename
+        self.format = format
         self.translate = translate
 
     def write(self, at, **writeargs):
@@ -799,19 +805,26 @@ class ASEWriter(object):
             disp = np.dot(ase_at.cell, self.translate)
             ase_at.positions += disp
 
-        write(self.filename, ase_at, **writeargs)
+        write(self.filename, ase_at, format=self.format,
+              **writeargs)
 
     def close(self):
         pass
 
+class ASEExtendedXYZWriter(ASEWriter):
+    def __init__(self, filename, translate=None):
+        ASEWriter.__init__(self, filename, format='extxyz',
+                           translate=translate)
+
 AtomsWriters['traj'] = ASEWriter
 AtomsWriters['cfg'] = ASEWriter
+AtomsWriters['pupyxyz'] = ASEExtendedXYZWriter
 
 def dict2atoms(row):
     from quippy.elasticity import stress_matrix
 
     at = row.toatoms(add_additional_information=True)
-    
+
     f = None
     try:
         f = at.get_forces()
@@ -828,7 +841,7 @@ def dict2atoms(row):
     try:
         v = -stress_matrix(at.get_stress())*at.get_volume()
     except RuntimeError:
-        pass        
+        pass
 
     at = Atoms(at) # convert to quippy Atoms
     if f is not None:
@@ -854,7 +867,7 @@ def dict2atoms(row):
                 at.add_property(key, value)
             except (TypeError, RuntimeError):
                 at.params[key] = value
-        
+
 
     return at
 
@@ -874,13 +887,13 @@ def ASEDatabaseReader(filename, format=None):
     for row in conn.select(index):
         at = dict2atoms(row)
         yield at
-    
-    
+
+
 class ASEDatabaseWriter(object):
     """
     Write Atoms to :mod:`ase.db` database.
     """
-    
+
     def __init__(self, filename, **kwargs):
         self.dbfile = filename
         self.kwargs = kwargs
@@ -892,7 +905,7 @@ class ASEDatabaseWriter(object):
         all_kwargs = self.kwargs.copy()
         all_kwargs.update(kwargs)
         all_kwargs.update(at.params)
-        
+
         energy = at.params.get('energy', None)
         forces = getattr(at, 'force', None)
         if forces is not None:
@@ -900,7 +913,7 @@ class ASEDatabaseWriter(object):
         stress = at.params.get('virial', None)
         if stress is not None:
             stress = -stress.view(np.ndarray)/at.get_volume()
-        
+
         orig_calc = at.get_calculator()
 
         params = {}

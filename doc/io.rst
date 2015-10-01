@@ -49,7 +49,7 @@ reading from or writing to XYZ or NetCDF files.
 
    +-----------------+-----------------------------+
    | File extension  |  Description                |
-   +=================+=============================+   
+   +=================+=============================+
    | ``castep`` or   | :ref:`castep` output        |
    | ``castep_log``  |                             |
    +-----------------+-----------------------------+
@@ -123,7 +123,7 @@ reading from or writing to XYZ or NetCDF files.
 Extended XYZ
 ------------
 
-.. module:: quippy.xyz
+.. module:: ase.io.extxyz
   :synopsis: Python reference implementation of Extended XYZ I/O
 
 Extended XYZ format is an enhanced version of the `basic XYZ format
@@ -219,7 +219,7 @@ NetCDF
 
 We use the `NetCDF file format
 <http://www.unidata.ucar.edu/software/netcdf/>`_, a flexible binary
-file format designed for scientific array data. 
+file format designed for scientific array data.
 
 We use a superset of the `AMBER conventions
 <http://amber.scripps.edu/netcdf/nctraj.html>`_, so that our
@@ -265,7 +265,7 @@ Global variables
   * `cell_angular (cell_angular, label)` - character, equal to `('alpha', 'beta', 'gamma')`
 
 Parameters (per-frame variables)
-  
+
  * `cell_lengths (frame, cell_spatial)` - double, cell lengths in Angstrom
  * `cell_angles (frame, cell_angular)` - double, cell angles in degrees
 
@@ -280,7 +280,7 @@ should be added to the variable, set to one of the following values::
 
   T_INTEGER = 1
   T_REAL = 2
-  T_LOGICAL = 4 
+  T_LOGICAL = 4
   T_INTEGER_A = 5
   T_REAL_A = 6
   T_LOGICAL_A = 8
@@ -419,7 +419,7 @@ Adding a new file type
 To add support for a new file format, implement routines which
 read from or write to files following the templates below. ::
 
-     def sample_reader(filename): 
+     def sample_reader(filename):
 	 # insert code to open `filename` for reading
 
 	 while True:
@@ -430,16 +430,16 @@ read from or write to files following the templates below. ::
 	       yield at
 	    else:
 	       break
-	   
+
 
      class sample_writer(object):
 	 def __init__(self, filename):
 	    # insert code to open `filename` for writing
 	    pass
-	 
+
 	 def write(self, at):
             # insert code to write `at` to `filename`
-	    pass	    
+	    pass
 
          def close(self):
 	    # insert code to close `filename`
@@ -454,11 +454,11 @@ configuration per file, a simplified implementation template would be::
       # insert code to open `filename` for reading
       # insert code to read from `filename` into new Atoms object
       yield at
-      
+
 
 To register the new file format, you just need to set entries in
 :attr:`AtomsReaders` and :attr:`AtomsWriters`::
-     
+
      from quippy import AtomsReaders, AtomsWriters
      AtomsReaders['new_format'] = sample_reader
      AtomsWriters['new_format'] = sameple_writer

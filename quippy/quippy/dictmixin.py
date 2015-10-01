@@ -198,7 +198,8 @@ class ParamReaderMixin(object):
             val = self[key]
 
             if hasattr(val, '__iter__'):
-                val = ' '.join( str(type_val_map.get((type(x),x), x)) for x in farray(val).reshape(farray(val).size, order='F'))
+                val = ' '.join( str(type_val_map.get((type(x),x), x))
+                        for x in farray(val).reshape(farray(val).size, order='F'))
                 val.replace('[', '')
                 val.replace(']', '')
             else:
