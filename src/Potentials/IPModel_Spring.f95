@@ -62,9 +62,10 @@ include 'IPModel_interface.h'
 public :: IPModel_Spring
 type IPModel_Spring
   real(dp) :: cutoff = 0.0_dp
-  real(dp) :: kconf = 0.0_dp
+  real(dp) :: force_constant = 0.0_dp
   real(dp) :: left = 0.0_dp
   real(dp) :: right = 0.0_dp
+  logical :: use_com = .true.
   integer,allocatable,dimension(:) :: spring_indices1
   integer,allocatable,dimension(:) :: spring_indices2
 end type IPModel_Spring
@@ -103,10 +104,11 @@ subroutine IPModel_Spring_Initialise_str(this, args_str, param_str, error)
   call Finalise(this)
 
   call initialise(params)
-  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on atoms. potential is kconf*(rO)^2')
-  call param_register(params, 'right', '0.0', this%right, help_string='distance up to which the confinement potential is flat')
-  call param_register(params, 'left', '0.0', this%left, help_string='distance from where the confinement potential is flat')
-  call param_register(params, 'cutoff', '0.0', this%cutoff, help_string='cutoff')
+  call param_register(params, 'cutoff', '0.0', this%cutoff, help_string='Not used')
+  call param_register(params, 'force_constant', '0.0', this%kconf, help_string='Force constant for quadratic confinement potential. Energy is 0.5*force_constant*displacement^2')
+  call param_register(params, 'left', '0.0', this%left, help_string='Inner distance at which left harmonic wall ends')
+  call param_register(params, 'right', '0.0', this%right, help_string='Outer distance at which right harmonic wall begins')
+  call param_register(params, 'use_com', 'T', this%use_com, help_string='T: use centre of mass. F: use centre of geometry.')
   call param_register(params, 'indices1', PARAM_MANDATORY, indices1_string, help_string="Indices (1-based) of the first group of atoms you wish to tether, format {i1 i2 i3 ...}")
   call param_register(params, 'indices2', PARAM_MANDATORY, indices2_string, help_string="Indices (1-based) of the second group of atoms you wish to tether, format {i1 i2 i3 ...}")
 
@@ -151,67 +153,72 @@ subroutine IPModel_Spring_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    real(dp) :: energy, force(3,at%N), r, dr(3), com1(3), com2(3), theforce(3), disp
    integer :: i , n_group1, n_group2, i_group11, i_group1i, i_group21, i_group2i
+   real(dp), allocatable :: weight1(:), weight2(:)
   
    n_group1=size(this%spring_indices1)
    n_group2=size(this%spring_indices2)
   
    INIT_ERROR(error)
 
-   com1 = 0.0_dp
-   i_group11 = this%spring_indices1(1)
-   do i=2,n_group1
-     i_group1i = this%spring_indices1(i)
-     com1 = com1 + diff_min_image(at, i_group11, i_group1i)
-   end do
-   com1 = com1 / n_group1
-   com1 = com1 + at%pos(:,i_group11)
+   allocate(weight1(n_group1), weight2(n_group2))
 
-   com2 = 0.0_dp
-   i_group21 = this%spring_indices2(1)
-   do i=2,n_group2
-     i_group2i = this%spring_indices2(i)
-     com2 = com2 + diff_min_image(at, i_group21, i_group2i)
-   end do
-   com2 = com2 / n_group2
-   com2 = com2 + at%pos(:,i_group21)
+   if (this%use_com) then
+      if (.not. has_property(at, 'mass')) then
+         RAISE_ERROR('IPModel_Spring_Calc: Atoms has no mass property', error)
+      end if
+
+      do i=1,n_group1
+         weight1(i) = at%mass(this%spring_indices1(i))
+      end do
+      weight1 = weight1 / sum(weight1)
+
+      do i=1,n_group2
+         weight2(i) = at%mass(this%spring_indices2(i))
+      end do
+      weight2 = weight2 / sum(weight2)
+   else
+      weight1 = 1.0_dp / n_group1
+      weight2 = 1.0_dp / n_group2
+   end if
+
+   if (this%use_com) then
+      com1 = centre_of_mass(at, index_list=this%spring_indices1)
+      com2 = centre_of_mass(at, index_list=this%spring_indices2)
+   else
+      com1 = calc_mean_pos(at, this%spring_indices1)
+      com2 = calc_mean_pos(at, this%spring_indices2)
+   end if
 
    r  = distance_min_image(at, com1, com2)
    
    energy = 0.0_dp
    force = 0.0_dp
+
+   disp = 0.0_dp
    if (r .fgt. this%right) then
      disp = r - this%right
-     dr = diff_min_image(at, com1, com2) / r
-     ! Harmonic confining potential on tethered atoms
-     ! energy
-     energy = energy + this%kConf*disp**2
-
-     ! force
-     theforce = ( 2.0_dp*this%kConf*disp ) * dr
-     do i=1,n_group1
-       force(:,this%spring_indices1(i)) = theforce / n_group1
-     end do
-     do i=1,n_group2
-       force(:,this%spring_indices2(i)) = - theforce / n_group2
-     end do
    end if
-
    if (r .flt. this%left) then
      disp = r - this%left
-     dr = diff_min_image(at, com1, com2) / r
-     ! Harmonic confining potential on tethered atoms
-     ! energy
-     energy = energy + this%kConf*disp**2
-
-     ! force
-     theforce = ( 2.0_dp*this%kConf*disp ) * dr
-     do i=1,n_group1
-       force(:,this%spring_indices1(i)) = theforce / n_group1
-     end do
-     do i=1,n_group2
-       force(:,this%spring_indices2(i)) = - theforce / n_group2
-     end do
    end if
+
+   dr = diff_min_image(at, com1, com2) / r
+
+   ! Harmonic confining potential on tethered atoms
+   ! energy
+   energy = energy + 0.5_dp * this%kConf * disp**2
+
+   ! force
+   theforce = ( this%kConf * disp ) * dr
+   do i=1,n_group1
+     force(:,this%spring_indices1(i)) = theforce * weight1(i)
+   end do
+   do i=1,n_group2
+     force(:,this%spring_indices2(i)) = - theforce * weight2(i)
+   end do
+
+   deallocate(weight1)
+   deallocate(weight2)
 
 
    if (present(e)) e = energy
@@ -239,6 +246,7 @@ subroutine IPModel_Spring_Print(this, file)
   call Print("IPModel_Spring : Spring Potential", file=file)
   call Print("IPModel_Spring : cutoff = " // this%cutoff, file=file)
   call Print("IPModel_Spring : kconf = " // this%kconf, file=file)
+  call Print("IPModel_Spring : use_com = " // this%use_com, file=file)
   call Print("IPModel_Spring : right = " // this%right, file=file)
   call Print("IPModel_Spring : left = " // this%left, file=file)
   call Print("IPModel_Spring : group 1 atoms = " // this%spring_indices1, file=file)
