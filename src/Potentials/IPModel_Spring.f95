@@ -50,6 +50,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use topology_module, only : calc_mean_pos
 
 use mpi_context_module
 use QUIP_Common_module
@@ -105,7 +106,7 @@ subroutine IPModel_Spring_Initialise_str(this, args_str, param_str, error)
 
   call initialise(params)
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string='Not used')
-  call param_register(params, 'force_constant', '0.0', this%kconf, help_string='Force constant for quadratic confinement potential. Energy is 0.5*force_constant*displacement^2')
+  call param_register(params, 'force_constant', '0.0', this%force_constant, help_string='Force constant for quadratic confinement potential. Energy is 0.5*force_constant*displacement^2')
   call param_register(params, 'left', '0.0', this%left, help_string='Inner distance at which left harmonic wall ends')
   call param_register(params, 'right', '0.0', this%right, help_string='Outer distance at which right harmonic wall begins')
   call param_register(params, 'use_com', 'T', this%use_com, help_string='T: use centre of mass. F: use centre of geometry.')
@@ -206,10 +207,10 @@ subroutine IPModel_Spring_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    ! Harmonic confining potential on tethered atoms
    ! energy
-   energy = energy + 0.5_dp * this%kConf * disp**2
+   energy = energy + 0.5_dp * this%force_constant * disp**2
 
    ! force
-   theforce = ( this%kConf * disp ) * dr
+   theforce = ( this%force_constant * disp ) * dr
    do i=1,n_group1
      force(:,this%spring_indices1(i)) = theforce * weight1(i)
    end do
@@ -245,10 +246,10 @@ subroutine IPModel_Spring_Print(this, file)
 
   call Print("IPModel_Spring : Spring Potential", file=file)
   call Print("IPModel_Spring : cutoff = " // this%cutoff, file=file)
-  call Print("IPModel_Spring : kconf = " // this%kconf, file=file)
-  call Print("IPModel_Spring : use_com = " // this%use_com, file=file)
-  call Print("IPModel_Spring : right = " // this%right, file=file)
+  call Print("IPModel_Spring : force_constant = " // this%force_constant, file=file)
   call Print("IPModel_Spring : left = " // this%left, file=file)
+  call Print("IPModel_Spring : right = " // this%right, file=file)
+  call Print("IPModel_Spring : use_com = " // this%use_com, file=file)
   call Print("IPModel_Spring : group 1 atoms = " // this%spring_indices1, file=file)
   call Print("IPModel_Spring : group 2 atoms = " // this%spring_indices2, file=file)
 
