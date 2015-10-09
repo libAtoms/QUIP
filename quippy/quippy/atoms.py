@@ -730,9 +730,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 if 'cutoff' in other.info:
                     self.set_cutoff(other.info['cutoff'],
                                     other.info.get('cutoff_break'))
-                if 'cutoff_factor' in other.info:
-                    self.set_cutoff_factor(other.info['cutoff_factor'],
-                                           other.info.get('cutoff_factor_break'))
 
             # create extra properties for any non-standard arrays
             standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',

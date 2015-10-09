@@ -757,7 +757,6 @@ def find_crack_tip_coordination(atoms, edge_tol=10.0,
     tmp_atoms = Atoms(atoms)
     if 'avgpos' in tmp_atoms.arrays:
         tmp_atoms.set_positions(tmp_atoms.arrays['avgpos'])
-    tmp_atoms.set_cutoff_factor(nneightol)
     tmp_atoms.calc_connect()
 
     nn = tmp_atoms.n_neighb
