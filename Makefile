@@ -29,7 +29,7 @@
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH libquip
+.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH install-quippy libquip
 
 ifndef QUIP_ARCH
 $(error "You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.")
