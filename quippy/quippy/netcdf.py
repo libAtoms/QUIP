@@ -113,6 +113,8 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1, format=None):
                             at.cutoff_skin = var[frame]
                         elif name == 'nneightol':
                             at.nneightol = var[frame]
+                        elif name == 'pbc':
+                            at.pbc = var[frame]
                         else:
                             at.params[name] = var[frame].T
 
@@ -237,6 +239,7 @@ class NetCDFWriter(object):
         params = at.params.copy()
         params['nneightol'] = at.nneightol
         params['cutoff'] = at.cutoff
+        params['pbc'] = at.pbc
 
         for name in params.keys():
             t, s, shape, = params.get_type_and_size(name)

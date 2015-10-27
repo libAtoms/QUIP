@@ -2862,7 +2862,7 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
       PASS_ERROR_WITH_INFO("n_miniCGinitial preconditioning call", error)
     else
       P_g = g_i
-    Endif
+    endif
 
     call print("#cg_n use_precond="//use_precond)
 

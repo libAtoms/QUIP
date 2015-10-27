@@ -98,7 +98,8 @@ module linearalgebra_module
    endinterface d3coordination_function
    public :: d3coordination_function
 
-  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, la_matrix_qr_solve_vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically
+  public :: la_matrix, la_matrix_factorise, la_matrix_qr_factorise, LA_Matrix_QR_Solve_Vector, la_matrix_logdet, la_matrix_qr_inverse, la_matrix_inverse, LA_Matrix_Expand_Symmetrically, la_matrix_svd, la_matrix_svd_allocate, la_matrix_pseudoinverse
+
   public :: initialise, assignment(=), finalise, matrix_solve, matrix_qr_solve, find, sign
   public :: operator(.feq.), operator(.fne.), operator(.fgt.), operator(.fle.), operator(.flt.), operator(.fge.)
   public :: norm, normsq, operator(.mult.), operator(.dot.)
@@ -107,10 +108,10 @@ module linearalgebra_module
   public :: ran_normal3, matrix_exp, matrix3x3_det, matrix3x3_inverse, operator(.outer.), operator(.cross.)
   public :: check_size, sort_array, trapezoidintegral, print, int_array_ge, int_array_gt, int_array_lt
   public :: angle, unit_vector, random_unit_vector, arrays_lt, is_symmetric, permutation_symbol
-  public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
+  public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, pseudo_inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
   public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold, svdfact
-  public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_rl_sub
+  public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_RL_sub
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
   public :: is_diagonal
@@ -857,9 +858,9 @@ CONTAINS
    !
    ! returns product of matrix and vector as diagonal of another matrix
    function matrix_product_vect_asdiagonal_dd(matrix,vect) result (prodmatrix)
-     real(dp),intent(in), dimension(:) :: vect
-     real(dp),dimension(size(vect),size(vect))::prodmatrix
      real(dp),intent(in),dimension(:,:)::matrix
+     real(dp),intent(in), dimension(:) :: vect
+     real(dp),dimension(size(matrix,1),size(matrix,2))::prodmatrix
 
      call matrix_product_vect_asdiagonal_sub(prodmatrix, matrix, vect)
 
@@ -2110,6 +2111,18 @@ CONTAINS
 
   end subroutine matrix_z_inverse
 
+  subroutine pseudo_inverse(this,inverse)
+    real(dp),intent(in), dimension(:,:) :: this
+    real(dp),intent(out), dimension(:,:) :: inverse
+
+    type(LA_Matrix) :: LA_this
+
+    call initialise(LA_this,this)
+    call LA_Matrix_PseudoInverse(LA_this,inverse)
+    call finalise(LA_this)
+
+  endsubroutine pseudo_inverse
+
   ! Cholesky factorisation of a symmetric matrix.
   ! Various checks (size, symmetricity etc.) might be useful later.
   subroutine LA_Matrix_Initialise(this,matrix)
@@ -2123,7 +2136,7 @@ CONTAINS
      this%m = size(matrix,2)
      
      allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
-     & this%tau(this%m) )
+     this%tau(this%m) )
 
      this%matrix = matrix
      this%initialised = .true.
@@ -2885,6 +2898,188 @@ CONTAINS
     deallocate(Q, R, R_inv, Q_T)
 
   end subroutine LA_Matrix_QR_inverse
+
+  subroutine LA_Matrix_SVD_Allocate(this,s,u,v,error)
+
+    type(LA_Matrix), intent(in) :: this
+    real(dp), dimension(:), allocatable, intent(inout), optional :: s
+    real(dp), dimension(:,:), allocatable, intent(inout), optional :: u, v
+    integer, optional, intent(out) :: error
+
+    INIT_ERROR(error)
+
+    if(.not.this%initialised) then
+       RAISE_ERROR('LA_Matrix_SVD: not initialised',error)
+    endif
+
+    if(present(s)) then
+       if(allocated(s)) deallocate(s)
+       allocate(s(min(this%n,this%m)))
+    endif
+
+    if(present(u)) then
+       if(allocated(u)) deallocate(u)
+       if(this%n <= this%m) then
+          allocate(u(this%n,this%n))
+       else
+          allocate(u(this%n,this%m))
+       endif
+    endif
+
+    if(present(v)) then
+       if(allocated(v)) deallocate(v)
+       if(this%n <= this%m) then
+          allocate(v(this%m,this%n))
+       else
+          allocate(v(this%m,this%m))
+       endif
+    endif
+
+  endsubroutine LA_Matrix_SVD_Allocate
+
+  subroutine LA_Matrix_SVD(this,s,u,v,error)
+
+    type(LA_Matrix), intent(in) :: this
+    real(dp), dimension(:), intent(out), target, optional :: s
+    real(dp), dimension(:,:), intent(out), target, optional :: u, v
+    integer, optional, intent(out) :: error
+
+    real(dp), dimension(:,:), allocatable :: a
+    real(dp), dimension(:), allocatable :: work
+    real(dp), dimension(:), pointer :: my_s
+    real(dp), dimension(:,:), pointer :: my_u, my_vt
+    real(dp), dimension(1,1), target :: dummy_u, dummy_vt
+    real(dp) :: tmp
+    character(len=1) :: jobu, jobvt
+    integer :: lwork, info, i, j
+
+    INIT_ERROR(error)
+
+    if(.not.this%initialised) then
+       RAISE_ERROR('LA_Matrix_SVD: not initialised',error)
+    endif
+
+    allocate(a(this%n,this%m))
+    a = this%matrix
+
+    if(present(s)) then
+       call check_size('s',s,min(this%n,this%m),'LA_Matrix_SVD',error=error)
+       my_s => s
+    else
+       allocate(my_s(min(this%n,this%m)))
+    endif
+
+    if(present(u)) then
+       if(this%n <= this%m) then
+          call check_size('u',u,(/this%n,this%n/),'LA_Matrix_SVD',error=error)
+          jobu = "A"
+          my_u => u
+       else
+          call check_size('u',u,(/this%n,this%m/),'LA_Matrix_SVD',error=error)
+          jobu = "S"
+          my_u => u
+       endif
+    else
+       jobu = "N"
+       my_u => dummy_u
+    endif
+
+    if(present(v)) then
+       if(this%n <= this%m) then
+          call check_size('v',v,(/this%m,this%n/),'LA_Matrix_SVD',error=error)
+          jobvt = "O"
+          my_vt => dummy_vt
+       else
+          call check_size('v',v,(/this%m,this%m/),'LA_Matrix_SVD',error=error)
+          jobvt = "A"
+          my_vt => v
+       endif
+    else
+       jobvt = "N"
+       my_vt => dummy_vt
+    endif
+
+    allocate(work(1))
+    lwork = -1
+    call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, my_s, my_u, this%n, my_vt, this%m, work, lwork, info)
+    lwork = ceiling(work(1))
+    deallocate(work)
+
+    allocate(work(lwork))
+    call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, my_s, my_u, this%n, my_vt, this%m, work, lwork, info)
+    deallocate(work)
+
+    if( this%n <= this%m ) then
+       if(present(v)) then
+          do i = 1, this%n
+             do j = 1, this%m
+                v(j,i) = a(i,j)
+             enddo
+          enddo
+       endif
+    else
+       if(present(v)) then
+          do i = 1, this%m
+             do j = i+1, this%m
+                tmp = v(i,j)
+                v(i,j) = v(j,i)
+                v(j,i) = tmp
+             enddo
+          enddo
+       endif
+    endif
+
+    if(allocated(a)) deallocate(a)
+    my_u => null()
+    my_vt => null()
+
+    if(present(s)) then
+       my_s => null()
+    else
+       deallocate(my_s)
+    endif
+
+    if(info < 0) then
+       RAISE_ERROR('LA_Matrix_SVD: '//(-info)//'-th parameter had an illegal value.',error)
+    elseif( info > 0) then
+       RAISE_ERROR('LA_Matrix_SVD: singular value decomposition of the bidiagonal matrix did not converge, '//info//' superdiagonals did not converge to zero.',error)
+    endif
+
+  endsubroutine LA_Matrix_SVD
+
+  subroutine LA_Matrix_PseudoInverse(this, inverse, error)
+    type(LA_Matrix), intent(in) :: this
+    real(dp), dimension(:,:), intent(out) :: inverse
+    integer, optional, intent(out) :: error
+
+    real(dp), dimension(:), allocatable :: s
+    real(dp), dimension(:,:), allocatable :: u, v
+
+    INIT_ERROR(error)
+
+    if(.not.this%initialised) then
+       RAISE_ERROR('LA_Matrix_SVD: not initialised',error)
+    endif
+
+    call check_size('inverse',inverse,(/this%m,this%n/),'LA_Matrix_PseudoInverse',error=error)
+
+    call LA_Matrix_SVD_Allocate(this,s=s,u=u,v=v,error=error)
+    call LA_Matrix_SVD(this,s=s,u=u,v=v,error=error)
+
+    where(abs(s) > TOL_SVD)
+       s = 1.0_dp / s
+    elsewhere
+       s = 0.0_dp
+    endwhere
+
+    inverse = v .multd. s
+    inverse = inverse .mult. transpose(u)
+
+    if(allocated(s)) deallocate(s)
+    if(allocated(u)) deallocate(u)
+    if(allocated(v)) deallocate(v)
+
+  endsubroutine LA_Matrix_PseudoInverse
 
   subroutine house_qp(x,v,beta)
      real(qp), dimension(:), intent(in) :: x

@@ -6,7 +6,7 @@ program descriptors_wrapper_example
   real(8), dimension(3,3) :: lattice
   character(len=3), dimension(n) :: symbol
   real(8), dimension(3,n) :: coord
-  character(len=10240) :: descriptor_str
+  character(len=10240) :: descriptor_str, calc_args_str
 
   real(8), dimension(n,n) :: distances
 
@@ -26,30 +26,33 @@ program descriptors_wrapper_example
   coord(1,8) =  -1.54238274d0; coord(2,8) =     1.54656737d0; coord(3,8) =    -0.12887274d0;
 
   descriptor_str ="soap n_max=10 l_max=10 atom_sigma=0.5 cutoff=3.0 cutoff_transition_width=0.5"
+  calc_args_str = ""
 
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,0,.false.,.true.,distances)
+#ifdef HAVE_GAP
+  call descriptors_wrapper_distances(n,lattice,symbol,coord,descriptor_str,len(descriptor_str),calc_args_str,len(calc_args_str),0,.false.,.true.,distances)
   print*,'initial calc, Distances'
   print*, sum(distances)/n
 
   coord(:,4) = coord(:,4) + (/-0.0221501781132952d0,0.00468815192049838d0,0.0457506835434298d0/)
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,4,.false.,.true.,distances)
+  call descriptors_wrapper_distances(n,lattice,symbol,coord,descriptor_str,len(descriptor_str),calc_args_str,len(calc_args_str),4,.false.,.true.,distances)
   print*,'moving atom 4, Distances'
   print*, sum(distances)/n
 
   coord(:,2) = coord(:,2) + (/0.03002804688888d0,-0.0358113661372785d0,-0.0078238717373725d0/)
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,2,.false.,.true.,distances)
+  call descriptors_wrapper_distances(n,lattice,symbol,coord,descriptor_str,len(descriptor_str),calc_args_str,len(calc_args_str),2,.false.,.true.,distances)
   print*,'moving atom 2, accepted previous, Distances'
   print*, sum(distances)/n
 
   coord(:,2) = coord(:,2) - (/0.03002804688888d0,-0.0358113661372785d0,-0.0078238717373725d0/)
   coord(:,8) = coord(:,8) + (/0.0292207329559554d0,0.0459492426392903d0,0.0155740699156587d0/)
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,8,.false.,.false.,distances)
+  call descriptors_wrapper_distances(n,lattice,symbol,coord,descriptor_str,len(descriptor_str),calc_args_str,len(calc_args_str),8,.false.,.false.,distances)
   print*,'moving atom 8, rejecting previous, Distances'
   print*, sum(distances)/n
 
-  call descriptors_wrapper(n,lattice,symbol,coord,descriptor_str,0,.false.,.true.,distances)
+  call descriptors_wrapper_distances(n,lattice,symbol,coord,descriptor_str,len(descriptor_str),calc_args_str,len(calc_args_str),0,.false.,.true.,distances)
 
   print*,'Distances'
   print*, sum(distances)/n
+#endif
 
 endprogram descriptors_wrapper_example

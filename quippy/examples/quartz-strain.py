@@ -128,7 +128,6 @@ if True:
 
    aqc = alpha_quartz_cubic(**sio2.get_quartz_params(aq))
 
-   aqc.set_cutoff_factor(1.2)
    aqc.calc_connect()
 
    elastic_fields(aqc, a=a, cij=C, save_reference=True)

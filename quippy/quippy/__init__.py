@@ -62,7 +62,7 @@ def get_fortran_indexing():
     """
     global _fortran_indexing
     return _fortran_indexing
-    
+
 if 'general' in cfg.sections():
     if 'fortran_indexing' in cfg.options('general'):
         set_fortran_indexing(bool(cfg.get('general', 'fortran_indexing')))
@@ -154,7 +154,7 @@ else:
 
 __all__ = ['QUIP_ROOT', 'QUIP_ARCH', 'QUIP_MAKEFILE',
            'available_modules', 'unavailable_modules',
-           'disabled_modules', 
+           'disabled_modules',
            'set_fortran_indexing', 'get_fortran_indexing']
 
 wrap_modules = spec['wrap_modules']
@@ -277,7 +277,6 @@ __all__.extend(quippy.util.__all__)
 import quippy.asap
 import quippy.povray
 import quippy.cube
-import quippy.xyz
 import quippy.netcdf
 import quippy.imd
 import quippy.vasp

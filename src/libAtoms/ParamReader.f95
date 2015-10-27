@@ -30,7 +30,7 @@
 
 !X
 !X ParamReader module
-!X  
+!X
 !X James Kermode <jrk33@cam.ac.uk>
 !% The ParamReader module provides the facility to read parameters in the
 !% form 'key = value' from files or from the command line. In typical
@@ -60,9 +60,9 @@ module paramreader_module
   integer, parameter :: PARAM_INTEGER = 2 !% Integer parameter
   integer, parameter :: PARAM_STRING = 3  !% String parameter
   integer, parameter :: PARAM_LOGICAL = 4 !% Logical parameter
-  
-  character(len=*), parameter :: PARAM_MANDATORY = '//MANDATORY//' !% If this is passed to 'Param_Register' 
-                                                                   !% instead of a default value then 
+
+  character(len=*), parameter :: PARAM_MANDATORY = '//MANDATORY//' !% If this is passed to 'Param_Register'
+                                                                   !% instead of a default value then
                                                                    !% this parameter is not optional.
 
   type ParamEntry
@@ -85,10 +85,10 @@ module paramreader_module
 
   end type ParamEntry
 
-  !% Overloaded interface to register a parameter in a Dictionary object. 
+  !% Overloaded interface to register a parameter in a Dictionary object.
   !% 'key' is the key name and 'value' the default value. For a mandatory
   !% parameter use a value of 'PARAM_MANDATORY'. The last argument to Register
-  !% should be a pointer to the variable that the value of  the parameter should 
+  !% should be a pointer to the variable that the value of  the parameter should
   !% be copied to after parsing by 'param_read_line', 'param_read_file'
   !% or 'param_read_args'. For a parameter which shouldn't be parsed, do not specify a target.
   interface param_register
@@ -192,9 +192,9 @@ module paramreader_module
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
 
-      if (len(adjustr(char_target)) /= STRING_LENGTH) &
+      if (len(char_target) /= STRING_LENGTH) &
 	call system_abort('param_register_single_string called for "'//trim(key)// &
-	 '" has char_target(len='//len(adjustr(char_target))//'), must be called with char_target(len=STRING_LENGTH)')
+	 '" has char_target(len='//len(char_target)//'), must be called with char_target(len=STRING_LENGTH)')
 
       call param_register_main(dict, key, value, 1, PARAM_STRING, help_string=help_string, &
 	 char_target=char_target, has_value_target=has_value_target)
@@ -205,7 +205,7 @@ module paramreader_module
     subroutine param_register_dontread(dict, key)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
-      
+
       call param_register_main(dict, key, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED")
 
     end subroutine param_register_dontread
@@ -317,10 +317,10 @@ module paramreader_module
          end if
 
       case default
-         write (line, '(a,i0)') 'Param_Register: unknown parameter type ', & 
+         write (line, '(a,i0)') 'Param_Register: unknown parameter type ', &
               entry%param_type
          call system_abort(line)
-         
+
       end select
 
       ! Parse the default value string
@@ -332,7 +332,7 @@ module paramreader_module
       allocate(data%d(size(transfer(entry,data%d))))
       data%d = transfer(entry,data%d)
       call Set_Value(dict, key, data)
-      
+
     end subroutine param_register_main
 
 
@@ -415,7 +415,7 @@ module paramreader_module
             call param_print_help(dict)
             cycle
          endif
-           
+
          ! Extract this value
          if (.not. get_value(dict, key, data, i=entry_i)) then
 	    if (.not. my_ignore_unknown) then
@@ -460,9 +460,9 @@ module paramreader_module
       status = .true. ! signal success to caller
 
       if (my_check_mandatory) status = param_check(dict)
-      
+
     end function param_read_line
-    
+
 
     !% Read lines from Inoutput object 'file', in format 'key = value' and set
     !% entries in the Dictionary 'dict'.  Skips lines starting with a '#'. If
@@ -486,7 +486,7 @@ module paramreader_module
          myline = read_line(file, file_status)
          if (file_status /= 0) exit  ! Check for end of file
          ! Discard empty and comment lines, otherwise parse the line
-         if (len_trim(myline) > 0 .and. myline(1:1) /= '#') then 
+         if (len_trim(myline) > 0 .and. myline(1:1) /= '#') then
             status = param_read_line(dict, myline, task=task)
             if (.not. status) then
                call print('Error reading line: '//myline)
@@ -494,7 +494,7 @@ module paramreader_module
             end if
          end if
       end do
-      
+
       status = .true.
       ! Should we check if all mandatory params have been specified?
       if (my_check_mandatory) status = param_check(dict)
@@ -540,7 +540,7 @@ module paramreader_module
          allocate(xargs(nargs))
          xargs = (/ (i, i=1,size(xargs)) /)
       end if
-      
+
       ! Concatentate command line options into one string
       my_command_line = ''
       do i=1, size(xargs)
@@ -614,9 +614,9 @@ module paramreader_module
       ! Find the key=value pairs, skipping over non-option arguments
       call allocate(opt_inds, 1, 0, 0, 0)
       i = 1
-      do 
+      do
          eqpos = scan(args(i), '=')
-     
+
          if (eqpos == 0) then
             i = i + 1
             if (i > n_args) exit
@@ -624,7 +624,7 @@ module paramreader_module
          else if (eqpos == 1) then
             ! Starts with '=', so previous argument is key name
             if (i == 1) call system_abort('Missing option name in command line arguments')
-            start = i-1 
+            start = i-1
          else if (eqpos >  1) then
             ! Contains '=' but not at start so key name is in this arg
             start = i
@@ -639,7 +639,7 @@ module paramreader_module
 
          ! Get whole of quoted string
          if (scan(args(end), '"''') /= 0) then
-            do 
+            do
                end = end + 1
                if (end > n_args) &
                     call system_abort('Mismatched quotes in command line arguments')
@@ -856,7 +856,7 @@ module paramreader_module
       call parse_string(entry%value, ' ', fields, num_fields)
 
       ! jrk33 - commented out these lines as they stop zero length string
-      ! values from setting the associated target to an empty string, and 
+      ! values from setting the associated target to an empty string, and
       ! I can't think what good they do!
 !!$      if (num_fields == 0 .and. entry%param_type /= PARAM_LOGICAL) then
 !!$         status = .true.
@@ -910,13 +910,13 @@ module paramreader_module
 	 endif
 
       case default
-         write (line, '(a,i0)') 'Param_ParseValue: unknown parameter type ', & 
+         write (line, '(a,i0)') 'Param_ParseValue: unknown parameter type ', &
               entry%param_type
          call print(line)
          status = .false.
          return
       end select
-      
+
       status = .true.
 
     end function param_parse_value

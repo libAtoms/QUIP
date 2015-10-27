@@ -1007,7 +1007,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_ONIOM
     else if (this%is_oniom) then
        call Print(this%oniom, file=file)
-#endif /* HAVE_oniom */
+#endif /* HAVE_ONIOM */
     else if (this%is_cluster) then
        call Print(this%cluster, file=file)
     else

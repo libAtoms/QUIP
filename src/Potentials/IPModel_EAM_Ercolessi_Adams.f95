@@ -29,14 +29,14 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_EAM_ErcolAd module 
-!X  
-!% Module for the Embedded Atom Potential of Liu, Ercolessi, Adams. 
+!X IPModel_EAM_ErcolAd module
+!X
+!% Module for the Embedded Atom Potential of Liu, Ercolessi, Adams.
 !% (Ref. Liu, Ercolessi, Adams, {\it Modelling Simul. Mater. Sci. Eng.} {\bf 12}, 665-670, (2004)).
 !% In this potential no analytic function is assumed for the actractive and repulsive terms.
 !% Each function is described as a set of points, whose values are the IP parameters.
 !% A cubic spline function is then used for interpolation between those points.
-!% The 'IPModel_EAM_ErcolAd' object contains all the parameters (the grid points) 
+!% The 'IPModel_EAM_ErcolAd' object contains all the parameters (the grid points)
 !% read from an 'EAM_ErcolAd_params' XML stanza.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -168,7 +168,7 @@ subroutine IPModel_EAM_ErcolAd_Finalise(this)
 end subroutine IPModel_EAM_ErcolAd_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator.  It computes energy, forces and virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -176,8 +176,8 @@ end subroutine IPModel_EAM_ErcolAd_Finalise
 subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_EAM_ErcolAd), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -209,7 +209,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
      local_e = 0.0_dp
   endif
 
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_EAM_ErcolAd_Calc', error)
      f = 0.0_dp
   end if
@@ -340,7 +340,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
     endif
 
     if (present(f) .or. present(virial) .or. present(local_virial)) then
-      dF_n = eam_spline_F_d(this, ti, rho_i) 
+      dF_n = eam_spline_F_d(this, ti, rho_i)
       dF_n = dF_n + this%V_F_shift(ti)
       if (present(f)) f_in(:,i) = f_in(:,i) + w_f*dF_n*drho_i_dri
       if (present(virial) .or. present(local_virial)) virial_i = w_f*dF_n*drho_i_drij_outer_rij
@@ -368,7 +368,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
   enddo ! i
 
   if (present(mpi)) then
-     if (present(e)) e = sum(mpi, e)
+     if (present(e)) e = sum(mpi, e_in)
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) then
         call sum_in_place(mpi, f_in)
@@ -481,15 +481,15 @@ function eam_spline_F_d(this, ti, rho)
 end function eam_spline_F_d
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -727,9 +727,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'EAM_ErcolAd_params') then
@@ -781,7 +781,7 @@ subroutine IPModel_EAM_ErcolAd_read_params_xml(this, param_str)
 end subroutine IPModel_EAM_ErcolAd_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of potential parameters: number of different types, cutoff radius, atomic numbers, ect.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -808,7 +808,7 @@ subroutine IPModel_EAM_ErcolAd_Print (this, file)
     end do
     call verbosity_pop()
   end do
-    
+
 end subroutine IPModel_EAM_ErcolAd_Print
 
 end module IPModel_EAM_ErcolAd_module

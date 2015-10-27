@@ -26,16 +26,27 @@ include Makefile.${QUIP_ARCH}
 include ${BUILDDIR}/Makefile.inc
 include Makefile.rules
 
+# Test if the 'python' in the path is a Python 2, if not then
+# explicitly call python2
+# This is a workaround for old virtualenv versions that don't create the
+# 'python2' symlink.
+python_version := $(word 2, $(subst ., , $(shell python -V 2>&1)))
+ifeq (${python_version},2)
+	PYTHON := python
+else
+	PYTHON := python2
+endif
+
 .PHONY: build install clean test
 
 build:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py build
+	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} ${PYTHON} setup.py build
 
 install:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py install ${QUIPPY_INSTALL_OPTIONS}
+	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} ${PYTHON} setup.py install ${QUIPPY_INSTALL_OPTIONS}
 
 clean:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py clean
+	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} ${PYTHON} setup.py clean
 
 test:
-	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} python setup.py test ${QUIPPY_TEST_OPTIONS}
+	LD=${LINKER} CC=${CC} F90=${F90} F77=${F77} QUIP_ROOT=${QUIP_ROOT} ${PYTHON} setup.py test ${QUIPPY_TEST_OPTIONS}

@@ -407,7 +407,6 @@ def bonds_from_avgpos(at):
     
     at_avg = at.copy()
     at_avg.pos[...] = at_avg.avgpos[...]
-    at_avg.set_cutoff_factor(1.2)
     at_avg.calc_connect()
     return set(at_avg.neighbours.pairs())
 

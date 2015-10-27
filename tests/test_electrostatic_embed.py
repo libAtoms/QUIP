@@ -120,7 +120,6 @@ if test_electrostatic_embed:
 
        cluster2.pos[:] = cluster2.pos - numpy.tile(origin, [cluster2.n, 1]).T
 
-       cluster2.set_cutoff_factor(1.2)
        cluster2.calc_connect()
        cluster2.coalesce_in_one_periodic_image(is_periodic=[False,False,True])
 
@@ -142,7 +141,6 @@ if test_electrostatic_embed:
        # Translate cluster to centre positions on origin of electrostatic potential
        cluster.pos[:] = cluster.pos - numpy.tile(origin, [cluster.n, 1]).T
 
-       cluster.set_cutoff_factor(1.2)
        cluster.calc_connect()
        cluster.coalesce_in_one_periodic_image(is_periodic=[False,False,True])
 

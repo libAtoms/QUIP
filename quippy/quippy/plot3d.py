@@ -53,7 +53,6 @@ def add_balls(at, colours=None, colorbar=False, atom_scale_factor=1.0, vmin=None
 
 
 def add_bonds(at, pts, cutoff_factor=1.2, bond_radius=0.2, bond_colour=(.55, .55, .55)):
-    at.set_cutoff_factor(cutoff_factor)
     at.calc_connect()
 
     bonds = []

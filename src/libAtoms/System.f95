@@ -2307,7 +2307,7 @@ contains
     integer, allocatable :: idum_buf(:)
 #endif
     include "mpif.h"    
-    call print('Resyncronising random number generator', PRINT_VERBOSE)
+    call print('Resynchronising random number generator', PRINT_VERBOSE)
 
 #ifdef _OPENMP
     allocate(idum_buf(omp_get_max_threads()))

@@ -242,11 +242,11 @@ contains
        
        ! change OH angles
        axis = (at%pos(:,2)-at%pos(:,1)) .cross. (at%pos(:,3)-at%pos(:,1))
-       quat = rotation(axis, dHoHamp*proposal_amplitude/180.0_dp*PI*(ran_uniform()-0.5_dp))
+       quat = rotation(axis, dHOHamp*proposal_amplitude/180.0_dp*PI*(ran_uniform()-0.5_dp))
        at%pos(:,2) = at%pos(:,1)+ rotate(at%pos(:,2)-at%pos(:,1), quat)
        
        axis = (at%pos(:,5)-at%pos(:,4)) .cross. (at%pos(:,6)-at%pos(:,4))
-       quat = rotation(axis, dHoHamp*proposal_amplitude/180.0_dp*PI*(ran_uniform()-0.5_dp))
+       quat = rotation(axis, dHOHamp*proposal_amplitude/180.0_dp*PI*(ran_uniform()-0.5_dp))
        at%pos(:,5) = at%pos(:,4)+ rotate(at%pos(:,5)-at%pos(:,4), quat)
        
     else

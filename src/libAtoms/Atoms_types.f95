@@ -244,7 +244,7 @@ module Atoms_types_module
      integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
      integer                               :: Nbuffer = 0 !% The number of atoms that can be stored in the buffers of this Atoms object
 
-     real(dp)                              :: cutoff = 0.0_dp !% Cutoff distance for neighbour calculations. Default 0.0 (unset).
+     real(dp)                              :: cutoff = -1.0_dp !% Cutoff distance for neighbour calculations. Default -1.0 (unset).
      real(dp)                              :: cutoff_skin = 0.0_dp !% If set, increase cutoff by this amount to reduce calc_connect() frequency
      logical                               :: pot_should_do_nn = .false., pot_needs_new_connect = .false., pot_needs_new_dists = .false.
      real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL 
