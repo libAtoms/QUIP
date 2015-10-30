@@ -40,7 +40,7 @@ except ImportError:
 
 # thermostat and barostat type constants are defined in Thermostats.f95,
 # which is not directly wrapped by quippy, so we reproduce them here
-    
+
 THERMOSTAT_NONE = 0
 THERMOSTAT_LANGEVIN = 1
 THERMOSTAT_NOSE_HOOVER = 2
@@ -102,7 +102,7 @@ class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
                                                  args_str=args_str)
             return traj
         else:
-            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval, 
+            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval,
 						 summary_interval=summary_interval, write_interval=write_interval,
                                                  trajectory=trajectory, args_str=args_str)
 
@@ -146,7 +146,7 @@ class Dynamics(object):
     def __init__(self, atoms, timestep, trajectory,
                  trajectoryinterval=10, initialtemperature=None,
                  logfile='-', loginterval=1, loglabel='D'):
-       
+
         # we will do the calculation in place, to minimise number of copies,
         # unless atoms is not a quippy Atoms
         if not isinstance(atoms, Atoms):
@@ -165,7 +165,7 @@ class Dynamics(object):
                 self.atoms.set_masses(self.atoms.mass/MASSCONVERT)
             else:
                 self.atoms.set_masses('defaults')
-        
+
         if self.atoms.has('momenta'):
             if self.atoms.has_property('velo'):
                 if np.max(np.abs(self.atoms.velo*sqrt(MASSCONVERT) - self.atoms.get_velocities().T)) > 1e-3:
@@ -178,7 +178,7 @@ class Dynamics(object):
             else:
                 # start with zero momenta
                 self.atoms.set_momenta(np.zeros_like(self.atoms.positions))
-                self.atoms.add_property('velo', 0., n_cols=3)            
+                self.atoms.add_property('velo', 0., n_cols=3)
 
         self._ds = DynamicalSystem(self.atoms)
 
@@ -191,7 +191,7 @@ class Dynamics(object):
 
         # now self._ds.atoms is either a Fortran shallowcopy of atoms,
         # or a copy if input atoms was not an instance of quippy.Atoms
-        
+
         if 'time' in atoms.info:
             self.set_time(atoms.info['time']) # from ASE units to fs
 
@@ -229,7 +229,7 @@ class Dynamics(object):
     nsteps = property(get_number_of_steps)
 
 
-    def insert_observer(self, function, position=0, interval=1, 
+    def insert_observer(self, function, position=0, interval=1,
                         *args, **kwargs):
         """Insert an observer."""
         if not callable(function):
@@ -328,7 +328,7 @@ class Dynamics(object):
                 self._virial[1,2] = self._virial[2,1] = virial[3]
                 self._virial[0,2] = self._virial[2,0] = virial[4]
                 self._virial[0,1] = self._virial[1,0] = virial[5]
-            print 'Computed virial:', self._virial
+            #print 'Computed virial:', self._virial
 
         # Second half of the Velocity Verlet step
         #   p(t+dt) = p(t+dt/2) + F(t+dt)/2    ->    v(t+dt) = v(t+dt/2) + a(t+dt)/2
@@ -355,24 +355,24 @@ class Dynamics(object):
         self.atoms.params['Wkin'] = self._ds.wkin
         self.atoms.params['thermostat_dW'] = self._ds.thermostat_dw
         self.atoms.params['thermostat_work'] = self._ds.thermostat_work
- 
+
         # return f(t+dt)
         return forces
 
 
     def run(self, steps=50):
         """
-        Run dynamics forwards for `steps` steps. 
+        Run dynamics forwards for `steps` steps.
         """
         f = self.atoms.get_forces()
         for step in xrange(steps):
             f = self.step(f)
-            self.call_observers()            
+            self.call_observers()
 
 
     def print_status(self, file=None):
         self._ds.print_status(self.loglabel, file=file)
-        
+
 
     def get_time(self):
         return float(self._ds.t*fs)
@@ -395,7 +395,7 @@ class Dynamics(object):
     number_of_constraints = property(get_number_of_constraints,
                                      doc="Get number of constraints")
 
-    
+
     def get_number_of_restraints(self):
         return self._ds.nrestraints
 
@@ -413,7 +413,7 @@ class Dynamics(object):
 
     def get_temperature(self):
         return self._ds.cur_temp
-    
+
 
     def set_temperature(self, temperature):
         """
@@ -425,7 +425,7 @@ class Dynamics(object):
     temperature = property(get_temperature, set_temperature,
                            doc="Get or set the current temperature")
 
-    
+
     def get_average_temperature(self):
         return self._ds.avg_temp
 
@@ -438,7 +438,7 @@ class Dynamics(object):
 
     def set_averaging_time(self, avg_time):
         self._ds.avg_time = avg_time
-        
+
     averaging_time = property(get_averaging_time, set_averaging_time,
                               doc="Averaging time used for average temperature and kinetic energy")
 
@@ -487,7 +487,7 @@ class Dynamics(object):
            ``THERMOSTAT_NONE``, ``THERMOSTAT_LANGEVIN``, ``THERMOSTAT_NOSE_HOOVER``, ``THERMOSTAT_NOSE_HOOVER_LANGEVIN``,
            ``THERMOSTAT_LANGEVIN_NPT``, ``THERMOSTAT_LANGEVIN_PR``, ``THERMOSTAT_NPH_ANDERSEN``, ``THERMOSTAT_NPH_PR``,
            ``THERMOSTAT_LANGEVIN_OU``, ``THERMOSTAT_LANGEVIN_NPT_NB``, ``THERMOSTAT_ALL_PURPOSE``.
-                   
+
         :param T:  target temperature for this thermostat, in K.
 
         :param gamma: decay constant, in units  of 1/fs
@@ -499,11 +499,11 @@ class Dynamics(object):
                          (for variable cell thermostats only).
 
         :param p:   target pressure (for variable cell thermostats)
-                 
+
         :param NHL_tau:  time constant for Nose-Hoover-Langevein thermostats
-                 
+
         :param NHL_mu:   thermostat mass Nose-Hoover-Langevin thermostats
-                 
+
         :param massive:  set to True to enable massive Nose-Hoover-Langevin
         """
 
@@ -546,7 +546,7 @@ class Dynamics(object):
         Print a table of the current thermostats in this system
         """
         self._ds.print_thermostats()
-        
+
 
     def get_thermostat_temperatures(self):
         """
@@ -574,11 +574,11 @@ class Dynamics(object):
         Modified for arbitrary strain based on (but not exactly using)
         formulation in E. Tadmor and R. Miller Modeling Materials:
         Continuum, Atomistic and Multiscale Techniques
-        (Cambridge University Press, 2011). Chap 9.5.  Their 
+        (Cambridge University Press, 2011). Chap 9.5.  Their
         definition of stress (factors of F, F^T, J, and F^-T) for finite
         strain is optionally used, but certain terms in EOM are excluded,
         and their discretization is entirely ignored.
-        
+
         :param type:   The type of barostat to be used. Currently only
                        ``BAROSTAT_HOOVER_LANGEVIN`` is supported.
 
@@ -614,7 +614,7 @@ class Dynamics(object):
         Update target pressure `p` or temperature `T` for NPT barostat
         """
         self._ds.update_barostat(self, p, T)
-        
+
 
     def get_state(self):
         saved_ds = DynamicalSystem(self.atoms)
