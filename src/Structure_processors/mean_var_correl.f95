@@ -406,6 +406,7 @@ implicit none
     call system_abort("Couldn't parse n_bins or n_data in 2nd line of file")
 
   if (do_weights) then
+    if (over_bins) call system_abort("Can't do weighted mean over bins")
     n_weights = 1
   else
     n_weights = 0
@@ -449,8 +450,7 @@ implicit none
       do i=1, n_data
          data(:,i) = data(:,i) * weights(i)
       end do
-      data = data / sum(weights)
-      data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
+      data_mean = sum(data,reduction_index) / sum(weights)
   else
       data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
   endif
