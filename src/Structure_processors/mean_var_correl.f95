@@ -313,8 +313,9 @@ program mean_var_correl
 use libatoms_module
 use mean_var_correl_util_mod
 implicit none
-  integer :: n_bins, n_data, i, j, bin_i, skip, max_frame
-  real(dp), allocatable :: data(:,:), dummy(:)
+  integer :: n_bins, n_data, n_weights, i, j, bin_i, skip, max_frame
+  logical :: do_weights
+  real(dp), allocatable :: data(:,:), weights(:), data_line(:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
   logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_correlation_var_effective_N, do_summed_ac_effective_N, do_sliding_window_effective_N, do_binning_effective_N, do_exp_smoothing
@@ -396,12 +397,19 @@ implicit none
   call initialise(data_params)
   call param_register(data_params, "n_bins", param_mandatory, n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(data_params, "n_data", param_mandatory, n_data, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(data_params, "do_weights", 'F', do_weights, help_string="If true, do weighted mean")
 
   call initialise(infile, infile_name, INPUT)
   myline=read_line(infile) ! comment
   myline=read_line(infile) ! data description
   if (.not.param_read_line(data_params, trim(myline), ignore_unknown=.false.)) &
     call system_abort("Couldn't parse n_bins or n_data in 2nd line of file")
+
+  if (do_weights) then
+    n_weights = 1
+  else
+    n_weights = 0
+  end if
 
   allocate(bin_labels(n_bins))
   do i=1, n_bins
@@ -410,25 +418,42 @@ implicit none
   if(max_frame > 0 .and. max_frame <= n_data) then
      n_data = max_frame
   end if
+  allocate(data_line(n_bins+n_weights))
   if(skip > 0) then
-     allocate(dummy(n_bins))
      do i=1,skip
-        call read_ascii(infile, dummy(:))
+        call read_ascii(infile, data_line(:))
      end do
      n_data = n_data-skip
-     deallocate(dummy)
   end if
   allocate(data(n_bins, n_data))
+  if (n_weights > 0) then
+    allocate(weights(n_data))
+  endif
   do i=1, n_data
-    call read_ascii(infile, data(:,i))
+    call read_ascii(infile, data_line(:))
+    if (n_weights > 0) then
+        weights(i) = data_line(1)
+        data(:,i) = data_line(2:)
+    else
+        data(:,i) = data_line(:)
+    endif
   end do
+  deallocate(data_line)
 
 
   sz = size(data, other_index)
   r_sz = size(data, reduction_index)
 
   allocate(data_mean(sz))
-  data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
+  if (n_weights > 0) then
+      do i=1, n_data
+         data(:,i) = data(:,i) * weights(i)
+      end do
+      data = data / sum(weights)
+      data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
+  else
+      data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
+  endif
 
   call initialise(outfile, outfile_name, OUTPUT)
 
