@@ -32,4 +32,4 @@
 
 include arch/Makefile.linux_x86_64_gfortran_CrayXE6
 
-DEFINES += -DMPI -DMPI_1
+DEFINES += -D_MPI -DMPI_1
