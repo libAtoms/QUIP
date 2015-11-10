@@ -49,6 +49,8 @@ module minimization_module
 
   public :: minim, n_minim, fire_minim, test_gradient, n_test_gradient, precon_data, preconminim, precondimer
 
+  public :: KahanSum, DoubleKahanSum
+
   real(dp),parameter:: DXLIM=huge(1.0_dp)     !% Maximum amount we are willing to move any component in a linmin step
 
   ! parameters from Numerical Recipes */

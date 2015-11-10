@@ -65,9 +65,13 @@ def calculator_callback_factory(calculator):
 
     return callback
 
-
-from ase.calculators.calculator import Calculator, all_changes, all_properties
-
+try:
+    from ase.calculators.calculator import Calculator, all_changes, all_properties
+except ImportError:
+    potlog.warn('Atomic Simulation Environment (ASE) not installed, limited functionality available')
+    Calculator = object
+    all_changes = None
+    all_properties = None
 
 class Potential(_potential.Potential, Calculator):
     __doc__ = update_doc_string(_potential.Potential.__doc__, r"""
@@ -505,7 +509,10 @@ with `atoms` to the new :class:`Potential` instance, by calling
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(potential)'] = Potential
 
-from ase.optimize.optimize import Optimizer
+try:
+    from ase.optimize.optimize import Optimizer
+except ImportError:
+    Optimizer = object
 
 class Minim(Optimizer):
     """

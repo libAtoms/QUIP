@@ -54,6 +54,7 @@ use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosi
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
+use minimization_module, only: KahanSum
 use atoms_types_module
 use atoms_module
 use cinoutput_module
@@ -178,7 +179,6 @@ subroutine IPModel_FC4_Initialise_str(this, args_str, param_str)
   if (.not.assign_pointer(this%ideal_struct, "cell_offset", this%ideal_struct_cell_offset)) &
        call system_abort("IPModel_FC4 requires 'cell_offset' field in ideal struct file")
 
-
   allocate(this%igroup_2(this%nfc2),    &
        this%iatomterm_2(2,this%nfc2),   &
        this%ixyzterm_2(2,this%nfc2),    &
@@ -217,8 +217,7 @@ subroutine IPModel_FC4_Initialise_str(this, args_str, param_str)
        call system_abort("IPModel_FC4 requires 'prim_index' field in atom_shl file")
   if (.not.assign_pointer(this%atom_shl, "cell_offset", this%atom_shl_cell_offset)) &
        call system_abort("IPModel_FC4 requires 'cell_offset' field in atom_shl file")
-
-  
+ 
   !
   ! Read the force constants
   ! 
@@ -268,13 +267,14 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
    integer, intent(out), optional :: error
 
    integer :: ia, ja, ka, la, i0, j0, k0, l0, alpha, beta, gamma, delta
+   integer ix
    integer :: ifc, ni(3), taui, tauj
-   real(dp) :: disp_alpha_i, disp_beta_j, phi, de, df
+   real(dp) :: disp_alpha_i, disp_beta_j, phi, de, df, fsum(3)
    real(dp) :: displacement(3,at%N)
    real(dp) :: local_virial_sq(3,3,at%N)
    real(dp) :: local_e_tmp(at%N)
 
-   real(dp) :: r_ij(3)
+   real(dp) :: r_ij(3), com_offset(3)
    integer n_extra_calcs, i_calc
    character(len=20) :: extra_calcs_list(10)
 
@@ -326,11 +326,25 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
    flux = 0
 !  local_flux = 0
 
-   do ia=1,at%N
-      displacement(:,ia) = -diff_min_image(at, ia, this%ideal_struct%pos(:,ia))
+!  Remap positions by the mean position to avoid loss of precision in
+!  the forces if there is a drift.  Don't use 'centre_of_mass' because
+!  the `mass' property might not be present.  Using the precise centre
+!  of mass is not important.
+   do ix=1,3
+      com_offset(ix) = KahanSum( (/ (at%pos(ix,ia) - this%ideal_struct%pos(ix,ia), ia=1,at%N) /) ) / at%N
    end do
 
    do ia=1,at%N
+      displacement(:,ia) = -diff_min_image(at, ia, this%ideal_struct%pos(:,ia) + com_offset)
+   end do
+
+   do ia=1,at%N
+      if (present(mpi)) then
+         if (mpi%active) then
+            if (mod(ia-1, mpi%n_procs) /= mpi%my_proc) cycle
+         endif
+      endif
+
       taui = this%ideal_struct_prim_index(ia)  ! the primitive-cell atom index (taui)
       ni = this%ideal_struct_cell_offset(:,ia) ! the image cell of the atom (ni)
       !
@@ -430,14 +444,32 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
    if (present(local_virial)) local_virial = reshape(local_virial_sq, (/ 9, at%N /))
    if (present(virial)) virial = sum(local_virial_sq,3)
    if (present(local_e)) local_e = local_e_tmp
-   if (present(e)) e = sum(local_e_tmp)
-   if (do_flux) then 
-!     local_flux = local_flux / cell_volume(at)
-!     flux = sum(local_flux,2)
-      flux = flux / cell_volume(at)
-      call set_value(at%params, "Flux", flux)
+   if (present(e)) e = KahanSum(local_e_tmp)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(virial)) call sum_in_place(mpi, local_virial)
+     if (present(f)) call sum_in_place(mpi, f)
+  endif
+   if (present(f)) then
+      do ix=1,3
+         fsum(ix) = KahanSum(f(ix,:)) / at%N
+      end do
+      do ia=1,at%N
+         f(:,ia) = f(:,ia) - fsum
+      end do
    end if
-   
+
+
+  if (do_flux) then 
+     if (present(mpi)) call sum_in_place(mpi, flux)
+!    local_flux = local_flux / cell_volume(at)
+!    flux = sum(local_flux,2)
+     flux = flux / cell_volume(at)
+     call set_value(at%params, "Flux", flux)
+  end if
+
 end subroutine IPModel_FC4_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -749,7 +781,7 @@ function findatom_sc(this, tau, n, at)
   integer nwrap(3), nsc(3), tau_sc_idx
   real(dp) :: wrap(3), prim_cell_pos(3), prim_cell(3,3), inv_prim_cell(3,3), tau_prim(3), tau_frac(3), tau_frac_remap(3), n_frac(3)
 
-  namelist/NMLDEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
+  namelist/DEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
 
 ! Common case: just see if it is in the array
   if (all(n.ge.this%sc_min.and.n.le.this%sc_max)) then 
@@ -789,7 +821,7 @@ function findatom_sc(this, tau, n, at)
   ! express in terms of primitive cell coords
 
   if (findatom_sc < 0) then
-     write (*,nml=NMLDEBUG) 
+     write (*,nml=DEBUG) 
      call system_abort("Findatom_sc: requested atom tau=" // tau &
           // ", n=" // n // " does not exist in the supercell")
   end if
