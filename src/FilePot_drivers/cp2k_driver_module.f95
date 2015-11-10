@@ -107,7 +107,8 @@ contains
     logical :: dummy, have_silica_potential, have_titania_potential, silica_add_23_body
     logical :: silica_pos_dep_charges
     real(dp) :: silica_charge_transfer, silicon_charge, oxygen_charge, hydrogen_charge
-    integer :: res_num_silica !lam81
+    integer :: res_num_silica
+    logical :: do_mom_cons
     type(Table) :: intrares_impropers
 
     integer, pointer :: sort_index_p(:), mol_id_p(:)
@@ -173,7 +174,8 @@ contains
       call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn, help_string="if true, try to reuse previous wavefunction file")
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential, help_string="if true, use 2.8A SILICA_CUTOFF for the connectivities")
       call param_register(cli, 'have_titania_potential', 'F', have_titania_potential, help_string="if true, use 2.8A TITANIA_CUTOFF for the connectivities")
-      call param_register(cli, 'res_num_silica', '1', res_num_silica, help_string="residue number for silica residue") !lam81
+      call param_register(cli, 'res_num_silica', '1', res_num_silica, help_string="residue number for silica residue")
+      call param_register(cli, 'do_mom_cons', 'T', do_mom_cons, help_string="do we need momentum conservation?")
       call param_register(cli, 'auto_centre', 'F', auto_centre, help_string="if true, automatically center configuration.  May cause energy/force fluctuations.  Mutually exclusive with centre_pos")
       call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_value_target=has_centre_pos, help_string="position to center around, mutually exclusive with auto_centre")
       call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake, help_string="if true, do fake cp2k runs that just read from old output files")
@@ -263,7 +265,7 @@ contains
     call print('  have_titania_potential '//have_titania_potential)
     call print('  have_silica_potential '//have_silica_potential)
     if(have_silica_potential) then
-       call print('  res_num_silica '//res_num_silica) !lam81
+       call print('  res_num_silica '//res_num_silica)
        call print('  silica_add_23_body '//silica_add_23_body)
        call print('  silica_pos_dep_charges '//silica_pos_dep_charges)
        call print('  silica_charge_transfer '//silica_charge_transfer)
@@ -292,6 +294,7 @@ contains
     call print('  qmmm_same_lattice '//qmmm_same_lattice)
     call print('  qmmm_use_mm_charges '//qmmm_use_mm_charges)
     call print('  qmmm_link_fix_pbc '//qmmm_link_fix_pbc)
+    call print('  do_mom_cons '//do_mom_cons)
     call print('  verbosity '//trim(verbosity))
 
     if (auto_centre .and. has_centre_pos) then
@@ -1019,6 +1022,8 @@ contains
       call print('WARNING cp2k forces max component ' // maxval(abs(f)) // ' at ' // maxloc(abs(f)) // &
 		 ' exceeds warning threshold ' // max_force_warning, PRINT_ALWAYS)
 
+    if(do_mom_cons) call sum0(f)
+
     ! save output
 
     if (use_QM) then
@@ -1528,7 +1533,7 @@ contains
   end function qmmm_qm_abc
 
   subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, n_hydrogen, hydrogen_charge, &
-       n_extra_electrons, use_mm_charges, error) !lam81
+       n_extra_electrons, use_mm_charges, error)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     integer, intent(out) :: charge
@@ -1825,5 +1830,42 @@ contains
      call system_command('if [ -f wfn.restart.wfn'//trim(from)//' ] ; then cp wfn.restart.wfn'//trim(from)//' wfn.restart.wfn'//trim(to)//' ; fi')
 
    end subroutine cp2k_state_change
+
+  !momentum conservation
+  !   weighing function: 1 (simply subtract sumF/n)
+  !?!   weighing function: m (keeping same acceleration on the atoms)
+  subroutine sum0(force)
+
+    real(dp), dimension(:,:), intent(inout) :: force
+    integer   :: i
+    real(dp)  :: sumF(3)
+
+    do i = 1, size(force,2)
+       sumF(1) = sum(force(1,1:size(force,2)))
+       sumF(2) = sum(force(2,1:size(force,2)))
+       sumF(3) = sum(force(3,1:size(force,2)))
+    enddo
+
+    if ((sumF(1).feq.0.0_dp).and.(sumF(2).feq.0.0_dp).and.(sumF(3).feq.0.0_dp)) then
+       call print('cp2k_driver: Sum of the forces are zero.')
+       return
+    endif
+
+    call print('cp2k_driver: Sum of the forces was '//sumF(1:3))
+    sumF = sumF / size(force,2)
+
+    do i = 1, size(force,2)
+       force(1:3,i) = force(1:3,i) - sumF(1:3)
+    enddo
+
+    do i = 1, size(force,2)
+       sumF(1) = sum(force(1,1:size(force,2)))
+       sumF(2) = sum(force(2,1:size(force,2)))
+       sumF(3) = sum(force(3,1:size(force,2)))
+    enddo
+    call print('cp2k_driver: Sum of the forces after mom.cons.: '//sumF(1:3))
+
+  end subroutine sum0
+
 
 end module cp2k_driver_module

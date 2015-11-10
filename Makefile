@@ -64,6 +64,9 @@ endif
 ifeq (${HAVE_SCME},1)
    THIRDPARTY_LIBS += libscme.a
 endif
+ifeq (${HAVE_MTP},1)
+   THIRDPARTY_LIBS += libmtp.a
+endif
 endif
 
 MODULES += libAtoms

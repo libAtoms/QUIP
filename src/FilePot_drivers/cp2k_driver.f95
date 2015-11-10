@@ -95,7 +95,7 @@ implicit none
     HANDLE_ERROR(error)
 
     !momentum conservation
-    call sum0(f0)
+!   call sum0(f0)
 
     !write energy and forces
     call set_value(my_atoms%params,'energy',energy)
@@ -115,44 +115,5 @@ implicit none
     mainlog%prefix=""
     call verbosity_push(PRINT_SILENT)
     call system_finalise
-
-contains
-
-  !momentum conservation
-  !   weighing function: 1 (simply subtract sumF/n)
-  !?!   weighing function: m (keeping same acceleration on the atoms)
-  subroutine sum0(force)
-
-    real(dp), dimension(:,:), intent(inout) :: force
-    integer   :: i
-    real(dp)  :: sumF(3)
-
-    do i = 1, size(force,2)
-       sumF(1) = sum(force(1,1:size(force,2)))
-       sumF(2) = sum(force(2,1:size(force,2)))
-       sumF(3) = sum(force(3,1:size(force,2)))
-    enddo
-
-    if ((sumF(1).feq.0.0_dp).and.(sumF(2).feq.0.0_dp).and.(sumF(3).feq.0.0_dp)) then
-       call print('cp2k_driver: Sum of the forces are zero.')
-       return
-    endif
-
-    call print('cp2k_driver: Sum of the forces was '//sumF(1:3))
-    sumF = sumF / size(force,2)
-
-    do i = 1, size(force,2)
-       force(1:3,i) = force(1:3,i) - sumF(1:3)
-    enddo
-
-    do i = 1, size(force,2)
-       sumF(1) = sum(force(1,1:size(force,2)))
-       sumF(2) = sum(force(2,1:size(force,2)))
-       sumF(3) = sum(force(3,1:size(force,2)))
-    enddo
-    call print('cp2k_driver: Sum of the forces after mom.cons.: '//sumF(1:3))
-
-  end subroutine sum0
-
 
 end program cp2k_driver_template
