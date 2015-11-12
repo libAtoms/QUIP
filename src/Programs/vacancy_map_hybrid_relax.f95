@@ -89,7 +89,7 @@ implicit none
   call init_hybrid(pot1, pot2, hybridpot, hybrid_args_str)
 
   call initialise(out, 'out.xyz', action=OUTPUT)
-  call read_xyz(at, in_file, comment=comment, mpi_comm=mpi%communicator)
+  call read_xyz(at, in_file, comment=comment, mpi_comm=mpi%communicator, mpi_id=mpi%my_proc)
 
   if (vac_i < 0 .or. vac_i > at%N) call system_abort("vac_i " // vac_i // " out of range : 0 or 1 .. N=" // at%N)
 

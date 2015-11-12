@@ -2869,7 +2869,7 @@ contains
        call bcast(mpi, dict%n)
        do i=1,dict%n
           call bcast(mpi, dict%entries(i)%type)
-          call bcast(dict%keys(i), mpi%communicator)
+          call bcast(dict%keys(i), mpi%communicator, mpi%my_proc)
 
           if (dict%entries(i)%type == T_NONE) then
              ! nothing to do
@@ -2882,7 +2882,7 @@ contains
           else if (dict%entries(i)%type == T_LOGICAL) then
              call bcast(mpi, dict%entries(i)%l)
           else if (dict%entries(i)%type == T_CHAR) then
-             call bcast(dict%entries(i)%s, mpi%communicator)
+             call bcast(dict%entries(i)%s, mpi%communicator, mpi%my_proc)
           else if (dict%entries(i)%type == T_INTEGER_A) then
              !size_tmp = size(dict%entries(i)%i_a)
              call bcast(mpi, dict%entries(i)%len)
@@ -2924,7 +2924,7 @@ contains
        allocate(dict%entries(dict%n))
        do i=1,dict%n
           call bcast(mpi, dict%entries(i)%type)
-          call bcast(dict%keys(i), mpi%communicator)
+          call bcast(dict%keys(i), mpi%communicator, mpi%my_proc)
 
           if (dict%entries(i)%type == T_NONE) then
              ! nothing to do
@@ -2937,7 +2937,7 @@ contains
           else if (dict%entries(i)%type == T_LOGICAL) then
              call bcast(mpi, dict%entries(i)%l)
           else if (dict%entries(i)%type == T_CHAR) then
-             call bcast(dict%entries(i)%s, mpi%communicator)
+             call bcast(dict%entries(i)%s, mpi%communicator, mpi%my_proc)
           else if (dict%entries(i)%type == T_INTEGER_A) then
              !size_tmp = size(dict%entries(i)%i_a)
              call bcast(mpi, size_tmp)

@@ -194,7 +194,7 @@ subroutine KPoints_Initialise_inoutput(this, from_io, mpi_obj)
   call Initialise(ss)
   if (file_present) then
     if (present(mpi_obj)) then
-      call read(ss, in%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator)
+      call read(ss, in%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator, mpi_id=mpi_obj%my_proc)
     else
       call read(ss, in%unit, convert_to_string=.true.)
     endif

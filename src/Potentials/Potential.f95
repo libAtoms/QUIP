@@ -460,7 +460,7 @@ subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi
   call initialise(es)
   if (io_obj%initialised) then
      if (present(mpi_obj)) then
-       call read(es, io_obj%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator)
+       call read(es, io_obj%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator, mpi_id=mpi_obj%my_proc)
      else
        call read(es, io_obj%unit, convert_to_string=.true.)
      endif
