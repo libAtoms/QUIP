@@ -37,7 +37,7 @@ private
 
   public :: md_params
   type md_params
-    character(len=STRING_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file
+    character(len=STRING_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file, flux_out_file
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
@@ -50,6 +50,7 @@ private
     real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
     character(len=STRING_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
+    real(dp) :: flux_print_interval
     character(len=STRING_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
     logical :: damping, rescale_initial_velocity 
@@ -69,11 +70,13 @@ logical :: NPT_NB
 
 public :: get_params, print_params, do_prints, initialise_md_thermostat, update_md_thermostat
 
+integer, parameter, public :: uflux = 110
+
 contains
 
 subroutine get_params(params, mpi_glob)
   type(md_params), intent(inout) :: params
-  type(MPI_context), intent(in) :: mpi_glob
+  type(MPI_context), intent(inout) :: mpi_glob
 
   type(Dictionary) :: md_params_dict
   type(Extendable_Str) :: es
@@ -83,9 +86,14 @@ subroutine get_params(params, mpi_glob)
   logical :: has_N_steps
   logical p_ext_is_present
 
+  type(MPI_Context) :: mpi_loc
+  integer :: n_procs_per_task, n_param_strings
+  character(len=10240) :: param_strings(64)
+
   call initialise(md_params_dict)
   call param_register(md_params_dict, 'atoms_in_file', 'stdin', params%atoms_in_file, help_string="Initial atomic data file name")
   call param_register(md_params_dict, 'trajectory_out_file', 'traj.xyz', params%trajectory_out_file, help_string="Trajectory output file name ")
+  call param_register(md_params_dict, 'flux_out_file', 'flux.dat', params%flux_out_file, help_string="Name of output file for heat flux")
   call param_register(md_params_dict, 'params_in_file', 'quip_params.xml', params%params_in_file, help_string="QUIP XML parameter file name")
   call param_register(md_params_dict, 'rng_seed', '-1', params%rng_seed, help_string="Random seed")
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_value_target=has_N_steps, help_string="Number of MD steps to perform")
@@ -126,6 +134,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval, help_string="how often to print summary line")
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
   call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval, help_string="how often to print atomic config to traj file")
+  call param_register(md_params_dict, 'flux_print_interval', '10.0', params%flux_print_interval, help_string="how often to print heat flux (fs)")
   call param_register(md_params_dict, 'print_property_list', '', print_property_list_str, help_string="list of properties to print for atoms")
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval, help_string="how often to print potential object")
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum, help_string="zero total momentum before starting")
@@ -147,7 +156,15 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   if (md_params_exist) then
     call print("WARNING: md reading parameters from 'md_params' file, ignoring anything on command line", PRINT_ALWAYS)
     call initialise(es)
-    call read(es, 'md_params', convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+    call read(es, 'md_params', convert_to_string=.true., mpi_comm=mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
+    if (any(es%s(1:es%len) == '^')) then ! multiple independent runs
+      call split_string_simple(string(es), param_strings, n_param_strings, '^')
+      if (mpi_glob%my_proc == 0) call print ("Multiple runs " // n_param_strings)
+      n_procs_per_task=mpi_glob%n_procs/n_param_strings
+      call split_context(mpi_glob, mpi_glob%my_proc/n_procs_per_task, mpi_loc)
+      es = param_strings(mpi_glob%my_proc/n_procs_per_task+1)
+      mpi_glob = mpi_loc
+    endif
     if (.not. param_read_line(md_params_dict, string(es))) then
       call param_print_help(md_params_dict)
       call system_abort("Error reading params from md_params file")
@@ -216,6 +233,7 @@ subroutine print_params(params)
   call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
   call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
   call print("md_params%trajectory_out_file='" // trim(params%trajectory_out_file) // "'")
+  call print("md_params%flux_out_file='" // trim(params%flux_out_file) // "'")
   call print("md_params%cutoff_buffer='" // params%cutoff_buffer // "'")
   call print("md_params%rng_seed=" // params%rng_seed)
   call print("md_params%N_steps=" // params%N_steps)
@@ -258,6 +276,7 @@ subroutine print_params(params)
   call print("md_params%summary_interval=" // params%summary_interval)
   call print("md_params%params_print_interval=" // params%params_print_interval)
   call print("md_params%at_print_interval=" // params%at_print_interval)
+  call print("md_params%flux_print_interval=" // params%flux_print_interval)
   call print("md_params%print_property_list=", nocr=.true.)
   if (allocated(params%print_property_list)) then
     if (size(params%print_property_list) > 0) then
@@ -304,8 +323,10 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
   type(Cinoutput), optional, intent(inout) :: traj_out
   integer, intent(in) :: i_step
   logical, optional :: override_intervals
+  real(dp) :: flux(3), tprin
 
   logical my_override_intervals
+  integer at_i_step
 
   my_override_intervals = optional_default(.false., override_intervals)
 
@@ -331,6 +352,17 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
       if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
 	call print_at(params, ds, e, pot, traj_out)
   endif
+
+  if (params%flux_print_interval > 0.0_dp) then
+     ! just a short alias
+     tprin = params%flux_print_interval
+     ! if the time is close to a 
+     if (abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) then
+        call get_param_value(ds%atoms, "flux", flux)
+        call get_param_value(ds%atoms, "i_step", at_i_step)
+        write (uflux,'(I12,F16.3,F12.4,3E24.12)') at_i_step, ds%t, temperature(ds,instantaneous=.true.), flux
+     end if
+  end if
 
 end subroutine
 
@@ -422,9 +454,9 @@ subroutine print_at(params, ds, e, pot, out)
   endif
 
   if (allocated(params%print_property_list)) then
-    call write(out, ds%atoms, properties_array=params%print_property_list, real_format='%18.10f')
+    call write(out, ds%atoms, properties_array=params%print_property_list, real_format='%26.18f')
   else
-    call write(out, ds%atoms, real_format='%18.10f')
+    call write(out, ds%atoms, real_format='%26.18f')
   endif
   !call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format='f18.10')
 end subroutine print_at
@@ -573,7 +605,7 @@ use restraints_constraints_xml_module
 
 implicit none
   type (Potential) :: pot
-  type(MPI_context) :: mpi_glob
+  type(MPI_context) :: mpi_glob, mpi_glob_orig
   type(Cinoutput) :: traj_out, atoms_in_cio
   type(Atoms) :: at_in
   type(DynamicalSystem) :: ds
@@ -596,6 +628,7 @@ implicit none
   call system_initialise()
 
   call initialise(mpi_glob)
+  mpi_glob_orig = mpi_glob
 
   call get_params(params, mpi_glob)
 
@@ -613,7 +646,7 @@ implicit none
   HANDLE_ERROR(error)
 
   if (len_trim(params%params_in_file) > 0) then
-     call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+     call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
   else
      call initialise(params_es)
   endif
@@ -645,6 +678,7 @@ implicit none
   call finalise(params_es)
 
   call initialise(traj_out, params%trajectory_out_file, OUTPUT, mpi=mpi_glob, netcdf4=params%netcdf4)
+  open(uflux, file=params%flux_out_file, position='append')
 
   call initialise_md_thermostat(ds, params)
 
