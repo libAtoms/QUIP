@@ -744,10 +744,11 @@ subroutine read_fcs(rank, nfc, file, igroup, iatomterm, ixyzterm, ampterm, fcs)
   character(len=999) line
   
   integer, parameter :: iunit = 1111
+
   open(unit=iunit, file=file)
 
   read (iunit,'(a)') line
-  read (iunit,*,err=92) (t,igroup(i), (iatomterm(r,i), ixyzterm(r,i), r=1,rank), fcs(i), ampterm(i), i=1,nfc)
+  read (iunit,*,err=92,end=92) (t,igroup(i), (iatomterm(r,i), ixyzterm(r,i), r=1,rank), fcs(i), ampterm(i), i=1,nfc)
   return
 92 call system_abort("IPModel_FC4_Initialise_str: End of file while reading force constants from "//file//", after t="//t)
 end subroutine read_fcs
