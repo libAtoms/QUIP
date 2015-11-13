@@ -426,11 +426,18 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(allocated(gradPredict)) deallocate(gradPredict)
 !$omp end parallel
      if(do_sparseScore) then
-        do i = 1, size(my_descriptor_data%x)
-           call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE '//i//' = '//sparseScore(i))
-           if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
-           had_sparseScore = .true.
-        enddo
+        if (size(my_descriptor_data%x) == at%N) then
+            call add_property_from_pointer(at,'sparseScore',sparseScore,error=error)
+            PASS_ERROR(error)
+            had_sparseScore= .true.
+        else
+            if (size(my_descriptor_data%x) > 0) call set_param_value(at, "sparseScore_sum", sum(sparseScore))
+            do i = 1, size(my_descriptor_data%x)
+               call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE '//i//' = '//sparseScore(i))
+               if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
+               had_sparseScore = .true.
+            enddo
+        end if
      endif
      if(allocated(sparseScore)) deallocate(sparseScore)
 
