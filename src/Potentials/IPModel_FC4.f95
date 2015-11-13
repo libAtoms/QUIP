@@ -781,7 +781,7 @@ function findatom_sc(this, tau, n, at)
   integer nwrap(3), nsc(3), tau_sc_idx
   real(dp) :: wrap(3), prim_cell_pos(3), prim_cell(3,3), inv_prim_cell(3,3), tau_prim(3), tau_frac(3), tau_frac_remap(3), n_frac(3)
 
-  namelist/DEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
+  namelist/NMLDEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
 
 ! Common case: just see if it is in the array
   if (all(n.ge.this%sc_min.and.n.le.this%sc_max)) then 
@@ -821,7 +821,7 @@ function findatom_sc(this, tau, n, at)
   ! express in terms of primitive cell coords
 
   if (findatom_sc < 0) then
-     write (*,nml=DEBUG) 
+     write (*,nml=NMLDEBUG) 
      call system_abort("Findatom_sc: requested atom tau=" // tau &
           // ", n=" // n // " does not exist in the supercell")
   end if
