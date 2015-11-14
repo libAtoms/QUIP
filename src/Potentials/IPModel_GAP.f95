@@ -252,6 +252,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp) :: r_scale, E_scale
 
   real(dp), dimension(:), allocatable :: sparseScore
+  real(dp), dimension(:), pointer :: p_sparseScore
   real(dp) :: sparseScore_reg
   logical :: do_rescale_r, do_rescale_E, do_sparseScore
 
@@ -427,8 +428,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end parallel
      if(do_sparseScore) then
         if (size(my_descriptor_data%x) == at%N) then
-            call add_property_from_pointer(at,'sparseScore',sparseScore,error=error)
+            call add_property(at,'sparseScore',0.0_dp,ptr=p_sparseScore,error=error)
             PASS_ERROR(error)
+            p_sparseScore = sparseScore
             had_sparseScore= .true.
         else
             if (size(my_descriptor_data%x) > 0) call set_param_value(at, "sparseScore_sum", sum(sparseScore))
