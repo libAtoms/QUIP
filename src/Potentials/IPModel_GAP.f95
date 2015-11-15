@@ -373,7 +373,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         allocate(gradPredict(d))
      end if     
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
-        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
+        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial) .or. do_sparseScore, args_str=trim(string(my_args_str)), error=error)
      allocate(sparseScore(size(my_descriptor_data%x)))
 
 !$omp parallel default(none) private(i,gradPredict, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0) &
