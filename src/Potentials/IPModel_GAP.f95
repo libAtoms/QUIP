@@ -254,7 +254,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp), dimension(:), allocatable :: sparseScore
   real(dp), dimension(:), pointer :: p_sparseScore
   real(dp) :: sparseScore_reg
-  logical :: do_rescale_r, do_rescale_E, do_sparseScore
+  logical :: do_rescale_r, do_rescale_E, do_sparseScore, store_sparseScore, print_sparseScore
 
   logical :: had_sparseScore
 
@@ -303,7 +303,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   has_atom_mask_name = .false.
   atom_mask_name = ""
 
-  do_sparseScore = .false.
   if(present(args_str)) then
      call initialise(params)
      
@@ -312,7 +311,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
       "calculated")
      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
-     call param_register(params, 'sparseScore', 'F', do_sparseScore, help_string="Compute score for each test point.")
+     call param_register(params, 'sparseScore', 'F', store_sparseScore, help_string="Compute score for each test point.")
+     call param_register(params, 'print_sparseScore', 'F', print_sparseScore, help_string="Print score for each test point.")
      call param_register(params, 'sparseScore_reg', '0.001', sparseScore_reg, help_string="Regularisation value for sparseScore.")
 
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
@@ -334,6 +334,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   else
      call initialise(my_args_str)
   endif
+
+  do_sparseScore = store_sparseScore .or. print_sparseScore
 
   call concat(my_args_str," xml_version="//this%xml_version)
 
@@ -427,13 +429,16 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(allocated(gradPredict)) deallocate(gradPredict)
 !$omp end parallel
      if(do_sparseScore) then
-        if (size(my_descriptor_data%x) == at%N) then
+        if (store_sparseScore) then
             call add_property(at,'sparseScore',0.0_dp,ptr=p_sparseScore,error=error)
             PASS_ERROR(error)
-            p_sparseScore = sparseScore
+            do i=1, size(my_descriptor_data%x)
+                if (my_descriptor_data%x(i)%ii(0) > 0) p_sparseScore(my_descriptor_data%x(i)%ii(0)) = sparseScore(i)
+            end do
             had_sparseScore= .true.
-        else
-            if (size(my_descriptor_data%x) > 0) call set_param_value(at, "sparseScore_sum", sum(sparseScore))
+            call set_param_value(at, "sparseScore_sum", sum(sparseScore))
+        endif
+        if (print_sparseScore) then
             do i = 1, size(my_descriptor_data%x)
                call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE '//i//' = '//sparseScore(i))
                if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
