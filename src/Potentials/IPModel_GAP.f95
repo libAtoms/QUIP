@@ -430,11 +430,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end parallel
      if(do_sparseScore) then
         if (store_sparseScore) then
-            call add_property(at,'sparseScore',0.0_dp,ptr=p_sparseScore,error=error)
+            call add_property(at,'sparseScore',-1.0_dp,ptr=p_sparseScore,error=error)
             PASS_ERROR(error)
-            do i=1, size(my_descriptor_data%x)
-                if (my_descriptor_data%x(i)%ii(0) > 0) p_sparseScore(my_descriptor_data%x(i)%ii(0)) = sparseScore(i)
-            end do
+            if (allocated(my_descriptor_data%x(i)%ii)) then
+                do i=1, size(my_descriptor_data%x)
+                    if ((lbound(my_descriptor_data%x(i)%ii,1) == 0) .and. (my_descriptor_data%x(i)%ii(0) > 0) .and. (my_descriptor_data%x(i)%ii(0) <= at%N)) &
+                            p_sparseScore(my_descriptor_data%x(i)%ii(0)) = sparseScore(i)
+                end do
+            endif
             had_sparseScore= .true.
             call set_param_value(at, "sparseScore_sum", sum(sparseScore))
         endif
