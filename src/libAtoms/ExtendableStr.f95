@@ -394,21 +394,26 @@ subroutine extendable_str_substr_replace(this, start, end, replace, error)
 
 end subroutine extendable_str_substr_replace
 
-subroutine extendable_str_read_file(this, file, convert_to_string, mpi_comm, keep_lf)
+subroutine extendable_str_read_file(this, file, convert_to_string, mpi_comm, mpi_id, keep_lf)
   type(extendable_str), intent(inout) :: this
   character(len=*), intent(in) :: file
   logical, intent(in), optional :: convert_to_string
-  integer, intent(in), optional :: mpi_comm
+  integer, intent(in), optional :: mpi_comm, mpi_id
   logical, intent(in), optional :: keep_lf
 
   type(inoutput) :: in
   logical do_read
 
   do_read = .true.
-  if (present(mpi_comm) .and. mpi_id() /= 0) do_read = .false.
+  if (present(mpi_comm)) then
+    if (.not. present(mpi_id)) then
+       call system_abort("extendable_str_bcast got mpi_comm but not mpi_id")
+    endif
+    if (mpi_id /= 0) do_read = .false.
+  end if
 
   if (do_read) call initialise(in, trim(file), INPUT)
-  call read(this, in%unit, convert_to_string, mpi_comm, keep_lf)
+  call read(this, in%unit, convert_to_string, mpi_comm, mpi_id, keep_lf)
   if (do_read) call finalise(in)
 
 end subroutine extendable_str_read_file
@@ -438,11 +443,11 @@ end function is_iostat_eor
 
 #endif
 
-subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, keep_lf)
+subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, mpi_id, keep_lf)
   type(extendable_str), intent(inout) :: this
   integer, intent(in) :: unit
   logical, intent(in), optional :: convert_to_string
-  integer, intent(in), optional :: mpi_comm
+  integer, intent(in), optional :: mpi_comm, mpi_id
   logical, intent(in), optional :: keep_lf
 
   character(len=EXTENDABLE_STRING_READING_BUFFER) :: line
@@ -460,7 +465,12 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
   my_keep_lf = optional_default(.false., keep_lf)
 
   do_read = .true.
-  if (present(mpi_comm) .and. mpi_id() /= 0) do_read = .false.
+  if (present(mpi_comm)) then
+    if (.not. present(mpi_id)) then
+       call system_abort("extendable_str_bcast got mpi_comm but not mpi_id")
+    endif
+     if (mpi_id /= 0) do_read = .false.
+  end if
 
   if (do_read) then
     done = .false.
@@ -488,7 +498,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
     end do
   endif
 
-  call extendable_str_bcast(this, mpi_comm)
+  call extendable_str_bcast(this, mpi_comm, mpi_id)
 
   if (my_convert_to_string) then
     stack_size = floor(this%len/1024.0_dp) + 10
@@ -503,16 +513,19 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
 
 end subroutine extendable_str_read_unit
 
-subroutine extendable_str_bcast(this, mpi_comm)
+subroutine extendable_str_bcast(this, mpi_comm, mpi_id)
   type(extendable_str), intent(inout) :: this
-  integer, intent(in), optional :: mpi_comm
+  integer, intent(in), optional :: mpi_comm, mpi_id
 
 #ifdef _MPI
   include 'mpif.h'
   integer err, size_this_s
 
   if (present(mpi_comm)) then
-    if (mpi_id() == 0) then
+    if (.not. present(mpi_id)) then
+       call system_abort("extendable_str_bcast got mpi_comm but not mpi_id")
+    endif
+    if (mpi_id == 0) then
       call mpi_bcast(size(this%s), 1, MPI_INTEGER, 0, mpi_comm, err)
       call mpi_bcast(this%len, 1, MPI_INTEGER, 0, mpi_comm, err)
       call mpi_bcast(this%increment, 1, MPI_INTEGER, 0, mpi_comm, err)

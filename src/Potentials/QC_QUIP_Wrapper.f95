@@ -134,7 +134,7 @@ contains
 
     call initialise(params, "quip_params.xml", INPUT)
     call initialise(params_str)
-    call read(params_str, params%unit, convert_to_string=.true., mpi_comm = mpi_glob%communicator)
+    call read(params_str, params%unit, convert_to_string=.true., mpi_comm = mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
 
     ! call initialise(pot_ip, str_ip, string(params_str))
     ! call initialise(pot_qm, str_qm, string(params_str), mpi_obj = mpi_glob)

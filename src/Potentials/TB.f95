@@ -208,7 +208,7 @@ subroutine TB_Initialise_inoutput(this, args_str, io_obj, kpoints_obj, mpi_obj, 
   call Initialise(ss)
   if (present(io_obj)) then
     if (present(mpi_obj)) then
-      call read(ss, io_obj%unit, convert_to_string=.true., mpi_comm = mpi_obj%communicator)
+      call read(ss, io_obj%unit, convert_to_string=.true., mpi_comm = mpi_obj%communicator, mpi_id = mpi_obj%my_proc)
     else
       call read(ss, io_obj%unit, convert_to_string=.true.)
     endif

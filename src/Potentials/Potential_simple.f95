@@ -181,7 +181,7 @@ contains
     my_no_parallel = optional_default(.false., no_parallel)
     call Initialise(es)
     if (present(mpi_obj)) then
-      call read(es, io_obj%unit, convert_to_string=.true., mpi_comm = mpi_obj%communicator)
+      call read(es, io_obj%unit, convert_to_string=.true., mpi_comm = mpi_obj%communicator, mpi_id=mpi_obj%my_proc)
     else
       call read(es, io_obj%unit, convert_to_string=.true.)
     endif

@@ -108,7 +108,7 @@ program mc
 
   ! Read in QUIP parameters and initialise potential
   if (len_trim(params_in_filename) > 0) then
-     call read(params_es, params_in_filename, convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+     call read(params_es, params_in_filename, convert_to_string=.true., mpi_comm=mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
   else
      call initialise(params_es)
   endif
