@@ -44,7 +44,7 @@ private
     real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
-    real(dp) :: cutoff_buffer 
+    real(dp) :: cutoff_buffer
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, all_purpose_thermostat_massive, nose_hoover_thermostat, barostat_const_T
     real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
@@ -53,7 +53,7 @@ private
     real(dp) :: flux_print_interval
     character(len=STRING_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
-    logical :: damping, rescale_initial_velocity 
+    logical :: damping, rescale_initial_velocity
     logical :: calc_local_ke
     real(dp) :: rescale_initial_velocity_T
     logical :: variable_T, zero_momentum, zero_angular_momentum
@@ -646,7 +646,7 @@ implicit none
   HANDLE_ERROR(error)
 
   if (len_trim(params%params_in_file) > 0) then
-     call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
+     call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator,  mpi_id=mpi_glob%my_proc)
   else
      call initialise(params_es)
   endif

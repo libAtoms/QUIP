@@ -30,7 +30,7 @@
 
 !X
 !X  Extendable string module
-!X  
+!X
 !%  Defines strings that can extend as required, using a character array
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -308,7 +308,7 @@ function extendable_str_substr(this, start, end, error)
   integer i, j
 
   INIT_ERROR(error)
-  
+
   if (start < 1 .or. start > this%len) then
      RAISE_ERROR('extendable_str_substr: start('//start//') < 1 or > this%len='//this%len, error)
   end if
@@ -336,7 +336,7 @@ subroutine extendable_str_substr_replace(this, start, end, replace, error)
   integer :: j, old_len, substr_len
 
   INIT_ERROR(error)
-  
+
   if (start < 0 .or. start > this%len+1) then
      RAISE_ERROR('extendable_str_substr_replace: start('//start//') < 1 or > thi%len="//this%len', error)
   end if
@@ -366,7 +366,7 @@ subroutine extendable_str_substr_replace(this, start, end, replace, error)
 	this%s(j) = replace(j-start+1:j-start+1)
     end do
     ! move rest of string back if needed
-    if (len(replace) < substr_len) then ! 
+    if (len(replace) < substr_len) then !
 	do j=1, this%len-(end+1)+1
 	    this%s(start+len(replace)-1+j) = this%s(end+j)
 	end do
@@ -407,7 +407,7 @@ subroutine extendable_str_read_file(this, file, convert_to_string, mpi_comm, mpi
   do_read = .true.
   if (present(mpi_comm)) then
     if (.not. present(mpi_id)) then
-       call system_abort("extendable_str_bcast got mpi_comm but not mpi_id")
+       call system_abort("extendable_str_read_file got mpi_comm but not mpi_id")
     endif
     if (mpi_id /= 0) do_read = .false.
   end if
@@ -467,7 +467,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, mpi
   do_read = .true.
   if (present(mpi_comm)) then
     if (.not. present(mpi_id)) then
-       call system_abort("extendable_str_bcast got mpi_comm but not mpi_id")
+       call system_abort("extendable_str_read_unit got mpi_comm but not mpi_id")
     endif
      if (mpi_id /= 0) do_read = .false.
   end if
