@@ -315,6 +315,8 @@ with `atoms` to the new :class:`Potential` instance, by calling
         else:
             potlog.debug('Potential atoms is not quippy.Atoms instance, copy forced!')
             self.quippy_atoms = Atoms(atoms)
+            initial_arrays = self.quippy_atoms.arrays.keys()
+            initial_info = self.quippy_atoms.info.keys()
 
         if properties is None:
             properties = ['energy', 'forces', 'stress']
@@ -398,6 +400,16 @@ with `atoms` to the new :class:`Potential` instance, by calling
             if not get_fortran_indexing():
                 c0ij = c0ij.view(np.ndarray)
             self.results['unrelaxed_elastic_constants'] = c0ij
+
+        if not isinstance(atoms, Atoms):
+            # copy back any additional results data
+            for key in self.quippy_atoms.arrays.keys():
+                if key not in initial_arrays:
+                    results[key] = quippy_atoms.arrays[key].copy()
+            for key in self.quippy_atoms.info.keys():
+                if key not in initial_info:
+                    results[key] = quippy_atoms.info[key].copy()
+
 
 
     def get_potential_energies(self, atoms):
