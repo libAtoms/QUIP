@@ -401,15 +401,17 @@ with `atoms` to the new :class:`Potential` instance, by calling
                 c0ij = c0ij.view(np.ndarray)
             self.results['unrelaxed_elastic_constants'] = c0ij
 
-        if not isinstance(atoms, Atoms):
-            # copy back any additional results data
-            for key in self.quippy_atoms.arrays.keys():
-                if key not in initial_arrays:
-                    results[key] = quippy_atoms.arrays[key].copy()
-            for key in self.quippy_atoms.info.keys():
-                if key not in initial_info:
-                    results[key] = quippy_atoms.info[key].copy()
-
+        # copy back any additional output data to results dictionary
+        skip_keys = ['energy', 'force', 'virial', 'numeric_force']
+        for key in self.quippy_atoms.arrays.keys():
+            if key not in initial_arrays and key not in skip_keys:
+                self.results[key] = self.quippy_atoms.arrays[key].copy()
+        for key in self.quippy_atoms.info.keys():
+            if key not in initial_info and key not in skip_keys:
+                if isinstance(self.quippy_atoms.info[key], np.ndarray):
+                    self.results[key] = self.quippy_atoms.info[key].copy()
+                else:
+                    self.results[key] = self.quippy_atoms.info[key]
 
 
     def get_potential_energies(self, atoms):
