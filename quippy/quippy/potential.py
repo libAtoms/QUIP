@@ -402,12 +402,13 @@ with `atoms` to the new :class:`Potential` instance, by calling
             self.results['unrelaxed_elastic_constants'] = c0ij
 
         if not isinstance(atoms, Atoms):
-            # copy back any additional results data
+            # copy back any additional output data to results dictionary
+            skip_keys = ['energy', 'force', 'virial', 'numeric_force']
             for key in self.quippy_atoms.arrays.keys():
-                if key not in initial_arrays:
+                if key not in initial_arrays and key not in skip_keys:
                     self.results[key] = self.quippy_atoms.arrays[key].copy()
             for key in self.quippy_atoms.info.keys():
-                if key not in initial_info:
+                if key not in initial_info and key not in skip_keys:
                     if isinstance(self.quippy_atoms.info[key], np.ndarray):
                         self.results[key] = self.quippy_atoms.info[key].copy()
                     else:
