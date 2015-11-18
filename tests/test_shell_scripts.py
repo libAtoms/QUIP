@@ -62,7 +62,7 @@ if 'mpi' in quippy.available_modules:
 
     for cores in mpi_n_cores:
         setattr(Test_TopLevel, 'test_python_MPI_%d_cores' % cores,
-                make_test('%s -np %d python %s/Tools/quippy/tests/test_mpi.py' % (mpirun, cores, QUIP_ROOT),
+                make_test('%s -np %d python %s/tests/test_mpi.py' % (mpirun, cores, QUIP_ROOT),
                           {'QUIP_ROOT': QUIP_ROOT,
                            'QUIP_ARCH': QUIP_ARCH,
                            'PYTHONPATH': ':'.join(sys.path)}))
