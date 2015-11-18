@@ -1,0 +1,37 @@
+language: python
+env: 
+  - QUIP_ARCH=linux_x86_64_gfortran
+  - QUIP_ARCH=linux_x86_64_gfortran_openmp
+  - QUIP_ARCH=linux_x86_64_gfortran_openmpi
+python:
+  - 2.6
+  - 2.7
+install:
+  # Make the build directory manually for rules
+  - mkdir -p build/${QUIP_ARCH}
+  # Copy the rules file (rather than make config)
+  - cp tests/rules/VANILLA_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
+  # Compile QUIP
+  - make
+  - make libquip
+  # Fetch and install ASE for quippy
+  - git clone https://gitlab.com/ase/ase.git
+  - cd ase; pip install .; cd ..
+  # Build quippy bindings
+  - make quippy
+script:
+  - ulimit -a
+  # Sometimes file limit is 64000 and read_loop reads and writes this many files 
+  # causing the build to time out
+  - ulimit -n 256
+  # Quippy should be built -> start tests
+  - travis_wait make test
+addons:
+  apt:
+    packages:
+    - gfortran
+    - liblapack-dev
+    - libblas-dev
+    - python-numpy
+    - openmpi-bin 
+    - libopenmpi-dev
