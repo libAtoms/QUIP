@@ -253,6 +253,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   real(dp), dimension(:), allocatable :: sparseScore
   real(dp), dimension(:), pointer :: p_sparseScore
+  logical, dimension(:), allocatable :: got_sparseScore
   real(dp) :: sparseScore_reg
   logical :: do_rescale_r, do_rescale_E, do_sparseScore, store_sparseScore, print_sparseScore
 
@@ -430,16 +431,28 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end parallel
      if(do_sparseScore) then
         if (store_sparseScore) then
-            call add_property(at,'sparseScore',-1.0_dp,ptr=p_sparseScore,error=error)
+            call add_property(at,'sparseScore',0.0_dp,ptr=p_sparseScore,error=error)
             PASS_ERROR(error)
             if (allocated(my_descriptor_data%x(i)%ii)) then
+                allocate(got_sparseScore(at%N))
+                got_sparseScore = .false.
                 do i=1, size(my_descriptor_data%x)
-                    if ((lbound(my_descriptor_data%x(i)%ii,1) == 0) .and. (my_descriptor_data%x(i)%ii(0) > 0) .and. (my_descriptor_data%x(i)%ii(0) <= at%N)) &
-                            p_sparseScore(my_descriptor_data%x(i)%ii(0)) = sparseScore(i)
+                    if (lbound(my_descriptor_data%x(i)%ii,1) == 0) then
+                        p_sparseScore(my_descriptor_data%x(i)%ii(0)) = p_sparseScore(my_descriptor_data%x(i)%ii(0)) + sparseScore(i)
+                        got_sparseScore(my_descriptor_data%x(i)%ii(0)) = .true.
+                    else
+                        p_sparseScore(my_descriptor_data%x(i)%ii(:)) = p_sparseScore(my_descriptor_data%x(i)%ii(:)) + sparseScore(i)/size(my_descriptor_data%x(i)%ii(:))
+                        got_sparseScore(my_descriptor_data%x(i)%ii(:)) = .true.
+                    endif
                 end do
+                where (.not. got_sparseScore)
+                    p_sparseScore = -1.0
+                end where
+                deallocate(got_sparseScore)
+            else
+                call set_param_value(at, "sparseScore_sum", sum(sparseScore))
             endif
             had_sparseScore= .true.
-            call set_param_value(at, "sparseScore_sum", sum(sparseScore))
         endif
         if (print_sparseScore) then
             do i = 1, size(my_descriptor_data%x)
