@@ -4,7 +4,7 @@
 # COPTIM=
 # DEBUG=-g -traceback -DDUMP_CORE_ON_ABORT 
 # CDEBUG=
-MATH_LINKOPTS=-llapack -lopenblas
+MATH_LINKOPTS=-llapack -lblas
 NETCDF_LIBDIR=/usr/lib
 NETCDF4=1
 NETCDF4_CURL=1
