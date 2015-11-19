@@ -315,8 +315,8 @@ with `atoms` to the new :class:`Potential` instance, by calling
         else:
             potlog.debug('Potential atoms is not quippy.Atoms instance, copy forced!')
             self.quippy_atoms = Atoms(atoms)
-            initial_arrays = self.quippy_atoms.arrays.keys()
-            initial_info = self.quippy_atoms.info.keys()
+        initial_arrays = self.quippy_atoms.arrays.keys()
+        initial_info = self.quippy_atoms.info.keys()
 
         if properties is None:
             properties = ['energy', 'forces', 'stress']
