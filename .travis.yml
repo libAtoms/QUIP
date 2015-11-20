@@ -1,8 +1,11 @@
 language: python
 env: 
-  - QUIP_ARCH=linux_x86_64_gfortran
-  - QUIP_ARCH=linux_x86_64_gfortran_openmp
-  - QUIP_ARCH=linux_x86_64_gfortran_openmpi
+  - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA
+  - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA
+  - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA
+  - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL
+  - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL
+  - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL
 python:
   - 2.6
   - 2.7
@@ -10,7 +13,7 @@ install:
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
-  - cp tests/rules/VANILLA_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
+  - cp tests/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
   # Compile QUIP
   - make
   - make libquip
@@ -33,5 +36,8 @@ addons:
     - liblapack-dev
     - libblas-dev
     - python-numpy
-    - openmpi-bin 
+    - openmpi-bin
     - libopenmpi-dev
+    - netcdf-bin
+    - libnetcdf-dev
+    - libhdf5-serial-dev
