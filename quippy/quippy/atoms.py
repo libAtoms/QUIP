@@ -32,7 +32,7 @@ from quippy.dictionary import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
                                T_INTEGER_A2, T_REAL_A2)
 from quippy.table import TABLE_STRING_LENGTH
 from quippy.oo_fortran import update_doc_string
-from quippy.farray import frange, farray, fzeros, fvar
+from quippy.farray import frange, farray, fzeros, fvar, s2a
 from quippy.dictmixin import DictMixin
 from quippy.util import infer_format, parse_slice
 from quippy.units import N_A, MASSCONVERT
@@ -53,7 +53,7 @@ topology and neighbour lists, and the :class:`DomainDecomposition` class.
 """)
 
 __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice_params']
-                                   
+
 if 'ase' in available_modules:
     import ase
 else:
@@ -70,7 +70,7 @@ def get_lattice_params(lattice):
 
     Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
     """
-    
+
     a,b,c,alpha,beta,gamma = (farray(0.), farray(0.), farray(0.),
                               farray(0.), farray(0.), farray(0.))
     _atoms.get_lattice_params(lattice,a,b,c,alpha,beta,gamma)
@@ -97,7 +97,7 @@ class NeighbourInfo(object):
                        self.cosines, self.shift))
 
 class Connection(_atoms.Connection):
-    __doc__ = update_doc_string(_atoms.Connection.__doc__, """    
+    __doc__ = update_doc_string(_atoms.Connection.__doc__, """
     The :class:`Connection` is a subclass of :class:`_atoms.Connection`
     which adds supports for iteration over all atoms, and indexing
     e.g. ``at.connect.neighbours[1]`` returns a list of the neighbours of
@@ -133,7 +133,7 @@ class Connection(_atoms.Connection):
     #                                lattice, g, origin,
     #                                extent, nn_guess, fill,
     #                                fpointer, finalise)
-        
+
 
     def is_neighbour(self, i, j):
         return (i,j) in self.pairs()
@@ -214,7 +214,7 @@ class Connection(_atoms.Connection):
             indices, offsets = atoms.connect.get_neighbors(42)
             for i, offset in zip(indices, offsets):
                print atoms.positions[i] + dot(offset, atoms.get_cell())
-               
+
         Compatible with ase.calculators.neighborlist.NeighborList.get_neighbors(),
         providing that NeighborList is constructed with bothways=True and
         self_interaction=False.
@@ -231,7 +231,7 @@ class Connection(_atoms.Connection):
         """
         return self.get_neighbours(i)
 
- 
+
 class PropertiesWrapper(DictMixin):
     """Wrapper between quippy properties and ASE arrays"""
 
@@ -312,7 +312,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 'charges'         : 'charge'}
 
     rev_name_map = dict(zip(name_map.values(), name_map.keys()))
-    
+
     def __init__(self, symbols=None, positions=None, numbers=None, tags=None,
                  momenta=None, masses=None, magmoms=None, charges=None,
                  scaled_positions=None, cell=None, pbc=None, constraint=None,
@@ -392,7 +392,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             pbc = self.get_pbc()
         if charges is None and self.has_property('charge'):
             charges = self.charge.view(np.ndarray)
-            
+
         ase.Atoms.__init__(self, symbols, positions, numbers,
                            tags, momenta, masses, magmoms, charges,
                            scaled_positions, cell, pbc, constraint,
@@ -421,7 +421,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         # synonyms for backwards compatibility
         self.neighbours = self.connect
         self.hysteretic_neighbours = self.hysteretic_connect
-        
+
 
     def set_atomic_numbers(self, numbers, set_species=True):
         """Set atomic numbers and optionally also species property (default True)"""
@@ -442,7 +442,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 self.add_property('species', ' '*TABLE_STRING_LENGTH)
             if self.n != 0 and not (self.z == 0).all():
                 self.set_atoms(self.z) # set species from Z
-        
+
     def new_array(self, name, a, dtype=None, shape=None):
         # we overrride ase.Atoms.new_array() to allow "special" arrays
         # like "numbers", "positions" to be added more than once without
@@ -534,7 +534,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         positions, atomic numbers, unit cell and periodic boundary
         conditions match.
 
-        .. note:: 
+        .. note::
 
             The quippy expression a.equivalent(b) has the same
             definition as a == b in ASE. This means that a quippy.Atoms
@@ -565,8 +565,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         If `source` corresponds to a known format then it used
         to construct an appropriate iterator from the :attr:`AtomsReaders`
         dictionary. See :ref:`fileformats` for a list of supported
-        file formats. 
-        
+        file formats.
+
         If `source` corresponds to an unknown format then it is
         expected to be an iterator returning :class:`Atoms` objects.
         """
@@ -617,10 +617,10 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         as described for the :meth:`read` method.  If `properties` is
         present, it should be a list of property names to include in the
         output file, e.g. `['species', 'pos']`.
-        
+
         See :ref:`fileformats` for a list of supported file formats.
         """
-        
+
         if dest is None:
             # if filename is missing, save back to file from
             # which we loaded configuration
@@ -685,7 +685,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         """
         Return a copy of this :class:`Atoms` object
         """
-        
+
         other = self.__class__(n=self.n, lattice=self.lattice,
                                properties=self.properties, params=self.params)
 
@@ -715,7 +715,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             self.cutoff = other.cutoff
             self.cutoff_skin = other.cutoff_skin
             self.nneightol = other.nneightol
-            
+
         elif isinstance(other, ase.Atoms):
             _atoms.Atoms.__init__(self, n=0, lattice=np.eye(3))
             ase.Atoms.__init__(self, other)
@@ -734,7 +734,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             # create extra properties for any non-standard arrays
             standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',
                                    'momenta', 'tags', 'magmoms' ]
-                
+
             for ase_name, value in other.arrays.iteritems():
                 quippy_name = self.name_map.get(ase_name, ase_name)
                 if ase_name not in standard_ase_arrays:
@@ -742,15 +742,15 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
             self.constraints = copy.deepcopy(other.constraints)
             self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
-            
+
         else:
             raise TypeError('can only copy from instances of quippy.Atoms or ase.Atoms')
-        
+
         # copy any normal (not Fortran) attributes
         for k, v in other.__dict__.iteritems():
             if not k.startswith('_') and k not in self.__dict__:
                 self.__dict__[k] = v
-        
+
 
     def read_from(self, source, **readargs):
         """Replace contents of this Atoms object with Atoms read from `source`"""
@@ -914,6 +914,11 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         if n_cols is not None: kwargs['n_cols'] = n_cols
         if overwrite is not None: kwargs['overwrite'] = overwrite
 
+        if (isinstance(value, np.ndarray) and
+            value.dtype.kind in ['O', 'S'] and
+            value.shape != (len(self), TABLE_STRING_LENGTH)):
+            value = s2a(value.astype('str'), TABLE_STRING_LENGTH).T
+
         if property_type is None:
             _atoms.Atoms.add_property(self, name, value, **kwargs)
 
@@ -1010,7 +1015,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     def __imul__(self, m):
         """In-place repeat of atoms."""
-        # modified version of ase.Atoms.extend() to work with QUIP data storage        
+        # modified version of ase.Atoms.extend() to work with QUIP data storage
         if isinstance(m, int):
             m = (m, m, m)
 
@@ -1018,7 +1023,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         n = len(self)
 
         # first make a copy of self.arrays so that we can resize Atoms
-        arrays = dict([ (key, value.copy()) for (key, value) in self.arrays.items() ])        
+        arrays = dict([ (key, value.copy()) for (key, value) in self.arrays.items() ])
 
         for name, a in arrays.items():
             self.arrays[name] = np.tile(a, (M,) + (1,) * (len(a.shape) - 1))
@@ -1037,7 +1042,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         self._cell = np.array([m[c] * self._cell[c] for c in range(3)])
 
-        return self    
+        return self
 
 
 FortranDerivedTypes['type(atoms)'] = Atoms
