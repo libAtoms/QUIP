@@ -15,8 +15,8 @@ QUIP_ROOT=$(dirname $0)/..
 GAP_FILES="src/Potentials/IPModel_GAP.f95 src/GAP/gp_predict.f95 src/GAP-filler/clustering.f95 \
    src/GAP-filler/gp_teach.f95 src/GAP-filler/teach_sparse_module.f95 src/GAP-filler/teach_sparse.f95"
 
-if [ -s "${QUIP_ROOT}/GAP/GAP_VERSION" ]; then
-   echo -ne $(cat ${QUIP_ROOT}/GAP/GAP_VERSION)
+if [ -s "${QUIP_ROOT}/src/GAP/GAP_VERSION" ]; then
+   echo -ne $(cat ${QUIP_ROOT}/src/GAP/GAP_VERSION)
    exit 0
 elif [ -d ${QUIP_ROOT}/.git ]; then
    for I in $GAP_FILES
