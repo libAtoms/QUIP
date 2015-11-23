@@ -248,16 +248,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   logical, dimension(:), pointer :: atom_mask_pointer
   logical, dimension(:), allocatable :: mpi_local_mask
   logical :: has_atom_mask_name
-  character(STRING_LENGTH) :: atom_mask_name
+  character(STRING_LENGTH) :: atom_mask_name, calc_local_gap_error
   real(dp) :: r_scale, E_scale
 
-  real(dp), dimension(:), allocatable :: sparseScore
-  real(dp), dimension(:), pointer :: p_sparseScore
-  logical, dimension(:), allocatable :: got_sparseScore
-  real(dp) :: sparseScore_reg
-  logical :: do_rescale_r, do_rescale_E, do_sparseScore, store_sparseScore, print_sparseScore
-
-  logical :: had_sparseScore
+  real(dp), dimension(:), allocatable :: gap_error, local_gap_error_in
+  real(dp), dimension(:), pointer :: local_gap_error_pointer
+  real(dp) :: gap_error_regularisation
+  logical :: do_rescale_r, do_rescale_E, do_gap_error, print_gap_error, do_local_gap_error
 
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: my_args_str
@@ -304,6 +301,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   has_atom_mask_name = .false.
   atom_mask_name = ""
 
+  calc_local_gap_error = ""
+  print_gap_error = .false.
+  do_gap_error = .false.
+  do_local_gap_error = .false.
+
   if(present(args_str)) then
      call initialise(params)
      
@@ -312,9 +314,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
       "calculated")
      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
-     call param_register(params, 'sparseScore', 'F', store_sparseScore, help_string="Compute score for each test point.")
-     call param_register(params, 'print_sparseScore', 'F', print_sparseScore, help_string="Print score for each test point.")
-     call param_register(params, 'sparseScore_reg', '0.001', sparseScore_reg, help_string="Regularisation value for sparseScore.")
+
+     call param_register(params, 'local_gap_error', '', calc_local_gap_error, help_string="Compute error estimate of the GAP prediction per atom and return it in the Atoms object.")
+     call param_register(params, 'print_gap_error', 'F', print_gap_error, help_string="Compute error estimate of the GAP prediction per descriptor and prints it.")
+     call param_register(params, 'gap_error_regularisation', '0.001', gap_error_regularisation, help_string="Regularisation value for error calculation.")
 
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
      call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
@@ -323,7 +326,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      if( has_atom_mask_name ) then
         if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
-        call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" propery in the atoms object.")
+        call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
      else
         atom_mask_pointer => null()
      endif
@@ -332,13 +335,21 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      end if
 
      my_args_str = trim(args_str)
+
   else
      call initialise(my_args_str)
   endif
 
-  do_sparseScore = store_sparseScore .or. print_sparseScore
-
   call concat(my_args_str," xml_version="//this%xml_version)
+
+  do_local_gap_error = len_trim(calc_local_gap_error) > 0
+  do_gap_error = do_local_gap_error .or. print_gap_error
+
+  if( do_local_gap_error ) then
+     ! Has to be allocated as it's in the reduction clause.
+     allocate( local_gap_error_in(at%N) )
+     local_gap_error_in = 0.0_dp
+  endif
 
   if( present(mpi) ) then
      if(mpi%active) then
@@ -358,15 +369,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
-  had_sparseScore = .false.
   do i_coordinate = 1, this%my_gp%n_coordinate
 
      if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
-     if(do_sparseScore) then
-        call gpCoordinates_initialise_SparseScore(this%my_gp%coordinate(i_coordinate), sparseScore_reg)
+     if(do_gap_error) then
+        call gpCoordinates_initialise_error_estimate(this%my_gp%coordinate(i_coordinate), gap_error_regularisation)
      endif
 
      if(present(f) .or. present(virial) .or. present(local_virial)) then
@@ -374,12 +384,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         allocate(gradPredict(d))
      end if     
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
-        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial) .or. do_sparseScore, args_str=trim(string(my_args_str)), error=error)
-     allocate(sparseScore(size(my_descriptor_data%x)))
+        do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
+     allocate(gap_error(size(my_descriptor_data%x)))
 
 !$omp parallel default(none) private(i,gradPredict, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0) &
-!$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_sparseScore,sparseScore,f) &
-!$omp reduction(+:local_e_in,f_in,virial_in)
+!$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_gap_error,do_local_gap_error,gap_error,f) &
+!$omp reduction(+:local_e_in,f_in,virial_in,local_gap_error_in)
 
 !$omp do schedule(dynamic)
      do i = 1, size(my_descriptor_data%x)
@@ -389,9 +399,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            call reallocate(gradPredict,size(my_descriptor_data%x(i)%data(:)),zero=.true.)
-           e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), gradPredict =  gradPredict, sparseScore=sparseScore(i), do_sparseScore=do_sparseScore)
+           e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), gradPredict =  gradPredict, error_estimate=gap_error(i), do_error_estimate=do_gap_error)
         else
-           e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), sparseScore=sparseScore(i), do_sparseScore=do_sparseScore)
+           e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), error_estimate=gap_error(i), do_error_estimate=do_gap_error)
         endif
         call system_timer('IPModel_GAP_Calc_gp_predict')
         if(present(e) .or. present(local_e)) then
@@ -402,6 +412,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               local_e_in( my_descriptor_data%x(i)%ci(n) ) = local_e_in( my_descriptor_data%x(i)%ci(n) ) + e_i_cutoff
            enddo
         endif
+
+        if( do_local_gap_error ) then
+           do n = 1, size(my_descriptor_data%x(i)%ci)
+              local_gap_error_in( my_descriptor_data%x(i)%ci(n) ) = local_gap_error_in( my_descriptor_data%x(i)%ci(n) ) + gap_error(i) / size(my_descriptor_data%x(i)%ci)
+           enddo
+        endif
+
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            i_pos0 = lbound(my_descriptor_data%x(i)%ii,1)
 
@@ -429,48 +446,21 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end do
      if(allocated(gradPredict)) deallocate(gradPredict)
 !$omp end parallel
-     if(do_sparseScore) then
-        if (store_sparseScore) then
-            call add_property(at,'sparseScore',0.0_dp,ptr=p_sparseScore,error=error)
-            PASS_ERROR(error)
-            if (allocated(my_descriptor_data%x(i)%ii)) then
-                allocate(got_sparseScore(at%N))
-                got_sparseScore = .false.
-                do i=1, size(my_descriptor_data%x)
-                    if (lbound(my_descriptor_data%x(i)%ii,1) == 0) then
-                        p_sparseScore(my_descriptor_data%x(i)%ii(0)) = p_sparseScore(my_descriptor_data%x(i)%ii(0)) + sparseScore(i)
-                        got_sparseScore(my_descriptor_data%x(i)%ii(0)) = .true.
-                    else
-                        p_sparseScore(my_descriptor_data%x(i)%ii(:)) = p_sparseScore(my_descriptor_data%x(i)%ii(:)) + sparseScore(i)/size(my_descriptor_data%x(i)%ii(:))
-                        got_sparseScore(my_descriptor_data%x(i)%ii(:)) = .true.
-                    endif
-                end do
-                where (.not. got_sparseScore)
-                    p_sparseScore = -1.0
-                end where
-                deallocate(got_sparseScore)
-            else
-                call set_param_value(at, "sparseScore_sum", sum(sparseScore))
-            endif
-            had_sparseScore= .true.
+     if(print_gap_error) then
+        if( size(my_descriptor_data%x) > 0 ) then
+           do i = 1, size(my_descriptor_data%x)
+              call print('DESCRIPTOR '//trim(this%label)//' GAP_ERROR '//i//' = '//gap_error(i))
+              if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
+           enddo
+        else
+           call print('In potential '//trim(this%label)//' for descriptor '//i_coordinate//' ERROR ESTIMATE NOT FOUND')
         endif
-        if (print_sparseScore) then
-            do i = 1, size(my_descriptor_data%x)
-               call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE '//i//' = '//sparseScore(i))
-               if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
-               had_sparseScore = .true.
-            enddo
-        end if
      endif
-     if(allocated(sparseScore)) deallocate(sparseScore)
+     if(allocated(gap_error)) deallocate(gap_error)
 
      call finalise(my_descriptor_data)
 
   enddo
-
-  if (do_sparseScore .and. .not. had_sparseScore) then
-    call print('DESCRIPTOR '//trim(this%label)//' SPARSE_SCORE NOT FOUND')
-  end if
 
   if(present(f)) f = f_in
   if(present(e)) e = sum(local_e_in)
@@ -494,10 +484,18 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if(present(local_virial)) call sum_in_place(mpi,local_virial)
         if(present(e)) e = sum(mpi,e)
         if(present(local_e) ) call sum_in_place(mpi,local_e)
+        if(do_local_gap_error)  call sum_in_place(mpi, local_gap_error_in)
 
         call remove_property(at,'mpi_local_mask', error=error) 
         deallocate(mpi_local_mask)
      endif
+  endif
+
+  if( do_local_gap_error ) then
+     call add_property(at, trim(calc_local_gap_error), 0.0_dp, ptr = local_gap_error_pointer, error=error)
+     PASS_ERROR(error)
+     local_gap_error_pointer = local_gap_error_in
+     deallocate(local_gap_error_in)
   endif
 
   if(present(e)) then
@@ -523,6 +521,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if(present(local_virial)) local_virial = this%E_scale * local_virial
   
   atom_mask_pointer => null()
+  local_gap_error_pointer => null()
   call finalise(my_args_str)
 
 #endif
