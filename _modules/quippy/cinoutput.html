@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.cinoutput &mdash; quippy  documentation</title>
+    <title>quippy.cinoutput &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +39,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -247,7 +251,7 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Attribute </span><span class="si">%s</span><span class="s"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 
 </div>
-<span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputReader</span>
+<span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputReader</span>
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;stdin&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">CInOutputStdinReader</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s">&#39;stdin&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -280,9 +284,8 @@
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </div>
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputWriter</span>
 
-    
 
 <span class="k">class</span> <span class="nc">CInOutputStringReader</span><span class="p">(</span><span class="n">CInOutputReader</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">no_compute_index</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
@@ -331,7 +334,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

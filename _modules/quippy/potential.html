@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.potential &mdash; quippy  documentation</title>
+    <title>quippy.potential &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +39,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -134,16 +138,21 @@
 
     <span class="k">return</span> <span class="n">callback</span>
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">ase.calculators.calculator</span> <span class="kn">import</span> <span class="n">Calculator</span><span class="p">,</span> <span class="n">all_changes</span><span class="p">,</span> <span class="n">all_properties</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">potlog</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Atomic Simulation Environment (ASE) not installed, limited functionality available&#39;</span><span class="p">)</span>
+    <span class="n">Calculator</span> <span class="o">=</span> <span class="nb">object</span>
+    <span class="n">all_changes</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">all_properties</span> <span class="o">=</span> <span class="bp">None</span>
 
-<div class="viewcode-block" id="Potential"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential">[docs]</a><span class="k">class</span> <span class="nc">Potential</span><span class="p">(</span><span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="p">):</span>
+<div class="viewcode-block" id="Potential"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential">[docs]</a><span class="k">class</span> <span class="nc">Potential</span><span class="p">(</span><span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="p">,</span> <span class="n">Calculator</span><span class="p">):</span>
     <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s">r&quot;&quot;&quot;</span>
 <span class="s">The :class:`Potential` class also implements the ASE</span>
 <span class="s">:class:`ase.calculators.interface.Calculator` interface via the</span>
 <span class="s">the :meth:`get_forces`, :meth:`get_stress`, :meth:`get_stresses`,</span>
 <span class="s">:meth:`get_potential_energy`, :meth:`get_potential_energies`</span>
-<span class="s">methods. This simplifies calculation since there is no need</span>
-<span class="s">to set the cutoff or to call :meth:`~quippy.atoms.Atoms.calc_connect`,</span>
-<span class="s">as this is done internally. The example above reduces to::</span>
+<span class="s">methods. For example::</span>
 
 <span class="s">    atoms = diamond(5.44, 14)</span>
 <span class="s">    atoms.rattle(0.01)</span>
@@ -173,8 +182,6 @@
 <span class="s">   from ase.calculators.morse import MorsePotential</span>
 <span class="s">   pot = Potential(calculator=MorsePotential)</span>
 
-<span class="s">`cutoff_skin` is used to set the :attr:`cutoff_skin` attribute.</span>
-
 <span class="s">`atoms` if given, is used to set the calculator associated</span>
 <span class="s">with `atoms` to the new :class:`Potential` instance, by calling</span>
 <span class="s">:meth:&#39;.Atoms.set_calculator`.</span>
@@ -194,31 +201,25 @@
 <span class="s">    array in :attr:`.Atoms.arrays` containing volumes for each atom.</span>
 
 <span class="s">&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">signature</span><span class="o">=</span><span class="s">&#39;Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, cutoff_skin, atoms, calculation_always_required])&#39;</span><span class="p">)</span>
+    <span class="n">signature</span><span class="o">=</span><span class="s">&#39;Potential(init_args[, pot1, pot2, param_str, param_filename, bulk_scale, mpi_obj, callback, calculator, atoms, calculation_always_required])&#39;</span><span class="p">)</span>
 
     <span class="n">callback_map</span> <span class="o">=</span> <span class="p">{}</span>
 
+    <span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;energies&#39;</span><span class="p">,</span> <span class="s">&#39;forces&#39;</span><span class="p">,</span> <span class="s">&#39;stress&#39;</span><span class="p">,</span> <span class="s">&#39;stresses&#39;</span><span class="p">,</span>
+                              <span class="s">&#39;numeric_forces&#39;</span><span class="p">,</span> <span class="s">&#39;elastic_constants&#39;</span><span class="p">,</span>
+                              <span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">]</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pot1</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pot2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">param_str</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">param_filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bulk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mpi_obj</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">calculator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-		 <span class="n">calculation_always_required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">calculator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">calculation_always_required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">fpointer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">error</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energies</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forces</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stresses</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">elastic_constants</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unrelaxed_elastic_constants</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">numeric_forces</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calc_args</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_quantities</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span> <span class="o">=</span> <span class="n">cutoff_skin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_properties</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span> <span class="o">=</span> <span class="n">calculation_always_required</span>
+        <span class="n">Calculator</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">calculator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -251,7 +252,7 @@
                                          <span class="n">mpi_obj</span><span class="o">=</span><span class="n">mpi_obj</span><span class="p">,</span>
                                          <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">,</span>
                                          <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">init_args</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;callbackpot&#39;</span><span class="p">):</span>
             <span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Potential</span><span class="o">.</span><span class="n">callback</span><span class="p">)</span>
 
@@ -264,14 +265,11 @@
         <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">init_args</span>     
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">init_args</span>
+
     <span class="n">__init__</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">__init__</span><span class="o">.</span><span class="n">__doc__</span>
 
-    <span class="k">def</span> <span class="nf">todict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{}</span>
 
-    
 <div class="viewcode-block" id="Potential.calc"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.calc">[docs]</a>    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">virial</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
              <span class="n">local_energy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">local_virial</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
              <span class="n">args_str</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -348,7 +346,7 @@
 <span class="sd">        used to set the callback function. `callback` should be a Python</span>
 <span class="sd">        function (or other callable, such as a bound method or class</span>
 <span class="sd">        instance) which takes a single argument, of type</span>
-<span class="sd">        :class:`~quippy.atoms.Atoms`. Information about which quantities should be</span>
+<span class="sd">        :class:`~quippy.atoms.Atoms`. Information about which properties should be</span>
 <span class="sd">        computed can be obtained from the `calc_energy`, `calc_local_e`,</span>
 <span class="sd">        `calc_force`, and `calc_virial` keys in `at.params`. Results</span>
 <span class="sd">        should be returned either as `at.params` entries (for energy and</span>
@@ -374,96 +372,35 @@
         <span class="n">Potential</span><span class="o">.</span><span class="n">callback_map</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">))]</span> <span class="o">=</span> <span class="n">callback</span>
 
 </div>
-<div class="viewcode-block" id="Potential.wipe"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.wipe">[docs]</a>    <span class="k">def</span> <span class="nf">wipe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Mark all quantities as needing to be recalculated</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energies</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forces</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stresses</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">numeric_forces</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">elastic_constants</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unrelaxed_elastic_constants</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">def</span> <span class="nf">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">all_changes</span>
+        <span class="k">return</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="Potential.update"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the :class:`~quippy.atoms.Atoms` object associated with this :class:`Potential` to `atoms`.</span>
 
-<span class="sd">        Called internally by :meth:`get_potential_energy`,</span>
-<span class="sd">        :meth:`get_forces`, etc.  Only a weak reference to `atoms` is</span>
-<span class="sd">        kept, to prevent circular references.  If `atoms` is not a</span>
-<span class="sd">        :class:`quippy.atoms.Atoms` instance, then a copy is made and a</span>
-<span class="sd">        warning will be printed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">):</span>
+        <span class="n">Calculator</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
+
         <span class="c"># we will do the calculation in place, to minimise number of copies,</span>
         <span class="c"># unless atoms is not a quippy Atoms</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">potlog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Potential atoms is not quippy.Atoms instance, copy forced!&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="n">initial_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">initial_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
-        <span class="c"># check if atoms has changed since last call</span>
-	<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span><span class="p">:</span>
-	    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">equivalent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">):</span>
-		<span class="k">return</span>
+        <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;forces&#39;</span><span class="p">,</span> <span class="s">&#39;stress&#39;</span><span class="p">]</span>
 
-        <span class="c"># Mark all quantities as needing to be recalculated</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wipe</span><span class="p">()</span>
+        <span class="c"># Add any default properties</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_default_properties</span><span class="p">()</span> <span class="o">+</span> <span class="n">properties</span><span class="p">)</span>
 
-        <span class="c"># do we need to reinitialise _prev_atoms?</span>
-	<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span><span class="p">:</span>
-	    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">connect</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">copy_without_connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;orig_pos&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
-	    <span class="k">else</span><span class="p">:</span>
-		<span class="c"># _prev_atoms is OK, update it in place</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">z</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pos</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">_prev_atoms</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">lattice</span>
-
-        <span class="c"># do a calc_connect(), setting cutoff_skin so full reconnect will only be done when necessary</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">(),</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span><span class="p">)</span>
-        <span class="n">potlog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Potential doing calc_connect() with cutoff </span><span class="si">%f</span><span class="s"> cutoff_skin </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cutoff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
-
-    <span class="c"># Synonyms for `update` for compatibility with ASE calculator interface</span></div>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">calculation_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">quantities</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">True</span>
-        <span class="k">return</span> <span class="bp">False</span>
-
-
-<div class="viewcode-block" id="Potential.calculate"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">quantities</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Perform a calculation of `quantities` for `atoms` using this Potential.</span>
-
-<span class="sd">        Automatically determines if a new calculation is required or if previous</span>
-<span class="sd">        results are still appliciable (i.e. if the atoms haven&#39;t moved since last call)</span>
-<span class="sd">        Called internally by :meth:`get_potential_energy`, :meth:`get_forces`, etc.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">quantities</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">quantities</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;forces&#39;</span><span class="p">,</span> <span class="s">&#39;stress&#39;</span><span class="p">]</span>
-
-        <span class="c"># Add any default quantities</span>
-        <span class="n">quantities</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_default_quantities</span><span class="p">()</span> <span class="o">+</span> <span class="n">quantities</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantities</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Nothing to calculate&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_required</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">quantities</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_required</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
             <span class="k">return</span>
 
         <span class="n">args_map</span> <span class="o">=</span> <span class="p">{</span>
@@ -479,114 +416,96 @@
             <span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">:</span> <span class="p">{}</span>
             <span class="p">}</span>
 
-        <span class="c"># list of quantities that require a call to Potential.calc()</span>
-        <span class="n">calc_quantities</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;energies&#39;</span><span class="p">,</span> <span class="s">&#39;forces&#39;</span><span class="p">,</span> <span class="s">&#39;numeric_forces&#39;</span><span class="p">,</span> <span class="s">&#39;stress&#39;</span><span class="p">,</span> <span class="s">&#39;stresses&#39;</span><span class="p">]</span>
+        <span class="c"># list of properties that require a call to Potential.calc()</span>
+        <span class="n">calc_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;energies&#39;</span><span class="p">,</span> <span class="s">&#39;forces&#39;</span><span class="p">,</span> <span class="s">&#39;numeric_forces&#39;</span><span class="p">,</span> <span class="s">&#39;stress&#39;</span><span class="p">,</span> <span class="s">&#39;stresses&#39;</span><span class="p">]</span>
 
-        <span class="c"># list of other quantities we know how to calculate</span>
-        <span class="n">other_quantities</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;elastic_constants&#39;</span><span class="p">,</span> <span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">]</span>
+        <span class="c"># list of other properties we know how to calculate</span>
+        <span class="n">other_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;elastic_constants&#39;</span><span class="p">,</span> <span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">]</span>
 
         <span class="n">calc_args</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">calc_required</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="n">calc_quantities</span><span class="p">:</span>
+        <span class="k">for</span> <span class="nb">property</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">property</span> <span class="ow">in</span> <span class="n">calc_properties</span><span class="p">:</span>
                 <span class="n">calc_required</span> <span class="o">=</span> <span class="bp">True</span>
-                <span class="n">calc_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">args_map</span><span class="p">[</span><span class="n">quantity</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="n">quantity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other_quantities</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know how to calculate quantity &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">quantity</span><span class="p">)</span>
+                <span class="n">calc_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">args_map</span><span class="p">[</span><span class="nb">property</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">property</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other_properties</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know how to calculate property &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="nb">property</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">calc_required</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">dict_to_args_str</span><span class="p">(</span><span class="n">calc_args</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">dict_to_args_str</span><span class="p">(</span><span class="n">calc_args</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="s">&#39;energy&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s">&#39;energies&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">energies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">local_energy</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s">&#39;forces&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">force</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">if</span> <span class="s">&#39;numeric_forces&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">numeric_forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">numeric_force</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">if</span> <span class="s">&#39;stress&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="n">stress</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">virial</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&#39;energy&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s">&#39;energies&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;energies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">local_energy</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s">&#39;forces&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;forces&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">force</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">if</span> <span class="s">&#39;numeric_forces&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;numeric_forces&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">numeric_force</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">if</span> <span class="s">&#39;stress&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">stress</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">virial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
             <span class="c"># convert to 6-element array in Voigt order</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
-                                    <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-        <span class="k">if</span> <span class="s">&#39;stresses&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
-            <span class="n">lv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">local_virial</span><span class="p">)</span> <span class="c"># make a copy</span>
-            <span class="n">vol_per_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;vol_per_atom&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                                               <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="s">&#39;stresses&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">lv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">local_virial</span><span class="p">)</span> <span class="c"># make a copy</span>
+            <span class="n">vol_per_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;vol_per_atom&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vol_per_atom</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-                <span class="n">vol_per_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">vol_per_atom</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stresses</span> <span class="o">=</span> <span class="o">-</span><span class="n">lv</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span><span class="o">/</span><span class="n">vol_per_atom</span>
+                <span class="n">vol_per_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">vol_per_atom</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;stresses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">lv</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span><span class="o">/</span><span class="n">vol_per_atom</span>
 
-        <span class="k">if</span> <span class="s">&#39;elastic_constants&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&#39;elastic_constants&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
             <span class="n">cij_dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;cij_dx&#39;</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">)</span>
             <span class="n">cij</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc_elastic_constants</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span><span class="n">cij_dx</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc_elastic_constants</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span><span class="n">cij_dx</span><span class="p">,</span>
                                         <span class="n">args_str</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_calc_args_str</span><span class="p">(),</span>
                                         <span class="n">c</span><span class="o">=</span><span class="n">cij</span><span class="p">,</span> <span class="n">relax_initial</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">return_relaxed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
                 <span class="n">cij</span> <span class="o">=</span> <span class="n">cij</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">elastic_constants</span> <span class="o">=</span> <span class="n">cij</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;elastic_constants&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cij</span>
 
-        <span class="k">if</span> <span class="s">&#39;unrelaxed_elastic_constants&#39;</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&#39;unrelaxed_elastic_constants&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
             <span class="n">cij_dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;cij_dx&#39;</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">)</span>
             <span class="n">c0ij</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc_elastic_constants</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span><span class="n">cij_dx</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc_elastic_constants</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span><span class="n">cij_dx</span><span class="p">,</span>
                                         <span class="n">args_str</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_calc_args_str</span><span class="p">(),</span>
                                         <span class="n">c0</span><span class="o">=</span><span class="n">c0ij</span><span class="p">,</span> <span class="n">relax_initial</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">return_relaxed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
                 <span class="n">c0ij</span> <span class="o">=</span> <span class="n">c0ij</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">unrelaxed_elastic_constants</span> <span class="o">=</span> <span class="n">c0ij</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c0ij</span>
 
-</div>
-<div class="viewcode-block" id="Potential.get_potential_energy"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_potential_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return potential energy of `atoms` calculated with this Potential</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+        <span class="c"># copy back any additional output data to results dictionary</span>
+        <span class="n">skip_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;force&#39;</span><span class="p">,</span> <span class="s">&#39;virial&#39;</span><span class="p">,</span> <span class="s">&#39;numeric_force&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">initial_arrays</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip_keys</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">initial_info</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip_keys</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-</div>
+
 <div class="viewcode-block" id="Potential.get_potential_energies"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_potential_energies">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return array of atomic energies calculated with this Potential</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;energies&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-</div>
-<div class="viewcode-block" id="Potential.get_forces"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_forces">[docs]</a>    <span class="k">def</span> <span class="nf">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return forces on `atoms` calculated with this Potential</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;forces&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forces</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s">&#39;energies&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="Potential.get_numeric_forces"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_numeric_forces">[docs]</a>    <span class="k">def</span> <span class="nf">get_numeric_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return forces on `atoms` computed with finite differences of the energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;numeric_forces&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">numeric_forces</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-</div>
-<div class="viewcode-block" id="Potential.get_stress"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_stress">[docs]</a>    <span class="k">def</span> <span class="nf">get_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return stress tensor for `atoms` computed with this Potential</span>
-
-<span class="sd">        Result is a 6-element array in Voigt notation:</span>
-<span class="sd">           [sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;stress&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s">&#39;numeric_forces&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="Potential.get_stresses"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_stresses">[docs]</a>    <span class="k">def</span> <span class="nf">get_stresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the per-atoms virial stress tensors for `atoms` computed with this Potential</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;stresses&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stresses</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s">&#39;stresses&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="Potential.get_elastic_constants"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_elastic_constants">[docs]</a>    <span class="k">def</span> <span class="nf">get_elastic_constants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
@@ -600,8 +519,7 @@
 <span class="sd">        negative strains of magnitude the `cij_dx` entry in</span>
 <span class="sd">        ``calc_args``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;elastic_constants&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">elastic_constants</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s">&#39;elastic_constants&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="Potential.get_unrelaxed_elastic_constants"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_unrelaxed_elastic_constants">[docs]</a>    <span class="k">def</span> <span class="nf">get_unrelaxed_elastic_constants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
@@ -615,18 +533,17 @@
 <span class="sd">        negative strains of magnitude the `cij_dx` entry in</span>
 <span class="sd">        :attr:`calc_args`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unrelaxed_elastic_constants</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s">&#39;unrelaxed_elastic_constants&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="Potential.get_default_quantities"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_default_quantities">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_quantities</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s">&quot;Get the list of quantities to be calculated by default&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_quantities</span><span class="p">[:]</span>
+<div class="viewcode-block" id="Potential.get_default_properties"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_default_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">&quot;Get the list of properties to be calculated by default&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_properties</span><span class="p">[:]</span>
 
 </div>
-<div class="viewcode-block" id="Potential.set_default_quantities"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.set_default_quantities">[docs]</a>    <span class="k">def</span> <span class="nf">set_default_quantities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantities</span><span class="p">):</span>
-        <span class="s">&quot;Set the list of quantities to be calculated by default&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_quantities</span> <span class="o">=</span> <span class="n">quantities</span><span class="p">[:]</span>
+<div class="viewcode-block" id="Potential.set_default_properties"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.set_default_properties">[docs]</a>    <span class="k">def</span> <span class="nf">set_default_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="s">&quot;Set the list of properties to be calculated by default&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_properties</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[:]</span>
 
 </div>
 <div class="viewcode-block" id="Potential.get"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -648,11 +565,11 @@
 <span class="sd">        All calc_args are passed to :meth:`calc` whenever energies,</span>
 <span class="sd">        forces or stresses need to be computed.</span>
 
-<span class="sd">        After updating the calc_args, :meth:`set` calls :meth:`wipe`</span>
-<span class="sd">        to mark all quantities as needing to be recaculated.</span>
+<span class="sd">        After updating the calc_args, :meth:`set` calls :meth:`reset`</span>
+<span class="sd">        to mark all properties as needing to be recaculated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calc_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wipe</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
 </div>
 <div class="viewcode-block" id="Potential.get_calc_args"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_calc_args">[docs]</a>    <span class="k">def</span> <span class="nf">get_calc_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -679,12 +596,10 @@
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">FortranDerivedTypes</span>
 <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(potential)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Potential</span>
 
-
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+    <span class="kn">from</span> <span class="nn">ase.optimize.optimize</span> <span class="kn">import</span> <span class="n">Optimizer</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">Optimizer</span> <span class="o">=</span> <span class="nb">object</span>
-
 
 <div class="viewcode-block" id="Minim"><a class="viewcode-back" href="../../potential.html#quippy.potential.Minim">[docs]</a><span class="k">class</span> <span class="nc">Minim</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -731,7 +646,7 @@
                  <span class="n">eps_guess</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">fire_dt0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fire_dt_max</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">external_pressure</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">use_precond</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+                 <span class="n">use_precond</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 
         <span class="n">calc</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">calc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -766,7 +681,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fire_dt_max</span> <span class="o">=</span> <span class="n">fire_dt_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">external_pressure</span> <span class="o">=</span> <span class="n">external_pressure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_precond</span> <span class="o">=</span> <span class="n">use_precond</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span> <span class="o">=</span> <span class="n">cutoff_skin</span>
 
 
 <div class="viewcode-block" id="Minim.run"><a class="viewcode-back" href="../../potential.html#quippy.potential.Minim.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">100000000</span><span class="p">,</span> <span class="n">convergence_tol</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -793,9 +707,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">())</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_lat</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">cutoff</span><span class="p">(),</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
 
         <span class="c"># check for constraints, only FixAtoms is supported for now</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
@@ -842,13 +753,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot1</span><span class="p">,</span> <span class="n">pot2</span><span class="p">,</span> <span class="n">bulk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mpi_obj</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">calculator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">calculator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">qm_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fpointer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">args_str</span> <span class="o">=</span> <span class="s">&#39;ForceMixing&#39;</span>
         <span class="n">Potential</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args_str</span><span class="p">,</span>
                            <span class="n">pot1</span><span class="o">=</span><span class="n">pot1</span><span class="p">,</span> <span class="n">pot2</span><span class="o">=</span><span class="n">pot2</span><span class="p">,</span> <span class="n">bulk_scale</span><span class="o">=</span><span class="n">bulk_scale</span><span class="p">,</span>
-                           <span class="n">mpi_obj</span><span class="o">=</span><span class="n">mpi_obj</span><span class="p">,</span> <span class="n">cutoff_skin</span><span class="o">=</span><span class="n">cutoff_skin</span><span class="p">,</span>
+                           <span class="n">mpi_obj</span><span class="o">=</span><span class="n">mpi_obj</span><span class="p">,</span>
                            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">,</span>
                            <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">qm_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -873,9 +784,9 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;No atoms assocated with this ForceMixingPotential!&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;hybrid&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;hybrid&#39;</span><span class="p">,</span> <span class="n">HYBRID_NO_MARK</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">HYBRID_NO_MARK</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">HYBRID_NO_MARK</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[</span><span class="n">qm_list</span><span class="p">]</span> <span class="o">=</span> <span class="n">HYBRID_ACTIVE_MARK</span>
-         
+
 
 </div></div>
 <div class="viewcode-block" id="force_test"><a class="viewcode-back" href="../../potential.html#quippy.potential.force_test">[docs]</a><span class="k">def</span> <span class="nf">force_test</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
@@ -917,7 +828,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

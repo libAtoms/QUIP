@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Linear algebra routines &mdash; quippy  documentation</title>
+    <title>Linear algebra routines &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Quaternions and rotation" href="quaternions.html" />
     <link rel="prev" title="Tools for electrostatic embedding" href="electrostaticembed.html" /> 
@@ -44,7 +47,8 @@
         <li class="right" >
           <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -148,7 +152,10 @@ as well as array searching, sorting and averaging.</p>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.cubic_interpolate" title="quippy.linearalgebra.cubic_interpolate"><code class="xref py py-obj docutils literal"><span class="pre">cubic_interpolate</span></code></a>(x0,y0,x1,y1,x)</td>
 <td>Perform a cubic interpolation between the points <img class="math" src="_images/math/bfd6ca45953d0c6ff82172022440d2fec96cc301.png" alt="(x_0,y_0)"/> and <img class="math" src="_images/math/11068e2663344fae473707cc857f803b9265dd3c.png" alt="(x_1,y_1)"/>, using the cubic function with zero first derivative at <img class="math" src="_images/math/c3c08496f07567285212e468b173bea9ca153fab.png" alt="x_0"/> and <img class="math" src="_images/math/b31b1ea8e4fe3f618dedfb0e2d8c69a3df7a391d.png" alt="x_1"/>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.permutation_symbol" title="quippy.linearalgebra.permutation_symbol"><code class="xref py py-obj docutils literal"><span class="pre">permutation_symbol</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.oscillate" title="quippy.linearalgebra.oscillate"><code class="xref py py-obj docutils literal"><span class="pre">oscillate</span></code></a>(m)</td>
+<td>:math:` (-1)^n ` function.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.permutation_symbol" title="quippy.linearalgebra.permutation_symbol"><code class="xref py py-obj docutils literal"><span class="pre">permutation_symbol</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -159,10 +166,10 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.factorial" title="quippy.linearalgebra.factorial"><code class="xref py py-obj docutils literal"><span class="pre">factorial</span></code></a>(n)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.factorial" title="quippy.linearalgebra.factorial"><code class="xref py py-obj docutils literal"><span class="pre">factorial</span></code></a>(n)</td>
 <td>Factorial, real result</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.pbc_aware_centre" title="quippy.linearalgebra.pbc_aware_centre"><code class="xref py py-obj docutils literal"><span class="pre">pbc_aware_centre</span></code></a>(p,lattice,g)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.pbc_aware_centre" title="quippy.linearalgebra.pbc_aware_centre"><code class="xref py py-obj docutils literal"><span class="pre">pbc_aware_centre</span></code></a>(p,lattice,g)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -173,25 +180,25 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.ran_normal3" title="quippy.linearalgebra.ran_normal3"><code class="xref py py-obj docutils literal"><span class="pre">ran_normal3</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.ran_normal3" title="quippy.linearalgebra.ran_normal3"><code class="xref py py-obj docutils literal"><span class="pre">ran_normal3</span></code></a>()</td>
 <td>Return a three vector with normally distributed components</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_inverse" title="quippy.linearalgebra.matrix3x3_inverse"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_inverse</span></code></a>(matrix)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_inverse" title="quippy.linearalgebra.matrix3x3_inverse"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_inverse</span></code></a>(matrix)</td>
 <td>Calculate <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix inverse of <code class="docutils literal"><span class="pre">lattice</span></code> and store result in <code class="docutils literal"><span class="pre">g</span></code>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.binom" title="quippy.linearalgebra.binom"><code class="xref py py-obj docutils literal"><span class="pre">binom</span></code></a>(n,r)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.binom" title="quippy.linearalgebra.binom"><code class="xref py py-obj docutils literal"><span class="pre">binom</span></code></a>(n,r)</td>
 <td>Binomial coefficient, real result</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.oscillate" title="quippy.linearalgebra.oscillate"><code class="xref py py-obj docutils literal"><span class="pre">oscillate</span></code></a>(m)</td>
-<td>:math:` (-1)^n ` function.</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.is_diagonal" title="quippy.linearalgebra.is_diagonal"><code class="xref py py-obj docutils literal"><span class="pre">is_diagonal</span></code></a>(matrix)</td>
+<td>Test if this matrix is diagonal</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.factorial2" title="quippy.linearalgebra.factorial2"><code class="xref py py-obj docutils literal"><span class="pre">factorial2</span></code></a>(n)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.factorial2" title="quippy.linearalgebra.factorial2"><code class="xref py py-obj docutils literal"><span class="pre">factorial2</span></code></a>(n)</td>
 <td>Double factorial, real result</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.zero_sum" title="quippy.linearalgebra.zero_sum"><code class="xref py py-obj docutils literal"><span class="pre">zero_sum</span></code></a>(array)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.zero_sum" title="quippy.linearalgebra.zero_sum"><code class="xref py py-obj docutils literal"><span class="pre">zero_sum</span></code></a>(array)</td>
 <td>Subtract the average value from each element of a real array.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.d3poly_switch" title="quippy.linearalgebra.d3poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d3poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.d3poly_switch" title="quippy.linearalgebra.d3poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d3poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -202,7 +209,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.poly_switch" title="quippy.linearalgebra.poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.poly_switch" title="quippy.linearalgebra.poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -213,10 +220,10 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.unit_vector" title="quippy.linearalgebra.unit_vector"><code class="xref py py-obj docutils literal"><span class="pre">unit_vector</span></code></a>(theta,phi)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.unit_vector" title="quippy.linearalgebra.unit_vector"><code class="xref py py-obj docutils literal"><span class="pre">unit_vector</span></code></a>(theta,phi)</td>
 <td>Return a unit vector in the direction given by the angles <code class="docutils literal"><span class="pre">theta</span></code> and <code class="docutils literal"><span class="pre">phi</span></code>, i.e.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.symmetric_linear_solve" title="quippy.linearalgebra.symmetric_linear_solve"><code class="xref py py-obj docutils literal"><span class="pre">symmetric_linear_solve</span></code></a>(m,a,n3)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.symmetric_linear_solve" title="quippy.linearalgebra.symmetric_linear_solve"><code class="xref py py-obj docutils literal"><span class="pre">symmetric_linear_solve</span></code></a>(m,a,n3)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -227,7 +234,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.dcos_cutoff_function" title="quippy.linearalgebra.dcos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">dcos_cutoff_function</span></code></a>(r,cutoff_in)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.dcos_cutoff_function" title="quippy.linearalgebra.dcos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">dcos_cutoff_function</span></code></a>(r,cutoff_in)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -238,7 +245,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.inverse_svd_threshold" title="quippy.linearalgebra.inverse_svd_threshold"><code class="xref py py-obj docutils literal"><span class="pre">inverse_svd_threshold</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.inverse_svd_threshold" title="quippy.linearalgebra.inverse_svd_threshold"><code class="xref py py-obj docutils literal"><span class="pre">inverse_svd_threshold</span></code></a>(...)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -249,7 +256,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.cos_cutoff_function" title="quippy.linearalgebra.cos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">cos_cutoff_function</span></code></a>(r,cutoff_in)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.cos_cutoff_function" title="quippy.linearalgebra.cos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">cos_cutoff_function</span></code></a>(r,cutoff_in)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -260,10 +267,10 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.angle" title="quippy.linearalgebra.angle"><code class="xref py py-obj docutils literal"><span class="pre">angle</span></code></a>(a,b)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.angle" title="quippy.linearalgebra.angle"><code class="xref py py-obj docutils literal"><span class="pre">angle</span></code></a>(a,b)</td>
 <td>Return the (smallest) angle between two vectors, in radians.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.dpoly_switch" title="quippy.linearalgebra.dpoly_switch"><code class="xref py py-obj docutils literal"><span class="pre">dpoly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.dpoly_switch" title="quippy.linearalgebra.dpoly_switch"><code class="xref py py-obj docutils literal"><span class="pre">dpoly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -274,7 +281,18 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.d2poly_switch" title="quippy.linearalgebra.d2poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d2poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.d2poly_switch" title="quippy.linearalgebra.d2poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d2poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.svdfact" title="quippy.linearalgebra.svdfact"><code class="xref py py-obj docutils literal"><span class="pre">svdfact</span></code></a>(in_matrix,n2,n3,n4,n5,n6)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -288,7 +306,21 @@ as well as array searching, sorting and averaging.</p>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.factorial_int" title="quippy.linearalgebra.factorial_int"><code class="xref py py-obj docutils literal"><span class="pre">factorial_int</span></code></a>(n)</td>
 <td>Factorial, integer result</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.fill_random_integer" title="quippy.linearalgebra.fill_random_integer"><code class="xref py py-obj docutils literal"><span class="pre">fill_random_integer</span></code></a>(n,n0,[b])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_det" title="quippy.linearalgebra.matrix3x3_det"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_det</span></code></a>(m)</td>
+<td>Calulates determinant of <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.fill_random_integer" title="quippy.linearalgebra.fill_random_integer"><code class="xref py py-obj docutils literal"><span class="pre">fill_random_integer</span></code></a>(n,n0,[b])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.pseudo_inverse" title="quippy.linearalgebra.pseudo_inverse"><code class="xref py py-obj docutils literal"><span class="pre">pseudo_inverse</span></code></a>(n2,n3)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -316,8 +348,16 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_det" title="quippy.linearalgebra.matrix3x3_det"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_det</span></code></a>(m)</td>
-<td>Calulates determinant of <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.frobenius_norm" title="quippy.linearalgebra.frobenius_norm"><code class="xref py py-obj docutils literal"><span class="pre">frobenius_norm</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.int_array_lt" title="quippy.linearalgebra.int_array_lt"><code class="xref py py-obj docutils literal"><span class="pre">int_array_lt</span></code></a>(array1,array2)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -480,7 +520,7 @@ contents in first cell is less than 2nd, with 1st array taking precendence.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_lt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_lt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -529,7 +569,7 @@ its derivative (<img class="math" src="_images/math/5f76549f4cb0d7f165c33f4fa2a1
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">fit_cubic</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">fit_cubic</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -552,7 +592,7 @@ its derivative (<img class="math" src="_images/math/5f76549f4cb0d7f165c33f4fa2a1
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">kmeans</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">kmeans</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -575,7 +615,7 @@ with prime factors of only 2, 3, 5, ... max_prime_factor</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">round_prime_factors</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">round_prime_factors</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -593,7 +633,7 @@ uniformly distributed over the unit sphere
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">random_unit_vector</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">random_unit_vector</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -613,7 +653,7 @@ uniformly distributed over the unit sphere
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_gt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_gt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -631,7 +671,7 @@ uniformly distributed over the unit sphere
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">is_in_array</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">is_in_array</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -651,7 +691,7 @@ uniformly distributed over the unit sphere
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_ge</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_ge</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -676,7 +716,7 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">linear_interpolate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">linear_interpolate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -702,7 +742,25 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cubic_interpolate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cubic_interpolate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.linearalgebra.oscillate">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">oscillate</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.oscillate" title="Permalink to this definition">¶</a></dt>
+<dd><p>:math:` (-1)^n ` function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> :  input int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_oscillate</strong> :  int</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">oscillate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -717,7 +775,7 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">permutation_symbol</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">permutation_symbol</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -735,7 +793,7 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">factorial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">factorial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -756,7 +814,7 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">pbc_aware_centre</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">pbc_aware_centre</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -772,7 +830,7 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ran_normal3</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ran_normal3</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -791,7 +849,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <img class="math" s
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix3x3_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix3x3_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -812,25 +870,25 @@ Avoids overhead of calling textsc{lapack} for simple case of <img class="math" s
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">binom</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">binom</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="quippy.linearalgebra.oscillate">
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">oscillate</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.oscillate" title="Permalink to this definition">¶</a></dt>
-<dd><p>:math:` (-1)^n ` function.</p>
+<dt id="quippy.linearalgebra.is_diagonal">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">is_diagonal</code><span class="sig-paren">(</span><em>matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.is_diagonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if this matrix is diagonal</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_oscillate</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_is_diagonal</strong> :  int</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">oscillate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">is_diagonal</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -848,7 +906,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <img class="math" s
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">factorial2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">factorial2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -864,7 +922,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <img class="math" s
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">zero_sum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">zero_sum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -885,7 +943,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <img class="math" s
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d3poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d3poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -906,7 +964,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <img class="math" s
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -928,7 +986,7 @@ convert the spherical polar coordinates point <img class="math" src="_images/mat
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">unit_vector</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">unit_vector</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -952,7 +1010,7 @@ convert the spherical polar coordinates point <img class="math" src="_images/mat
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">symmetric_linear_solve</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">symmetric_linear_solve</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -972,18 +1030,18 @@ convert the spherical polar coordinates point <img class="math" src="_images/mat
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dcos_cutoff_function</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dcos_cutoff_function</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.linearalgebra.inverse_svd_threshold">
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">inverse_svd_threshold</code><span class="sig-paren">(</span><em>in_matrix</em>, <em>thresh</em><span class="optional">[</span>, <em>result_inv</em>, <em>u_out</em>, <em>vt_out</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.inverse_svd_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">inverse_svd_threshold</code><span class="sig-paren">(</span><em>in_matrix</em><span class="optional">[</span>, <em>thresh</em>, <em>result_inv</em>, <em>u_out</em>, <em>vt_out</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.inverse_svd_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>in_matrix</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
-<p><strong>thresh</strong> :  input float</p>
+<p><strong>thresh</strong> :  input float, optional</p>
 <p><strong>result_inv</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3), optional</p>
 <p><strong>u_out</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n4,qp_n5), optional</p>
 <p class="last"><strong>vt_out</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n6,qp_n7), optional</p>
@@ -992,7 +1050,7 @@ convert the spherical polar coordinates point <img class="math" src="_images/mat
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">inverse_svd_threshold</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">inverse_svd_threshold</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1012,7 +1070,7 @@ convert the spherical polar coordinates point <img class="math" src="_images/mat
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cos_cutoff_function</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cos_cutoff_function</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1036,7 +1094,7 @@ This is calculated as</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">angle</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">angle</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1057,7 +1115,7 @@ This is calculated as</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dpoly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dpoly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1078,7 +1136,46 @@ This is calculated as</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d2poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d2poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.linearalgebra.svdfact">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">svdfact</code><span class="sig-paren">(</span><em>in_matrix</em>, <em>n2</em>, <em>n3</em>, <em>n4</em>, <em>n5</em>, <em>n6</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.svdfact" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>in_matrix</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>u_out</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3)</p>
+<p><strong>n2</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_u_out,0)</p>
+</div></blockquote>
+<p><strong>n3</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_u_out,1)</p>
+</div></blockquote>
+<p><strong>s_out</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (qp_n4)</p>
+<p><strong>n4</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_s_out,0)</p>
+</div></blockquote>
+<p><strong>vt_out</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n5,qp_n6)</p>
+<p><strong>n5</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_vt_out,0)</p>
+</div></blockquote>
+<p><strong>n6</strong> :  input int</p>
+<blockquote class="last">
+<div><p>shape(qp_vt_out,1)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">svdfact</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1096,7 +1193,25 @@ This is calculated as</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">factorial_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">factorial_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.linearalgebra.matrix3x3_det">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix3x3_det</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.matrix3x3_det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calulates determinant of <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_det</strong> :  float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix3x3_det</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1120,7 +1235,33 @@ This is calculated as</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">fill_random_integer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">fill_random_integer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.linearalgebra.pseudo_inverse">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">pseudo_inverse</code><span class="sig-paren">(</span><em>n2</em>, <em>n3</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.pseudo_inverse" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n2</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_inverse,0)</p>
+</div></blockquote>
+<p><strong>n3</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_inverse,1)</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>inverse</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">pseudo_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1143,7 +1284,7 @@ of the 3-vectors <code class="docutils literal"><span class="pre">x</span></code
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">scalar_triple_product</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">scalar_triple_product</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1165,7 +1306,7 @@ pairs.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">trapezoidintegral</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">trapezoidintegral</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1182,25 +1323,22 @@ pairs.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">invsqrt_real_array1d</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">invsqrt_real_array1d</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="quippy.linearalgebra.matrix3x3_det">
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix3x3_det</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.matrix3x3_det" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calulates determinant of <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix</p>
-<table class="docutils field-list" frame="void" rules="none">
+<dt id="quippy.linearalgebra.frobenius_norm">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">frobenius_norm</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.frobenius_norm" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_det</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_norm</strong> :  float</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix3x3_det</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">frobenius_norm</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1220,7 +1358,7 @@ pairs.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_lt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_lt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1255,7 +1393,7 @@ If the array subscripts don``t start at 1, then pass the actual index of the fir
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">binary_search_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">binary_search_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1284,7 +1422,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">binary_search_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">binary_search_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1312,7 +1450,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_exponential_average_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_exponential_average_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1331,7 +1469,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_exponential_average_v</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_exponential_average_v</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1350,7 +1488,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_exponential_average_d2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_exponential_average_d2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1383,7 +1521,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_cfct</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_cfct</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1407,7 +1545,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_sign</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_sign</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1423,7 +1561,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">real_sign</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">real_sign</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1455,7 +1593,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dcoordination_function_lower_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dcoordination_function_lower_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1477,7 +1615,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dcoordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dcoordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1503,7 +1641,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">uniq_real_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">uniq_real_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1534,7 +1672,7 @@ can be used to index other arrays, e.g. array(find(mask))</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_indices</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_indices</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1558,30 +1696,7 @@ with no return value allocated on the stack</p>
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
 <li><strong>vectl</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>lhs</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_sub</code><span class="sig-paren">(</span><em>matrix</em>, <em>vect</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array(&#8216;D&#8217;) with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;D&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1590,53 +1705,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_zdz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_sub</code><span class="sig-paren">(</span><em>vectl</em>, <em>matrix</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>vectl</strong> (<em>input rank-1 array(&#8216;D&#8217;) with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>lhs</strong> &#8211;  rank-2 array(&#8216;D&#8217;) with bounds (qp_n0,qp_n1)</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_zzd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_sub</code><span class="sig-paren">(</span><em>matrix</em>, <em>vect</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;D&#8217;) with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array(&#8216;D&#8217;) with bounds (qp_n4)</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>lhs</strong> &#8211;  rank-2 array(&#8216;D&#8217;) with bounds (qp_n0,qp_n1)</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_zzz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_zdz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1650,7 +1719,30 @@ with no return value allocated on the stack</p>
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
 <li><strong>vectl</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;D&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>lhs</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_sub</code><span class="sig-paren">(</span><em>matrix</em>, <em>vect</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
+<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array(&#8216;D&#8217;) with bounds (qp_n4)</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1659,7 +1751,53 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_zdz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_zdz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_sub</code><span class="sig-paren">(</span><em>vectl</em>, <em>matrix</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
+<li><strong>vectl</strong> (<em>input rank-1 array(&#8216;D&#8217;) with bounds (qp_n2)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>lhs</strong> &#8211;  rank-2 array(&#8216;D&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_zzd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_sub</code><span class="sig-paren">(</span><em>matrix</em>, <em>vect</em>, <em>n0</em>, <em>n1</em><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
+<li><strong>matrix</strong> (<em>input rank-2 array(&#8216;D&#8217;) with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array(&#8216;D&#8217;) with bounds (qp_n4)</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>lhs</strong> &#8211;  rank-2 array(&#8216;D&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_zzz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1682,7 +1820,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_zzd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_zzd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1705,7 +1843,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1728,7 +1866,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_zzz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vect_asdiagonal_product_matrix_sub_zzz</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1754,7 +1892,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_normsq</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_normsq</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1776,7 +1914,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">array_normsq</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">array_normsq</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1804,7 +1942,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1823,7 +1961,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_inverse</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1848,7 +1986,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_trace</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_trace</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1876,7 +2014,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1894,7 +2032,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1912,7 +2050,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_randomise_vweight</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_randomise_vweight</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1930,7 +2068,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1948,7 +2086,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_z_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_z_randomise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1979,7 +2117,7 @@ of a matrix and return them as a vector.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonal_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonal_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2000,7 +2138,7 @@ of a matrix and return them as a vector.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonal_c</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonal_c</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2016,7 +2154,7 @@ of a matrix and return them as a vector.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_as_diag_matrix_c</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_as_diag_matrix_c</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2032,7 +2170,7 @@ of a matrix and return them as a vector.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_as_diag_matrix_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_as_diag_matrix_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2069,7 +2207,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2094,7 +2232,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_vector_product_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_vector_product_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2124,7 +2262,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_exp_d</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_exp_d</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2147,7 +2285,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_add_identity_c</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_add_identity_c</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2161,7 +2299,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_add_identity_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_add_identity_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2186,7 +2324,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_is_symmetric</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_is_symmetric</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2202,7 +2340,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_matrix_is_symmetric</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_matrix_is_symmetric</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2218,7 +2356,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_is_symmetric</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_is_symmetric</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2253,7 +2391,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_histogram</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_histogram</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2283,7 +2421,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d2coordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d2coordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2306,7 +2444,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_symmetrise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_symmetrise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2338,7 +2476,7 @@ with no return value allocated on the stack</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_nonsymmetric_diagonalise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_nonsymmetric_diagonalise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2368,7 +2506,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">insertion_sort_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">insertion_sort_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2386,7 +2524,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">insertion_sort_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">insertion_sort_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2417,7 +2555,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_in_array_row</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_in_array_row</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2438,7 +2576,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_in_array_element_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_in_array_element_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2459,7 +2597,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_in_array_element_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_in_array_element_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2491,7 +2629,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">coordination_function_lower_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">coordination_function_lower_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2513,7 +2651,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">coordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">coordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2544,7 +2682,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_rl_sub_zzd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_rl_sub_zzd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2567,7 +2705,7 @@ have been.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_rl_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_product_vect_asdiagonal_rl_sub_ddd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2596,7 +2734,7 @@ i_data is an accompanying array of integers on which the same reordering is perf
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sort_array_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sort_array_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2616,7 +2754,7 @@ r_data is an accompanying array of reals on which the same reordering is perform
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sort_array_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sort_array_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2651,7 +2789,7 @@ complex hermitian postive definite matrices.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_diagonalise_generalised</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_diagonalise_generalised</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2671,7 +2809,7 @@ complex hermitian postive definite matrices.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonalise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonalise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2691,7 +2829,7 @@ complex hermitian postive definite matrices.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_diagonalise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_z_diagonalise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2712,7 +2850,7 @@ complex hermitian postive definite matrices.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonalise_generalised</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_diagonalise_generalised</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2725,30 +2863,6 @@ complex hermitian postive definite matrices.</p>
 <p>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">rms_diff</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
-<dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>vector1</em>, <em>vector2</em><span class="sig-paren">)</span></dt>
-<dd><p>For two vectors of <img class="math" src="_images/math/75e27f04188974063be3230dca208cd495b77ce1.png" alt="N"/> dimensions, this is calculated as</p>
-<div class="math">
-<p><img src="_images/math/573d3593ebbb368ef34ca19fedb1001ecebb8121.png" alt="\sum_{i=1}^{N} \left(\mathbf{v_1}_i - \mathbf{v_2}_i\right)^2"/></p>
-</div><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vector1</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>vector2</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1)</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_rms_diff1</strong> &#8211;  float</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rms_diff1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
 <dt>
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em><span class="sig-paren">)</span></dt>
 <dd><p>For two arrays of dimension <img class="math" src="_images/math/0a2ae2cfe8c0eecfedf98d86105392aebf89a070.png" alt="N \times M"/>, this is calculated as</p>
@@ -2769,7 +2883,31 @@ complex hermitian postive definite matrices.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rms_diff2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rms_diff2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>vector1</em>, <em>vector2</em><span class="sig-paren">)</span></dt>
+<dd><p>For two vectors of <img class="math" src="_images/math/75e27f04188974063be3230dca208cd495b77ce1.png" alt="N"/> dimensions, this is calculated as</p>
+<div class="math">
+<p><img src="_images/math/573d3593ebbb368ef34ca19fedb1001ecebb8121.png" alt="\sum_{i=1}^{N} \left(\mathbf{v_1}_i - \mathbf{v_2}_i\right)^2"/></p>
+</div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vector1</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>vector2</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1)</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_rms_diff1</strong> &#8211;  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rms_diff1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2798,7 +2936,7 @@ complex hermitian postive definite matrices.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_trace_mult</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_trace_mult</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2833,7 +2971,7 @@ The result is then a one-dimensional array of the norms of each vector.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">array_norm</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">array_norm</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2849,7 +2987,7 @@ The result is then a one-dimensional array of the norms of each vector.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_norm</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">vector_norm</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2880,7 +3018,7 @@ performed
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2899,7 +3037,7 @@ performed
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_r_2dim</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_r_2dim</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -2923,7 +3061,7 @@ on which the same reordering is performed
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2953,7 +3091,7 @@ on which the same reordering is performed
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d3coordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">d3coordination_function_upper</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2978,7 +3116,7 @@ on which the same reordering is performed
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_is_orthogonal</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">matrix_is_orthogonal</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -3010,7 +3148,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_complex_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_complex_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3031,7 +3169,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_int_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_int_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3052,7 +3190,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_int_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_int_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3073,7 +3211,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_log_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_log_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3094,7 +3232,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_real_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_real_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3115,7 +3253,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_real_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_real_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3136,7 +3274,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_int_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_int_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3157,7 +3295,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_complex_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_complex_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3178,7 +3316,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_complex_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_complex_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3199,7 +3337,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_real_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_real_dim1_s</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3220,7 +3358,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_log_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_log_dim2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3241,7 +3379,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_log_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/linearalgebra.f95">libAtoms/linearalgebra.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">check_size_log_dim1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -3270,7 +3408,8 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
         <li class="right" >
           <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>

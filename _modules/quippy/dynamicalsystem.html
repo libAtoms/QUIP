@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.dynamicalsystem &mdash; quippy  documentation</title>
+    <title>quippy.dynamicalsystem &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +39,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -109,7 +113,7 @@
 
 <span class="c"># thermostat and barostat type constants are defined in Thermostats.f95,</span>
 <span class="c"># which is not directly wrapped by quippy, so we reproduce them here</span>
-    
+
 <span class="n">THERMOSTAT_NONE</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">THERMOSTAT_LANGEVIN</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">THERMOSTAT_NOSE_HOOVER</span> <span class="o">=</span> <span class="mi">2</span>
@@ -171,7 +175,7 @@
                                                  <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">traj</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="n">hook_interval</span><span class="o">=</span><span class="n">hook_interval</span><span class="p">,</span> 
+            <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="n">hook_interval</span><span class="o">=</span><span class="n">hook_interval</span><span class="p">,</span>
 						 <span class="n">summary_interval</span><span class="o">=</span><span class="n">summary_interval</span><span class="p">,</span> <span class="n">write_interval</span><span class="o">=</span><span class="n">write_interval</span><span class="p">,</span>
                                                  <span class="n">trajectory</span><span class="o">=</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
 </div>
@@ -215,7 +219,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">,</span>
                  <span class="n">trajectoryinterval</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">initialtemperature</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">logfile</span><span class="o">=</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">loginterval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">loglabel</span><span class="o">=</span><span class="s">&#39;D&#39;</span><span class="p">):</span>
-       
+
         <span class="c"># we will do the calculation in place, to minimise number of copies,</span>
         <span class="c"># unless atoms is not a quippy Atoms</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
@@ -225,7 +229,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s">&#39;masses&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;mass&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Dynamics confused as atoms has inconsistent &quot;mass&quot; and &quot;masses&quot; arrays&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;mass&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()</span><span class="o">*</span><span class="n">MASSCONVERT</span><span class="p">)</span>
@@ -234,10 +238,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_masses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_masses</span><span class="p">(</span><span class="s">&#39;defaults&#39;</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s">&#39;momenta&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;velo&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Dynamics confused as atoms has inconsistent &quot;velo&quot; and &quot;momenta&quot; arrays&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;velo&#39;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -247,20 +251,20 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c"># start with zero momenta</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;velo&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>            
+                <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;velo&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span> <span class="o">=</span> <span class="n">DynamicalSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">initialtemperature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;initialtemperature given but Atoms already &#39;</span><span class="o">+</span>
-                       <span class="s">&#39;have non-zero velocities!&#39;</span><span class="p">)</span>
+                       <span class="s">&#39;has non-zero velocities!&#39;</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">rescale_velo</span><span class="p">(</span><span class="n">initialtemperature</span><span class="p">)</span>
 
         <span class="c"># now self._ds.atoms is either a Fortran shallowcopy of atoms,</span>
         <span class="c"># or a copy if input atoms was not an instance of quippy.Atoms</span>
-        
+
         <span class="k">if</span> <span class="s">&#39;time&#39;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_time</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">])</span> <span class="c"># from ASE units to fs</span>
 
@@ -298,7 +302,7 @@
     <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_number_of_steps</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Dynamics.insert_observer"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.Dynamics.insert_observer">[docs]</a>    <span class="k">def</span> <span class="nf">insert_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+<div class="viewcode-block" id="Dynamics.insert_observer"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.Dynamics.insert_observer">[docs]</a>    <span class="k">def</span> <span class="nf">insert_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                         <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Insert an observer.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
@@ -397,7 +401,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
-            <span class="k">print</span> <span class="s">&#39;Computed virial:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virial</span>
+            <span class="c">#print &#39;Computed virial:&#39;, self._virial</span>
 
         <span class="c"># Second half of the Velocity Verlet step</span>
         <span class="c">#   p(t+dt) = p(t+dt/2) + F(t+dt)/2    -&gt;    v(t+dt) = v(t+dt/2) + a(t+dt)/2</span>
@@ -424,24 +428,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;Wkin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">wkin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;thermostat_dW&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">thermostat_dw</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;thermostat_work&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">thermostat_work</span>
- 
+
         <span class="c"># return f(t+dt)</span>
         <span class="k">return</span> <span class="n">forces</span>
 
 </div>
 <div class="viewcode-block" id="Dynamics.run"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.Dynamics.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run dynamics forwards for `steps` steps. </span>
+<span class="sd">        Run dynamics forwards for `steps` steps.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
             <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">()</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">()</span>
 
 </div>
     <span class="k">def</span> <span class="nf">print_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">print_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglabel</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="nb">file</span><span class="p">)</span>
-        
+
 
     <span class="k">def</span> <span class="nf">get_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">t</span><span class="o">*</span><span class="n">fs</span><span class="p">)</span>
@@ -464,7 +468,7 @@
     <span class="n">number_of_constraints</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_number_of_constraints</span><span class="p">,</span>
                                      <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Get number of constraints&quot;</span><span class="p">)</span>
 
-    
+
     <span class="k">def</span> <span class="nf">get_number_of_restraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">nrestraints</span>
 
@@ -482,7 +486,7 @@
 
     <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">cur_temp</span>
-    
+
 
 <div class="viewcode-block" id="Dynamics.set_temperature"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.Dynamics.set_temperature">[docs]</a>    <span class="k">def</span> <span class="nf">set_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -494,7 +498,7 @@
     <span class="n">temperature</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_temperature</span><span class="p">,</span> <span class="n">set_temperature</span><span class="p">,</span>
                            <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Get or set the current temperature&quot;</span><span class="p">)</span>
 
-    
+
     <span class="k">def</span> <span class="nf">get_average_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">avg_temp</span>
 
@@ -507,7 +511,7 @@
 
     <span class="k">def</span> <span class="nf">set_averaging_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">avg_time</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">avg_time</span> <span class="o">=</span> <span class="n">avg_time</span>
-        
+
     <span class="n">averaging_time</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_averaging_time</span><span class="p">,</span> <span class="n">set_averaging_time</span><span class="p">,</span>
                               <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Averaging time used for average temperature and kinetic energy&quot;</span><span class="p">)</span>
 
@@ -556,7 +560,7 @@
 <span class="sd">           ``THERMOSTAT_NONE``, ``THERMOSTAT_LANGEVIN``, ``THERMOSTAT_NOSE_HOOVER``, ``THERMOSTAT_NOSE_HOOVER_LANGEVIN``,</span>
 <span class="sd">           ``THERMOSTAT_LANGEVIN_NPT``, ``THERMOSTAT_LANGEVIN_PR``, ``THERMOSTAT_NPH_ANDERSEN``, ``THERMOSTAT_NPH_PR``,</span>
 <span class="sd">           ``THERMOSTAT_LANGEVIN_OU``, ``THERMOSTAT_LANGEVIN_NPT_NB``, ``THERMOSTAT_ALL_PURPOSE``.</span>
-<span class="sd">                   </span>
+
 <span class="sd">        :param T:  target temperature for this thermostat, in K.</span>
 
 <span class="sd">        :param gamma: decay constant, in units  of 1/fs</span>
@@ -568,11 +572,11 @@
 <span class="sd">                         (for variable cell thermostats only).</span>
 
 <span class="sd">        :param p:   target pressure (for variable cell thermostats)</span>
-<span class="sd">                 </span>
+
 <span class="sd">        :param NHL_tau:  time constant for Nose-Hoover-Langevein thermostats</span>
-<span class="sd">                 </span>
+
 <span class="sd">        :param NHL_mu:   thermostat mass Nose-Hoover-Langevin thermostats</span>
-<span class="sd">                 </span>
+
 <span class="sd">        :param massive:  set to True to enable massive Nose-Hoover-Langevin</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -615,7 +619,7 @@
 <span class="sd">        Print a table of the current thermostats in this system</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">print_thermostats</span><span class="p">()</span>
-        
+
 </div>
 <div class="viewcode-block" id="Dynamics.get_thermostat_temperatures"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures">[docs]</a>    <span class="k">def</span> <span class="nf">get_thermostat_temperatures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -643,11 +647,11 @@
 <span class="sd">        Modified for arbitrary strain based on (but not exactly using)</span>
 <span class="sd">        formulation in E. Tadmor and R. Miller Modeling Materials:</span>
 <span class="sd">        Continuum, Atomistic and Multiscale Techniques</span>
-<span class="sd">        (Cambridge University Press, 2011). Chap 9.5.  Their </span>
+<span class="sd">        (Cambridge University Press, 2011). Chap 9.5.  Their</span>
 <span class="sd">        definition of stress (factors of F, F^T, J, and F^-T) for finite</span>
 <span class="sd">        strain is optionally used, but certain terms in EOM are excluded,</span>
 <span class="sd">        and their discretization is entirely ignored.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param type:   The type of barostat to be used. Currently only</span>
 <span class="sd">                       ``BAROSTAT_HOOVER_LANGEVIN`` is supported.</span>
 
@@ -683,7 +687,7 @@
 <span class="sd">        Update target pressure `p` or temperature `T` for NPT barostat</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">update_barostat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-        
+
 </div>
     <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">saved_ds</span> <span class="o">=</span> <span class="n">DynamicalSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
@@ -711,7 +715,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

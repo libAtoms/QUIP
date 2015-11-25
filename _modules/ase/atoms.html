@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ase.atoms &mdash; quippy  documentation</title>
+    <title>ase.atoms &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +39,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -281,7 +285,7 @@
             <span class="k">if</span> <span class="n">scaled_positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Both scaled and cartesian positions set!&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">new_array</span><span class="p">(</span><span class="s">&#39;positions&#39;</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,))</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_masses</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
@@ -568,9 +572,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Atoms.set_momenta"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_momenta">[docs]</a>    <span class="k">def</span> <span class="nf">set_momenta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">momenta</span><span class="p">):</span>
+<div class="viewcode-block" id="Atoms.set_momenta"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_momenta">[docs]</a>    <span class="k">def</span> <span class="nf">set_momenta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">momenta</span><span class="p">,</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set momenta.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">momenta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">apply_constraint</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
+            <span class="n">momenta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">momenta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">momenta</span><span class="p">)</span>  <span class="c"># modify a copy</span>
             <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="s">&#39;adjust_momenta&#39;</span><span class="p">):</span>
@@ -595,7 +600,7 @@
 <span class="sd">        the masses argument is not given or for those elements of the</span>
 <span class="sd">        masses list that are None, standard values are set.&quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">masses</span> <span class="o">==</span> <span class="s">&#39;defaults&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">masses</span> <span class="o">==</span> <span class="s">&#39;defaults&#39;</span><span class="p">:</span>
             <span class="n">masses</span> <span class="o">=</span> <span class="n">atomic_masses</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;numbers&#39;</span><span class="p">]]</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="n">newmasses</span> <span class="o">=</span> <span class="p">[]</span>
@@ -708,10 +713,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">apply_constraint</span><span class="p">:</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span>
-                           <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s">&#39;adjust_potential_energy&#39;</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">:</span>
-                <span class="n">energy</span> <span class="o">+=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">adjust_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="s">&#39;adjust_potential_energy&#39;</span><span class="p">):</span>
+                    <span class="n">energy</span> <span class="o">+=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">adjust_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">energy</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_potential_energies"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_potential_energies">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -745,19 +749,27 @@
         <span class="sd">&quot;&quot;&quot;Get the total energy - potential plus kinetic energy.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Atoms.get_forces"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_forces">[docs]</a>    <span class="k">def</span> <span class="nf">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Atoms.get_forces"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_forces">[docs]</a>    <span class="k">def</span> <span class="nf">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">md</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate atomic forces.</span>
 
 <span class="sd">        Ask the attached calculator to calculate the forces and apply</span>
 <span class="sd">        constraints.  Use *apply_constraint=False* to get the raw</span>
-<span class="sd">        forces.&quot;&quot;&quot;</span>
+<span class="sd">        forces.</span>
+<span class="sd">        </span>
+<span class="sd">        For molecular dynamics (md=True) we don&#39;t apply the constraint</span>
+<span class="sd">        to the forces but to the momenta.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Atoms object has no calculator.&#39;</span><span class="p">)</span>
         <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        
         <span class="k">if</span> <span class="n">apply_constraint</span><span class="p">:</span>
+            <span class="c"># We need a special md flag here because for MD we want</span>
+            <span class="c"># to skip real constraints but include special &quot;constraints&quot;</span>
+            <span class="c"># Like Hookean.</span>
             <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
-                <span class="n">constraint</span><span class="o">.</span><span class="n">adjust_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">md</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="s">&#39;adjust_potential_energy&#39;</span><span class="p">):</span>
+                    <span class="n">constraint</span><span class="o">.</span><span class="n">adjust_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">forces</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_stress"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_stress">[docs]</a>    <span class="k">def</span> <span class="nf">get_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voigt</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -1021,7 +1033,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">displacement</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Atoms.center"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.center">[docs]</a>    <span class="k">def</span> <span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)):</span>
+<div class="viewcode-block" id="Atoms.center"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.center">[docs]</a>    <span class="k">def</span> <span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">about</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Center atoms in unit cell.</span>
 
 <span class="sd">        Centers the atoms in the unit cell, so there is the same</span>
@@ -1033,6 +1045,10 @@
 <span class="sd">            on each side.</span>
 <span class="sd">        axis: int or sequence of ints</span>
 <span class="sd">            Axis or axes to act on.  Default: Act on all axes.</span>
+<span class="sd">        about: float or array (default: None)</span>
+<span class="sd">            If specified, center the atoms about &lt;about&gt;.</span>
+<span class="sd">            I.e., about=(0., 0., 0.) (or just &quot;about=0.&quot;, interpreted</span>
+<span class="sd">            identically), to center about the origin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Find the orientations of the faces of the unit cell</span>
         <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cell</span><span class="p">()</span>
@@ -1072,6 +1088,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">longer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">nowlen</span>
             <span class="n">translation</span> <span class="o">+=</span> <span class="n">shift</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">nowlen</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">translation</span>
+
+        <span class="c"># Optionally, translate to center about a point in space.</span>
+        <span class="k">if</span> <span class="n">about</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">positions</span> <span class="o">-=</span> <span class="n">vector</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">positions</span> <span class="o">+=</span> <span class="n">about</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_center_of_mass"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_center_of_mass">[docs]</a>    <span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaled</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the center of mass.</span>
@@ -1424,7 +1446,7 @@
             <span class="n">D_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())])</span>
         <span class="k">if</span> <span class="n">vector</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        
+
         <span class="k">return</span> <span class="n">D_len</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="Atoms.get_distances"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_distances">[docs]</a>    <span class="k">def</span> <span class="nf">get_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">vector</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
@@ -1496,7 +1518,7 @@
 <span class="sd">        so that the scaled coordinates are between zero and one.&quot;&quot;&quot;</span>
 
         <span class="n">fractional</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        
+
         <span class="k">if</span> <span class="n">wrap</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">periodic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pbc</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">periodic</span><span class="p">:</span>
@@ -1504,18 +1526,18 @@
                     <span class="c"># See the scaled_positions.py test.</span>
                     <span class="n">fractional</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">%=</span> <span class="mf">1.0</span>
                     <span class="n">fractional</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">%=</span> <span class="mf">1.0</span>
-                    
+
         <span class="k">return</span> <span class="n">fractional</span>
 </div>
 <div class="viewcode-block" id="Atoms.set_scaled_positions"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_scaled_positions">[docs]</a>    <span class="k">def</span> <span class="nf">set_scaled_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaled</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set positions relative to unit cell.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">scaled</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">)</span>
-        </div>
+</div>
 <div class="viewcode-block" id="Atoms.wrap"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">pbc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Wrap positions to unit cell.</span>
-<span class="sd">    </span>
+
 <span class="sd">        Parameters:</span>
-<span class="sd">    </span>
+
 <span class="sd">        center: three float</span>
 <span class="sd">            The positons in fractional coordinates that the new positions</span>
 <span class="sd">            will be nearest possible to.</span>
@@ -1526,10 +1548,10 @@
 <span class="sd">        eps: float</span>
 <span class="sd">            Small number to prevent slightly negative coordinates from beeing</span>
 <span class="sd">            wrapped.</span>
-<span class="sd">            </span>
+
 <span class="sd">        See also the :func:`ase.utils.geometry.wrap_positions` function.</span>
 <span class="sd">        Example:</span>
-<span class="sd">    </span>
+
 <span class="sd">        &gt;&gt;&gt; a = Atoms(&#39;H&#39;,</span>
 <span class="sd">        ...           [[-0.1, 1.01, -0.5]],</span>
 <span class="sd">        ...           cell=[[1, 0, 0], [0, 1, 0], [0, 0, 4]],</span>
@@ -1538,7 +1560,7 @@
 <span class="sd">        &gt;&gt;&gt; a.positions</span>
 <span class="sd">        array([[ 0.9 ,  0.01, -0.5 ]])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="k">if</span> <span class="n">pbc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">pbc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">wrap_positions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span>
@@ -1653,7 +1675,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">edited_atoms</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">_get_constraints</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_initial_magnetic_moments</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_magnetic_moments</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_initial_magnetic_moments</span><span class="p">(</span>
+            <span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_tags</span><span class="p">())</span>
         <span class="k">return</span>
 
@@ -1763,7 +1786,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>CP2K I/O and driver &mdash; quippy  documentation</title>
+    <title>CP2K I/O and driver &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Elasticity calculations" href="elasticity.html" /> 
   </head>
@@ -40,7 +43,8 @@
         <li class="right" >
           <a href="elasticity.html" title="Elasticity calculations"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -257,7 +261,7 @@ object. Returns list of bonds as a set.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_charge_lsd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_charge_lsd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -353,178 +357,183 @@ read from old output files</td>
 <td>If true, recreate residue labels each
 time PSF file is generated (default T)</td>
 </tr>
-<tr class="row-even"><td>force_run_dir_i</td>
+<tr class="row-even"><td>do_mom_cons</td>
+<td>bool</td>
+<td>True</td>
+<td>Do we need momentum conservation?</td>
+</tr>
+<tr class="row-odd"><td>force_run_dir_i</td>
 <td>int</td>
 <td>-1</td>
 <td>If &gt; 0, force to run in this # run
 directory</td>
 </tr>
-<tr class="row-odd"><td>form_bond</td>
+<tr class="row-even"><td>form_bond</td>
 <td>int</td>
 <td>0 0</td>
 <td>Extra bond to form (for EVB)</td>
 </tr>
-<tr class="row-even"><td>have_silica_potential</td>
+<tr class="row-odd"><td>have_silica_potential</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, use 2.8A SILICA_CUTOFF for the
 connectivities</td>
 </tr>
-<tr class="row-odd"><td>have_titania_potential</td>
+<tr class="row-even"><td>have_titania_potential</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, use 2.8A TITANIA_CUTOFF for
 the connectivities</td>
 </tr>
-<tr class="row-even"><td>max_force_warning</td>
+<tr class="row-odd"><td>max_force_warning</td>
 <td>float</td>
 <td>2.0</td>
 <td>Generate warning if any force is larger
 than this</td>
 </tr>
-<tr class="row-odd"><td>max_n_tries</td>
+<tr class="row-even"><td>max_n_tries</td>
 <td>int</td>
 <td>2</td>
 <td>Max number of times to run cp2k on
 failure</td>
 </tr>
-<tr class="row-even"><td>persistent</td>
+<tr class="row-odd"><td>persistent</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, use persistent connection to
 cp2k with REFTRAJ</td>
 </tr>
-<tr class="row-odd"><td>persistent_max_wait_time</td>
+<tr class="row-even"><td>persistent_max_wait_time</td>
 <td>float</td>
 <td>600.0</td>
 <td>Max amount of time in s to wait for
 forces to be available in persistent
 mode</td>
 </tr>
-<tr class="row-even"><td>persistent_restart_interval</td>
+<tr class="row-odd"><td>persistent_restart_interval</td>
 <td>int</td>
 <td>100</td>
 <td>How often to restart cp2k for
 persistent connection</td>
 </tr>
-<tr class="row-odd"><td>qm_charges</td>
+<tr class="row-even"><td>qm_charges</td>
 <td>str</td>
 <td>None</td>
 <td>If not blank, name of property to put
 QM charges in</td>
 </tr>
-<tr class="row-even"><td>qm_vacuum</td>
+<tr class="row-odd"><td>qm_vacuum</td>
 <td>float</td>
 <td>6.0</td>
 <td>Amount of vacuum to add to size of qm
 region in hybrid (and nonperiodic?)
 runs</td>
 </tr>
-<tr class="row-odd"><td>qmmm_link_fix_pbc</td>
+<tr class="row-even"><td>qmmm_link_fix_pbc</td>
 <td>bool</td>
 <td>True</td>
 <td>If true (default) move outer atoms in
 any QM links which straddle a periodic
 boundary so link is continous</td>
 </tr>
-<tr class="row-even"><td>qmmm_link_n_electrons</td>
+<tr class="row-odd"><td>qmmm_link_n_electrons</td>
 <td>int</td>
 <td>1</td>
 <td>Number of electrons to add per QM-MM
 link when qmmm_link_type=QM_KIND</td>
 </tr>
-<tr class="row-odd"><td>qmmm_link_qm_kind</td>
+<tr class="row-even"><td>qmmm_link_qm_kind</td>
 <td>str</td>
 <td>OSTAR</td>
 <td>QM kind to use for inner boundary atoms
 when qmmm_link_type=QM_KIND</td>
 </tr>
-<tr class="row-even"><td>qmmm_link_qm_kind_z</td>
+<tr class="row-odd"><td>qmmm_link_qm_kind_z</td>
 <td>int</td>
 <td>8</td>
 <td>Atomic number of QM_KIND species
 (default 8)</td>
 </tr>
-<tr class="row-odd"><td>qmmm_link_template_file</td>
+<tr class="row-even"><td>qmmm_link_template_file</td>
 <td>str</td>
 <td>None</td>
 <td>Filename for cp2k link atoms template
 file</td>
 </tr>
-<tr class="row-even"><td>qmmm_link_type</td>
+<tr class="row-odd"><td>qmmm_link_type</td>
 <td>str</td>
 <td>IMOMM</td>
 <td>Type of QMMM links to create: one of
 IMOMM, PSEUDO or QM_KIND. Default IMOMM</td>
 </tr>
-<tr class="row-odd"><td>qmmm_same_lattice</td>
+<tr class="row-even"><td>qmmm_same_lattice</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, use full original MM lattice
 for QM calculation</td>
 </tr>
-<tr class="row-even"><td>qmmm_use_mm_charges</td>
+<tr class="row-odd"><td>qmmm_use_mm_charges</td>
 <td>bool</td>
 <td>True</td>
 <td>If true (default) use classical point
 charges of atoms in QM region to
 calculate total DFT charge</td>
 </tr>
-<tr class="row-odd"><td>remove_Si_H_silica_bonds</td>
+<tr class="row-even"><td>remove_Si_H_silica_bonds</td>
 <td>bool</td>
 <td>True</td>
 <td>If true (default) remove any Si-H bonds
 detected in silica residue</td>
 </tr>
-<tr class="row-even"><td>remove_Ti_H_titania_bonds</td>
+<tr class="row-odd"><td>remove_Ti_H_titania_bonds</td>
 <td>bool</td>
 <td>True</td>
 <td>If true (default) remove any Ti-H bonds
 detected in titania residue</td>
 </tr>
-<tr class="row-odd"><td>res_num_silica</td>
+<tr class="row-even"><td>res_num_silica</td>
 <td>int</td>
 <td>1</td>
 <td>Residue number for silica residue</td>
 </tr>
-<tr class="row-even"><td>run_suffix</td>
+<tr class="row-odd"><td>run_suffix</td>
 <td>str</td>
 <td>None</td>
 <td>String to append to various marks and
 saved info to indicate distinct sets of
 calculations or QM/MM QM regions</td>
 </tr>
-<tr class="row-odd"><td>save_output_files</td>
+<tr class="row-even"><td>save_output_files</td>
 <td>bool</td>
 <td>True</td>
 <td>If true, save the output files</td>
 </tr>
-<tr class="row-even"><td>save_output_wfn_files</td>
+<tr class="row-odd"><td>save_output_wfn_files</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, save output wavefunction files</td>
 </tr>
-<tr class="row-odd"><td>silica_add_23_body</td>
+<tr class="row-even"><td>silica_add_23_body</td>
 <td>bool</td>
 <td>True</td>
 <td>If true and if have_silica_potential is
 true, add bonds for silica 2- and
 3-body terms to PSF</td>
 </tr>
-<tr class="row-even"><td>silica_charge_transfer</td>
+<tr class="row-odd"><td>silica_charge_transfer</td>
 <td>float</td>
 <td>2.4</td>
 <td>Amount of charge transferred from Si to
 O in silica bulk, per formula unit</td>
 </tr>
-<tr class="row-odd"><td>silica_pos_dep_charges</td>
+<tr class="row-even"><td>silica_pos_dep_charges</td>
 <td>bool</td>
 <td>True</td>
 <td>If true and if have_silica_potential is
 true, use variable charges for silicon
 and oxygen ions in silica residue</td>
 </tr>
-<tr class="row-even"><td>tmp_run_dir_i</td>
+<tr class="row-odd"><td>tmp_run_dir_i</td>
 <td>int</td>
 <td>-1</td>
 <td>If &gt;0, the cp2k run directory will be
@@ -532,7 +541,7 @@ and oxygen ions in silica residue</td>
 input files are also copied here when
 first called</td>
 </tr>
-<tr class="row-odd"><td>topology_suffix</td>
+<tr class="row-even"><td>topology_suffix</td>
 <td>str</td>
 <td>None</td>
 <td>String to append to file containing
@@ -540,24 +549,24 @@ topology info (for runs that do
 multiple topologies not to accidentally
 reuse PSF file</td>
 </tr>
-<tr class="row-even"><td>try_reuse_wfn</td>
+<tr class="row-odd"><td>try_reuse_wfn</td>
 <td>bool</td>
 <td>True</td>
 <td>If true, try to reuse previous
 wavefunction file</td>
 </tr>
-<tr class="row-odd"><td>use_buffer</td>
+<tr class="row-even"><td>use_buffer</td>
 <td>bool</td>
 <td>True</td>
 <td>If true, use buffer as specified in
 relevant hybrid_mark</td>
 </tr>
-<tr class="row-even"><td>verbosity</td>
+<tr class="row-odd"><td>verbosity</td>
 <td>str</td>
 <td>NORMAL</td>
 <td>Verbosity level</td>
 </tr>
-<tr class="row-odd"><td>virial</td>
+<tr class="row-even"><td>virial</td>
 <td>str</td>
 <td>None</td>
 <td>If not blank, name of property to put
@@ -587,7 +596,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">do_cp2k_calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">do_cp2k_calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -622,7 +631,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">read_output</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">read_output</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -642,7 +651,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cp2k_state_change</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cp2k_state_change</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -663,7 +672,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">qmmm_qm_abc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_FilePot_Drivers/cp2k_driver_module.f95">QUIP_FilePot_Drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">qmmm_qm_abc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 </div>
@@ -686,7 +695,8 @@ virial in</td>
         <li class="right" >
           <a href="elasticity.html" title="Elasticity calculations"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>

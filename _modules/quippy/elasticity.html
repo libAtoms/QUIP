@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.elasticity &mdash; quippy  documentation</title>
+    <title>quippy.elasticity &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +39,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -94,8 +98,7 @@
 <span class="kn">from</span> <span class="nn">quippy._elasticity</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="n">_elasticity</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;strain_matrix&#39;</span><span class="p">,</span> <span class="s">&#39;stress_matrix&#39;</span><span class="p">,</span> <span class="s">&#39;strain_vector&#39;</span><span class="p">,</span>
-                                 <span class="s">&#39;stress_vector&#39;</span><span class="p">,</span> <span class="s">&#39;generate_strained_configs&#39;</span><span class="p">,</span>
-                                 <span class="s">&#39;calc_stress&#39;</span><span class="p">,</span> <span class="s">&#39;fit_elastic_constants&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;stress_vector&#39;</span><span class="p">,</span> <span class="s">&#39;fit_elastic_constants&#39;</span><span class="p">,</span>
                                  <span class="s">&#39;elastic_constants&#39;</span><span class="p">,</span> <span class="s">&#39;atomic_strain&#39;</span><span class="p">,</span>
                                  <span class="s">&#39;elastic_fields_fortran&#39;</span><span class="p">,</span> <span class="s">&#39;elastic_fields&#39;</span><span class="p">,</span>
                                  <span class="s">&#39;AtomResolvedStressField&#39;</span><span class="p">,</span>
@@ -202,325 +205,19 @@
                               <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span>  <span class="mi">21</span><span class="p">,</span> <span class="mi">6</span> <span class="p">]]),</span>
    <span class="p">}</span>
 
-
-<span class="n">strain_patterns</span> <span class="o">=</span> <span class="p">{</span>
-
-   <span class="s">&#39;cubic&#39;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="c"># strain pattern e1+e4, yields C11, C21, C31 and C44, then C12 is average of C21 and C31</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)]]</span>
-   <span class="p">],</span>
-
-   <span class="s">&#39;trigonal_high&#39;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="c"># strain pattern e3 yield C13, C23 and C33</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)]],</span>
-
-      <span class="c"># strain pattern e1+e4 yields C11 C21 C31 and C44</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)]],</span>
-
-      <span class="c"># strain pattern e1 yields C11 C21 C31 C41 C51</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">)]],</span>
-
-      <span class="c"># strain pattern e3+e4</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)]]</span>
-
-   <span class="p">],</span>
-
-   <span class="s">&#39;trigonal_low&#39;</span><span class="p">:</span> <span class="p">[</span>
-     <span class="c"># strain pattern e1, yields C11, C21, C31, C41, C51</span>
-     <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">)]],</span>
-
-     <span class="c"># strain pattern e3 + e4, yields C33, C44</span>
-     <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span> <span class="p">],</span>
-
-     <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]</span> <span class="p">]</span>
-   <span class="p">],</span>
-
-   <span class="s">&#39;tetragonal&#39;</span><span class="p">:</span> <span class="p">[</span>
-     <span class="c"># strain pattern e1+e4</span>
-     <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span> <span class="p">],</span>
-
-     <span class="c"># strain pattern e3+e6</span>
-     <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]</span> <span class="p">]</span>
-   <span class="p">],</span>
-
-   <span class="s">&#39;orthorhombic&#39;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="c"># strain pattern e1+e4</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span> <span class="p">],</span>
-
-      <span class="c"># strain pattern e2+e5</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span> <span class="p">],</span>
-
-      <span class="c"># strain pattern e3+e6</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]</span> <span class="p">]</span>
-   <span class="p">],</span>
-
-   <span class="s">&#39;monoclinic&#39;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="c"># strain pattern e1+e4</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span> <span class="p">],</span>
-
-      <span class="c"># strain pattern e3+e6</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]</span> <span class="p">],</span>
-
-      <span class="c"># strain pattern e2</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span> <span class="p">],</span>
-
-      <span class="c"># strain pattern e5</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span> <span class="p">]</span>
-   <span class="p">],</span>
-
-   <span class="s">&#39;triclinic&#39;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">)]],</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">2</span><span class="p">)]],</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">3</span><span class="p">)]],</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">)]],</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">)]],</span>
-      <span class="p">[</span> <span class="n">farray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]],</span>
-   <span class="p">]</span>
-
-   <span class="p">}</span>
-
-<span class="n">Cij_symmetry</span><span class="p">[</span><span class="s">&#39;hexagonal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Cij_symmetry</span><span class="p">[</span><span class="s">&#39;trigonal_high&#39;</span><span class="p">]</span>
-<span class="n">Cij_symmetry</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">Cij_symmetry</span><span class="p">[</span><span class="s">&#39;triclinic&#39;</span><span class="p">]</span>
-
-<span class="n">strain_patterns</span><span class="p">[</span><span class="s">&#39;hexagonal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain_patterns</span><span class="p">[</span><span class="s">&#39;trigonal_high&#39;</span><span class="p">]</span>
-<span class="n">strain_patterns</span><span class="p">[</span><span class="s">&#39;tetragonal_high&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain_patterns</span><span class="p">[</span><span class="s">&#39;tetragonal_low&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain_patterns</span><span class="p">[</span><span class="s">&#39;tetragonal&#39;</span><span class="p">]</span>
-<span class="n">strain_patterns</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain_patterns</span><span class="p">[</span><span class="s">&#39;triclinic&#39;</span><span class="p">]</span>
-
-
-<div class="viewcode-block" id="generate_strained_configs"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.generate_strained_configs">[docs]</a><span class="k">def</span> <span class="nf">generate_strained_configs</span><span class="p">(</span><span class="n">at0</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="s">&#39;triclinic&#39;</span><span class="p">,</span> <span class="n">N_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generate a sequence of strained configurations&quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">symmetry</span> <span class="ow">in</span> <span class="n">strain_patterns</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unknown symmetry </span><span class="si">%s</span><span class="s">. Valid options are </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">symmetry</span><span class="p">,</span> <span class="n">strain_patterns</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-
-    <span class="k">for</span> <span class="n">pindex</span><span class="p">,</span> <span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">fit_pairs</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fenumerate</span><span class="p">(</span><span class="n">strain_patterns</span><span class="p">[</span><span class="n">symmetry</span><span class="p">]):</span>
-        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">N_steps</span><span class="p">):</span>
-            <span class="n">strain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pattern</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">delta</span><span class="o">*</span><span class="p">(</span><span class="n">step</span><span class="o">-</span><span class="p">(</span><span class="n">N_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="n">at</span> <span class="o">=</span> <span class="n">at0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">strain_matrix</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="n">at</span><span class="o">.</span><span class="n">lattice</span><span class="p">),</span> <span class="n">scale_positions</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">T</span>
-            <span class="k">yield</span> <span class="n">at</span>
-
-</div>
-<div class="viewcode-block" id="calc_stress"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.calc_stress">[docs]</a><span class="k">def</span> <span class="nf">calc_stress</span><span class="p">(</span><span class="n">configs</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">relax_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">relax_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Given a sequence of configs, calculate stress on each one&quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">GPA</span>
-    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">:</span>
-        <span class="n">at2</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">at2</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">cutoff</span><span class="p">())</span>
-        <span class="n">at2</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">relax</span><span class="p">:</span>
-            <span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">at2</span><span class="p">,</span> <span class="s">&#39;cg&#39;</span><span class="p">,</span> <span class="n">relax_tol</span><span class="p">,</span> <span class="n">relax_steps</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at2</span><span class="p">,</span> <span class="n">virial</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">at2</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">at2</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;virial&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="o">/</span><span class="n">at2</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span>
-        <span class="k">yield</span> <span class="n">at2</span>
-
-
-<span class="c"># Elastic constant calculation.</span>
-
-<span class="c"># Code adapted from elastics.py script, available from</span>
-<span class="c"># http://github.com/djw/elastic-constants</span>
-<span class="c">#</span>
-<span class="c"># Copyright (c) 2008, Dan Wilson</span>
-<span class="c"># All rights reserved.</span>
-<span class="c">#</span>
-<span class="c"># Redistribution and use in source and binary forms, with or without</span>
-<span class="c"># modification, are permitted provided that the following conditions are met:</span>
-<span class="c">#     * Redistributions of source code must retain the above copyright</span>
-<span class="c">#       notice, this list of conditions and the following disclaimer.</span>
-<span class="c">#     * Redistributions in binary form must reproduce the above copyright</span>
-<span class="c">#       notice, this list of conditions and the following disclaimer in the</span>
-<span class="c">#       documentation and/or other materials provided with the distribution.</span>
-<span class="c">#     * Neither the name of the copyright holder nor the</span>
-<span class="c">#       names of its contributors may be used to endorse or promote products</span>
-<span class="c">#       derived from this software without specific prior written permission.</span>
-<span class="c">#</span>
-<span class="c"># THIS SOFTWARE IS PROVIDED BY DAN WILSON &#39;&#39;AS IS&#39;&#39; AND ANY</span>
-<span class="c"># EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED</span>
-<span class="c"># WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
-<span class="c"># DISCLAIMED. IN NO EVENT SHALL DAN WILSON BE LIABLE FOR ANY</span>
-<span class="c"># DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES</span>
-<span class="c"># (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;</span>
-<span class="c"># LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND</span>
-<span class="c"># ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</span>
-<span class="c"># (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS</span>
-<span class="c"># SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-</div>
 <div class="viewcode-block" id="fit_elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.fit_elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">fit_elastic_constants</span><span class="p">(</span><span class="n">configs</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">N_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Given a sequence of configs with strain and stress parameters, fit elastic constants C_ij&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">do_fit</span><span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">,</span> <span class="n">stress</span><span class="p">,</span> <span class="n">strain</span><span class="p">,</span> <span class="n">patt</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&#39;Fitting C_</span><span class="si">%d%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s">&#39;Strain </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">strain</span><span class="p">[:,</span><span class="n">index2</span><span class="p">]</span>
-            <span class="k">print</span> <span class="s">&#39;Stress </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">stress</span><span class="p">[:,</span><span class="n">index1</span><span class="p">]</span>
-
-        <span class="n">cijFitted</span><span class="p">,</span><span class="n">intercept</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">tt</span><span class="p">,</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">strain</span><span class="p">[:,</span><span class="n">index2</span><span class="p">],</span><span class="n">stress</span><span class="p">[:,</span><span class="n">index1</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="c"># print info about the fit</span>
-            <span class="k">print</span>     <span class="s">&#39;Cij (gradient)          :    &#39;</span><span class="p">,</span><span class="n">cijFitted</span>
-            <span class="k">print</span>     <span class="s">&#39;Error in Cij            :    &#39;</span><span class="p">,</span> <span class="n">stderr</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.9</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&#39;Correlation coefficient :    &#39;</span><span class="p">,</span><span class="n">r</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&#39;Correlation coefficient :    &#39;</span><span class="p">,</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;     &lt;----- WARNING&#39;</span>
-
-        <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">pylab</span>
-            <span class="c"># position this plot in a 6x6 grid</span>
-            <span class="n">sp</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="o">*</span><span class="p">(</span><span class="n">index1</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">index2</span><span class="p">)</span>
-            <span class="n">sp</span><span class="o">.</span><span class="n">set_axis_on</span><span class="p">()</span>
-
-            <span class="c"># change the labels on the axes</span>
-            <span class="n">xlabels</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">()</span>
-            <span class="n">pylab</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">xlabels</span><span class="p">,</span><span class="s">&#39;rotation&#39;</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
-            <span class="n">ylabels</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">()</span>
-            <span class="n">pylab</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">ylabels</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
-
-            <span class="c"># colour the plot depending on the strain pattern</span>
-            <span class="n">colourDict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s">&#39;#BAD0EF&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="s">&#39;#FFCECE&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="s">&#39;#BDF4CB&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="s">&#39;#EEF093&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">:</span><span class="s">&#39;#FFA4FF&#39;</span><span class="p">,</span><span class="mi">6</span><span class="p">:</span><span class="s">&#39;#75ECFD&#39;</span><span class="p">}</span>
-            <span class="n">sp</span><span class="o">.</span><span class="n">set_axis_bgcolor</span><span class="p">(</span><span class="n">colourDict</span><span class="p">[</span><span class="n">patt</span><span class="p">])</span>
-
-            <span class="c"># plot the data</span>
-            <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">strain</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">index2</span><span class="p">],</span><span class="n">strain</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">index2</span><span class="p">]],[</span><span class="n">cijFitted</span><span class="o">*</span><span class="n">strain</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">index2</span><span class="p">]</span><span class="o">+</span><span class="n">intercept</span><span class="p">,</span><span class="n">cijFitted</span><span class="o">*</span><span class="n">strain</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">index2</span><span class="p">]</span><span class="o">+</span><span class="n">intercept</span><span class="p">])</span>
-            <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">strain</span><span class="p">[:,</span><span class="n">index2</span><span class="p">]),</span><span class="nb">list</span><span class="p">(</span><span class="n">stress</span><span class="p">[:,</span><span class="n">index1</span><span class="p">]),</span><span class="s">&#39;ro&#39;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">cijFitted</span><span class="p">,</span> <span class="n">stderr</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">symmetry</span> <span class="ow">in</span> <span class="n">strain_patterns</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unknown symmetry </span><span class="si">%s</span><span class="s">. Valid options are </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">symmetry</span><span class="p">,</span> <span class="n">strain_patterns</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-
-    <span class="c"># There are 21 independent elastic constants</span>
-    <span class="n">Cijs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">Cij_err</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="c"># Construct mapping from (i,j) to index into Cijs in range 1..21</span>
-    <span class="c"># (upper triangle only to start with)</span>
-    <span class="n">Cij_map</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">Cij_map_sym</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
-            <span class="n">Cij_map</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Cij_symmetry</span><span class="p">[</span><span class="bp">None</span><span class="p">][</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
-            <span class="n">Cij_map_sym</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Cij_symmetry</span><span class="p">[</span><span class="n">symmetry</span><span class="p">][</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
-
-    <span class="c"># Reverse mapping, index 1..21 -&gt; tuple (i,j) with i, j in range 1..6</span>
-    <span class="n">Cij_rev_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">Cij_map</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">Cij_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-
-    <span class="c"># Add the lower triangle to Cij_map, e.g. C21 = C12</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">Cij_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="n">Cij_map</span><span class="p">[(</span><span class="n">i2</span><span class="p">,</span><span class="n">i1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Cij_map</span><span class="p">[(</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">)]</span>
-        <span class="n">Cij_map_sym</span><span class="p">[(</span><span class="n">i2</span><span class="p">,</span><span class="n">i1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Cij_map_sym</span><span class="p">[(</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">)]</span>
-
-
-    <span class="n">N_pattern</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">strain_patterns</span><span class="p">[</span><span class="n">symmetry</span><span class="p">])</span>
-    <span class="n">configs</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">configs</span><span class="p">)</span>
-
-    <span class="n">strain</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="n">N_pattern</span><span class="p">,</span> <span class="n">N_steps</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-    <span class="n">stress</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="n">N_pattern</span><span class="p">,</span> <span class="n">N_steps</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="n">graphics</span><span class="p">:</span>
-        <span class="kn">import</span> <span class="nn">pylab</span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">9.5</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;white&#39;</span><span class="p">)</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="mf">0.97</span><span class="p">,</span><span class="n">top</span><span class="o">=</span><span class="mf">0.97</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">index1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">index2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-                <span class="c"># position this plot in a 6x6 grid</span>
-                <span class="n">sp</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="o">*</span><span class="p">(</span><span class="n">index1</span><span class="p">)</span><span class="o">+</span><span class="n">index2</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">sp</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
-                <span class="n">pylab</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span> <span class="s">&quot;n/a&quot;</span><span class="p">)</span>
-
-    <span class="c"># Fill in strain and stress arrays from config Atoms list</span>
-    <span class="k">for</span> <span class="n">pindex</span><span class="p">,</span> <span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">fit_pairs</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fenumerate</span><span class="p">(</span><span class="n">strain_patterns</span><span class="p">[</span><span class="n">symmetry</span><span class="p">]):</span>
-        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">N_steps</span><span class="p">):</span>
-            <span class="n">at</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-            <span class="n">strain</span><span class="p">[</span><span class="n">pindex</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">strain_vector</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;strain&#39;</span><span class="p">])</span>
-            <span class="n">stress</span><span class="p">[</span><span class="n">pindex</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">stress_vector</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;stress&#39;</span><span class="p">])</span>
-
-    <span class="c"># Do the linear regression</span>
-    <span class="k">for</span> <span class="n">pindex</span><span class="p">,</span> <span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">fit_pairs</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fenumerate</span><span class="p">(</span><span class="n">strain_patterns</span><span class="p">[</span><span class="n">symmetry</span><span class="p">]):</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fit_pairs</span><span class="p">:</span>
-            <span class="n">fitted</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">do_fit</span><span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">,</span> <span class="n">stress</span><span class="p">[</span><span class="n">pindex</span><span class="p">,:,:],</span> <span class="n">strain</span><span class="p">[</span><span class="n">pindex</span><span class="p">,:,:],</span> <span class="n">pindex</span><span class="p">)</span>
-
-            <span class="n">index</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Cij_map_sym</span><span class="p">[(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">)])</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">Cijs</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="k">print</span> <span class="s">&#39;Setting C</span><span class="si">%d%d</span><span class="s"> (</span><span class="si">%d</span><span class="s">) to </span><span class="si">%f</span><span class="s"> +/- </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">fitted</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-                <span class="n">Cijs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fitted</span><span class="p">]</span>
-                <span class="n">Cij_err</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">err</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="k">print</span> <span class="s">&#39;Updating C</span><span class="si">%d%d</span><span class="s"> (</span><span class="si">%d</span><span class="s">) with value </span><span class="si">%f</span><span class="s"> +/- </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">fitted</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-                <span class="n">Cijs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fitted</span><span class="p">)</span>
-                <span class="n">Cij_err</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
-
-
-    <span class="n">C</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-    <span class="n">C_err</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-    <span class="n">C_labels</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="s">&#39;S4&#39;</span><span class="p">)</span>
-    <span class="n">C_labels</span><span class="p">[:]</span> <span class="o">=</span> <span class="s">&#39;    &#39;</span>
-
-    <span class="c"># Convert lists to mean</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">Cijs</span><span class="p">:</span>
-        <span class="n">Cijs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Cijs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-
-    <span class="c"># Combine statistical errors</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">Cij_err</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-        <span class="n">Cij_err</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">farray</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="n">symmetry</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;trigonal&#39;</span><span class="p">):</span>
-        <span class="c"># Special case for trigonal lattice: C66 = (C11 - C12)/2</span>
-        <span class="n">Cijs</span><span class="p">[</span><span class="n">Cij_map</span><span class="p">[(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">Cijs</span><span class="p">[</span><span class="n">Cij_map</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)]]</span><span class="o">-</span><span class="n">Cijs</span><span class="p">[</span><span class="n">Cij_map</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)]])</span>
-        <span class="n">Cij_err</span><span class="p">[</span><span class="n">Cij_map</span><span class="p">[(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Cij_err</span><span class="p">[</span><span class="n">Cij_map</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)]]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Cij_err</span><span class="p">[</span><span class="n">Cij_map</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)]]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="c"># Generate the 6x6 matrix of elastic constants</span>
-    <span class="c"># - negative values signify a symmetry relation</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="n">Cij_symmetry</span><span class="p">[</span><span class="n">symmetry</span><span class="p">][</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">Cijs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-                <span class="n">C_err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">Cij_err</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-                <span class="n">C_labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39; C</span><span class="si">%d%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">Cij_rev_map</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-                <span class="n">C_err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">Cij_err</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">Cijs</span><span class="p">[</span><span class="o">-</span><span class="n">index</span><span class="p">]</span>
-                <span class="n">C_err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">Cij_err</span><span class="p">[</span><span class="o">-</span><span class="n">index</span><span class="p">]</span>
-                <span class="n">C_labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;-C</span><span class="si">%d%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">Cij_rev_map</span><span class="p">[</span><span class="o">-</span><span class="n">index</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">C_labels</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s"> = </span><span class="se">\n</span><span class="s">&#39;</span>
-        <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">suppress_small</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">print</span>
-
-        <span class="c"># Summarise the independent components of C_ij matrix</span>
-        <span class="n">printed</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-                <span class="n">index</span> <span class="o">=</span> <span class="n">Cij_symmetry</span><span class="p">[</span><span class="n">symmetry</span><span class="p">][</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">printed</span><span class="p">:</span> <span class="k">continue</span>
-                <span class="k">print</span> <span class="s">&#39;C_</span><span class="si">%d%d</span><span class="s"> = </span><span class="si">%-4.2f</span><span class="s"> +/- </span><span class="si">%-4.2f</span><span class="s"> GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="n">C_err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
-                <span class="n">printed</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-
-    <span class="k">return</span> <span class="n">C</span><span class="p">,</span> <span class="n">C_err</span>
-
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    quippy.elasticity.fit_elastic_constants() deprecated, please use</span>
+<span class="sd">      matscipy.elasticity.fit_elastic_constants() instead</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;quippy.elasticity.fit_elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span>    
 </div>
 <div class="viewcode-block" id="elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">elastic_constants</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience function which returns the 6x6 matrix :math:`C_{ij}` of configuration `at`</span>
-<span class="sd">    with Potential `pot` assumming symmetry `sym` (default &quot;cubic&quot;).&quot;&quot;&quot;</span>
-
-    <span class="n">strained_configs</span> <span class="o">=</span> <span class="n">generate_strained_configs</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">sym</span><span class="p">)</span>
-    <span class="n">stressed_configs</span> <span class="o">=</span> <span class="n">calc_stress</span><span class="p">(</span><span class="n">strained_configs</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="n">relax</span><span class="p">)</span>
-    <span class="n">C</span><span class="p">,</span> <span class="n">C_err</span> <span class="o">=</span> <span class="n">fit_elastic_constants</span><span class="p">(</span><span class="n">stressed_configs</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="n">graphics</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">C</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    quippy.elasticity.elastic_contants() deprecated, please use</span>
+<span class="sd">       matscipy.elasticity.fit_elastic_constants() instead</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;quippy.elasticity.elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="atomic_strain"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.atomic_strain">[docs]</a><span class="k">def</span> <span class="nf">atomic_strain</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">crystal_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
@@ -1052,7 +749,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

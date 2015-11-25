@@ -6,7 +6,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Molecular Dynamics &mdash; quippy  documentation</title>
+    <title>Molecular Dynamics &mdash; quippy 5afdfee+
+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +15,8 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '',
+        VERSION:     '5afdfee+
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy  documentation" href="index.html" />
+    <link rel="top" title="quippy 5afdfee+
+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Utilities for topological analysis" href="topology.html" /> 
   </head>
@@ -40,7 +43,8 @@
         <li class="right" >
           <a href="topology.html" title="Utilities for topological analysis"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -223,8 +227,8 @@ for a time <code class="docutils literal"><span class="pre">dt</span></code>.</p
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">DynamicalSystem</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">DynamicalSystem</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 <p class="rubric">Attributes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -333,7 +337,7 @@ but also appends the number of degrees of freedom correctly.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_add_atom_multiple</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_add_atom_multiple</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -356,7 +360,7 @@ but also appends the number of degrees of freedom correctly.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_add_atom_single</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_add_atom_single</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -384,12 +388,12 @@ unless <code class="docutils literal"><span class="pre">update_Ndof</span></code
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_add_constraint</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_add_constraint</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.add_thermostat">
-<code class="descname">add_thermostat</code><span class="sig-paren">(</span><em>type</em>, <em>t</em><span class="optional">[</span>, <em>gamma</em>, <em>q</em>, <em>tau</em>, <em>tau_cell</em>, <em>p</em>, <em>nhl_tau</em>, <em>nhl_mu</em>, <em>massive</em>, <em>region_i</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_thermostat</code><span class="sig-paren">(</span><em>type</em>, <em>t</em><span class="optional">[</span>, <em>gamma</em>, <em>q</em>, <em>tau</em>, <em>tau_cell</em>, <em>p</em>, <em>bulk_modulus_estimate</em>, <em>cell_oscillation_time</em>, <em>nhl_tau</em>, <em>nhl_mu</em>, <em>massive</em>, <em>region_i</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new thermostat to this DynamicalSystem. <code class="docutils literal"><span class="pre">type</span></code> should
 be one of the following thermostat types:</p>
 <ul class="simple">
@@ -418,6 +422,8 @@ pressure for the case of Langevin NPT.</p>
 <p><strong>tau</strong> :  input float, optional</p>
 <p><strong>tau_cell</strong> :  input float, optional</p>
 <p><strong>p</strong> :  input float, optional</p>
+<p><strong>bulk_modulus_estimate</strong> :  input float, optional</p>
+<p><strong>cell_oscillation_time</strong> :  input float, optional</p>
 <p><strong>nhl_tau</strong> :  input float, optional</p>
 <p><strong>nhl_mu</strong> :  input float, optional</p>
 <p><strong>massive</strong> :  input int, optional</p>
@@ -427,7 +433,7 @@ pressure for the case of Langevin NPT.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">add_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">add_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -453,7 +459,7 @@ pressure for the case of Langevin NPT.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">add_thermostats</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">add_thermostats</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -487,7 +493,7 @@ velocities will be half-stepped. This allows a simpler MD loop:</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">advance_verlet</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">advance_verlet</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -522,7 +528,7 @@ resemble the following code (Python example, Fortran is similar):</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">advance_verlet1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">advance_verlet1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -545,7 +551,7 @@ resemble the following code (Python example, Fortran is similar):</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">advance_verlet2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">advance_verlet2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -566,7 +572,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_amend_constraint</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_amend_constraint</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -588,7 +594,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">angular_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">angular_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -611,7 +617,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_atom_plane</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_atom_plane</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -635,7 +641,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondanglecos</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondanglecos</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -661,7 +667,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -688,7 +694,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength_dev_pow</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength_dev_pow</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -715,7 +721,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength_diff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength_diff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -738,7 +744,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength_sq</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_bondlength_sq</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -759,7 +765,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_gap_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_gap_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -782,7 +788,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_struct_factor_like_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_struct_factor_like_i</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -805,7 +811,7 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_struct_factor_like_mag</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_struct_factor_like_mag</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -828,14 +834,14 @@ the same atoms</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_struct_factor_like_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">constrain_struct_factor_like_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.disable_damping">
 <code class="descname">disable_damping</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.disable_damping" title="Permalink to this definition">¶</a></dt>
 <dd><p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">disable_damping</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">disable_damping</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -852,7 +858,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">enable_damping</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">enable_damping</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -867,7 +873,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">get_damping_time</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">get_damping_time</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -882,7 +888,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">is_damping_enabled</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">is_damping_enabled</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -904,7 +910,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">kinetic_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">kinetic_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -925,7 +931,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">kinetic_virial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">kinetic_virial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -944,7 +950,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -959,7 +965,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">n_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">n_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -975,7 +981,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1001,7 +1007,7 @@ if this is available. <code class="docutils literal"><span class="pre">instantan
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_print_status</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_print_status</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1009,7 +1015,7 @@ if this is available. <code class="docutils literal"><span class="pre">instantan
 <code class="descname">print_thermostats</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.print_thermostats" title="Permalink to this definition">¶</a></dt>
 <dd><p>ds_print_thermostats</p>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_thermostats</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_thermostats</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1034,7 +1040,7 @@ but also amends the number of degrees of freedom correctly.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_remove_atom_single</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_remove_atom_single</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1052,7 +1058,7 @@ but also amends the number of degrees of freedom correctly.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_remove_atom_multiple</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_remove_atom_multiple</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1070,7 +1076,7 @@ but also amends the number of degrees of freedom correctly.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">remove_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">remove_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1093,7 +1099,7 @@ If <code class="docutils literal"><span class="pre">mass_weighted</span></code> 
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rescale_velo</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rescale_velo</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1116,7 +1122,7 @@ called on the restored atoms object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_restore_state</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_restore_state</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1148,7 +1154,7 @@ connectivity is recalculated every <code class="docutils literal"><span class="p
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dynamicalsystem_run</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/QUIP_Core/Potential.f95">QUIP_Core/Potential.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">dynamicalsystem_run</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Potentials/Potential.f95">src/Potentials/Potential.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1172,7 +1178,7 @@ state of the random number generator is also saved.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_save_state</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">ds_save_state</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1196,7 +1202,7 @@ state of the random number generator is also saved.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">set_barostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">set_barostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1229,7 +1235,7 @@ masses, or whether to return the value at the last Verlet step
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">temperature</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">temperature</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1251,7 +1257,7 @@ masses, or whether to return the value at the last Verlet step
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">thermostat_temperatures</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">thermostat_temperatures</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1269,7 +1275,7 @@ masses, or whether to return the value at the last Verlet step
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">update_thermostat</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1286,7 +1292,7 @@ Optionalally zero the total momentum of a subset of atoms, specified by <code cl
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">zero_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">zero_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1627,7 +1633,7 @@ based on ideas from and discussion with B. Leimkuhler.</p>
 <p>Modified for arbitrary strain based on (but not exactly using)
 formulation in E. Tadmor and R. Miller Modeling Materials:
 Continuum, Atomistic and Multiscale Techniques
-(Cambridge University Press, 2011). Chap 9.5.  Their 
+(Cambridge University Press, 2011). Chap 9.5.  Their
 definition of stress (factors of F, F^T, J, and F^-T) for finite
 strain is optionally used, but certain terms in EOM are excluded,
 and their discretization is entirely ignored.</p>
@@ -1771,7 +1777,7 @@ a degree of freedom with (effective) mass <code class="docutils literal"><span c
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">gaussian_velocity_component</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">gaussian_velocity_component</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1792,7 +1798,7 @@ a degree of freedom with (effective) mass <code class="docutils literal"><span c
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">torque</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">torque</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1815,7 +1821,7 @@ This is useful for time dependent constraints.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">distance_relative_velocity</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">distance_relative_velocity</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1846,7 +1852,7 @@ This is useful for time dependent constraints.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_angular_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_angular_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1876,7 +1882,7 @@ This is useful for time dependent constraints.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_kinetic_virial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_kinetic_virial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1898,7 +1904,7 @@ This is useful for time dependent constraints.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">single_kinetic_virial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">single_kinetic_virial</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1930,7 +1936,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1961,7 +1967,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_kinetic_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">arrays_kinetic_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1983,7 +1989,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">single_kinetic_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/libAtoms/DynamicalSystem.f95">libAtoms/DynamicalSystem.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">single_kinetic_energy</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -2009,7 +2015,8 @@ Optionally only include the contribution of a subset of atoms.</p>
         <li class="right" >
           <a href="topology.html" title="Utilities for topological analysis"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy  documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 5afdfee+
+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
