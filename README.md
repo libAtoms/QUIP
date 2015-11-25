@@ -85,6 +85,8 @@ and Gromacs, but has a number of unique features:
 
 ## Compilation Instructions
 
+[![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
+
 1.  Decide your architecture by looking in the arch/ directory, and
     define an environmental variable QUIP_ARCH, e.g.
     
