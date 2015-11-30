@@ -251,14 +251,17 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   character(STRING_LENGTH) :: atom_mask_name, calc_local_gap_error
   real(dp) :: r_scale, E_scale
 
+  real(dp) :: gap_error_i_cutoff
   real(dp), dimension(:), allocatable :: gap_error, local_gap_error_in
   real(dp), dimension(:), pointer :: local_gap_error_pointer
+  real(dp), dimension(:,:), allocatable :: gap_error_gradient_in
+  real(dp), dimension(:,:), pointer :: gap_error_gradient_pointer
   real(dp) :: gap_error_regularisation
   logical :: do_rescale_r, do_rescale_E, do_gap_error, print_gap_error, do_local_gap_error
 
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: my_args_str
-  real(dp), dimension(:), allocatable :: gradPredict
+  real(dp), dimension(:), allocatable :: gradPredict, grad_error_estimate
 
   INIT_ERROR(error)
 
@@ -345,11 +348,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   do_local_gap_error = len_trim(calc_local_gap_error) > 0
   do_gap_error = do_local_gap_error .or. print_gap_error
 
-  if( do_local_gap_error ) then
-     ! Has to be allocated as it's in the reduction clause.
-     allocate( local_gap_error_in(at%N) )
-     local_gap_error_in = 0.0_dp
-  endif
+  ! Has to be allocated as it's in the reduction clause.
+  allocate( local_gap_error_in(at%N) )
+  local_gap_error_in = 0.0_dp
+  allocate( gap_error_gradient_in(3,at%N) )
+  gap_error_gradient_in = 0.0_dp
 
   if( present(mpi) ) then
      if(mpi%active) then
@@ -382,14 +385,17 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(present(f) .or. present(virial) .or. present(local_virial)) then
         if (allocated(gradPredict)) deallocate(gradPredict)
         allocate(gradPredict(d))
+
+        if(allocated(grad_error_estimate)) deallocate(grad_error_estimate)
+        allocate(grad_error_estimate(d))
      end if     
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
         do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
      allocate(gap_error(size(my_descriptor_data%x)))
 
-!$omp parallel default(none) private(i,gradPredict, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0) &
+!$omp parallel default(none) private(i,gradPredict, grad_error_estimate, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0,gap_error_i_cutoff) &
 !$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_gap_error,do_local_gap_error,gap_error,f) &
-!$omp reduction(+:local_e_in,f_in,virial_in,local_gap_error_in)
+!$omp reduction(+:local_e_in,f_in,virial_in,local_gap_error_in, gap_error_gradient_in)
 
 !$omp do schedule(dynamic)
      do i = 1, size(my_descriptor_data%x)
@@ -399,7 +405,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            call reallocate(gradPredict,size(my_descriptor_data%x(i)%data(:)),zero=.true.)
-           e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), gradPredict =  gradPredict, error_estimate=gap_error(i), do_error_estimate=do_gap_error)
+           e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), gradPredict =  gradPredict, error_estimate=gap_error(i), do_error_estimate=do_gap_error, grad_error_estimate=grad_error_estimate)
         else
            e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), error_estimate=gap_error(i), do_error_estimate=do_gap_error)
         endif
@@ -414,8 +420,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
 
         if( do_local_gap_error ) then
+           gap_error_i_cutoff = gap_error(i) * my_descriptor_data%x(i)%covariance_cutoff**2 / size(my_descriptor_data%x(i)%ci)
+
            do n = 1, size(my_descriptor_data%x(i)%ci)
-              local_gap_error_in( my_descriptor_data%x(i)%ci(n) ) = local_gap_error_in( my_descriptor_data%x(i)%ci(n) ) + gap_error(i) / size(my_descriptor_data%x(i)%ci)
+              local_gap_error_in( my_descriptor_data%x(i)%ci(n) ) = local_gap_error_in( my_descriptor_data%x(i)%ci(n) ) + gap_error_i_cutoff
            enddo
         endif
 
@@ -430,6 +438,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               e_i * my_descriptor_data%x(i)%grad_covariance_cutoff(:,n)
               if( present(f) ) then
                  f_in(:,j) = f_in(:,j) - f_gp
+              endif
+              if( do_local_gap_error ) then
+                 gap_error_gradient_in(:,j) = gap_error_gradient_in(:,j) + & 
+                    matmul( grad_error_estimate, my_descriptor_data%x(i)%grad_data(:,:,n)) * my_descriptor_data%x(i)%covariance_cutoff**2 + &
+                    2.0_dp * gap_error(i) * my_descriptor_data%x(i)%covariance_cutoff * my_descriptor_data%x(i)%grad_covariance_cutoff(:,n)
               endif
               if( present(virial) .or. present(local_virial) ) then
                  virial_i = ((pos-my_descriptor_data%x(i)%pos(:,i_pos0)) .outer. f_gp)
@@ -484,7 +497,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         if(present(local_virial)) call sum_in_place(mpi,local_virial)
         if(present(e)) e = sum(mpi,e)
         if(present(local_e) ) call sum_in_place(mpi,local_e)
-        if(do_local_gap_error)  call sum_in_place(mpi, local_gap_error_in)
+        if(do_local_gap_error)  then
+           call sum_in_place(mpi, local_gap_error_in)
+           if(present(f) .or. present(virial) .or. present(local_virial)) call sum_in_place(mpi, gap_error_gradient_in)
+        endif
 
         call remove_property(at,'mpi_local_mask', error=error) 
         deallocate(mpi_local_mask)
@@ -495,8 +511,16 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call add_property(at, trim(calc_local_gap_error), 0.0_dp, ptr = local_gap_error_pointer, error=error)
      PASS_ERROR(error)
      local_gap_error_pointer = local_gap_error_in
-     deallocate(local_gap_error_in)
+
+     if(present(f) .or. present(virial) .or. present(local_virial)) then
+        call add_property(at, "gap_error_gradient", 0.0_dp, n_cols=3, ptr2 = gap_error_gradient_pointer, error=error)
+        PASS_ERROR(error)
+        gap_error_gradient_pointer = gap_error_gradient_in
+     endif
   endif
+
+  if(allocated(local_gap_error_in)) deallocate(local_gap_error_in)
+  if(allocated(gap_error_gradient_in)) deallocate(gap_error_gradient_in)
 
   if(present(e)) then
      if( associated(atom_mask_pointer) ) then
@@ -522,6 +546,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   
   atom_mask_pointer => null()
   local_gap_error_pointer => null()
+  gap_error_gradient_pointer => null()
   call finalise(my_args_str)
 
 #endif
