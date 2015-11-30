@@ -372,7 +372,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
-  do i_coordinate = 1, this%my_gp%n_coordinate
+  loop_over_descriptors: do i_coordinate = 1, this%my_gp%n_coordinate
 
      if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
 
@@ -391,6 +391,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      end if     
      call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
         do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
+     PASS_ERROR(error)
      allocate(gap_error(size(my_descriptor_data%x)))
 
 !$omp parallel default(none) private(i,gradPredict, grad_error_estimate, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0,gap_error_i_cutoff) &
@@ -398,7 +399,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp reduction(+:local_e_in,f_in,virial_in,local_gap_error_in, gap_error_gradient_in)
 
 !$omp do schedule(dynamic)
-     do i = 1, size(my_descriptor_data%x)
+     loop_over_descriptor_instances: do i = 1, size(my_descriptor_data%x)
         if( .not. my_descriptor_data%x(i)%has_data ) cycle
 
         call system_timer('IPModel_GAP_Calc_gp_predict')
@@ -455,7 +456,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               endif
            enddo
         endif
-     enddo
+     enddo loop_over_descriptor_instances
 !$omp end do
      if(allocated(gradPredict)) deallocate(gradPredict)
 !$omp end parallel
@@ -473,7 +474,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      call finalise(my_descriptor_data)
 
-  enddo
+  enddo loop_over_descriptors
 
   if(present(f)) f = f_in
   if(present(e)) e = sum(local_e_in)
