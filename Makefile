@@ -94,9 +94,9 @@ $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 # the first target
 all: ${MODULES}
 
-FOX = FoX-4.0.3
-export FOX_LIBDIR=${QUIP_ROOT}/src/FoX-4.0.3/objs.${QUIP_ARCH}/lib
-export FOX_INCDIR=${QUIP_ROOT}/src/FoX-4.0.3/objs.${QUIP_ARCH}/finclude
+FOX = fox
+export FOX_LIBDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/lib
+export FOX_INCDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/finclude
 
 # now we can include the config makefile, it needs to come after the default target
 include Makefile.config
