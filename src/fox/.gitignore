@@ -1,0 +1,11 @@
+/arch.make
+/config.log
+/config.status
+/FoX-config
+/examples
+/.FoX
+/.config
+*.o
+*.a
+*.mod
+/objs.*
