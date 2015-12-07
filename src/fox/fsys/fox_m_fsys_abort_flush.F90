@@ -104,7 +104,7 @@ CONTAINS
     i=>null()
     Print*,i
 #endif
-    stop STDERR_FAILURE_STATUS
+    stop 1 ! gfortran 4.4 and 4.5 refuses to compile with STDERR_FAILURE_STATUS
 
   end subroutine pxfabort
 
