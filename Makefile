@@ -113,6 +113,7 @@ ${BUILDDIR}/Makefile.inc:
 
 ${FOX}: src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
+	cp Makefile.fox src/${FOX}/Makefile.QUIP
 	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP 
 
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})

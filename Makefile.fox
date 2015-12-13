@@ -1,0 +1,31 @@
+# simple Makefile to run configure and then make
+# using C and Fortran compiler specified in Makefile.${QUIP_ARCH}
+#
+# This file must be copied into src/fox before being used
+# (which the main Makefile does by default)
+
+all: foxlibs
+
+ifndef QUIP_ARCH
+$(error "You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.")
+endif
+
+include Makefile.${QUIP_ARCH}
+include Makefile.inc
+include Makefile.rules
+
+HOST_ARGS=
+ifneq (${QUIP_HOST},)
+	HOST_ARGS="--host=${QUIP_HOST}"
+endif
+
+foxlibs:
+ifeq (${QUIP_ARCH},)
+	@echo
+	@echo "You need to define the architecture using the QUIP_ARCH variable"
+	@echo
+	@exit 1
+endif
+	if [[ -e arch.make ]]; then make distclean; fi  && rm -rf objs.${QUIP_ARCH} && FCFLAGS="-fPIC" FC="${F95}" CC="${CC}" /bin/sh ./configure ${HOST_ARGS} --disable-dom && make && mv objs objs.${QUIP_ARCH}
+
+
