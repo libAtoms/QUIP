@@ -1,5 +1,8 @@
 # simple Makefile to run configure and then make
 # using C and Fortran compiler specified in Makefile.${QUIP_ARCH}
+#
+# This file must be copied into src/fox before being used
+# (which the main Makefile does by default)
 
 all: foxlibs
 
