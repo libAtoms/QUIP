@@ -48,6 +48,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use CInOutput_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -83,21 +84,23 @@ end interface Calc
 
 #ifdef HAVE_MTP
 interface
-   subroutine alex_initialise(filename, cutoff) bind(C)
-      use iso_c_binding, only: c_double, c_char
+   subroutine alex_initialise(filename, cutoff, error) bind(C)
+      use iso_c_binding, only: c_double, c_char, c_int
       character(kind=c_char) :: filename(*)
       real(kind=c_double) :: cutoff
+      integer(kind=c_int) :: error
    endsubroutine alex_initialise
 endinterface
 
 interface
-   subroutine alex_compute(neigh_count,neigh_len,input_pos,out_force,out_site_en) bind(C)
+   subroutine alex_compute(neigh_count,neigh_len,input_pos,out_force,out_site_en, error) bind(C)
       use iso_c_binding, only: c_ptr, c_int
-      integer(kind=c_int), value :: neigh_count
+      integer(kind=c_int) :: neigh_count
       type(c_ptr), value :: neigh_len
       type(c_ptr), value :: input_pos
       type(c_ptr), value :: out_force
       type(c_ptr), value :: out_site_en
+      integer(kind=c_int) :: error
    endsubroutine alex_compute
 endinterface
 #endif
@@ -111,6 +114,7 @@ subroutine IPModel_MTP_Initialise_str(this, args_str, param_str, error)
   integer, optional, intent(out):: error
 
   character(len=STRING_LENGTH) :: alex_filename
+  integer :: mtp_error
 
   INIT_ERROR(error)
   call Finalise(this)
@@ -123,7 +127,10 @@ subroutine IPModel_MTP_Initialise_str(this, args_str, param_str, error)
   call finalise(params)
 
 #ifdef HAVE_MTP
-  call alex_initialise(trim(alex_filename)//C_NULL_CHAR, this%cutoff)
+  call alex_initialise(trim(alex_filename)//C_NULL_CHAR, this%cutoff,mtp_error)
+  if( mtp_error /= 0 ) then
+     RAISE_ERROR("IPModel_MTP_Init received error "//mtp_error//" from alex_initialise()",error)
+  endif
 #else
   RAISE_ERROR("support for MTP not compiled in. Obtain MTP code first, and HAVE_MTP = 1 in your Makefile.inc, and recompile QUIP",error)
 #endif
@@ -157,6 +164,7 @@ subroutine IPModel_MTP_Calc(this, at, e, local_e, f, virial, local_virial, args_
    real(dp), dimension(3) :: diff_ij, f_ij
    integer(kind=c_int), dimension(:), allocatable, target :: alex_n_neighbours
    real(kind=c_double), dimension(:), allocatable, target :: alex_energy, alex_r_neighbours, alex_f_neighbours
+   integer :: mtp_error
 
    INIT_ERROR(error)
 
@@ -181,7 +189,11 @@ subroutine IPModel_MTP_Calc(this, at, e, local_e, f, virial, local_virial, args_
    enddo
 
 #ifdef HAVE_MTP
-   call alex_compute(at%N,c_loc(alex_n_neighbours), c_loc(alex_r_neighbours), c_loc(alex_f_neighbours), c_loc(alex_energy))
+   call alex_compute(at%N,c_loc(alex_n_neighbours), c_loc(alex_r_neighbours), c_loc(alex_f_neighbours), c_loc(alex_energy), mtp_error)
+   if( mtp_error /= 0 ) then
+      call write(at, 'stdout', prefix='MTP_ERROR')
+      RAISE_ERROR("IPModel_MTP_Calc received error "//mtp_error//" from alex_compute()",error)
+   endif
 #endif
 
    if (present(e)) e = sum(alex_energy)

@@ -85,6 +85,8 @@ and Gromacs, but has a number of unique features:
 
 ## Compilation Instructions
 
+[![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
+
 1.  Decide your architecture by looking in the arch/ directory, and
     define an environmental variable QUIP_ARCH, e.g.
     
@@ -115,7 +117,13 @@ and Gromacs, but has a number of unique features:
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
     
-4.  Compile all modules, libraries and programs with:
+4.  Pull in the subproject dependencies by running:
+
+		git submodule update --init
+
+    from the top-level QUIP directory.
+
+5.  Compile all modules, libraries and programs with:
     
 		make
 
@@ -131,7 +139,7 @@ and Gromacs, but has a number of unique features:
 	  `build/${QUIP_ARCH}/libquip.a`, which is what you need to link with
 	  (as well as LAPACK).
     
-5.  A good starting point is to use the `quip` program, which can 
+6.  A good starting point is to use the `quip` program, which can 
     calculate the properties of an atomic configuration using a
     variety of models. For example:
     
@@ -163,7 +171,7 @@ and Gromacs, but has a number of unique features:
     is recursive,  so `init_args="IP --help"`  will then proceed  to list
     the types of interatomic potentials (IP) that are available.
 
-6.  To compile the Python wrappers (`quippy`), run
+7.  To compile the Python wrappers (`quippy`), run
 
 		make quippy
 
@@ -175,11 +183,11 @@ and Gromacs, but has a number of unique features:
 	More details on the quippy installation process are available in
 	the [online documentation](http://libatoms.github.io/QUIP/).
 
-7.  To run the unit and regression tests, which depend on `quippy`:
+8.  To run the unit and regression tests, which depend on `quippy`:
 
 		make test
     
-8.  Some functionality is only available if you check out other
+9.  Some functionality is only available if you check out other
 	modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
 	(DFTB parameters, TTM3f water model), `GAP` (Gaussian
 	Approximation Potential models) and `GAP-filler` (Gaussian

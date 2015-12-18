@@ -69,7 +69,9 @@ copyright = u'2008-2015, James Kermode'
 #
 # The short X.Y version.
 import os
-version=os.popen('gitversion').read()
+version=os.popen('cat ../GIT_VERSON 2> /dev/null|| '
+                 'git describe --always --tags --dirty=+ 2> /dev/null || '
+                 'echo ').read().strip()
 # The full version, including alpha/beta/rc tags.
 release = version
 

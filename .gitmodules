@@ -1,0 +1,4 @@
+[submodule "src/fox"]
+	path = src/fox
+	url = https://github.com/andreww/fox
+	fetchRecursiveSubmodules = on-demand
