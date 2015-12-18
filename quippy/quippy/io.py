@@ -748,7 +748,7 @@ def ASEReader(source, format=None):
     format_converter = {
         'POSCAR': 'vasp',
         'CONTCAR': 'vasp',
-        'OUTCAR': 'vasp_out'
+        'OUTCAR': 'vasp-out'
         }
     format = format_converter.get(format, format)
     images = read(source, index=slice(None,None,None), format=format)

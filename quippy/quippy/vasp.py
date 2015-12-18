@@ -325,7 +325,7 @@ try:
     AtomsReaders['CONTCAR'] = ASEReader
     AtomsReaders['vasp'] = ASEReader
     AtomsReaders['OUTCAR'] = ASEReader
-    AtomsReaders['vasp_out'] = ASEReader
+    AtomsReaders['vasp-out'] = ASEReader
 
     AtomsWriters['POSCAR'] = ASEWriter
     AtomsWriters['CONTCAR'] = ASEWriter
