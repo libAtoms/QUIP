@@ -60,6 +60,7 @@
 !%    \item    Fourth-order force-constant potential ({\bf IPModel_FC4})
 !%    \item    SCME multipole model for water ({\bf IPModel_SCME})
 !%    \item    MTP potential ({\bf IPModel_MTP})
+!%    \item    ZBL potential ({\bf IPModel_ZBL})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
@@ -99,6 +100,7 @@
 !%    \item    'IP FC4'
 !%    \item    'IP SCME'
 !%    \item    'IP MTP'
+!%    \item    'IP ZBL'
 !%    \item    'IP Template'
 !%   \end{itemize}
 !X
@@ -142,6 +144,7 @@ use IPModel_Einstein_module, only : ipmodel_einstein, initialise, finalise, calc
 use IPModel_Coulomb_module, only : ipmodel_coulomb, initialise, finalise, calc, print
 use IPModel_Sutton_Chen_module, only : ipmodel_sutton_chen, initialise, finalise, calc, print
 use IPModel_LMTO_TBE_module, only: ipmodel_lmto_tbe, initialise, finalise, calc, print
+use IPModel_ZBL_module, only : ipmodel_zbl, initialise, finalise, calc, print
 use IPModel_Template_module, only : ipmodel_template, initialise, finalise, calc, print
 #ifdef HAVE_KIM
 use IPModel_KIM_module, only : ipmodel_kim, initialise, finalise, calc, print
@@ -170,7 +173,7 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Brenner_2002 = 12, FF_ASAP = 13, FF_TS = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
      FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, FF_LMTO_TBE=31, FF_FC4 = 32, FF_Spring=33, &
-     FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, &! Add new IPs here
+     FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, FF_ZBL=37, &! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -217,6 +220,7 @@ type IP_type
   type(IPModel_FC4) ip_fc4
   type(IPModel_SCME) ip_SCME
   type(IPModel_MTP) ip_MTP
+  type(IPModel_ZBL) ip_ZBL
      ! Add new IP here
   type(IPModel_Template) ip_Template
   type(mpi_context) :: mpi_glob, mpi_local
@@ -326,7 +330,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan , &
        is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, & ! Add new IPs here
-       is_Template
+       is_ZBL, is_Template
 
   INIT_ERROR(error)
 
@@ -377,6 +381,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'FC4', 'false', is_FC4, help_string="Fourth-order force-constant potential of Esfarjani et al")
   call param_register(params, 'SCME', 'false', is_SCME, help_string="SCME water potential")
   call param_register(params, 'MTP', 'false', is_MTP, help_string="MTP potential")
+  call param_register(params, 'ZBL', 'false', is_ZBL, help_string="ZBL potential")
   
  ! Add new IP here
   call param_register(params, 'Template', 'false', is_Template, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -389,7 +394,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, &
-       is_Tether, is_Spring, is_LMTO_TBE, is_FC4,  is_Multipoles, is_SCME, is_MTP, & ! add new IPs here
+       is_Tether, is_Spring, is_LMTO_TBE, is_FC4,  is_Multipoles, is_SCME, is_MTP, is_ZBL, & ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -506,6 +511,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_MTP) then
      this%functional_form = FF_MTP
      call Initialise(this%ip_MTP, args_str, param_str)
+  else if (is_ZBL) then
+     this%functional_form = FF_ZBL
+     call Initialise(this%ip_ZBL, args_str, param_str)
     ! Add new IP here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -597,6 +605,8 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_SCME)
    case (FF_MTP)
       call Finalise(this%ip_MTP)
+   case (FF_ZBL)
+      call Finalise(this%ip_ZBL)
    ! add new IP here
    case (FF_Template)
       call Finalise(this%ip_Template)
@@ -685,6 +695,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_SCME%cutoff
   case (FF_MTP)
      IP_cutoff = this%ip_MTP%cutoff
+  case (FF_ZBL)
+     IP_cutoff = this%ip_ZBL%cutoff
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
@@ -800,6 +812,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_SCME, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_MTP)
       call calc(this%ip_MTP, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_ZBL)
+      call calc(this%ip_ZBL, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    ! Add new IP here   
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
@@ -897,6 +911,8 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_SCME, file=file)
    case (FF_MTP)
       call Print(this%ip_MTP, file=file)
+   case (FF_ZBL)
+      call Print(this%ip_ZBL, file=file)
     ! add new IP here
    case (FF_Template)
       call Print(this%ip_Template, file=file)
