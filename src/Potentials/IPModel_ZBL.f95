@@ -202,7 +202,7 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
                end if
             end if
             if (present(f)) then
-               de_dr = -c/r*(t_1+t_2+t_3+t_4) + c/a*(-this%p_exp_1*t_1-this%p_exp_2*t_2-this%p_exp_3*t_3-this%p_exp_4*t_4)
+               de_dr = -c/r*(t_1+t_2+t_3+t_4) + c/a*(this%p_exp_1*t_1+this%p_exp_2*t_2+this%p_exp_3*t_3+this%p_exp_4*t_4)
                f(:,i) = f(:,i) + de_dr*dr
                if ( i/=j ) f(:,j) = f(:,j) - de_dr*dr
             end if
