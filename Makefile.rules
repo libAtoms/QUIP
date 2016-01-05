@@ -159,7 +159,9 @@ endif
 ifeq (${HAVE_LMTO_TBE},1)
   DEFINES += -DHAVE_LMTO_TBE
   INCLUDES += $(addprefix -I,${LMTO_TBE_LIBDIR}/mods)
-  #SYSLIBS += ${LMTO_TBE_LIBDIR}/tb/libtb.a ${LMTO_TBE_LIBDIR}/subs/liblm.a ${LMTO_TBE_LIBDIR}/slatsm/libsl.a ${LMTO_TBE_LIBDIR}/v7input/libv7inp.a
+  SYSLIBS += -Wl,--start-group ${LMTO_TBE_LIBDIR}/tb/libtb.a ${LMTO_TBE_LIBDIR}/subs/liblm.a
+  SYSLIBS += ${LMTO_TBE_LIBDIR}/slatsm/libsl.a ${LMTO_TBE_LIBDIR}/v7input/libv7inp.a -Wl,--end-group
+  SYSLIBS += -lxcf90 -lxc
 endif
 
 
