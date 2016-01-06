@@ -122,6 +122,10 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   call param_register(params, 'p_exp_3', '-0.40290', this%p_exp_3, help_string="third exponent of screening function")
   call param_register(params, 'p_pre_exp_4', '0.02817', this%p_pre_exp_4, help_string="fourth pre-exponential factor of screening function")
   call param_register(params, 'p_exp_4', '-0.20162', this%p_exp_4, help_string="fourth exponent of screening function")
+
+  if (param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ZBL_Initialise_str args_str')) then
+  end if
+
   call finalise(params)
 
 end subroutine IPModel_ZBL_Initialise_str
