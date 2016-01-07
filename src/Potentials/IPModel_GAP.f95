@@ -372,6 +372,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
+
+  if(print_gap_variance) then
+     call print('GAP_VARIANCE potential '//trim(this%label)//' calculating for '//this%my_gp%n_coordinate//' descriptors')
+  end if
+
   loop_over_descriptors: do i_coordinate = 1, this%my_gp%n_coordinate
 
      if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
@@ -463,11 +468,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(print_gap_variance) then
         if( size(my_descriptor_data%x) > 0 ) then
            do i = 1, size(my_descriptor_data%x)
-              call print('DESCRIPTOR '//trim(this%label)//' GAP_VARIANCE '//i//' = '//(gap_variance(i)*my_descriptor_data%x(i)%covariance_cutoff**2))
-              if(allocated(my_descriptor_data%x(i)%ii)) call print('DESCRIPTOR '//trim(this%label)//' II '//i//' = '//my_descriptor_data%x(i)%ii)
+              if( .not. my_descriptor_data%x(i)%has_data ) cycle
+              call print('GAP_VARIANCE potential '//trim(this%label)//' descriptor '//i_coordinate//' var( '//i//' ) = '//(gap_variance(i)*my_descriptor_data%x(i)%covariance_cutoff**2))
+              if(allocated(my_descriptor_data%x(i)%ii)) call print('GAP_VARIANCE potential '//trim(this%label)//' descriptor '//i_coordinate//' ii( '//i//' ) = '//my_descriptor_data%x(i)%ii)
            enddo
         else
-           call print('In potential '//trim(this%label)//' for descriptor '//i_coordinate//' ERROR ESTIMATE NOT FOUND')
+           call print('GAP_VARIANCE potential '//trim(this%label)//' descriptor '//i_coordinate//' not found')
         endif
      endif
      if(allocated(gap_variance)) deallocate(gap_variance)
