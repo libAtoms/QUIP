@@ -35,6 +35,8 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+#include <errno.h>
+#include <libgen.h>
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -274,6 +276,160 @@ void c_mem_info_(double *total_mem, double *free_mem)
    *total_mem = (vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count)*pagesize;
    *free_mem = vmstat.free_count*pagesize;
 #endif
+}
+
+// query current working directory, with string length returned.
+//
+char* c_getcwd(int *getcwd_size) {
+   long path_max = pathconf(".", _PC_PATH_MAX);
+   size_t size;
+   char *buf;
+   char *ptr;
+
+   if (path_max == -1)
+       size = 1024;
+   else if (path_max > 10240)
+       size = 10240;
+   else
+       size = path_max;
+
+   for (buf = ptr = NULL; ptr == NULL; size *= 2)
+   {
+       if ((buf = realloc(buf, size)) == NULL)
+       {
+          fprintf(stderr, "c_getcwd: cannot allocate character buffer.\n");
+          exit(EXIT_FAILURE);
+       }
+
+       ptr = getcwd(buf, size);
+       if (ptr == NULL && errno != ERANGE)
+       {
+          fprintf(stderr,"c_getcwd: could not get current working directory.\n");
+          exit(EXIT_FAILURE);
+       }
+   }
+
+   *getcwd_size = strlen(ptr);
+
+   return ptr;
+}
+
+// FORTRAN callable function for length of current working directory
+//
+int fgetcwd_size_() {
+   int getcwd_size;
+   char *dummy = c_getcwd(&getcwd_size);
+
+   free(dummy);
+   return getcwd_size;
+}
+
+// FORTRAN callable subroutine to return current working directory in a char array, length need
+// to be specified. Use fgetcwd_size_ to get length in advance.
+//
+void fgetcwd_(char* getcwd_return, int* getcwd_size) {
+
+   int my_getcwd_size;
+   char *ptr = c_getcwd(&my_getcwd_size);
+
+   if( my_getcwd_size != *getcwd_size ) {
+      fprintf(stderr, "fgetcwd: c_getcwd called with incorrect size.\n");
+      exit(EXIT_FAILURE);
+   }
+
+   strcpy(getcwd_return,ptr);
+
+   free(ptr);
+   return;
+}
+
+// FORTRAN callable subroutine to change directory.
+//
+void fchdir_(char *path) {
+
+   int ret = chdir(path);
+   if (ret != 0) {
+      fprintf(stderr, "fchdir: could not change directory.\n");
+      exit(EXIT_FAILURE);
+   }
+
+   return;
+}
+
+// FORTRAN callable function for length of dirname 
+//
+int fdirname_size_(char *path) {
+
+   char *my_path = malloc( sizeof(char) * ( strlen(path) + 1 ) );
+   strcpy(my_path,path);
+
+   char *dummy = dirname(my_path);
+   int dirname_size = strlen(dummy);
+
+   free(my_path);
+
+   return dirname_size;
+}
+
+// FORTRAN callable subroutine to determine dirname, dirname_return must be the correct length, 
+// specified by dirname_size, which can be obtained in advance by calling fdirname_size_
+//
+void fdirname_(char* path, char* dirname_return, int* dirname_size) {
+
+   int my_dirname_size;
+   my_dirname_size = fdirname_size_(path);
+
+   if( my_dirname_size != *dirname_size ) {
+      fprintf(stderr, "fdirname: incorrect size for the return variable, %i instead of %i.\n",my_dirname_size, *dirname_size);
+      exit(EXIT_FAILURE);
+   }
+
+   char *my_path = malloc( sizeof(char) * ( strlen(path) + 1 ) );
+   strcpy(my_path,path);
+   char *ptr = dirname(my_path);
+   strcpy(dirname_return,ptr);
+
+   free(my_path);
+
+   return;
+}
+
+// FORTRAN callable function for length of basename 
+//
+int fbasename_size_(char *path) {
+
+   char *my_path = malloc( sizeof(char) * ( strlen(path) + 1 ) );
+   strcpy(my_path,path);
+
+   char *dummy = basename(my_path);
+   int basename_size = strlen(dummy);
+
+   free(my_path);
+
+   return basename_size;
+}
+
+// FORTRAN callable subroutine to determine basename, basename_return must be the correct length, 
+// specified by basename_size, which can be obtained in advance by calling fbasename_size_
+//
+void fbasename_(char* path, char* basename_return, int* basename_size) {
+
+   int my_basename_size;
+   my_basename_size = fbasename_size_(path);
+
+   if( my_basename_size != *basename_size ) {
+      fprintf(stderr, "fbasename: incorrect size for the return variable, %i instead of %i.\n",my_basename_size, *basename_size);
+      exit(EXIT_FAILURE);
+   }
+
+   char *my_path = malloc( sizeof(char) * ( strlen(path) + 1 ) );
+   strcpy(my_path,path);
+   char *ptr = basename(my_path);
+   strcpy(basename_return,ptr);
+
+   free(my_path);
+
+   return;
 }
 
 // Callback Potentials
