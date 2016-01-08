@@ -37,7 +37,7 @@ module CInOutput_module
   use iso_c_binding
   use error_module
   use linearalgebra_module, only: print, operator(.mult.), operator(.fne.)
-  use Extendable_str_module, only: Extendable_str, operator(//), string
+  use Extendable_str_module, only: Extendable_str, operator(//), string, concat
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
        PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT, lower_case
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
@@ -125,6 +125,54 @@ module CInOutput_module
        integer(kind=C_INT), intent(out) :: error
      end subroutine query_xyz
 
+     subroutine quip_getcwd_wrapper(getcwd_return,getcwd_size) bind(c,name="fgetcwd_")
+        use, intrinsic :: iso_c_binding, only : c_char, c_int, c_null_char
+        implicit none
+        integer(kind=c_int), intent(in) :: getcwd_size
+        character(kind=c_char), dimension(getcwd_size) :: getcwd_return
+     endsubroutine quip_getcwd_wrapper
+
+     function quip_getcwd_size_wrapper() bind(c,name="fgetcwd_size_")
+        use, intrinsic :: iso_c_binding, only : c_int
+        implicit none
+        integer(kind=c_int) :: quip_getcwd_size_wrapper
+     endfunction quip_getcwd_size_wrapper
+
+     subroutine quip_chdir_wrapper(path) bind(c,name="fchdir_")
+        use, intrinsic :: iso_c_binding
+        implicit none
+        character(kind=c_char), dimension(*) :: path
+     endsubroutine quip_chdir_wrapper
+
+     function quip_dirname_size_wrapper(path) bind(c,name="fdirname_size_")
+        use, intrinsic :: iso_c_binding, only : c_int, c_char
+        implicit none
+        integer(kind=c_int) :: quip_dirname_size_wrapper
+        character(kind=c_char), dimension(*) :: path
+     endfunction quip_dirname_size_wrapper
+
+     subroutine quip_dirname_wrapper(path,dirname,dirname_size) bind(c,name="fdirname_")
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(kind=c_int) :: dirname_size
+        character(kind=c_char), dimension(*) :: path
+        character(kind=c_char), dimension(dirname_size) :: dirname
+     endsubroutine quip_dirname_wrapper
+
+     function quip_basename_size_wrapper(path) bind(c,name="fbasename_size_")
+        use, intrinsic :: iso_c_binding, only : c_int, c_char
+        implicit none
+        integer(kind=c_int) :: quip_basename_size_wrapper
+        character(kind=c_char), dimension(*) :: path
+     endfunction quip_basename_size_wrapper
+
+     subroutine quip_basename_wrapper(path,basename,basename_size) bind(c,name="fbasename_")
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(kind=c_int) :: basename_size
+        character(kind=c_char), dimension(*) :: path
+        character(kind=c_char), dimension(basename_size) :: basename
+     endsubroutine quip_basename_wrapper
   end interface
 
   integer, parameter :: XYZ_FORMAT = 1
@@ -202,7 +250,23 @@ module CInOutput_module
      module procedure atoms_write_cinoutput
   end interface
 
+  interface quip_chdir
+     module procedure quip_chdir_char
+     module procedure quip_chdir_extendable_str
+  end interface quip_chdir
+
+  interface quip_dirname
+     module procedure quip_dirname_char
+     module procedure quip_dirname_extendable_str
+  end interface quip_dirname
+
+  interface quip_basename
+     module procedure quip_basename_char
+     module procedure quip_basename_extendable_str
+  end interface quip_basename
+
   public :: CInOutput, initialise, finalise, close, read, write
+  public :: quip_getcwd, quip_chdir, quip_dirname, quip_basename
 
 contains
 
@@ -899,5 +963,94 @@ contains
     PASS_ERROR(error)
 
   end subroutine atoms_write_cinoutput
+
+  function quip_getcwd()
+    type(extendable_str) :: quip_getcwd
+
+    integer :: i, n
+    character(len=1), dimension(:), allocatable :: c
+
+    n = quip_getcwd_size_wrapper()
+    allocate(c(n))
+    call quip_getcwd_wrapper(c,n)
+
+    call initialise(quip_getcwd)
+    quip_getcwd = ""
+    do i = 1, n
+       call concat(quip_getcwd,c(i))
+    enddo
+
+    deallocate(c)
+
+  endfunction quip_getcwd
+
+  subroutine quip_chdir_char(path)
+    character(len=*), intent(in) :: path
+
+    call quip_chdir_wrapper(trim(path)//C_NULL_CHAR)
+
+  endsubroutine quip_chdir_char
+
+  subroutine quip_chdir_extendable_str(path)
+    type(extendable_str), intent(in) :: path
+
+    call quip_chdir_char(string(path))
+  endsubroutine quip_chdir_extendable_str
+
+  function quip_basename_char(path)
+    type(extendable_str) :: quip_basename_char
+    character(len=*), intent(in) :: path
+
+    integer :: i, n
+    character(len=1), dimension(:), allocatable :: c
+
+    n = quip_basename_size_wrapper(trim(path)//C_NULL_CHAR)
+    allocate(c(n))
+    call quip_basename_wrapper(trim(path)//C_NULL_CHAR,c,n)
+
+    call initialise(quip_basename_char)
+    quip_basename_char = ""
+    do i = 1, n
+       call concat(quip_basename_char,c(i))
+    enddo
+
+    deallocate(c)
+
+  endfunction quip_basename_char
+
+  function quip_basename_extendable_str(path)
+    type(extendable_str) :: quip_basename_extendable_str
+    type(extendable_str), intent(in) :: path
+
+    quip_basename_extendable_str = quip_basename_char(string(path))
+  endfunction quip_basename_extendable_str
+
+  function quip_dirname_char(path)
+    type(extendable_str) :: quip_dirname_char
+    character(len=*), intent(in) :: path
+
+    integer :: i, n
+    character(len=1), dimension(:), allocatable :: c
+
+    n = quip_dirname_size_wrapper(trim(path)//C_NULL_CHAR)
+    allocate(c(n))
+    call quip_dirname_wrapper(trim(path)//C_NULL_CHAR,c,n)
+
+    call initialise(quip_dirname_char)
+    quip_dirname_char = ""
+    do i = 1, n
+       call concat(quip_dirname_char,c(i))
+    enddo
+
+    deallocate(c)
+
+  endfunction quip_dirname_char
+
+  function quip_dirname_extendable_str(path)
+    type(extendable_str) :: quip_dirname_extendable_str
+    type(extendable_str), intent(in) :: path
+
+    quip_dirname_extendable_str = quip_dirname(string(path))
+  endfunction quip_dirname_extendable_str
 
 end module CInOutput_module
