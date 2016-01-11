@@ -133,7 +133,7 @@ module Potential_module
   use atoms_types_module, only : atoms, assign_pointer, add_property, assign_property_pointer, add_property_from_pointer, diff_min_image, distance_min_image
   use atoms_module, only : has_property, cell_volume, neighbour, n_neighbours, set_lattice, is_nearest_neighbour, &
    get_param_value, remove_property, calc_connect, set_cutoff, set_cutoff_minimum, set_param_value, calc_dists, atoms_repoint, finalise, assignment(=)
-  use cinoutput_module, only : cinoutput, write
+  use cinoutput_module, only : cinoutput, write, quip_chdir, quip_dirname, quip_basename, quip_getcwd
   use dynamicalsystem_module, only : dynamicalsystem, ds_print_status, advance_verlet1, advance_verlet2
   use clusters_module, only : HYBRID_ACTIVE_MARK, HYBRID_NO_MARK, HYBRID_BUFFER_MARK, create_embed_and_fit_lists_from_cluster_mark, create_embed_and_fit_lists, &
    create_hybrid_weights, add_cut_hydrogens, create_cluster_info_from_mark, bfs_grow, carve_cluster
@@ -435,13 +435,26 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
   integer, intent(out), optional :: error
 
   type(inoutput) :: io
+  type(extendable_str) :: my_cwd, param_file_dirname, param_file_basename
 
   INIT_ERROR(error)
 
-  if (len_trim(param_filename) > 0) call initialise(io, param_filename, INPUT, master_only=.true.)
+  if (len_trim(param_filename) == 0) then
+     RAISE_ERROR("potential_Filename_Initialise: empty filename",error)
+  endif
+  
+  my_cwd = quip_getcwd()
+  param_file_dirname = quip_dirname(trim(param_filename))
+  param_file_basename = quip_basename(trim(param_filename))
+
+  call quip_chdir(param_file_dirname)
+
+  call initialise(io, trim(string(param_file_basename)), INPUT, master_only=.true.)
   call initialise(this, args_str, io, bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
   PASS_ERROR(error)
   call finalise(io)
+
+  call quip_chdir(my_cwd)
 
 end subroutine potential_Filename_Initialise
 

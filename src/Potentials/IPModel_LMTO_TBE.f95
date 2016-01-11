@@ -204,6 +204,8 @@ subroutine IPModel_LMTO_TBE_Calc(this, at, e, local_e, f, virial, local_virial, 
 
    atlattice = at%lattice/BOHR
    atpos = at%pos/BOHR
+   ! libtbe expects the force to be initialised as it will accumulate forces
+   force = 0.0_dp
 
    call tbsc(atlattice, at%n, atpos, atypes, energy, force, &
         reorder=reorder, incomm=mpi%communicator)
