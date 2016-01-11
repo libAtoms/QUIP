@@ -80,7 +80,7 @@ class CInOutput(_cinoutput.CInOutput):
                 raise EOFError(__builtin__.str(re))
             else:
                 raise
-            
+
         return at
 
     read.__doc__ = _cinoutput.CInOutput.read.__doc__
@@ -93,7 +93,7 @@ class CInOutput(_cinoutput.CInOutput):
 
         if self.string and estr is None:
             estr = Extendable_str()
-            
+
         _cinoutput.CInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
                                    real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
                                    deflate_level=deflate_level, estr=estr, update_index=update_index)
@@ -101,7 +101,7 @@ class CInOutput(_cinoutput.CInOutput):
             return str(estr)
 
     write.__doc__ = _cinoutput.CInOutput.write.__doc__
-    
+
 
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(cinoutput)'] = CInOutput
@@ -178,7 +178,8 @@ class CInOutputReader(object):
             raise AttributeError('Attribute %s not found' % name)
 
 
-AtomsReaders['extxyz'] = AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
+AtomsReaders['extxyz'] = AtomsReaders['xyz'] = AtomsReaders['nc'] = \
+    AtomsReaders[CInOutput] = CInOutputReader
 
 @atoms_reader('stdin')
 def CInOutputStdinReader(source='stdin', format=None):
@@ -211,8 +212,8 @@ class CInOutputWriter(object):
     def close(self):
         self.dest.close()
 
-AtomsWriters['extxyz'] = AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
-
+AtomsWriters['stdout'] = AtomsWriters['extxyz'] = AtomsWriters['xyz'] \
+    = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
 
 class CInOutputStringReader(CInOutputReader):
     def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, no_compute_index=False,
@@ -239,7 +240,7 @@ def EvalOutputReader(source, format=None):
 
     Extracts XYZ configurations from lines beginnging with "AT "
     """
-    
+
     lines = open(source, 'r').readlines()
     lines = [line[3:] for line in lines if line.startswith('AT ')]
     reader = CInOutputStringReader(''.join(lines))
