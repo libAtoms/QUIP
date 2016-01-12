@@ -37,7 +37,7 @@ module CInOutput_module
   use iso_c_binding
   use error_module
   use linearalgebra_module, only: print, operator(.mult.), operator(.fne.)
-  use Extendable_str_module, only: Extendable_str, operator(//), string, concat
+  use Extendable_str_module, only: Extendable_str, operator(//), string, concat, assignment(=)
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
        PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT, lower_case
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
