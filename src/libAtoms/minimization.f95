@@ -1675,7 +1675,7 @@ CONTAINS
           cycle !continue
        end if
 
-       if(.not. do_lbfgs) then
+       if( (.not. do_lbfgs) .and. (.not. do_sd2) ) then
           !**********************************************************************
           !*
           !*  do line minimization
@@ -1737,7 +1737,7 @@ CONTAINS
              cycle !continue
           end if
 
-       end if ! .not. lbfgs
+       end if ! .not. lbfgs .and. .not. sd2
        
        !**********************************************************************
        !*
@@ -1904,7 +1904,7 @@ CONTAINS
        call verbosity_pop()
 #endif
 
-       if(.not. do_lbfgs) then
+       if( (.not. do_lbfgs) .and. (.not. do_sd2) ) then
           hdirgrad_after = hdir.DOT.grad_f 
           if (hdirgrad_after /= 0.0_dp) then
             linmin_quality = hdirgrad_before/hdirgrad_after
