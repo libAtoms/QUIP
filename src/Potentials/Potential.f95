@@ -443,18 +443,19 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
      RAISE_ERROR("potential_Filename_Initialise: empty filename",error)
   endif
   
-  my_cwd = quip_getcwd()
-  param_file_dirname = quip_dirname(trim(param_filename))
-  param_file_basename = quip_basename(trim(param_filename))
+  !my_cwd = quip_getcwd()
+  !param_file_dirname = quip_dirname(trim(param_filename))
+  !param_file_basename = quip_basename(trim(param_filename))
 
-  call quip_chdir(param_file_dirname)
+  !call quip_chdir(param_file_dirname)
 
-  call initialise(io, trim(string(param_file_basename)), INPUT, master_only=.true.)
+  !call initialise(io, trim(string(param_file_basename)), INPUT, master_only=.true.)
+  call initialise(io, trim(param_filename), INPUT, master_only=.true.)
   call initialise(this, args_str, io, bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
   PASS_ERROR(error)
   call finalise(io)
 
-  call quip_chdir(my_cwd)
+  !call quip_chdir(my_cwd)
 
 end subroutine potential_Filename_Initialise
 
