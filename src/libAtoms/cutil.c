@@ -309,7 +309,7 @@ char* c_getcwd(int *getcwd_size) {
        }
    }
 
-   *getcwd_size = strlen(ptr);
+   *getcwd_size = strlen(ptr) + 1;
 
    return ptr;
 }
