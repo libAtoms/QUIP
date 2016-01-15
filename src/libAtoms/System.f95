@@ -1263,62 +1263,61 @@ contains
 
   end subroutine parse_string_orig
 
-  !% Convert an input string into an integer. If 'err' is present, it is set to true
-  !% if an error occurred during the conversion.
-  function string_to_int(string,err)
-    character(*), intent(in)   :: string
-    character(len=len(string)) :: local_string
-    logical, optional, intent(out) :: err
-    integer                    :: String_To_Int
-    character(10)              :: format
-    integer                    :: n
+  !% Convert an input string into an integer. 
+  function string_to_int(string,error)
+    character(*), intent(in)       :: string
+    integer, optional, intent(out) :: error
+    integer                        :: string_to_int
     integer stat
 
-    local_string = adjustl(string)
-    n = len_trim(local_string)
-    write(format,'(a,i0,a)')'(i',n,')'
+    INIT_ERROR(error)
+
     string_to_int = 0
-    read(local_string,format,iostat=stat) string_to_int
-    if (present(err)) err = (stat /= 0)
+    read(string,*,iostat=stat) string_to_int
+    if(stat /= 0) then
+       RAISE_ERROR("string_to_int: could not convert, iostat="//stat, error)
+    endif
 
   end function string_to_int
 
-  !% Convert an input string into a logical. If 'err' is present, it is set to true
-  !% if an error occurred during the conversion.
-  function string_to_logical(string, err)
-    character(*), intent(in)   :: string
-    logical, optional, intent(out) :: err
-    logical                    :: string_to_logical
+  !% Convert an input string into a logical. 
+  function string_to_logical(string, error)
+    character(*), intent(in)       :: string
+    integer, optional, intent(out) :: error
+    logical                        :: string_to_logical
     integer stat
+
+    INIT_ERROR(error)
+ 
+    if (scan(adjustl(string), 'tfTF') /= 1) then
+       RAISE_ERROR("string_to_logical only allows t, f, T or F to be converted", error)
+    end if
 
     string_to_logical = .false.
     read(string,*,iostat=stat) string_to_logical
 
-    if (present(err)) err = (stat /= 0)
+    if(stat /= 0) then
+       RAISE_ERROR("string_to_logical: could not convert, iostat="//stat, error)
+    endif
 
   end function string_to_logical
 
 
-  !% Convert an input string into a real. If 'err' is present, it is set to true
-  !% if an error occurred during the conversion.
-  function string_to_real(string, err)
-    character(*), intent(in)   :: string
-    logical, optional, intent(out) :: err
-    real(dp)                   :: string_to_real
+  !% Convert an input string into a real. 
+  function string_to_real(string, error)
+    character(*), intent(in)       :: string
+    integer, optional, intent(out) :: error
+    real(dp)                       :: string_to_real
     integer stat
 
-    if (present(err)) then
-       err = .false.
-       if (scan(adjustl(string), 'tfTF') == 1) then
-          err = .true.
-          return
-       end if
-    end if
+    INIT_ERROR(error)
 
     string_to_real = 0.0_dp
     read(string,*,iostat=stat) string_to_real
 
-    if (present(err)) err = (stat /= 0)
+    if(stat /= 0) then
+       RAISE_ERROR("string_to_real: could not convert, iostat="//stat, error)
+    endif
 
   end function string_to_real
 
