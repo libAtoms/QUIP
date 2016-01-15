@@ -2111,14 +2111,17 @@ CONTAINS
 
   end subroutine matrix_z_inverse
 
-  subroutine pseudo_inverse(this,inverse)
+  subroutine pseudo_inverse(this,inverse,error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(out), dimension(:,:) :: inverse
+    integer, optional, intent(out) :: error
 
     type(LA_Matrix) :: LA_this
 
+    INIT_ERROR(error)
+
     call initialise(LA_this,this)
-    call LA_Matrix_PseudoInverse(LA_this,inverse)
+    call LA_Matrix_PseudoInverse(LA_this,inverse,error=error)
     call finalise(LA_this)
 
   endsubroutine pseudo_inverse
