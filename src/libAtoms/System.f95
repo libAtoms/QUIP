@@ -1289,16 +1289,14 @@ contains
 
     INIT_ERROR(error)
  
-    if (scan(adjustl(string), 'tfTF') /= 1) then
-       RAISE_ERROR("string_to_logical only allows t, f, T or F to be converted", error)
-    end if
-
-    string_to_logical = .false.
-    read(string,*,iostat=stat) string_to_logical
-
-    if(stat /= 0) then
+    select case(trim(lower_case(string)))
+    case("true","t")
+       string_to_logical = .true.
+    case("false","f")
+       string_to_logical = .false.
+    case default
        RAISE_ERROR("string_to_logical: could not convert, iostat="//stat, error)
-    endif
+    endselect
 
   end function string_to_logical
 
