@@ -272,9 +272,18 @@
       endif
     endif
 
-    if (len_trim(calc_force) > 0) call assign_property_pointer(at, trim(calc_force), at_force_ptr)
-    if (len_trim(calc_local_energy) > 0) call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
-    if (len_trim(calc_local_virial) > 0) call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr)
+    if (len_trim(calc_force) > 0) then
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+       PASS_ERROR(error)
+    endif
+    if (len_trim(calc_local_energy) > 0) then
+       call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr, error=error)
+       PASS_ERROR(error)
+    endif
+    if (len_trim(calc_local_virial) > 0) then
+       call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr, error=error)
+       PASS_ERROR(error)
+    endif
 
     ! do calculation in whole system first using pot_region2
     call system_timer("calc_oniom/calc_whole_sys")
