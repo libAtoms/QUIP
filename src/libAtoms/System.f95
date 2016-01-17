@@ -1285,7 +1285,6 @@ contains
     character(*), intent(in)       :: string
     integer, optional, intent(out) :: error
     logical                        :: string_to_logical
-    integer stat
 
     INIT_ERROR(error)
  
@@ -1295,7 +1294,7 @@ contains
     case("false","f")
        string_to_logical = .false.
     case default
-       RAISE_ERROR("string_to_logical: could not convert, iostat="//stat, error)
+       RAISE_ERROR("string_to_logical: could not convert. Only true/false/t/f (or any uppercase variants) may be converted. String passed: "//trim(string), error)
     endselect
 
   end function string_to_logical
