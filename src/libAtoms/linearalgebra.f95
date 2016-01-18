@@ -3056,7 +3056,7 @@ CONTAINS
     integer, optional, intent(out) :: error
 
     real(dp), dimension(:), allocatable :: s
-    real(dp), dimension(:,:), allocatable :: u, v
+    real(dp), dimension(:,:), allocatable :: u, v, inverse_tmp
 
     INIT_ERROR(error)
 
@@ -3075,8 +3075,10 @@ CONTAINS
        s = 0.0_dp
     endwhere
 
-    inverse = v .multd. s
-    inverse = inverse .mult. transpose(u)
+    allocate(inverse_tmp(size(v,1),size(v,2)))
+    inverse_tmp = v .multd. s
+    inverse = inverse_tmp .mult. transpose(u)
+    deallocate(inverse_tmp)
 
     if(allocated(s)) deallocate(s)
     if(allocated(u)) deallocate(u)
