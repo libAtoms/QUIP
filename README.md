@@ -1,5 +1,7 @@
 # QUIP - QUantum mechanics and Interatomic Potentials
 
+[![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
+
 The `QUIP` package is a collection of software tools to carry out
 molecular dynamics simulations. It implements a variety of interatomic
 potentials and tight binding quantum mechanics, and is also able to
@@ -84,8 +86,6 @@ and Gromacs, but has a number of unique features:
 
 
 ## Compilation Instructions
-
-[![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
 
 0.  Clone the QUIP repository from GitHub. The ``--recursive`` option
     brings in submodules automatically (If you don't do this, then
