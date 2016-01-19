@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Low-level system routines &mdash; quippy 36633bb+ documentation</title>
+    <title>Low-level system routines &mdash; quippy 1b5aeb1+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '36633bb+',
+        VERSION:     '1b5aeb1+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 36633bb+ documentation" href="index.html" />
+    <link rel="top" title="quippy 1b5aeb1+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Units and physical constants" href="units.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 36633bb+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 1b5aeb1+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -321,7 +321,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_logical" title="quippy.system.string_to_logical"><code class="xref py py-obj docutils literal"><span class="pre">string_to_logical</span></code></a>(string,[err])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_logical" title="quippy.system.string_to_logical"><code class="xref py py-obj docutils literal"><span class="pre">string_to_logical</span></code></a>(string,[error])</td>
 <td>Convert an input string into a logical.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.split_string" title="quippy.system.split_string"><code class="xref py py-obj docutils literal"><span class="pre">split_string</span></code></a>(separators,quotes,fields,[matching])</td>
@@ -330,7 +330,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_to_str" title="quippy.system.verbosity_to_str"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_to_str</span></code></a>(val)</td>
 <td>Map from verbsoity codes to descriptive strings</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.string_to_int" title="quippy.system.string_to_int"><code class="xref py py-obj docutils literal"><span class="pre">string_to_int</span></code></a>(string,[err])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.string_to_int" title="quippy.system.string_to_int"><code class="xref py py-obj docutils literal"><span class="pre">string_to_int</span></code></a>(string,[error])</td>
 <td>Convert an input string into an integer.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.real_format_length" title="quippy.system.real_format_length"><code class="xref py py-obj docutils literal"><span class="pre">real_format_length</span></code></a>(r)</td>
@@ -521,7 +521,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_real" title="quippy.system.string_to_real"><code class="xref py py-obj docutils literal"><span class="pre">string_to_real</span></code></a>(string,[err])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_real" title="quippy.system.string_to_real"><code class="xref py py-obj docutils literal"><span class="pre">string_to_real</span></code></a>(string,[error])</td>
 <td>Convert an input string into a real.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.a2s" title="quippy.system.a2s"><code class="xref py py-obj docutils literal"><span class="pre">a2s</span></code></a>(a)</td>
@@ -1650,15 +1650,14 @@ Return a string which is the real number <code class="docutils literal"><span cl
 
 <dl class="function">
 <dt id="quippy.system.string_to_logical">
-<code class="descclassname">quippy.system.</code><code class="descname">string_to_logical</code><span class="sig-paren">(</span><em>string</em><span class="optional">[</span>, <em>err</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.string_to_logical" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert an input string into a logical. If <code class="docutils literal"><span class="pre">err</span></code> is present, it is set to true
-if an error occurred during the conversion.</p>
+<code class="descclassname">quippy.system.</code><code class="descname">string_to_logical</code><span class="sig-paren">(</span><em>string</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.string_to_logical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an input string into a logical.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string</strong> :  input string(len=-1)</p>
-<p><strong>err</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_string_to_logical</strong> :  int</p>
@@ -1716,15 +1715,14 @@ tokenizing</p>
 
 <dl class="function">
 <dt id="quippy.system.string_to_int">
-<code class="descclassname">quippy.system.</code><code class="descname">string_to_int</code><span class="sig-paren">(</span><em>string</em><span class="optional">[</span>, <em>err</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.string_to_int" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert an input string into an integer. If <code class="docutils literal"><span class="pre">err</span></code> is present, it is set to true
-if an error occurred during the conversion.</p>
+<code class="descclassname">quippy.system.</code><code class="descname">string_to_int</code><span class="sig-paren">(</span><em>string</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.string_to_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an input string into an integer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string</strong> :  input string(len=-1)</p>
-<p><strong>err</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_string_to_int</strong> :  int</p>
@@ -2213,15 +2211,14 @@ Don&#8217;t ever lower the verbosity if verbosity minimum is set,</p>
 
 <dl class="function">
 <dt id="quippy.system.string_to_real">
-<code class="descclassname">quippy.system.</code><code class="descname">string_to_real</code><span class="sig-paren">(</span><em>string</em><span class="optional">[</span>, <em>err</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.string_to_real" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert an input string into a real. If <code class="docutils literal"><span class="pre">err</span></code> is present, it is set to true
-if an error occurred during the conversion.</p>
+<code class="descclassname">quippy.system.</code><code class="descname">string_to_real</code><span class="sig-paren">(</span><em>string</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.string_to_real" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an input string into a real.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string</strong> :  input string(len=-1)</p>
-<p><strong>err</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_string_to_real</strong> :  float</p>
@@ -3092,13 +3089,13 @@ Other user-defined types define the Print interface in the same way.</p>
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 36633bb+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 1b5aeb1+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 15, 2016.
+      Last updated on Jan 19, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
