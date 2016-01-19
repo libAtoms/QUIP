@@ -309,7 +309,7 @@ char* c_getcwd(int *getcwd_size) {
        }
    }
 
-   *getcwd_size = strlen(ptr);
+   *getcwd_size = strlen(ptr) + 1;
 
    return ptr;
 }
@@ -364,7 +364,7 @@ int fdirname_size_(char *path) {
    strcpy(my_path,path);
 
    char *dummy = dirname(my_path);
-   int dirname_size = strlen(dummy);
+   int dirname_size = strlen(dummy) + 1;
 
    free(my_path);
 
@@ -402,7 +402,7 @@ int fbasename_size_(char *path) {
    strcpy(my_path,path);
 
    char *dummy = basename(my_path);
-   int basename_size = strlen(dummy);
+   int basename_size = strlen(dummy) + 1;
 
    free(my_path);
 

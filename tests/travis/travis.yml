@@ -1,0 +1,100 @@
+language: python
+env:
+  matrix:
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=5
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=5
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=5
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=5
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=5
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=5
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
+#  global:
+#    secure: ""
+matrix:
+  allow_failures:
+    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
+    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
+    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
+python:
+  - 2.6
+  - 2.7
+install:
+  # Set up the compiler versions for different gcc versions
+  - mkdir ~/bin; export PATH=${HOME}/bin:${PATH}
+  - if [ "${GCC_VERSION}x" != "x" ]; then 
+      ln -sf `which gfortran-$GCC_VERSION` ~/bin/gfortran; gfortran --version;
+      ln -sf `which gcc-$GCC_VERSION` ~/bin/gcc; gcc --version;
+      ln -sf `which g++-$GCC_VERSION` ~/bin/g++; g++ --version;
+    fi
+  # Deal with deps; will fail on fork pull requests
+  - if [ "${BUILD}" == "ALL" ]; then
+      openssl aes-256-cbc -K $encrypted_850833674760_key -iv $encrypted_850833674760_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
+      bash get_deps.sh > /dev/null 2>&1;
+    fi
+  # Make the build directory manually for rules
+  - mkdir -p build/${QUIP_ARCH}
+  # Copy the rules file (rather than make config)
+  - cp tests/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
+  # Compile QUIP
+  - make > /dev/null
+  - make libquip > /dev/null
+  # Fetch and install ASE for quippy
+  - git clone https://gitlab.com/ase/ase.git
+  - cd ase; pip install .; cd ..
+  # Build quippy bindings
+  - make quippy > /dev/null
+script:
+  # Sometimes file limit is 64000 and read_loop reads and writes this many files 
+  # causing the build to time out
+  - ulimit -n 256
+  # Quippy should be built -> start tests
+  - make test
+after_success:
+  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then tests/travis/build_docs.sh; fi
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gfortran
+      - gfortran-4.4
+      - g++-4.4
+      - gfortran-5
+      - g++-5
+      - liblapack-dev
+      - libblas-dev
+      - python-numpy
+      - openmpi-bin
+      - libopenmpi-dev
+      - netcdf-bin
+      - libnetcdf-dev
+      - libhdf5-serial-dev
+      # for atomeye
+      - libgsl0-dev
+      - libxpm-dev

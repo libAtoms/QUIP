@@ -103,19 +103,22 @@
        if (store_contributions) call set_param_value(at, trim(calc_virial)//"_pot1", my_virial_1)
     endif
     if (len_trim(calc_local_energy) > 0) then
-       call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
+       call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr, error=error)
+       PASS_ERROR(error)
        allocate(my_local_e_1(at%N))
        my_local_e_1 = at_local_energy_ptr
        if (store_contributions) call add_property(at, trim(calc_local_energy)//"_pot1", at_local_energy_ptr, overwrite=.true.)
     endif
     if (len_trim(calc_force) > 0) then
-       call assign_property_pointer(at, trim(calc_force), at_force_ptr)
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+       PASS_ERROR(error)
        allocate(my_f_1(3, at%N))
        my_f_1 = at_force_ptr
        if (store_contributions) call add_property(at, trim(calc_force)//"_pot1", at_force_ptr, overwrite=.true.)
     endif
     if (len_trim(calc_local_virial) > 0) then
-       call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr)
+       call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr, error=error)
+       PASS_ERROR(error)
        allocate(my_local_virial_1(9, at%N))
        my_local_virial_1 = at_local_virial_ptr
        if (store_contributions) call add_property(at, trim(calc_local_virial)//"_pot1", at_local_virial_ptr, overwrite=.true.)

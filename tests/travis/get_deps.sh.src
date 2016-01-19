@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Deps are hosted on a private server, to make sure we
+# don't leak access, add private variables to this file
+# then encode the whole file as tests/travis/get_deps.sh.enc
+
+# fill these in with the git url and the
+# private key to access it
+src_url=""
+src_key=""
+
+# add the key needed to check out
+echo "${src_key}" > dep.key
+chmod 600 dep.key
+eval "$(ssh-agent -s)"
+ssh-add dep.key
+# travis doesn't know other machines
+echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+# grab all the deps
+for dep in GAP GAP-filler ThirdParty
+do
+    git clone ${src_url}:${dep} src/${dep}
+done
+
+# clean up
+rm dep.key
+ssh-agent -k

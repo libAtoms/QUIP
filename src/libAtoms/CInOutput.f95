@@ -37,7 +37,7 @@ module CInOutput_module
   use iso_c_binding
   use error_module
   use linearalgebra_module, only: print, operator(.mult.), operator(.fne.)
-  use Extendable_str_module, only: Extendable_str, operator(//), string, concat
+  use Extendable_str_module, only: Extendable_str, operator(//), string, concat, assignment(=)
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
        PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT, lower_case
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
@@ -156,7 +156,7 @@ module CInOutput_module
         implicit none
         integer(kind=c_int) :: dirname_size
         character(kind=c_char), dimension(*) :: path
-        character(kind=c_char), dimension(dirname_size) :: dirname
+        character(kind=c_char), dimension(*) :: dirname
      endsubroutine quip_dirname_wrapper
 
      function quip_basename_size_wrapper(path) bind(c,name="fbasename_size_")
@@ -171,7 +171,7 @@ module CInOutput_module
         implicit none
         integer(kind=c_int) :: basename_size
         character(kind=c_char), dimension(*) :: path
-        character(kind=c_char), dimension(basename_size) :: basename
+        character(kind=c_char), dimension(*) :: basename
      endsubroutine quip_basename_wrapper
   end interface
 
@@ -977,6 +977,7 @@ contains
     call initialise(quip_getcwd)
     quip_getcwd = ""
     do i = 1, n
+       if( c(i) == C_NULL_CHAR ) exit
        call concat(quip_getcwd,c(i))
     enddo
 
@@ -1011,6 +1012,7 @@ contains
     call initialise(quip_basename_char)
     quip_basename_char = ""
     do i = 1, n
+       if( c(i) == C_NULL_CHAR ) exit
        call concat(quip_basename_char,c(i))
     enddo
 
@@ -1039,6 +1041,7 @@ contains
     call initialise(quip_dirname_char)
     quip_dirname_char = ""
     do i = 1, n
+       if( c(i) == C_NULL_CHAR ) exit
        call concat(quip_dirname_char,c(i))
     enddo
 

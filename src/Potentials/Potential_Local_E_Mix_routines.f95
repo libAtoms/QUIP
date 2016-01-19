@@ -308,16 +308,19 @@
     endif
 
     if (len_trim(calc_local_energy) > 0) then
-      call assign_property_pointer(at, trim(local_energy_name), at_local_energy_ptr)
+      call assign_property_pointer(at, trim(local_energy_name), at_local_energy_ptr, error=error)
+      PASS_ERROR(error)
       local_energy_name = trim(calc_local_energy)
       local_energy_args_str = ""
     else
       local_energy_name = "LEMIX_local_energy"
+      PASS_ERROR(error)
       call add_property(at, trim(local_energy_name), 0.0_dp, ptr=at_local_energy_ptr)
       local_energy_args_str = "local_energy="//trim(local_energy_name)
     endif
     if (len_trim(calc_force) > 0) then
-       call assign_property_pointer(at, trim(calc_force), at_force_ptr)
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+       PASS_ERROR(error)
     endif
 
     ! do calculation in region 2 first

@@ -2111,14 +2111,17 @@ CONTAINS
 
   end subroutine matrix_z_inverse
 
-  subroutine pseudo_inverse(this,inverse)
+  subroutine pseudo_inverse(this,inverse,error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(out), dimension(:,:) :: inverse
+    integer, optional, intent(out) :: error
 
     type(LA_Matrix) :: LA_this
 
+    INIT_ERROR(error)
+
     call initialise(LA_this,this)
-    call LA_Matrix_PseudoInverse(LA_this,inverse)
+    call LA_Matrix_PseudoInverse(LA_this,inverse,error=error)
     call finalise(LA_this)
 
   endsubroutine pseudo_inverse
@@ -3053,7 +3056,7 @@ CONTAINS
     integer, optional, intent(out) :: error
 
     real(dp), dimension(:), allocatable :: s
-    real(dp), dimension(:,:), allocatable :: u, v
+    real(dp), dimension(:,:), allocatable :: u, v, inverse_tmp
 
     INIT_ERROR(error)
 
@@ -3072,8 +3075,10 @@ CONTAINS
        s = 0.0_dp
     endwhere
 
-    inverse = v .multd. s
-    inverse = inverse .mult. transpose(u)
+    allocate(inverse_tmp(size(v,1),size(v,2)))
+    inverse_tmp = v .multd. s
+    inverse = inverse_tmp .mult. transpose(u)
+    deallocate(inverse_tmp)
 
     if(allocated(s)) deallocate(s)
     if(allocated(u)) deallocate(u)

@@ -38,7 +38,6 @@
 module dictionary_module
 
   use system_module
-  use system_module, only: string_to_real
   use linearalgebra_module
   use mpi_context_module
   use extendable_str_module
@@ -2178,7 +2177,7 @@ contains
     character(len=len(strvalue)) :: datastr, shapestr, myvalue
     integer :: num_fields, i, j
     real(dp) :: r
-    logical :: l, err, all_int, all_real, all_logical
+    logical :: l, all_int, all_real, all_logical
     type(DictData) :: data
     integer, allocatable, dimension(:) :: i_a
     real(dp), allocatable, dimension(:) :: r_a
@@ -2189,6 +2188,7 @@ contains
     logical got_2d
     integer shape_2d(2)
     integer :: parse_status
+    integer :: error
 
     my_char_a_sep = optional_default(',',char_a_sep)
 
@@ -2200,8 +2200,9 @@ contains
 
        allocate(data%d(num_fields))
        do j=1,num_fields
-          data%d(j) = string_to_int(fields(j),err)
-          if (err) then
+          data%d(j) = string_to_int(fields(j),error)
+          if (error /= ERROR_NONE) then
+             CLEAR_ERROR(error)
              status = .false.
              return
           end if
@@ -2252,29 +2253,31 @@ contains
        end do
 
        ! Is it an integer?
-       i = string_to_int(fields(1),err)
-       if (.not. err) then
+       i = string_to_int(fields(1),error)
+       if (error == ERROR_NONE) then
           call set_value(this, key, i)
           status = .true.
           return
        end if
+       CLEAR_ERROR(error)
 
        ! Is it a logical?
-       if (trim(fields(1)) == 'T' .or. trim(fields(1)) == 't' .or. &
-            trim(fields(1)) == 'F' .or. trim(fields(1)) == 'f') then
-          l = string_to_logical(fields(1))
+       l = string_to_logical(fields(1),error)
+       if (error == ERROR_NONE) then
           call set_value(this, key, l)
           status = .true.
           return
-       end if
+       endif
+       CLEAR_ERROR(error)
 
        ! How about a real?
-       r = string_to_real(fields(1),err)
-       if (.not. err) then
+       r = string_to_real(fields(1),error)
+       if (error == ERROR_NONE) then
           call set_value(this, key, r)
           status = .true.
           return
        end if
+       CLEAR_ERROR(error)
 
        ! Add complex scalar here...
 
@@ -2299,9 +2302,10 @@ contains
        ! Are all fields integers?
        all_int = .true.
        do j=1,num_fields
-          i_a(j) = string_to_int(fields(j),err)
+          i_a(j) = string_to_int(fields(j),error)
 
-          if (err) then
+          if (error /= ERROR_NONE) then
+             CLEAR_ERROR(error)
              all_int = .false.
              exit ! Found something that's not an integer
           end if
@@ -2324,12 +2328,12 @@ contains
        ! Are all fields logicals?
        all_logical = .true.
        do j=1,num_fields
-          if (.not. (trim(fields(j)) == 'T' .or. trim(fields(j)) == 't' .or. &
-               trim(fields(j)) == 'F' .or. trim(fields(j)) == 'f')) then 
+          l_a(j) = string_to_logical(fields(j),error)
+          if (error /= ERROR_NONE) then
+             CLEAR_ERROR(error)
              all_logical = .false.
-             exit
+             exit ! Found something that's not a logical
           end if
-          l_a(j) = string_to_logical(fields(j),err)
        end do
 
        if (all_logical) then
@@ -2342,9 +2346,10 @@ contains
        ! Are all fields real numbers?
        all_real = .true.
        do j=1,num_fields
-          r_a(j) = string_to_real(fields(j),err)
+          r_a(j) = string_to_real(fields(j),error)
 
-          if (err) then
+          if (error /= ERROR_NONE) then
+             CLEAR_ERROR(error)
              all_real = .false.
              exit
           end if

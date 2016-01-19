@@ -96,7 +96,7 @@ subroutine atoms_mark(this, mark_f, f_i_data, f_r_data, periodic, mark_name, mar
   if (.not. assign_pointer(this, trim(my_mark_name), mark)) then
       call add_property(this, trim(my_mark_name), 0, ptr=mark)
   else
-      call assign_property_pointer(this, trim(my_mark_name), mark)
+      call assign_property_pointer(this, trim(my_mark_name), mark, error=error)
   endif
 
   do i=1, this%N

@@ -421,15 +421,15 @@ contains
       help_string="If true, calculate forces (only) by doing each atom separately surrounded by a little buffer cluster")
     call param_register(params, 'partition_k_clusters', '0', partition_k_clusters, &
       help_string="If given and K > 1, partition QM core region into K sub-clusters using partition_qm_list() routine")
-    call param_register(params, 'partition_nneightol', '0.0_dp', partition_nneightol, &
+    call param_register(params, 'partition_nneightol', '0.0', partition_nneightol, &
       help_string="If given override at%nneightol used to generate connectivity matrix for partitioning")
     call param_register(params, 'partition_do_ripening', 'F', partition_do_ripening, &
       help_string="If true, enable digestive ripening to refine the METIS-generated K-way partitioning (not yet implemented)")
-    call param_register(params, 'cluster_box_buffer', '0.0_dp', cluster_box_buffer, has_value_target=has_cluster_box_buffer, &
+    call param_register(params, 'cluster_box_buffer', '0.0', cluster_box_buffer, has_value_target=has_cluster_box_buffer, &
       help_string="If present, quickly cut out atoms in box within cluster_box_radius of any active atoms, rather than doing it properly")
-    call param_register(params, 'r_scale', '1.0_dp', r_scale, has_value_target=do_rescale_r, &
+    call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, &
       help_string="rescale calculated positions (and correspondingly forces) by this factor")
-    call param_register(params, 'E_scale', '1.0_dp', E_scale, has_value_target=do_rescale_E, &
+    call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, &
       help_string="rescale calculate energies (and correspondingly forces) by this factor")
     call param_register(params, 'use_ridders', 'F', use_ridders, &
       help_string="If true and using numerical derivatives, use the Ridders method.")
@@ -472,9 +472,18 @@ contains
          RAISE_ERROR('Potential_Simple_calc: single_cluster and little_clusters options are mutually exclusive', error)
     endif
 
-    if (len_trim(calc_force) > 0) call assign_property_pointer(at, trim(calc_force), at_force_ptr)
-    if (len_trim(calc_local_energy) > 0) call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
-    if (len_trim(calc_local_virial) > 0) call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr)
+    if (len_trim(calc_force) > 0) then
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+       PASS_ERROR(error)
+    endif
+    if (len_trim(calc_local_energy) > 0) then
+       call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr, error=error)
+       PASS_ERROR(error)
+    endif
+    if (len_trim(calc_local_virial) > 0) then
+       call assign_property_pointer(at, trim(calc_local_virial), at_local_virial_ptr, error=error)
+       PASS_ERROR(error)
+    endif
 
     if (little_clusters) then
 

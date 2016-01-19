@@ -396,7 +396,8 @@
     allocate(f_mm(3,at%N),f_qm(3,at%N))
     f_mm = 0.0_dp
     f_qm = 0.0_dp
-    call assign_property_pointer(at, trim(calc_force), at_force_ptr)
+    call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+    PASS_ERROR(error)
 
     if (calc_weights) then 
 
