@@ -99,9 +99,9 @@ program ts_main
   end if
 
   call print_title('Initialising First and Last Image')
-  call Initialise(in_in, trim(params%chain_first_conf), action=INPUT)
+  call Initialise(in_in, trim(params%chain_first_conf), action=INPUT, mpi=mpi)
   call read(at_in, in_in)
-  call Initialise(in_fin, trim(params%chain_last_conf), action=INPUT)
+  call Initialise(in_fin, trim(params%chain_last_conf), action=INPUT, mpi=mpi)
   call read(at_fin, in_fin)
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot))//' A.')
   call set_cutoff(at_in, cutoff(classicalpot))
@@ -175,7 +175,7 @@ program ts_main
      enddo
   end if
 
-  call initialise(file_res, "out.dat",OUTPUT)
+  call initialise(file_res, "out.xyz", OUTPUT, mpi=mpi)
 
   call print_title('Transition state calculation')
   if (.not. params%simulation_hybrid) then

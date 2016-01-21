@@ -4,30 +4,39 @@ env:
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
+    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
 #  global:
 #    secure: ""
 matrix:
@@ -35,12 +44,15 @@ matrix:
     - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
     - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
     - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
+    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.9
     - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
     - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
     - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.9
     - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
     - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
     - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
+    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
 python:
   - 2.6
   - 2.7
@@ -85,6 +97,8 @@ addons:
       - gfortran
       - gfortran-4.4
       - g++-4.4
+      - gfortran-4.9
+      - g++-4.9
       - gfortran-5
       - g++-5
       - liblapack-dev
