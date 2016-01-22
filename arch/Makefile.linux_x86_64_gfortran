@@ -40,12 +40,11 @@ FPP = gfortran -E -x f95-cpp-input
 
 SAMPLE_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
 DEBUG= 
-DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
 OPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -fPIC -fmax-stack-var-size=8000
-F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC -fmax-stack-var-size=8000
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -fPIC
+F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC
 CFLAGS += -fPIC 
 CPLUSPLUSFLAGS += -fPIC 
 
@@ -60,7 +59,7 @@ QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
 QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_DEBUG = 1
+QUIPPY_DEBUG = 0
 
 export DEFAULT_MATH_LINKOPTS = -llapack -lblas
 
