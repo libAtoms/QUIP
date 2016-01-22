@@ -17,9 +17,7 @@ For more details, see the [online documentation](http://libatoms.github.io/QUIP)
 Long term support of the package is ensured by:
  - Noam Bernstein (Naval Research Laboratory)
  - Gabor Csanyi (University of Cambridge)
- - Alessandro De Vita (King's College London)
  - James Kermode (University of Warwick)
- - Lars Pastewka (Fraunhofer IWM)
 
 Portions of this code were written by: Albert Bartok-Partay, Livia
 Bartok-Partay, Federico Bianchini, Anke Butenuth, Marco Caccin,
