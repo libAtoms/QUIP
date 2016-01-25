@@ -181,7 +181,7 @@ contains
       complex(dp) :: exp_I_k_R
       real(dp), dimension(3) :: pp, diff_ij
       integer, dimension(3) :: shift_ij, j_SI, j_SI_fine
-      real(dp), dimension(:), allocatable :: evals
+      real(dp), dimension(:), allocatable :: evals, at_in_sqrt_mass
       real(dp), dimension(:,:), allocatable :: pos0
       real(dp), dimension(:,:,:,:), allocatable :: fp0, fm0, fp0_fine, fm0_fine
       complex(dp), dimension(:,:), allocatable :: dmft, evecs
@@ -321,10 +321,15 @@ contains
       call system_timer("Phonon_fine_calc/phonon")
       call print("Starting phonon calculations")
     
-      !$omp parallel private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx)
+      allocate(at_in_sqrt_mass(at_in%N))
+      do i = 1, at_in%N
+         at_in_sqrt_mass(i) = sqrt(ElementMass(at_in%Z(i)))
+      enddo
+
+      !$omp parallel default(none) private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx,at_in_sqrt_mass)
       allocate(dmft(at_in%N*3,at_in%N*3))
       allocate(evals(at_in%N*3), evecs(at_in%N*3,at_in%N*3))
-      !$omp do default(none) private(k,i,j,alpha,diff_ij,n1,n2,n3,pp,jn,dm,exp_I_k_R)
+      !$omp do private(k,i,j,alpha,diff_ij,n1,n2,n3,pp,jn,dm,exp_I_k_R)
       do k = 1, this%n_qvectors
          call system_timer("Phonon_fine_calc/dynamical_matrix")
          dmft = CPLX_ZERO
@@ -342,8 +347,7 @@ contains
 
 
                         do alpha = 1, 3
-                           dm = - (fp0_fine(:,jn,alpha,i)-fm0_fine(:,jn,alpha,i))/(2.0_dp*dx) / &
-                              sqrt(ElementMass(at_in%Z(i))*ElementMass(at_in%Z(j)))
+                           dm = - (fp0_fine(:,jn,alpha,i)-fm0_fine(:,jn,alpha,i))/(2.0_dp*dx) / (at_in_sqrt_mass(i) * at_in_sqrt_mass(j))
 
                            dmft((i-1)*3+alpha,(j-1)*3+1:j*3) = dmft((i-1)*3+alpha,(j-1)*3+1:j*3) + dm * exp_I_k_R
                         enddo ! alpha
@@ -376,7 +380,7 @@ contains
       call print("Finished phonon calculations")
       call system_timer("Phonon_fine_calc/phonon")
       
-      deallocate(fp0, fp0_fine, fm0, fm0_fine)
+      deallocate(fp0, fp0_fine, fm0, fm0_fine, at_in_sqrt_mass)
       call finalise(at,at_fine)
    endsubroutine Phonon_fine_calc
 
