@@ -59,7 +59,7 @@ python:
 install:
   # Set up the compiler versions for different gcc versions
   - mkdir ~/bin; export PATH=${HOME}/bin:${PATH}
-  - if [ "${GCC_VERSION}x" != "x" ]; then 
+  - if [ "${GCC_VERSION}x" != "x" ]; then
       ln -sf `which gfortran-$GCC_VERSION` ~/bin/gfortran; gfortran --version;
       ln -sf `which gcc-$GCC_VERSION` ~/bin/gcc; gcc --version;
       ln -sf `which g++-$GCC_VERSION` ~/bin/g++; g++ --version;
@@ -82,7 +82,7 @@ install:
   # Build quippy bindings
   - make quippy > /dev/null
 script:
-  # Sometimes file limit is 64000 and read_loop reads and writes this many files 
+  # Sometimes file limit is 64000 and read_loop reads and writes this many files
   # causing the build to time out
   - ulimit -n 256
   # Quippy should be built -> start tests
@@ -114,5 +114,4 @@ addons:
       - libxpm-dev
 notifications:
   email:
-    - j.r.kermode@warwick.ac.uk
-    - ab686@cam.ac.uk
+    - quip-developers@eng.cam.ac.uk
