@@ -112,3 +112,7 @@ addons:
       # for atomeye
       - libgsl0-dev
       - libxpm-dev
+notifications:
+  email:
+    - j.r.kermode@warwick.ac.uk
+    - ab686@cam.ac.uk
