@@ -151,7 +151,7 @@ class ParamReaderMixin(object):
                 else:
                     raise ValueError
                 value = numvalue
-            except ValueError:
+            except (AttributeError, ValueError):
                 pass
 
             # Parse boolean values, e.g 'T' -> True, 'F' -> False, 'T T F' -> [True, True, False]
