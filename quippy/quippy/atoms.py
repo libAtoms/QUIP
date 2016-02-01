@@ -390,6 +390,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             cell = self.lattice.T.view(np.ndarray)
         if symbols is None and pbc is None:
             pbc = self.get_pbc()
+            print 'setting pbc to ', pbc
         if charges is None and self.has_property('charge'):
             charges = self.charge.view(np.ndarray)
 

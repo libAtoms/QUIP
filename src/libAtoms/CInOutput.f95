@@ -571,18 +571,25 @@ contains
        call finalise(selected_properties)
        deallocate(c_indices)
 
+       call print('tmp_params')
+       call print(tmp_params)
+
        if (get_value(tmp_params, 'cutoff', cutoff)) then
           call set_cutoff(at, cutoff)
        end if
 
        if (get_value(tmp_params, 'pbc', pbc)) then
+          call print('got pbc')
+          call print(pbc)
+          call print('at%is_periodic before'//at%is_periodic)
           at%is_periodic = pbc
+          call print('at%is_periodic after'//at%is_periodic)
        end if
 
        if (get_value(tmp_params, 'nneightol', nneightol)) at%nneightol = nneightol
 
        ! Copy tmp_params into at%params, removing "Lattice", "Properties", "cutoff",
-       ! and "nneightol"entries
+       ! "pbc" and "nneightol"entries
        allocate(filtered_keys(tmp_params%N))
        j = 1
        do i=1,tmp_params%N

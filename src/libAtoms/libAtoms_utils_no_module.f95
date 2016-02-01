@@ -78,8 +78,8 @@ end subroutine c_error_clear_stack
 ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !
 ! Dictionary routines callable from C
-! 
-! Routines used by CInOutput to manipulate Fortran Dictionary objects from C. 
+!
+! Routines used by CInOutput to manipulate Fortran Dictionary objects from C.
 !
 ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -102,7 +102,7 @@ subroutine c_dictionary_finalise(this)
   this_ptr = transfer(this, this_ptr)
   call finalise(this=this_ptr%p)
   deallocate(this_ptr%p)
-  
+
 end subroutine c_dictionary_finalise
 
 subroutine c_dictionary_get_n(this, n)
@@ -212,7 +212,6 @@ subroutine c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, erro
   select case(this_ptr%p%entries(entry_i)%type)
   case(T_NONE)
      dloc = 0
-     error = 1
      return
 
   case(T_INTEGER)
@@ -279,21 +278,21 @@ subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
 #ifdef __GFORTRAN__
   INTERFACE
      subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
-       
+
        use error_module
        use dictionary_module
        use iso_c_binding, only: c_intptr_t
-       
+
        use extendable_str_module
        use system_module
-       
+
        integer, intent(in) :: this(12)
        character(len=*), intent(inout) :: key
        integer, intent(out) :: type
        integer, dimension(2), intent(out) :: dshape
        integer(c_intptr_t), intent(out) :: dloc
        integer, intent(out), optional :: error
-       
+
      end subroutine c_dictionary_query_key
   END INTERFACE
 #endif
@@ -323,6 +322,9 @@ subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
   ! otherwise we need to add a new entry
   this_ptr = transfer(this, this_ptr)
   select case(type)
+  case(T_NONE)
+     call set_value(this_ptr%p, key)
+
   case(T_INTEGER)
      call set_value(this_ptr%p, key, 0)
 
@@ -386,7 +388,7 @@ subroutine c_extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
   if (keep_lf == 1) do_keep_lf = .true.
   do_add_lf_if_missing = .false.
   if (add_lf_if_missing == 1) do_add_lf_if_missing = .true.
-  
+
   this_ptr = transfer(this, this_ptr)
   call concat(this_ptr%p, str, do_keep_lf, do_add_lf_if_missing)
 

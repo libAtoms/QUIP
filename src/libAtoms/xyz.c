@@ -105,7 +105,7 @@ char *stristr(const char *String, const char *Pattern)
       return NULL;
 }
 
-/* xyz_find_frames() 
+/* xyz_find_frames()
  *
  * Find starting positions of xyz frames within a file
  * Uses a disk cache to save recomputing if xyz
@@ -207,7 +207,7 @@ int xyz_read_index(char *indexname, long **frames, int **atoms, int *frames_arra
   FILE *index;
   char linebuffer[LINESIZE];
   int nframes, i;
-  
+
   INIT_ERROR;
 
   debug("xyz_read_index: reading XYZ index from file %s\n", indexname);
@@ -260,10 +260,10 @@ int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, i
       // Rewind to start of frame
       fseek(in,(*frames)[nframes],SEEK_SET);
     }
-    
+
     // TODO - improve check - fails if number of atoms has changed
   }
-  
+
   debug("xyz_update_index: starting to build index from file pos %ld nframes=%d\n", ftell(in), nframes);
 
   while (fgets(linebuffer,LINESIZE,in)) {
@@ -300,7 +300,7 @@ void xyz_write_index(char *indexname, long **frames, int **atoms, int *frames_ar
   int i;
 
   INIT_ERROR;
-  
+
   index = fopen(indexname, "w");
   if (index == NULL) {
     // Try to write in current dir instead
@@ -341,7 +341,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   if (got_index) {
     nframes = xyz_read_index(indexname, frames, atoms, frames_array_size, error);
     PASS_ERROR;
-  } 
+  }
 
   if (!got_index || do_update) {
     nframes = xyz_update_index(fname, indexname, frames, atoms, frames_array_size, nframes, error);
@@ -729,9 +729,13 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   for (i=0; i<nfields; i++) {
     strncpy(linep, finalfields[i], LINESIZE-line_offset);
     if ((p = strchr(linep,'=')) == NULL) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Badly formed key/value pair %s\n", linep);
+      // Key without a value leads to type T_NONE
+      type = T_NONE;
+      shape[0] = 0;
+      shape[1] = 0;
+      strncpy(param_key, linep, PARAM_STRING_LENGTH);
+      goto FORMAT_DONE;
     }
-
     *p = '\0';
     strncpy(param_key, linep, PARAM_STRING_LENGTH);
     strncpy(param_value, p+1, PARAM_STRING_LENGTH);
@@ -747,10 +751,10 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       if (*p1 == '\0') continue;
       strncpy(fields[k++], p1, LINESIZE);
     }
-    
+
     if (k == 0) {
       if (strlen(linep) == 0) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Missing value for parameter \"%s\"\n", param_key);
+        	RAISE_ERROR_WITH_KIND(ERROR_IO, "Missing value for parameter \"%s\"\n", param_key);
       }
       k = 1;
       strncpy(fields[0], linep, LINESIZE);
@@ -882,6 +886,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     case(T_CHAR):
       strncpy(CHAR(data), param_value, strlen(param_value));
       break;
+    case(T_NONE):
+      break;
     default:
       RAISE_ERROR_WITH_KIND(ERROR_IO, "Unknown param type %d\n", type);
     }
@@ -1004,7 +1010,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     for (m=0; m<shape[0]; m++)
       for (n=0; n<shape[1]; n++)
 	lattice[m][n] = REAL_A2(data, shape, n, m);
-  } 
+  }
    else if (type == T_INTEGER_A2) {
     for (m=0; m<shape[0]; m++)
       for (n=0; n<shape[1]; n++)
@@ -1103,7 +1109,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 #define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else { if (fputs(line, out) < 0) fprintf(stderr, "Error writing line in xyz file write\n"); } }
 
 void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
-		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
+		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format,
 		int string, fortran_t *estr, int update_index, int *error) {
   FILE *out;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], property_name[C_KEY_LEN], indexname[LINESIZE];
@@ -1312,10 +1318,14 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
     trimmed = param_value;
     while (isblank(trimmed[0])) trimmed++;
 
-    sprintf(tmpbuf, "%s=%s%s%s ", param_key,
+    if (type == T_NONE) {
+      sprintf(tmpbuf, "%s ", param_key);
+    } else {
+      sprintf(tmpbuf, "%s=%s%s%s ", param_key,
 	    strchr(trimmed,' ') != NULL ? "\"" : "",
 	    trimmed,
 	    strchr(trimmed,' ') != NULL ? "\"" : "");
+    }
     strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
   }
 
@@ -1331,7 +1341,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       switch(property_type[i]) {
       case(T_INTEGER_A):
 	sprintf(tmpbuf, int_format, INTEGER_A(property_data[i], n));
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
 	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
@@ -1339,7 +1349,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       case(T_INTEGER_A2):
 	for (j=0; j < property_shape[i][0]; j++) {
 	  sprintf(tmpbuf, int_format, INTEGER_A2(property_data[i], property_shape[i], j, n));
-	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
 	    strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
@@ -1347,7 +1357,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 
       case(T_REAL_A):
 	sprintf(tmpbuf, real_format, REAL_A(property_data[i], n));
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
 	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
@@ -1355,7 +1365,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       case(T_REAL_A2):
 	for (j=0; j < property_shape[i][0]; j++) {
 	  sprintf(tmpbuf, real_format, REAL_A2(property_data[i], property_shape[i], j, n));
-	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
 	    strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
@@ -1363,14 +1373,14 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 
       case(T_CHAR_A):
 	sprintf(tmpbuf, str_format, (char *)property_data[i] + property_shape[i][0]*n);
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
 	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
 
       case(T_LOGICAL_A):
 	sprintf(tmpbuf, logical_format, LOGICAL_A(property_data[i], n) ? 'T' : 'F');
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
 	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
@@ -1397,7 +1407,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	if (got_index) {
 	  nframes = xyz_read_index(indexname, &frames, &atoms, &frames_array_size, error);
 	  PASS_ERROR;
-	} 
+	}
 	if (start_idx == 0) nframes = 0; // we're overwriting existing output file
 
 	if (nframes == 0 || frames[nframes] == start_idx) {

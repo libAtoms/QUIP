@@ -516,6 +516,13 @@ H 0. 0. 0.
       self.at.write('test.xyz')
       self.assertRaises(RuntimeError, Atoms, 'test.xyz', indices=[self.at.n+1])
 
+   def test_read_xyz_bare_keys(self):
+      self.at.params['bare_key'] = None
+      self.at.write('test.xyz')
+      at = Atoms('test.xyz')
+      self.assertEqual(at, self.at)
+      self.assert_(at.params['bare_key'] is None)
+
    if 'netcdf' in available_modules:
 
       def test_read_nc_indices(self):
