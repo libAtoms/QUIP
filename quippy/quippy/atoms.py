@@ -412,7 +412,10 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             if not self.has_property('species'):
                 self.add_property('species', ' '*TABLE_STRING_LENGTH)
             if self.n != 0 and not (self.z == 0).all():
-                self.set_atoms(self.z) # initialise species from z
+                mass = None
+                if self.has_property('mass'):
+                    mass = self.mass.copy()
+                self.set_atoms(self.z, mass=mass) # initialise species from z
 
         if info is not None:
             self.params.update(info)
