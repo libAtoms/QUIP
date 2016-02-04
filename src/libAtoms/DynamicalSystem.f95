@@ -30,15 +30,15 @@
 
 !X
 !X  Dynamical System module
-!X  
+!X
 !% A DynamicalSystem object contains an Atoms object, which holds infomation about
 !% velocities and accelerations of each atom, scalar quantities such as
 !% thermostat settings, and logical masks so that thermostatting can be applied
 !% to selected atoms etc.
-!% 
+!%
 !% In Fortran code, initialise a DynamicalSystem object like this:
 !%> 	call initialise(MyDS, MyAtoms)
-!% which (shallowly) copies MyAtoms into the internal atoms structure (and so 
+!% which (shallowly) copies MyAtoms into the internal atoms structure (and so
 !% MyAtoms is not required by MyDS after this call and can be finalised). In Python,
 !% a DynamicalSystem can be initialised from an Atoms instance:
 !%>     MyDS = DynamicalSystem(MyAtoms)
@@ -55,15 +55,15 @@
 !%> 	call advance_verlet(MyDS,dt,forces)
 !% which takes a set of forces and integrates the equations of motion forward
 !% for a time 'dt'.
-!% 
-!% All dynamical variables are stored inside the Atoms' :attr:`~quippy.atoms.Atoms.properties` Dictionary. 
+!%
+!% All dynamical variables are stored inside the Atoms' :attr:`~quippy.atoms.Atoms.properties` Dictionary.
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 #include "error.inc"
 
 module dynamicalsystem_module
- 
+
    use error_module
    use system_module
    use mpi_context_module
@@ -79,7 +79,7 @@ module dynamicalsystem_module
    use constraints_module
    use thermostat_module
    use barostat_module
-   
+
    implicit none
    private
 
@@ -103,13 +103,13 @@ module dynamicalsystem_module
 	     constrain_struct_factor_like_i
 
    !Different integration types. Stored in group%type. Used by advance_verlet to integrate
-   !the equations of motion in different ways. 
+   !the equations of motion in different ways.
    integer, parameter :: TYPE_IGNORE      = 0
    integer, parameter :: TYPE_ATOM        = 1
    integer, parameter :: TYPE_CONSTRAINED = 2
    integer, parameter :: TYPE_RIGID       = 3
 
-   type DynamicalSystem 
+   type DynamicalSystem
 
       ! Scalar members
       integer                               :: N = 0                    !% Number of atoms
@@ -248,7 +248,7 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
    subroutine ds_initialise(this,atoms_in,velocity,acceleration,constraints,restraints,rigidbodies,error)
-   
+
       type(DynamicalSystem),              intent(inout) :: this
       type(Atoms),                        target        :: atoms_in
       real(dp), dimension(:,:), optional, intent(in)    :: velocity
@@ -265,7 +265,7 @@ contains
       INIT_ERROR(error)
 
       ! Check to see if the object has already been initialised
-      if (this%initialised) call ds_finalise(this)  
+      if (this%initialised) call ds_finalise(this)
 
       N = atoms_in%Nbuffer
       this%N = N
@@ -288,7 +288,7 @@ contains
       ! allocate local arrays
       allocate(this%group(N))
 
-      ! Now point to the atoms 
+      ! Now point to the atoms
       call shallowcopy(this%atoms, atoms_in)
 
       ! Add single valued properties to this%atoms
@@ -311,7 +311,7 @@ contains
 
       call add_property(this%atoms, 'move_mask', 1, error=error)
       PASS_ERROR(error)
-      call set_comm_property(this%atoms, 'mass', &
+      call set_comm_property(this%atoms, 'move_mask', &
            comm_atoms=.true.)
       call add_property(this%atoms, 'damp_mask', 1, error=error)
       PASS_ERROR(error)
@@ -351,8 +351,8 @@ contains
 
       ! The input arrays must have 3N components if they are present
       ! if not, local arrays are set to zero
-      
-      if(present(velocity)) then 
+
+      if(present(velocity)) then
          call check_size('Velocity',velocity,(/3,N/),'DS_Initialise',error)
          PASS_ERROR(error)
          this%atoms%velo = velocity
@@ -417,11 +417,11 @@ contains
       this%avg_temp = this%cur_temp
 
       this%initialised = .true.
-      
+
       call verbosity_push_decrement(PRINT_ANAL)
       call print(this)
       call verbosity_pop()
-         
+
    end subroutine ds_initialise
 
 
@@ -434,11 +434,11 @@ contains
 
       INIT_ERROR(error)
 
-      if (this%initialised) then      
+      if (this%initialised) then
          call finalise_ptr(this%atoms)
          call finalise(this%group)
          deallocate(this%group_lookup)
-         
+
          !Finalise constraints
          if (allocated(this%constraint)) call finalise(this%constraint)
 
@@ -482,7 +482,7 @@ contains
    subroutine ds_free_groups(this)
 
      type(DynamicalSystem), intent(inout) :: this
-     
+
      call tidy_groups(this%group)
      call groups_create_lookup(this%group,this%group_lookup)
 
@@ -534,7 +534,7 @@ contains
       to%ext_energy      = from%ext_energy       !21
       to%thermostat_dW   = from%thermostat_dW    !22
       to%thermostat_work = from%thermostat_work  !23
-      ! to%initialised is set in initialisation   
+      ! to%initialised is set in initialisation
 
       ! Copy over array members
       to%group_lookup    = from%group_lookup
@@ -639,9 +639,9 @@ contains
 
       call system_reseed_rng(from%random_seed)
 
-      call atoms_copy_without_connect(to%atoms, from%atoms)      
+      call atoms_copy_without_connect(to%atoms, from%atoms)
       call calc_dists(to%atoms)
-      
+
     end subroutine ds_restore_state
 
 
@@ -652,7 +652,7 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
    subroutine ds_add_atom_single(this,z,mass,p,v,a,t, error)
-     
+
      type(DynamicalSystem),            intent(inout) :: this
      integer,                          intent(in)    :: z
      real(dp), optional,               intent(in)    :: mass
@@ -664,8 +664,8 @@ contains
      integer :: my_t(3)
 
      INIT_ERROR(error)
-          
-     my_mass = optional_default(ElementMass(Z),mass) 
+
+     my_mass = optional_default(ElementMass(Z),mass)
      my_p = optional_default((/0.0_dp,0.0_dp,0.0_dp/),p)
      my_v = optional_default((/0.0_dp,0.0_dp,0.0_dp/),v)
      my_a = optional_default((/0.0_dp,0.0_dp,0.0_dp/),a)
@@ -679,58 +679,58 @@ contains
      PASS_ERROR(error)
 
    end subroutine ds_add_atom_single
- 
+
    !
    ! Updated to work with groups. NEEDS TESTING
    !
    subroutine ds_add_atom_multiple(this,z,mass,p,v,a,t,error)
-     
+
      type(DynamicalSystem),              intent(inout) :: this
      integer,  dimension(:),             intent(in)    :: z
      real(dp), dimension(:),   optional, intent(in)    :: mass
      real(dp), dimension(:,:), optional, intent(in)    :: p,v,a
      integer, dimension(:,:),  optional, intent(in)    :: t
      integer, optional, intent(out) :: error
-     
+
      integer                                 :: oldN, newN, n, f, i
      integer,     dimension(this%N)          :: tmp_group_lookup
      type(Group), dimension(:), allocatable  :: tmp_group
-     
+
      INIT_ERROR(error)
 
      oldN = this%N
 
      ! Check the sizes are ok
      n = size(z)
-     call check_size('Position',p,(/3,n/),'DS_Add_Atoms',error) 
+     call check_size('Position',p,(/3,n/),'DS_Add_Atoms',error)
      PASS_ERROR(error)
 
-     call check_size('Velocity',v,(/3,n/),'DS_Add_Atoms', error) 
+     call check_size('Velocity',v,(/3,n/),'DS_Add_Atoms', error)
      PASS_ERROR(error)
 
-     call check_size('Acceleration',a,(/3,n/),'DS_Add_Atoms', error) 
+     call check_size('Acceleration',a,(/3,n/),'DS_Add_Atoms', error)
      PASS_ERROR(error)
 
      newN = oldN + n
-     
+
      !Copy all non-scalar data into the temps
      tmp_group_lookup = this%group_lookup
-     
+
      !Adjust the size of the dynamical system's arrays
      deallocate(this%group_lookup)
      allocate(this%group_lookup(newN))
-     
+
      ! Implement the changes in Atoms
      call add_atoms(this%atoms,pos=p,Z=z,mass=mass,velo=v,acc=a,travel=t)
-     
+
      !update the scalars (if needed)
      this%N = newN
      this%Ndof = this%Ndof + 3*n
-     
+
      !See if there are enough free groups to accommodate the new atoms
      f = Num_Free_Groups(this%group)
      if (f < n) then
-        !We need more groups: 
+        !We need more groups:
         !Make a copy of the current groups
         allocate(tmp_group(size(this%group)))
         tmp_group = this%group
@@ -741,17 +741,17 @@ contains
         this%group(1:size(tmp_group)) = tmp_group
         call finalise(tmp_group)
      end if
-     
+
      !Add the new groups
      do i = oldN+1, newN
         f = Free_Group(this%group)
         call group_add_atom(this%group(f),i)
         call set_type(this%group(f),TYPE_ATOM) !default to TYPE_ATOM
      end do
-     
+
      !Rebuild the lookup table
      call groups_create_lookup(this%group,this%group_lookup)
-     
+
    end subroutine ds_add_atom_multiple
 
 
@@ -805,17 +805,17 @@ contains
       call remove_atoms(this%atoms,atomlist)
 
       !Make sure the group lookup table is up-to-date
-      call groups_create_lookup(this%group,this%group_lookup)      
- 
+      call groups_create_lookup(this%group,this%group_lookup)
+
       !Delete all atoms in atomlist from their respective groups
       do i = 1, size(atomlist)
          g = this%group_lookup(atomlist(i))
          call group_delete_atom(this%group(g),atomlist(i))
       end do
- 
+
       ! Algorithm: Find first atom to be removed and last atom to not be removed
       !            and swap them. Repeat until all atoms to be removed are at the end.
-      ! note: this loop must be logically identical to the corresponding one in 
+      ! note: this loop must be logically identical to the corresponding one in
       ! Atoms
       copysrc = oldN
       do i=1,size(atomlist)
@@ -825,13 +825,13 @@ contains
          end do
 
          if (atomlist(i) > copysrc) exit
-                  
+
          !Relabel copysrc to atomlist(i) in copysrc's group
-         
+
          g = this%group_lookup(copysrc)
          call group_delete_atom(this%group(g),copysrc)
          call group_add_atom(this%group(g),atomlist(i))
-         
+
          copysrc = copysrc - 1
 
       end do
@@ -850,7 +850,7 @@ contains
    end subroutine ds_remove_atom_multiple
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   !X 
+   !X
    !X Atom - Group lookup
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -872,14 +872,14 @@ contains
    !% If an atom is in the list, add the rest of its group
    !
    subroutine add_group_members(this,list)
-     
+
      type(dynamicalsystem), intent(in)    :: this
      type(table),           intent(inout) :: list
-     
+
      integer :: i, j, n, g, nn, jn
-     
+
      do n = 1, list%N
-        
+
         i = list%int(1,n)
         g = this%group_lookup(i)
         do nn = 1, Group_N_Atoms(this%group(g))
@@ -887,13 +887,13 @@ contains
            jn = find_in_array(int_part(list,1),j)
            if (jn == 0) call append(list,(/j,list%int(2:,n)/))
         end do
-        
+
      end do
 
    end subroutine add_group_members
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   !X 
+   !X
    !X Adding a thermostat
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -990,7 +990,7 @@ contains
         my_bulk_modulus_estimate = optional_default(100.0_dp/GPA,bulk_modulus_estimate)
 
         w_p = 3.0_dp * my_bulk_modulus_estimate * volume_0 * my_cell_oscillation_time**2 / ((2.0_dp*PI)**2)
-        
+
      endif
      call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0, &
         NHL_gamma=NHL_gamma_eff, NHL_mu=NHL_mu, massive=massive, region_i=region_i)
@@ -998,7 +998,7 @@ contains
    end subroutine ds_add_thermostat
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   !X 
+   !X
    !X Adding many thermostats
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1060,11 +1060,11 @@ contains
      deallocate(gamma_eff_a)
      if (present(Q)) deallocate(use_Q_a)
      if (present(T)) deallocate(use_T_a)
-     
+
    end subroutine ds_add_thermostats
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   !X 
+   !X
    !X Updating a thermostat
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1082,7 +1082,7 @@ contains
      my_i = optional_default(1,i)
 
      call update_thermostat(this%thermostat(my_i),T=T,p=p)
-     
+
    end subroutine ds_update_thermostat
 
    subroutine ds_update_barostat(this,p,T)
@@ -1095,7 +1095,7 @@ contains
 
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   !X 
+   !X
    !X enable/disable damping
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1128,17 +1128,17 @@ contains
 
      type(dynamicalsystem), intent(inout) :: this
      real(dp),              intent(in)    :: damp_time
-     
+
      if (damp_time <= 0.0_dp) call system_abort('enable_damping: damp_time must be > 0')
      call initialise(this%thermostat(0),THERMOSTAT_LANGEVIN,0.0_dp,gamma=1.0_dp/damp_time)
-     
+
    end subroutine enable_damping
 
    subroutine disable_damping(this)
 
-     type(dynamicalsystem), intent(inout) :: this    
+     type(dynamicalsystem), intent(inout) :: this
      call initialise(this%thermostat(0),THERMOSTAT_NONE)
-     
+
    end subroutine disable_damping
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1149,7 +1149,7 @@ contains
 
    !% Return the total momentum $\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}$.
    !% Optionally only include the contribution of a subset of atoms.
-   pure function ds_momentum(this,indices) result(p) ! sum(mv) 
+   pure function ds_momentum(this,indices) result(p) ! sum(mv)
      type(DynamicalSystem),           intent(in) :: this
      integer, optional, dimension(:), intent(in) :: indices
      real(dp)                                    :: p(3)
@@ -1159,7 +1159,7 @@ contains
 
    !% Return the total momentum $\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}$.
    !% Optionally only include the contribution of a subset of atoms.
-   pure function atoms_momentum(this,indices) result(p) ! sum(mv) 
+   pure function atoms_momentum(this,indices) result(p) ! sum(mv)
      type(Atoms),                     intent(in) :: this
      integer, optional, dimension(:), intent(in) :: indices
      real(dp)                                    :: p(3)
@@ -1169,7 +1169,7 @@ contains
 
    !% Return the total momentum $\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}$.
    !% Optionally only include the contribution of a subset of atoms.
-   pure function arrays_momentum(mass, velo, indices) result(p) ! sum(mv) 
+   pure function arrays_momentum(mass, velo, indices) result(p) ! sum(mv)
      real(dp), intent(in)                         :: mass(:)
      real(dp), intent(in)                        :: velo(:,:)
      integer, optional, dimension(:), intent(in) :: indices
@@ -1222,7 +1222,7 @@ contains
      real(dp) :: L(3)
 
      integer                           :: ii, i, N
-     
+
      if (present(indices)) then
        N = size(indices)
      else
@@ -1341,7 +1341,7 @@ contains
       else
 	 ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
       endif
-      
+
       if (present(mpi_obj)) then
          call sum_in_place(mpi_obj, ke, error=error)
          PASS_ERROR(error)
@@ -1424,9 +1424,9 @@ contains
      real(dp), intent(in) :: pos(:,:), force(:,:)
      real(dp), intent(in), optional :: origin(3)
      real(dp) :: tau(3)
- 
+
      integer i, N
- 
+
      N = size(pos,2)
      tau = 0.0_dp
      do i=1, N
@@ -1523,7 +1523,7 @@ contains
            PASS_ERROR(error)
         endif
 
-	if (N /= 0) temperature = temperature / ( Ndof * BOLTZMANN_K )         
+	if (N /= 0) temperature = temperature / ( Ndof * BOLTZMANN_K )
       else
 	temperature = this%cur_temp
       endif
@@ -1658,7 +1658,7 @@ contains
      real(dp)                                       :: p(3)
      integer                                        :: i
 
-     if (present(indices)) then        
+     if (present(indices)) then
         p = momentum(this,indices)/size(indices)
         forall(i=1:size(indices)) this%atoms%velo(:,indices(i)) = &
                                   this%atoms%velo(:,indices(i)) - p/this%atoms%mass(indices(i))
@@ -1672,22 +1672,22 @@ contains
    !% give the system a rigid body rotation so as to zero the angular momentum about the centre of mass
    subroutine zero_angular_momentum(this)
      type(Atoms) :: this
- 
+
      real(dp) :: CoM(3), L(3), MoI(3,3), MoI_inv(3,3), angular_vel(3)
      real(dp) :: axis(3), angular_vel_mag
      real(dp) :: dr(3), dr_parallel(3), dr_normal(3), v(3)
- 
+
      integer i
- 
+
      CoM = centre_of_mass(this)
      L = angular_momentum(this,CoM)
      MoI = moment_of_inertia_tensor(this,CoM)
      call inverse(MoI, MoI_inv)
      angular_vel = matmul(MoI_inv,L)
- 
+
      angular_vel_mag = norm(angular_vel)
      axis = angular_vel/angular_vel_mag
- 
+
      if (angular_vel_mag .fne. 0.0_dp) then
        do i=1, this%N
 	 dr = this%pos(:,i)-CoM
@@ -1707,14 +1707,14 @@ contains
 
    !% Calculates the velocity of the centre of mass c.f. 'centre_of_mass' in Atoms module. No origin atom required.
    pure function centre_of_mass_velo(this,index_list) result(V_CoM)
-     
+
      type(DynamicalSystem),            intent(in) :: this
      integer,  dimension(:), optional, intent(in) :: index_list
      real(dp), dimension(3)                       :: V_CoM
      !local variables
      integer                                      :: i
      real(dp)                                     :: M_tot
-     
+
      V_CoM = 0.0_dp
      M_tot = 0.0_dp
      if (present(index_list)) then
@@ -1735,14 +1735,14 @@ contains
 
    !% Calculates the acceleration of the centre of mass c.f. 'centre_of_mass' in Atoms module. No origin atom required
    pure function centre_of_mass_acc(this,index_list) result(A_CoM)
-     
+
      type(DynamicalSystem),            intent(in) :: this
      integer,  dimension(:), optional, intent(in) :: index_list
      real(dp), dimension(3)                       :: A_CoM
      !local variables
      integer                                      :: i
      real(dp)                                     :: M_tot
-     
+
      A_CoM = 0.0_dp
      M_tot = 0.0_dp
 
@@ -1769,9 +1769,9 @@ contains
    !XXX  ADVANCE VERLET 1
    !XXX
    !XXX  This is the first step of the integration algorithm.
-   !XXX  
-   !XXX  On entry we have r(t), v(t) and a(t). 
-   !XXX  
+   !XXX
+   !XXX  On entry we have r(t), v(t) and a(t).
+   !XXX
    !XXX  For normal atoms this routine performs the following steps of velocity
    !XXX  Verlet:
    !XXX
@@ -1782,7 +1782,7 @@ contains
    !XXX  Integration algorithms for other types of atoms fit around this. After this
    !XXX  routine, the user code must calculate F(t+dt) and call advance_verlet2 to
    !XXX  complete the integration step.
-   !XXX  
+   !XXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1791,8 +1791,8 @@ contains
    !%  Advance the velocities by half the time-step 'dt' and the
    !%  positions by a full time-step. A typical MD loop should
    !%  resemble the following code (Python example, Fortran is similar):
-   !% 
-   !%> ds.atoms.calc_connect() 
+   !%
+   !%> ds.atoms.calc_connect()
    !%> for n in range(n_steps):
    !%>    ds.advance_verlet1(dt)
    !%>    pot.calc(ds.atoms, force=True, energy=True)
@@ -1821,7 +1821,7 @@ contains
      real(dp), dimension(:,:), pointer :: constraint_force
      integer                               :: error_code
 #endif
-     
+
 
      INIT_ERROR(error)
 
@@ -1835,7 +1835,7 @@ contains
      this%dW = 0.0_dp
      ntherm = size(this%thermostat)-1
      allocate(therm_ndof(ntherm))
-    
+
 #ifdef _MPI
      if (do_parallel) then
         allocate(mpi_pos(3,this%N), mpi_velo(3,this%N), mpi_acc(3,this%N))
@@ -1908,11 +1908,11 @@ contains
 #ifdef _MPI
         if (do_parallel .and. mod(g,mpi_n_procs()) /= mpi_id()) cycle
 #endif
-        
+
         select case(this%group(g)%type)
 
         case(TYPE_ATOM, TYPE_CONSTRAINED) ! Constrained atoms undergo the usual verlet step here
-           
+
            !XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
            !X
            !X v(t+dt/2) = v(t) + a(t)dt/2
@@ -1942,10 +1942,10 @@ contains
                  else
                     this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
                  end if
-#endif              
+#endif
               endif
            end do
-           
+
         end select
 
      end do
@@ -1956,7 +1956,7 @@ contains
      if (do_parallel) then
         call MPI_ALLREDUCE(mpi_velo,this%atoms%velo,size(mpi_velo),MPI_DOUBLE_PRECISION,&
                            MPI_SUM,MPI_COMM_WORLD,error_code)
-        call abort_on_mpi_error(error_code,'advance_verlet1 - velocity update')       
+        call abort_on_mpi_error(error_code,'advance_verlet1 - velocity update')
      end if
 #endif
 
@@ -1981,7 +1981,7 @@ contains
      do i=1, ntherm
         call thermostat_post_vel1_pre_pos(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
- 
+
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      !X
      !X POSITION UPDATE
@@ -2001,7 +2001,7 @@ contains
         select case(this%group(g)%type)
 
         case(TYPE_ATOM)
-           
+
            !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
            !X
            !X r(t+dt) = r(t) + v(t+dt/2)dt
@@ -2037,10 +2037,10 @@ contains
                  else
                     this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt
                  end if
-#endif                 
+#endif
               endif
            end do
-           
+
         case(TYPE_CONSTRAINED)
 
            !We don't test move_mask here: constrained atoms are fixed by extra constraints.
@@ -2055,7 +2055,7 @@ contains
                  if (do_store) mpi_constraint_force(:,i) = constraint_force(:,i)
               end do
            end if
-#endif                 
+#endif
 
         end select
 
@@ -2080,18 +2080,18 @@ contains
      do i=1, ntherm
         call thermostat_post_pos_pre_calc(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
- 
+
      call barostat_post_pos_pre_calc(this%barostat,this%atoms,dt,virial)
 
 #ifdef _MPI
      ! Broadcast the new positions, velocities, accelerations and possibly constraint forces
      if (do_parallel) then
         call MPI_ALLREDUCE(mpi_pos,this%atoms%pos,size(mpi_pos),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
-        call abort_on_mpi_error(error_code,'advance_verlet1 - position update')       
+        call abort_on_mpi_error(error_code,'advance_verlet1 - position update')
         call MPI_ALLREDUCE(mpi_velo,this%atoms%velo,size(mpi_velo),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
-        call abort_on_mpi_error(error_code,'advance_verlet1 - velocity update 2')       
+        call abort_on_mpi_error(error_code,'advance_verlet1 - velocity update 2')
         call MPI_ALLREDUCE(mpi_acc,this%atoms%acc,size(mpi_acc),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
-        call abort_on_mpi_error(error_code,'advance_verlet1 - acceleration update')       
+        call abort_on_mpi_error(error_code,'advance_verlet1 - acceleration update')
         if (do_store) then
            call MPI_ALLREDUCE(mpi_constraint_force, constraint_force, size(mpi_constraint_force),&
                 MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
@@ -2106,7 +2106,7 @@ contains
      !X BOOKKEEPING
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-     
+
 #ifdef _MPI
      if (do_parallel) then
         deallocate(mpi_pos, mpi_velo, mpi_acc)
@@ -2128,11 +2128,11 @@ contains
    !XXX  ADVANCE VERLET 2
    !XXX
    !XXX  This is the second step of the integration algorithm.
-   !XXX  
+   !XXX
    !XXX  On entry we have r(t+dt), v(t+dt/2) and a(t). F(t+dt) is calculated by the
    !XXX  user code between calls to advance_verlet1 and advance_verlet2, and passed
    !XXX  in as the argument 'f'
-   !XXX  
+   !XXX
    !XXX  For normal atoms this routine performs the last step of velocity Verlet:
    !XXX
    !XXX  p(t+dt) = p(t+dt/2) + F(t+dt)dt/2  ->  v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
@@ -2140,7 +2140,7 @@ contains
    !XXX  where a(t+dt) = (1/m) F(t+dt)
    !XXX
    !XXX  Integration algorithms for other types of atoms fit around this.
-   !XXX  
+   !XXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2160,7 +2160,7 @@ contains
      logical                               :: do_parallel, do_store
      integer                               :: i, g, n, ntherm
      real(dp)                              :: decay
-     
+
 #ifdef _MPI
      include 'mpif.h'
      real(dp), dimension(:,:), allocatable :: mpi_velo, mpi_acc, mpi_constraint_force
@@ -2244,7 +2244,7 @@ contains
         select case(this%group(g)%type)
 
         case(TYPE_ATOM)
-           
+
            !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
            !X
            !X v(t+dt) = v(t+dt/2) + a(t+dt)dt/2
@@ -2278,10 +2278,10 @@ contains
                  else
                     this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
                  end if
-#endif              
+#endif
               endif
            end do
-           
+
         case(TYPE_CONSTRAINED)
 
            !As with shake, we don't test move_mask here
@@ -2306,9 +2306,9 @@ contains
      ! Broadcast the new velocities, accelerations and possibly constraint forces
      if (do_parallel) then
         call MPI_ALLREDUCE(mpi_velo,this%atoms%velo,size(mpi_velo),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
-        call abort_on_mpi_error(error_code,'advance_verlet1 - velocity update 2')       
+        call abort_on_mpi_error(error_code,'advance_verlet1 - velocity update 2')
         call MPI_ALLREDUCE(mpi_acc,this%atoms%acc,size(mpi_acc),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
-        call abort_on_mpi_error(error_code,'advance_verlet1 - acceleration update')       
+        call abort_on_mpi_error(error_code,'advance_verlet1 - acceleration update')
         if (do_store) then
            call MPI_ALLREDUCE(mpi_constraint_force,constraint_force,size(mpi_constraint_force),&
                 MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
@@ -2503,7 +2503,7 @@ contains
       call print(this%thermostat)
 
    end subroutine ds_print_thermostats
- 
+
 
    !% Print lots of information about this DynamicalSystem in text format.
    subroutine ds_print(this,file)
@@ -2515,7 +2515,7 @@ contains
       call Print('DynamicalSystem:',file=file)
 
       if (.not.this%initialised) then
-         
+
          call Print(' (not initialised)',file=file)
          return
       end if
@@ -2541,13 +2541,13 @@ contains
       call verbosity_pop()
 
    end subroutine ds_print
-   
+
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !X
    !X CONSTRAINED DYNAMICS ROUTINES
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   
+
    !
    ! Routines to make adding constraints easier
    !
@@ -2760,7 +2760,7 @@ contains
         call print_warning('Constrain_bondlength_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
         return
      end if
-     
+
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) .or. (k>this%N) .or. (k<0) ) then
         call system_abort('Constrain_bondlength_Diff: Cannot constrain bond '//i//'--'//j//'--'//k//&
@@ -2809,7 +2809,7 @@ contains
         GAP_ENERGY_FUNC = register_constraint(GAP_ENERGY)
         first_call = .false.
      end if
-     
+
      !Add the constraint
      allocate(all_atoms(this%atoms%N))
      do i=1,this%atoms%N
@@ -2907,7 +2907,7 @@ contains
 
      !Add the constraint
      call ds_add_constraint(this,atom_indices,STRUCT_FACTOR_LIKE_MAG_FUNC,(/q(1),q(2),q(3),SF/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
-     
+
      deallocate(atom_indices)
 
    end subroutine constrain_struct_factor_like_mag
@@ -2965,7 +2965,7 @@ contains
 
      !Add the constraint
      call ds_add_constraint(this,atom_indices,STRUCT_FACTOR_LIKE_R_FUNC,(/q(1),q(2),q(3),SF/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
-     
+
      deallocate(atom_indices)
 
    end subroutine constrain_struct_factor_like_r
@@ -3023,7 +3023,7 @@ contains
 
      !Add the constraint
      call ds_add_constraint(this,atom_indices,STRUCT_FACTOR_LIKE_I_FUNC,(/q(1),q(2),q(3),SF/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
-     
+
      deallocate(atom_indices)
 
    end subroutine constrain_struct_factor_like_i
@@ -3043,7 +3043,7 @@ contains
 
      integer                               :: i, type, g1, g2, n, new_constraint
      logical                               :: do_update_Ndof, do_print_summary
-    
+
      do_update_Ndof = optional_default(.true., update_Ndof)
      do_print_summary = optional_default(.true., print_summary)
 
@@ -3066,8 +3066,8 @@ contains
 
 	if (.not.allocated(this%constraint)) &
 	     call system_abort('ds_add_constraint: Constraints array has not been allocated')
-	
-	!First make sure the atoms are of TYPE_ATOM or TYPE_CONSTRAINED. If they are of 
+
+	!First make sure the atoms are of TYPE_ATOM or TYPE_CONSTRAINED. If they are of
 	!TYPE_ATOM they must be in a group on their own, otherwise all the other atoms will
 	!be added to the CONSTRAINED group, but never be integrated.
 	do i = 1, size(atoms)
@@ -3088,7 +3088,7 @@ contains
 	call set_type(this%group(g1),TYPE_CONSTRAINED)
 	do i = 2, size(atoms)
 	   g2 = this%group_lookup(atoms(i))
-	   
+
 	   call set_type(this%group(g2),TYPE_CONSTRAINED)
 	   call merge_groups(this%group(g1),this%group(g2))
 	end do
@@ -3146,21 +3146,21 @@ contains
    !% This is useful for time dependent constraints.
    !
    subroutine distance_relative_velocity(at,i,j,dist,rel_velo)
-     
+
      type(Atoms), intent(in)  :: at
      integer,     intent(in)  :: i,j
      real(dp),    intent(out) :: dist,rel_velo
      real(dp), dimension(3)   :: r,v
-     
+
      r = diff_min_image(at,i,j) !rj - ri
      dist = norm(r)
-     
+
      v = at%velo(:,j) - at%velo(:,i)
-     
+
     rel_velo = (v .dot. r) / dist
-    
+
   end subroutine distance_relative_velocity
-  
+
 !   subroutine accumulate_kinetic_energy(this,i,ek,Ndof)
 !
 !     type(dynamicalsystem), intent(in)    :: this
@@ -3170,20 +3170,20 @@ contains
 !     integer :: g
 !
 !     g = this%group_lookup(i)
-!     
+!
 !     select case(this%group(g)%type)
-!        
+!
 !     case(TYPE_ATOM)
 !        ek = eK + 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
 !        Ndof = Ndof + 3.0_dp
-!        
+!
 !     case(TYPE_CONSTRAINED)
 !        ek = ek + 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
 !        Ndof = Ndof + 3.0_dp - (real(group_n_objects(this%group(g)),dp) / real(group_n_atoms(this%group(g)),dp))
-!        
+!
 !     case default
 !        call system_abort('accumulate_kinetic_energy: cannot handle atoms with type = '//this%group(g)%type)
-!        
+!
 !     end select
 !
 !   end subroutine accumulate_kinetic_energy
@@ -3204,20 +3204,20 @@ contains
      g = ds%group_lookup(i)
 
      select case(ds%group(g)%type)
-        
+
      case(TYPE_ATOM)
         Ndof = 3.0_dp
-        
+
      case(TYPE_CONSTRAINED)
         Ndof = 3.0_dp - (real(group_n_objects(ds%group(g)),dp) / real(group_n_atoms(ds%group(g)),dp))
-        
+
      case default
         call system_abort('degrees_of_freedom: cannot handle atoms with type = '//ds%group(g)%type)
-        
+
      end select
 
    end function degrees_of_freedom
-  
+
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !X
    !X FIXING ATOMS
@@ -3257,7 +3257,7 @@ contains
         !See if constraints need adding
         g = this%group_lookup(i)
         if (this%group(g)%type == TYPE_CONSTRAINED) then
-           
+
            ! Make sure the PLANE constraint function is registered
            if (.not.plane_registered) then
               PLANE_FUNC = register_constraint(PLANE)
