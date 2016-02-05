@@ -45,6 +45,16 @@ class TestDynamicalSystem(QuippyTestCase):
    def test_avg_ke(self):
        self.assertArrayAlmostEqual(self.ds.atoms.avg_ke, 0.5*self.ds.atoms.mass*self.ds.atoms.velo.norm2())
 
+   def test_set_masses(self):
+       """
+       Test for regressions to GitHub issue #25
+       """
+       at = self.at.copy()
+       at.add_property('mass', 0.0)
+       at.mass[:] = at.get_masses()*MASSCONVERT
+       mass1 = at.mass.copy()
+       ds = DynamicalSystem(at) # should not change masses
+       self.assertArrayAlmostEqual(mass1, ds.atoms.mass)
 
 if 'ase' in available_modules:
    import ase
@@ -66,13 +76,13 @@ class GenericTestDynamics(object):
       self.at2.set_calculator(self.pot)
       self.ds = DynamicalSystem(self.at1)
       self.dyn = Dynamics(self.at2, self.dt*fs, trajectory=None, logfile=None)
-      
+
 
    def test_final_state(self):
       #print 'pos_ref = %r' % self.ds.atoms.get_positions()
       #print
       #print 'velo_ref = %r' % self.ds.atoms.get_velocities()
-      
+
       self.assertArrayAlmostEqual(self.ds.atoms.get_positions(), self.pos_ref)
       self.assertArrayAlmostEqual(self.dyn.atoms.get_positions(), self.pos_ref)
       self.assertArrayAlmostEqual(self.ds.atoms.velo.T*sqrt(MASSCONVERT), self.velo_ref)
@@ -102,7 +112,7 @@ class TestDynamics_1step(GenericTestDynamics, QuippyTestCase):
 
    def setUp(self):
       self.common_init()
-      
+
       # advance one step with the DynamicalSystem + quippy Atoms
       self.ds.atoms.set_cutoff(self.pot.cutoff(), cutoff_skin=self.skin)
       self.ds.atoms.calc_connect()
@@ -112,7 +122,7 @@ class TestDynamics_1step(GenericTestDynamics, QuippyTestCase):
       self.ds.atoms.acc[...] = self.ds.atoms.force/self.ds.atoms.mass
 
       self.ds.advance_verlet1(self.dt)
-      self.pot.calc(self.ds.atoms, args_str='force')      
+      self.pot.calc(self.ds.atoms, args_str='force')
       self.ds.advance_verlet2(self.dt, self.ds.atoms.force)
 
       # Advance one step with the Dynamics wrapper
@@ -130,7 +140,7 @@ class TestDynamics_50steps(GenericTestDynamics, QuippyTestCase):
        [  4.09123448e+00,   1.36339124e+00,   4.07478637e+00],
        [  9.79070646e-03,   2.71688867e+00,   2.71690877e+00],
        [  1.36422729e+00,   4.07258727e+00,   4.07844782e+00]])
- 
+
    velo_ref = array([[ -5.14487324e-03,  -2.82951901e-03,   7.20871809e-04],
        [  1.53645902e-03,  -1.11169548e-02,   1.46838874e-05],
        [  8.72668825e-03,  -2.62441606e-03,   3.88577807e-03],
@@ -139,10 +149,10 @@ class TestDynamics_50steps(GenericTestDynamics, QuippyTestCase):
        [  6.19669513e-03,   1.02391352e-02,  -4.67761315e-04],
        [ -2.05447112e-03,   5.34874634e-03,   4.60664348e-03],
        [  2.60520842e-03,   4.84554900e-04,  -4.08022375e-03]])
-   
+
    def setUp(self):
       self.common_init()
-      
+
       # advance 50 steps with the DynamicalSystem + quippy Atoms
       verbosity_push(PRINT_SILENT)
       self.ds.run(self.pot, dt=self.dt, n_steps=50)
@@ -150,7 +160,7 @@ class TestDynamics_50steps(GenericTestDynamics, QuippyTestCase):
 
       # Advance 50 steps with the Dynamics wrapper
       self.dyn.run(50)
-      
+
 
 class TestDynamics_InitTemperature(GenericTestDynamics, QuippyTestCase):
 
@@ -162,7 +172,7 @@ class TestDynamics_InitTemperature(GenericTestDynamics, QuippyTestCase):
        [ 4.0830447 ,  1.31413232,  4.04176328],
        [ 0.01976061,  2.75224012,  2.78688954],
        [ 1.3643935 ,  4.08301046,  4.04214856]])
- 
+
    velo_ref = array([[ 0.00601802, -0.01855572,  0.00017378],
        [ 0.00595823, -0.02294915,  0.02800107],
        [-0.02460226,  0.01526761,  0.01087745],
@@ -171,13 +181,13 @@ class TestDynamics_InitTemperature(GenericTestDynamics, QuippyTestCase):
        [ 0.01408524,  0.02512267, -0.02771845],
        [ 0.02072858,  0.02207973, -0.00283827],
        [-0.00110974, -0.00360404, -0.0358839 ]])
-   
+
    def setUp(self):
       self.common_init()
 
       # choose some random velocities for one case
       self.dyn.set_temperature(300.)
-      
+
       # use same random initial velocities
       self.ds.atoms.velo[...] = transpose(self.dyn.atoms.get_velocities()/sqrt(MASSCONVERT))
 
@@ -209,15 +219,15 @@ class TestDynamics_Thermostat(GenericTestDynamics, QuippyTestCase):
        [ 0.00515434, -0.00648112, -0.01035969],
        [ 0.00507569,  0.00888286, -0.00847751],
        [ 0.00127138, -0.00010426,  0.00312442]])
-   
+
    def setUp(self):
       self.common_init()
 
       system_reseed_rng(2065775975)
       self.ds.add_thermostat(THERMOSTAT_LANGEVIN, 300.0, tau=500.0)
-      
+
       # advance 10 steps with the DynamicalSystem + quippy Atoms
-      verbosity_push(PRINT_SILENT)      
+      verbosity_push(PRINT_SILENT)
       self.ds.run(self.pot, dt=self.dt, n_steps=10)
       verbosity_pop()
 

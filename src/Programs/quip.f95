@@ -389,6 +389,14 @@ implicit none
         cycle
      end if ! do_test
 
+     if (trim(linmin_method) == 'default') then
+        if(trim(minim_method) == 'precond') then
+           linmin_method = 'standard'
+        else
+           linmin_method = 'FAST_LINMIN'
+        endif
+     endif
+     
      if (do_relax) then
 	did_anything = .true.
         do_calc = .true.
@@ -412,18 +420,11 @@ implicit none
            endif
 	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
 	   HANDLE_ERROR(error)
-	endif
-	if (trim(linmin_method) == 'default') then
-	   if(trim(minim_method) == 'precond') then
-	      linmin_method = 'standard'
-	   else
-	      linmin_method = 'FAST_LINMIN'
-	   endif
-	endif
+        endif
 	if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
 	if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
   
-  if (len_trim(relax_print_file) > 0) then
+        if (len_trim(relax_print_file) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
       if(trim(minim_method) == 'precond') then
 #ifdef HAVE_PRECON
@@ -508,6 +509,8 @@ implicit none
      end if
 
      if (do_c0ij .or. do_cij) then
+        if (trim(minim_method) == 'precond') &
+             call system_abort("Cannot use precond minim_method with cij yet")
 	did_anything = .true.
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)

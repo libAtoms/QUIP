@@ -55,7 +55,7 @@ class TestDictionary(QuippyTestCase):
 
    def testiniterror(self):
       self.assertRaises(TypeError, Dictionary, 0)
-                        
+
    def testquotedstring(self):
       params = Dictionary('a="one two" b="2.943"')
       self.assertEqual(params.keys(), ["a", "b"])
@@ -203,6 +203,12 @@ c=44""")
       mpi = MPI_context()
       bcast(mpi, d)
 
+   def test_none_value(self):
+      d = Dictionary('a=1 b=two c')
+      self.assert_(d['a'] == 1)
+      self.assert_(d['b'] == 'two')
+      self.assert_(d['c'] is None)
+
    @skip
    def test_dict_in_dict(self):
       d = Dictionary()
@@ -211,7 +217,7 @@ c=44""")
       d['d2'] = d2
       print d
       print d['d2']
-      
+
 
 if __name__ == '__main__':
    unittest.main()

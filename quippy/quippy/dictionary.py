@@ -73,7 +73,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         >>> str(fortran_dict)
 	'a=1 b=2 c=3'
 	>>> d2 = Dictionary('a=1 b=2 c=3')
-	>>> d2.keys(), d2.values()      
+	>>> d2.keys(), d2.values()
 	(['a', 'b', 'c'], [1, 2, 3])
     """, signature='Dictionary([D])')
 
@@ -113,7 +113,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         t, s, s2 = self.get_type_and_size(k)
 
         if t == T_NONE:
-            raise ValueError('Key %s has no associated value' % k)
+            v = None
         elif t == T_INTEGER:
             v,p = self._get_value_i(k)
         elif t == T_REAL:
@@ -203,7 +203,7 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
             t = self.get_type_and_size(k)[0]
 
             if t == T_NONE:
-                raise ValueError('Key %s has no associated value' % k)
+                return None
 
             elif t in Dictionary._scalar_types:
                 self._cache[k] = None
@@ -222,10 +222,13 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         k = str(k)
         if isinstance(v, basestring):
             v = str(v)
-        try:
-            self.set_value(k, v)
-        except TypeError:
-            self.set_value(k,s2a(v,pad=None))
+        if v is None:
+            self.set_value(k)
+        else:
+            try:
+                self.set_value(k, v)
+            except TypeError:
+                self.set_value(k,s2a(v,pad=None))
 
     def __delitem__(self, k):
         if not k in self:

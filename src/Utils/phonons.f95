@@ -172,14 +172,16 @@ contains
       integer, intent(in), optional :: phonons_path_steps
       integer, intent(out), optional :: error
     
-      type(Atoms) :: at, at_fine
-      integer :: i, j, k, alpha, beta, n1, n2, n3, jn
-      integer, dimension(3) :: do_phonon_supercell, do_phonon_supercell_fine, boundary_supercell, map_i, map_symmetrical
-      integer, dimension(:,:,:,:), allocatable :: map_at
+      type(Atoms) :: at, at_fine, at_in_copy
+      integer :: i, j, k, alpha, beta, n, n1, n2, n3, jn, j_fine
+      integer, dimension(3) :: do_phonon_supercell, do_phonon_supercell_fine
+      integer, dimension(:,:,:,:), allocatable :: map_at, map_at_fine
     
-      real(dp) :: r_ij
+      real(dp) :: r_ij, dm(3)
+      complex(dp) :: exp_I_k_R
       real(dp), dimension(3) :: pp, diff_ij
-      real(dp), dimension(:), allocatable :: evals
+      integer, dimension(3) :: shift_ij, j_SI, j_SI_fine
+      real(dp), dimension(:), allocatable :: evals, at_in_sqrt_mass
       real(dp), dimension(:,:), allocatable :: pos0
       real(dp), dimension(:,:,:,:), allocatable :: fp0, fm0, fp0_fine, fm0_fine
       complex(dp), dimension(:,:), allocatable :: dmft, evecs
@@ -236,6 +238,7 @@ contains
     
       allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
     
+      call system_timer("Phonon_fine_calc/force")
       call print("Starting force calculations")
       do i = 1, at_in%N
          call print('Displacing atom '//i//' of '//at_in%N)
@@ -252,6 +255,7 @@ contains
          enddo
       enddo
       call print("Finished force calculations")
+      call system_timer("Phonon_fine_calc/force")
     
       at%pos = pos0
       call calc_dists(at)
@@ -271,115 +275,88 @@ contains
          fp0_fine = fp0
          fm0_fine = fm0
       else
-         allocate(at_fine_mapped(at_fine%N))
-         at_fine_mapped = .false.
-       
+         if( max_cutoff(at%lattice,error) <= cutoff(pot) ) then
+            RAISE_ERROR("phonons_fine: if cutoff sphere cannot fit in supercell, it is not possible to map supercell atoms to supercell_fine atoms",error)
+         endif
 
-         ! make a mapping for the supercell where the original unit cell is in the middle at 0,0,0
-         boundary_supercell = nint( real(do_phonon_supercell-1,dp) / 2.0_dp)
-         allocate(map_at(0:at_in%N-1,-boundary_supercell(1):boundary_supercell(1),-boundary_supercell(2):boundary_supercell(2),-boundary_supercell(3):boundary_supercell(3)))
+         allocate(map_at(0:at_in%N-1,0:do_phonon_supercell(1)-1,0:do_phonon_supercell(2)-1,0:do_phonon_supercell(3)-1))
+         allocate(map_at_fine(0:at_in%N-1,0:do_phonon_supercell_fine(1)-1,0:do_phonon_supercell_fine(2)-1,0:do_phonon_supercell_fine(3)-1))
 
          do i = 1, at%N
-            map_i = phonons_SI(:,i) - nint( real(phonons_SI(:,i),dp) / real(do_phonon_supercell,dp) ) * do_phonon_supercell
-            map_at(mod(i,at_in%N),map_i(1),map_i(2),map_i(3)) = i
+            map_at(mod(i,at_in%N),phonons_SI(1,i),phonons_SI(2,i),phonons_SI(3,i)) = i
+         enddo
 
-            ! if supercell is even, and we are at the boundary, map it onto the other end as well
-            do j = 1, 3
-               if( ( mod(do_phonon_supercell(j),2) == 0 ) .and. map_i(j) == -boundary_supercell(j) ) then
-                  map_symmetrical(j) = -1
-               else
-                  map_symmetrical(j) = 1
+         do i = 1, at_fine%N
+            map_at_fine(mod(i,at_in%N),phonons_fine_SI(1,i),phonons_fine_SI(2,i),phonons_fine_SI(3,i)) = i
+         enddo
+
+         at_in_copy = at_in
+         call set_cutoff(at_in_copy,cutoff(pot), cutoff_skin=0.5_dp)
+         call calc_connect(at_in_copy)
+         
+         do i = 1, at_in_copy%N
+            fp0_fine(:,i,:,i) = fp0(:,i,:,i)
+            fm0_fine(:,i,:,i) = fm0(:,i,:,i)
+
+            do n = 1, n_neighbours(at_in_copy,i)
+               jn = neighbour(at_in_copy,i,n,distance=r_ij,shift=shift_ij, diff=diff_ij)
+               if( r_ij < cutoff(pot) + dx ) then
+                  j_SI = mod(shift_ij + do_phonon_supercell,do_phonon_supercell)
+                  j_SI_fine = mod(shift_ij + do_phonon_supercell_fine,do_phonon_supercell_fine)
+
+                  j = map_at(mod(jn,at_in_copy%N),j_SI(1),j_SI(2),j_SI(3))
+                  j_fine = map_at_fine(mod(jn,at_in_copy%N),j_SI_fine(1),j_SI_fine(2),j_SI_fine(3))
+
+                  fp0_fine(:,j_fine,:,i) = fp0(:,j,:,i)
+                  fm0_fine(:,j_fine,:,i) = fm0(:,j,:,i)
+
                endif
             enddo
-
-            do n1 = map_symmetrical(1), 1, 2
-               do n2 = map_symmetrical(2), 1, 2
-                  do n3 = map_symmetrical(3), 1, 2
-                     map_at(mod(i,at_in%N),map_i(1)*n1,map_i(2)*n2,map_i(3)*n3) = i
-                  enddo
-               enddo
-            enddo
-
          enddo
-
-         do j = 1, at_fine%N
-            map_i = phonons_fine_SI(:,j) - nint( real(phonons_fine_SI(:,j),dp) / real(do_phonon_supercell_fine,dp) ) * do_phonon_supercell_fine
-
-            if( all( -boundary_supercell <= map_i ) .and. all( map_i <= boundary_supercell) ) then
-               i = map_at(mod(j,at_in%N),map_i(1),map_i(2),map_i(3))
-               fp0_fine(:,j,:,:) = fp0(:,i,:,:) / count(i == map_at)
-               fm0_fine(:,j,:,:) = fm0(:,i,:,:) / count(i == map_at)
-               at_fine_mapped(j) = .true.
-            endif
-         enddo
-
-         !do i = 1, at%N
-         !   do j = 1, at_fine%N
-         !      print*,phonons_SI(:,i) - nint( real(phonons_SI(:,i),dp) / real(do_phonon_supercell,dp) ) * do_phonon_supercell
-         !      print*,phonons_fine_SI(:,j) - nint( real(phonons_fine_SI(:,j),dp) / real(do_phonon_supercell_fine,dp) ) * do_phonon_supercell_fine
-         !      print*,i,j
-         !      print*, "***********", distance_min_image(at_fine,j,at%pos(:,i))
-         !      if( all( &
-         !         ( phonons_SI(:,i) - nint( real(phonons_SI(:,i),dp) / real(do_phonon_supercell,dp) ) * do_phonon_supercell ) &
-         !         == &
-         !         ( phonons_fine_SI(:,j) - nint( real(phonons_fine_SI(:,j),dp) / real(do_phonon_supercell_fine,dp) ) * do_phonon_supercell_fine ) &
-         !         ) .and. mod(i,at_in%N) == mod(j,at_in%N) ) then
-         !      !if(distance_min_image(at_fine,j,at%pos(:,i)) .feq. 0.0_dp) then
-         !         ! atom i in at and atom j in at_fine map onto each other
-         !         fp0_fine(:,j,:,:) = fp0(:,i,:,:)
-         !         fm0_fine(:,j,:,:) = fm0(:,i,:,:)
-         !         at_fine_mapped(j) = .true.
-         !      endif
-         !   enddo
-         !enddo
-
-         do j = 1, at_fine%N
-            if( .not. at_fine_mapped(j) ) then
-               do i = 1, at_in%N
-                  r_ij = distance_min_image(at_fine,j,at_in%pos(:,i))
-                  if( r_ij < cutoff(pot) ) then
-                     call print_warning("Atom "//j//" in the supercell is "//r_ij//" Angstroms away from atom "//i// &
-                        " in the elementary unit cell, which is less than the potential cutoff "//cutoff(pot))
-                  endif
-               enddo
-            endif
-         enddo
-         deallocate(at_fine_mapped, map_at)
+         deallocate(map_at)
+         deallocate(map_at_fine)
+         call finalise(at_in_copy)
       endif
     
+      call system_timer("Phonon_fine_calc/phonon")
       call print("Starting phonon calculations")
     
-      !$omp parallel private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx)
+      allocate(at_in_sqrt_mass(at_in%N))
+      do i = 1, at_in%N
+         at_in_sqrt_mass(i) = sqrt(ElementMass(at_in%Z(i)))
+      enddo
+
+      !$omp parallel default(none) private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx,at_in_sqrt_mass)
       allocate(dmft(at_in%N*3,at_in%N*3))
       allocate(evals(at_in%N*3), evecs(at_in%N*3,at_in%N*3))
-      !$omp do private(k,i,j,alpha,beta,diff_ij,n1,n2,n3,pp,jn)
+      !$omp do private(k,i,j,alpha,diff_ij,n1,n2,n3,pp,jn,dm,exp_I_k_R)
       do k = 1, this%n_qvectors
+         call system_timer("Phonon_fine_calc/dynamical_matrix")
          dmft = CPLX_ZERO
-         do i = 1, at_in%N
-            do alpha = 1, 3
-               do j = 1, at_in%N
-                  diff_ij = at_in%pos(:,j) - at_in%pos(:,i) 
-                  do beta = 1, 3
-      
-                     do n1 = 0, do_phonon_supercell_fine(1)-1
-                        do n2 = 0, do_phonon_supercell_fine(2)-1
-                           do n3= 0, do_phonon_supercell_fine(3)-1
-    
-                              pp = at_in%lattice .mult. (/n1,n2,n3/)
-                              jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
-    
-                              dmft((i-1)*3+alpha,(j-1)*3+beta) = dmft((i-1)*3+alpha,(j-1)*3+beta) &
-                              & - ((fp0_fine(beta,jn,alpha,i)-fm0_fine(beta,jn,alpha,i))/(2.0_dp*dx)) / &
-                              & sqrt(ElementMass(at_in%Z(i))*ElementMass(at_in%Z(j))) &
-                              & * exp( CPLX_IMAG * dot_product(this%q(:,k),(diff_ij+pp)) )
-    
-                           enddo ! n3
-                        enddo ! n2
-                     enddo ! n1
-                  enddo ! beta
-               enddo ! j
-            enddo ! alpha
-         enddo ! i
+         do n1 = 0, do_phonon_supercell_fine(1)-1
+            do n2 = 0, do_phonon_supercell_fine(2)-1
+               do n3= 0, do_phonon_supercell_fine(3)-1
+                  pp = at_in%lattice .mult. (/n1,n2,n3/)
+
+                  do j = 1, at_in%N
+                     jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+
+                     do i = 1, at_in%N
+                        diff_ij = at_in%pos(:,j) - at_in%pos(:,i) + pp
+                        exp_I_k_R = exp( CPLX_IMAG * dot_product(this%q(:,k),diff_ij) )
+
+
+                        do alpha = 1, 3
+                           dm = - (fp0_fine(:,jn,alpha,i)-fm0_fine(:,jn,alpha,i))/(2.0_dp*dx) / (at_in_sqrt_mass(i) * at_in_sqrt_mass(j))
+
+                           dmft((i-1)*3+alpha,(j-1)*3+1:j*3) = dmft((i-1)*3+alpha,(j-1)*3+1:j*3) + dm * exp_I_k_R
+                        enddo ! alpha
+
+                     enddo ! i
+                  enddo ! j
+               enddo ! n3
+            enddo ! n2
+         enddo ! n1
 
          do i = 1, 3*at_in%N
             dmft(i,i) = CPLX_ONE*real(dmft(i,i))
@@ -387,8 +364,11 @@ contains
                dmft(i,j) = conjg(dmft(j,i))
             enddo
          enddo
+         call system_timer("Phonon_fine_calc/dynamical_matrix")
 
+         call system_timer("Phonon_fine_calc/eig")
          call diagonalise(dmft, evals, evecs)
+         call system_timer("Phonon_fine_calc/eig")
          this%frequency(:,k) = sign(sqrt(abs(evals)),evals)/2.0_dp/PI
          this%eigenvector(:,:,:,k) = real( reshape( evecs, (/3, at_in%N, 3*at_in%N /) ), dp )
 
@@ -398,8 +378,9 @@ contains
       deallocate(evecs,evals)
       !$omp end parallel  
       call print("Finished phonon calculations")
+      call system_timer("Phonon_fine_calc/phonon")
       
-      deallocate(fp0, fp0_fine, fm0, fm0_fine)
+      deallocate(fp0, fp0_fine, fm0, fm0_fine, at_in_sqrt_mass)
       call finalise(at,at_fine)
    endsubroutine Phonon_fine_calc
 

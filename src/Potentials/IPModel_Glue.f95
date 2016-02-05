@@ -65,6 +65,7 @@ type IPModel_Glue
   type(Spline), allocatable :: potential(:)
   type(Spline), allocatable :: pair(:,:)
   type(Spline), allocatable :: density(:)
+  logical, dimension(:), allocatable :: do_density_spline
 
   character(len=STRING_LENGTH) :: label
 
@@ -127,6 +128,8 @@ subroutine IPModel_Glue_Finalise(this)
      enddo
      deallocate(this%spline_data_density)
   endif
+
+  if(allocated(this%do_density_spline)) deallocate(this%do_density_spline)
 
   if (allocated(this%spline_data_potential)) then
      do i=1,this%n_types
@@ -391,8 +394,11 @@ function eam_density(this, ti, r, error)
   endif
 
   if (r < glue_cutoff(this, ti)) then
-    !eam_density = spline_value(this%density(ti),r) 
-    eam_density = this%poly(ti)*(glue_cutoff(this, ti)-r)**3
+     if(this%do_density_spline(ti)) then
+        eam_density = spline_value(this%density(ti),r) 
+     else
+        eam_density = this%poly(ti)*(glue_cutoff(this, ti)-r)**3
+     endif
   else
     eam_density = 0.0_dp
   endif
@@ -412,8 +418,11 @@ function eam_density_deriv(this, ti, r, error)
   endif
 
   if (r < glue_cutoff(this, ti)) then
-    !eam_density_deriv = spline_deriv(this%density(ti),r)
-    eam_density_deriv = -3.0_dp * this%poly(ti)*(glue_cutoff(this, ti)-r)**2
+     if(this%do_density_spline(ti)) then
+        eam_density_deriv = spline_deriv(this%density(ti),r)
+     else
+        eam_density_deriv = -3.0_dp * this%poly(ti)*(glue_cutoff(this, ti)-r)**2
+     endif
   else
     eam_density_deriv = 0.0_dp
   endif
@@ -544,13 +553,13 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
            this%spline_data_density(ti)%y1, this%spline_data_density(ti)%yn)
      endif
      if(allocated(this%spline_data_potential(ti)%data)) then
-        call initialise(this%potential(ti), this%spline_data_potential(ti)%data(:,1), this%spline_data_potential(ti)%data(:,2), 2.0e30_dp,2.0e30_dp)
+        call initialise(this%potential(ti), this%spline_data_potential(ti)%data(:,1), this%spline_data_potential(ti)%data(:,2), this%spline_data_potential(ti)%y1,this%spline_data_potential(ti)%yn)
      endif
 
      do tj = 1, this%n_types
         if(allocated(this%spline_data_pair(tj,ti)%data)) then
-           call initialise(this%pair(tj,ti), this%spline_data_pair(tj,ti)%data(:,1), this%spline_data_pair(tj,ti)%data(:,2), 0.0_dp, 0.0_dp)
-           call initialise(this%pair(ti,tj), this%spline_data_pair(tj,ti)%data(:,1), this%spline_data_pair(tj,ti)%data(:,2), 0.0_dp, 0.0_dp)
+           call initialise(this%pair(tj,ti), this%spline_data_pair(tj,ti)%data(:,1), this%spline_data_pair(tj,ti)%data(:,2), this%spline_data_pair(tj,ti)%y1, this%spline_data_pair(tj,ti)%yn)
+           call initialise(this%pair(ti,tj), this%spline_data_pair(tj,ti)%data(:,1), this%spline_data_pair(tj,ti)%data(:,2), this%spline_data_pair(tj,ti)%y1, this%spline_data_pair(tj,ti)%yn)
         endif
      enddo
 
@@ -627,6 +636,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%spline_data_potential(parse_ip%n_types))
       allocate(parse_ip%spline_data_pair(parse_ip%n_types,parse_ip%n_types))
 
+      allocate(parse_ip%do_density_spline(parse_ip%n_types))
+
       ! Allocate the splines
       allocate(parse_ip%pair(parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%potential(parse_ip%n_types))
@@ -678,15 +689,22 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, "num_points", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no num_points")
-    read (value, *) num_points ! scale of the electron density for this element
+    read (value, *) num_points !
 
-    call QUIP_FoX_get_value(attributes, "density_y1", value, status)
+    call QUIP_FoX_get_value(attributes, "do_spline", value, status)
+    if (status /= 0) then
+       parse_ip%do_density_spline(parse_curr_type_i) = .false.
+    else
+       read (value, *) parse_ip%do_density_spline(parse_curr_type_i)
+    endif
+
+    call QUIP_FoX_get_value(attributes, "density_y1", value, status) ! endpoint derivative
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no density_y1")
-    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%y1 ! scale of the electron density for this element
+    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%y1 
 
-    call QUIP_FoX_get_value(attributes, "density_yn", value, status)
+    call QUIP_FoX_get_value(attributes, "density_yn", value, status) ! endpoint derivative
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no density_yn")
-    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%yn ! scale of the electron density for this element
+    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%yn 
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_density(parse_curr_type_i)%data(num_points,2))
@@ -699,7 +717,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, "num_points", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml potential_density but no num_points")
-    read (value, *) num_points ! scale of the electron density for this element
+    read (value, *) num_points ! 
+
+    call QUIP_FoX_get_value(attributes, "y1", value, status) ! endpoint derivative
+    if (status /= 0) then
+       parse_ip%spline_data_potential(parse_curr_type_i)%y1 = 2.0e30_dp
+    else
+       read (value, *) parse_ip%spline_data_potential(parse_curr_type_i)%y1 
+    endif
+
+    call QUIP_FoX_get_value(attributes, "yn", value, status) ! endpoint derivative
+    if (status /= 0) then
+       parse_ip%spline_data_potential(parse_curr_type_i)%yn = 2.0e30_dp
+    else
+       read (value, *) parse_ip%spline_data_potential(parse_curr_type_i)%yn 
+    endif
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_potential(parse_curr_type_i)%data(num_points,2))
@@ -729,7 +761,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, "num_points", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml potential_pair but no num_points")
-    read (value, *) num_points ! scale of the electron density for this element
+    read (value, *) num_points 
+
+    call QUIP_FoX_get_value(attributes, "y1", value, status) ! endpoint derivative
+    if (status /= 0) then
+       parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%y1 = 0.0_dp
+    else
+       read (value, *) parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%y1 
+    endif
+
+    call QUIP_FoX_get_value(attributes, "yn", value, status) ! endpoint derivative
+    if (status /= 0) then
+       parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%yn = 0.0_dp
+    else
+       read (value, *) parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%yn 
+    endif
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data(num_points,2))

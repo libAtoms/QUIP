@@ -130,8 +130,8 @@ class ParamReaderMixin(object):
             try:
                 value = m.group(2)
             except IndexError:
-                # default value is 'T' (True)
-                value = 'T'
+                # default value is None
+                value = None
 
             # Try to convert to (list of) floats, ints
             try:
@@ -151,7 +151,7 @@ class ParamReaderMixin(object):
                 else:
                     raise ValueError
                 value = numvalue
-            except ValueError:
+            except (AttributeError, ValueError):
                 pass
 
             # Parse boolean values, e.g 'T' -> True, 'F' -> False, 'T T F' -> [True, True, False]

@@ -351,7 +351,7 @@ module paramreader_module
 
       character(len=STRING_LENGTH) :: field
       integer equal_pos
-      character(len=STRING_LENGTH), dimension(MAX_N_FIELDS) :: final_fields
+      character(len=STRING_LENGTH), dimension(:), allocatable :: final_fields
       character(len=STRING_LENGTH) :: key, value
       integer :: i, num_pairs
       type(ParamEntry) :: entry
@@ -363,6 +363,8 @@ module paramreader_module
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
       my_check_mandatory=optional_default(.true., check_mandatory)
+
+      allocate(final_fields(MAX_N_FIELDS))
 
       if(present(did_help)) did_help = .false.
 
@@ -460,6 +462,7 @@ module paramreader_module
       status = .true. ! signal success to caller
 
       if (my_check_mandatory) status = param_check(dict)
+      if(allocated(final_fields)) deallocate(final_fields)
 
     end function param_read_line
 
@@ -844,8 +847,10 @@ module paramreader_module
       character(len=*), optional :: key
       logical :: status
 
-      character(len=STRING_LENGTH), dimension(MAX_N_FIELDS) :: fields
+      character(len=STRING_LENGTH), dimension(:), allocatable :: fields
       integer :: num_fields, j
+
+      allocate(fields(MAX_N_FIELDS))
 
       if (entry%param_type == PARAM_NO_VALUE .or. &
            trim(entry%value) == PARAM_MANDATORY) then
@@ -917,6 +922,7 @@ module paramreader_module
          return
       end select
 
+      if(allocated(fields)) deallocate(fields)
       status = .true.
 
     end function param_parse_value

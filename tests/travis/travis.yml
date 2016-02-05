@@ -4,41 +4,41 @@ env:
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=5
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.9
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.9
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
-#  global:
-#    secure: ""
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
+global:
+    secure: "Rf5lXPfUtz+dgBhOdSy0hlJhBDqDVearmnbaJev/OzXBE7ZJENF6grnfxIgleTNKcUvlG21R/eWdGee8l37IWTIx/46iYuwSGeHfhQ9LwRIA4Ks6VruXqJfNMJ9iqowUt8ok6/EQ0usW7KfQFg0SenmtA8Hjmenoj0cPdlkLP5U="
 matrix:
   allow_failures:
     - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
@@ -59,14 +59,14 @@ python:
 install:
   # Set up the compiler versions for different gcc versions
   - mkdir ~/bin; export PATH=${HOME}/bin:${PATH}
-  - if [ "${GCC_VERSION}x" != "x" ]; then 
+  - if [ "${GCC_VERSION}x" != "x" ]; then
       ln -sf `which gfortran-$GCC_VERSION` ~/bin/gfortran; gfortran --version;
       ln -sf `which gcc-$GCC_VERSION` ~/bin/gcc; gcc --version;
       ln -sf `which g++-$GCC_VERSION` ~/bin/g++; g++ --version;
     fi
   # Deal with deps; will fail on fork pull requests
   - if [ "${BUILD}" == "ALL" ]; then
-      openssl aes-256-cbc -K $encrypted_850833674760_key -iv $encrypted_850833674760_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
+      openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
       bash get_deps.sh > /dev/null 2>&1;
     fi
   # Make the build directory manually for rules
@@ -82,7 +82,7 @@ install:
   # Build quippy bindings
   - make quippy > /dev/null
 script:
-  # Sometimes file limit is 64000 and read_loop reads and writes this many files 
+  # Sometimes file limit is 64000 and read_loop reads and writes this many files
   # causing the build to time out
   - ulimit -n 256
   # Quippy should be built -> start tests
@@ -97,8 +97,8 @@ addons:
       - gfortran
       - gfortran-4.4
       - g++-4.4
-      - gfortran-4.9
-      - g++-4.9
+#      - gfortran-4.9
+#      - g++-4.9
       - gfortran-5
       - g++-5
       - liblapack-dev
@@ -112,3 +112,6 @@ addons:
       # for atomeye
       - libgsl0-dev
       - libxpm-dev
+notifications:
+  email:
+    - quip-developers@eng.cam.ac.uk

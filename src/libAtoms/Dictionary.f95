@@ -45,7 +45,7 @@ module dictionary_module
   implicit none
 
   private
-  
+
   public :: T_NONE, T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, &
        T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_LOGICAL_A, &
        T_CHAR, T_CHAR_A, T_DATA, T_INTEGER_A2, T_REAL_A2, T_DICT
@@ -71,7 +71,7 @@ module dictionary_module
   end type DictData
 
   public :: dictentry
-  type DictEntry 
+  type DictEntry
      !% OMIT
      integer :: type = T_NONE
      integer :: len = 1
@@ -109,14 +109,14 @@ module dictionary_module
      !% - String
      !% - Complex
      !% - Logical
-     !% - 1D integer array 
-     !% - 1D real array 
+     !% - 1D integer array
+     !% - 1D real array
      !% - 1D complex array
      !% - 1D logical array
      !% - 2D integer array
      !% - 2D real array
      !% - Arbitrary data, via Fortran ``transform()`` intrinsic
-     
+
      integer :: N !% number of entries in use
      type(extendable_str), allocatable :: keys(:) !% array of keys
      type(DictEntry), allocatable :: entries(:)    !% array of entries
@@ -128,7 +128,7 @@ module dictionary_module
   type c_dictionary_ptr_type
      type(Dictionary), pointer :: p
   end type c_dictionary_ptr_type
-  
+
   !% Initialise a new empty dictionary
   public initialise
   interface initialise
@@ -284,7 +284,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    DictEntry methods
-  ! * 
+  ! *
   ! ****************************************************************************
 
   subroutine dictentry_print(this, key, verbosity, file)
@@ -386,7 +386,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    Dictionary methods
-  ! * 
+  ! *
   ! ****************************************************************************
 
   subroutine dictionary_initialise(this)
@@ -482,7 +482,7 @@ contains
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-   
+
     entry_i = lookup_entry_i(this, key)
 
     if (entry_i <= 0) then
@@ -498,7 +498,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    set_value() interface
-  ! * 
+  ! *
   ! ****************************************************************************
 
   subroutine dictionary_set_value_none(this, key)
@@ -513,7 +513,7 @@ contains
     entry_i = add_entry(this, key, entry, new_key=new_key)
     if (new_key) this%key_cache_invalid = 1
     call finalise(entry)
-    
+
   end subroutine dictionary_set_value_none
 
   subroutine dictionary_set_value_i(this, key, value)
@@ -849,12 +849,12 @@ contains
     this%cache_invalid = 1
 
   end subroutine dictionary_set_value_dict
-  
+
 
   ! ****************************************************************************
   ! *
   ! *    get_value() interface
-  ! * 
+  ! *
   ! ****************************************************************************
 
   function dictionary_get_value_i(this, key, v, case_sensitive, i)
@@ -1330,7 +1330,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    assign_pointer() interface
-  ! * 
+  ! *
   ! ****************************************************************************
 
   function dictionary_assign_pointer_r0(this, key, v, case_sensitive)
@@ -1343,7 +1343,7 @@ contains
     integer entry_i
 
     entry_i = lookup_entry_i(this, key, case_sensitive)
-    
+
     if (entry_i <= 0) then
        dictionary_assign_pointer_r0 = .false.
        return
@@ -1391,7 +1391,7 @@ contains
     integer entry_i
 
     entry_i = lookup_entry_i(this, key, case_sensitive)
-    
+
     if (entry_i <= 0) then
        dictionary_assign_pointer_r = .false.
        return
@@ -1511,7 +1511,7 @@ contains
     integer entry_i
 
     entry_i = lookup_entry_i(this, key, case_sensitive)
-    
+
     if (entry_i <= 0) then
        dictionary_assign_pointer_r2 = .false.
        return
@@ -1529,7 +1529,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    set_value_pointer() interface
-  ! * 
+  ! *
   ! ****************************************************************************
 
   subroutine dictionary_set_value_pointer_i(this, key, ptr)
@@ -1679,7 +1679,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    add_array() interface
-  ! * 
+  ! *
   ! ****************************************************************************
 
   subroutine dictionary_add_array_i(this, key, value, len, ptr, overwrite)
@@ -1966,7 +1966,7 @@ contains
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
     if (new_key) this%key_cache_invalid = 1
-    if (do_alloc) then 
+    if (do_alloc) then
        allocate(this%entries(entry_i)%c_a(len))
        this%cache_invalid = 1
     end if
@@ -2085,7 +2085,7 @@ contains
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc, new_key=new_key)
     if (new_key) this%key_cache_invalid = 1
-    if (do_alloc) then 
+    if (do_alloc) then
        allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
@@ -2100,7 +2100,7 @@ contains
   ! ****************************************************************************
   ! *
   ! *    Miscellaneous routines
-  ! * 
+  ! *
   ! ****************************************************************************
 
   subroutine dictionary_remove_value(this, key)
@@ -2418,7 +2418,7 @@ contains
        end if
 
        if (this%entries(i)%type /= T_NONE) call concat(str, '=')
-       
+
        select case(this%entries(i)%type)
 
        case(T_NONE)
@@ -2678,9 +2678,9 @@ contains
 
     type(extendable_str), dimension(:), allocatable :: tmp_keys
     integer i
-    
+
     INIT_ERROR(error)
-    
+
     allocate(tmp_keys(size(keys)))
     do i=1,size(keys)
        call initialise(tmp_keys(i))
@@ -2710,7 +2710,7 @@ contains
     type(Dictionary) :: tmp_dict
     logical :: my_out_no_initialise
     integer :: i, j, io
-    
+
     INIT_ERROR(error)
 
 
@@ -2723,7 +2723,7 @@ contains
        if (i == -1) then
           RAISE_ERROR('dictionary_subset_es: key '//string(keys(j))//' not in dictionary', error)
        end if
-       if (my_out_no_initialise) then 
+       if (my_out_no_initialise) then
 	  io = lookup_entry_i(out, string(keys(j)), case_sensitive)
 	  if (io >= 1) then
 	     if (this%entries(i)%type /= out%entries(io)%type) then
@@ -2768,6 +2768,9 @@ contains
        endif ! my_out_no_initialise
 
        select case(this%entries(i)%type)
+       case(T_NONE)
+          call set_value(out, string(this%keys(i)))
+
        case(T_INTEGER)
           call set_value(out, string(this%keys(i)), this%entries(i)%i)
 
@@ -3074,11 +3077,11 @@ contains
     type(Dictionary), intent(inout) :: this
     type(Dictionary), intent(in) :: from
     integer, optional, intent(out) :: error
-    
+
     INIT_ERROR(error)
     call subset(from, from%keys(1:from%n), this, error=error)
     PASS_ERROR(error)
-    
+
   end subroutine dictionary_deepcopy
 
 
@@ -3086,9 +3089,9 @@ contains
   subroutine dictionary_deepcopy_no_error(this, from)
     type(Dictionary), intent(inout) :: this
     type(Dictionary), intent(in) :: from
-    
+
     call deepcopy(this, from)
-    
+
   end subroutine dictionary_deepcopy_no_error
 
   subroutine dictionary_get_array(this, key, nd, dtype, dshape, dloc)
@@ -3099,7 +3102,7 @@ contains
     integer, intent(out) :: dtype
     integer, dimension(10), intent(out) :: dshape
     integer(c_intptr_t), intent(out) :: dloc
-    
+
     integer entry_i
 
     nd = 0
@@ -3154,7 +3157,7 @@ contains
 
   end subroutine dictionary_get_array
 
-     
+
 #ifdef POINTER_COMPONENT_MANUAL_COPY
 subroutine dictentry_assign(to, from)
    type(DictEntry), intent(inout) :: to

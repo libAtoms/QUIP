@@ -582,7 +582,7 @@ contains
        if (get_value(tmp_params, 'nneightol', nneightol)) at%nneightol = nneightol
 
        ! Copy tmp_params into at%params, removing "Lattice", "Properties", "cutoff",
-       ! and "nneightol"entries
+       ! "pbc" and "nneightol"entries
        allocate(filtered_keys(tmp_params%N))
        j = 1
        do i=1,tmp_params%N
