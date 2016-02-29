@@ -99,6 +99,99 @@ def VASP_POSCAR_Reader(poscar, species=None, format=None):
 
     yield at
 
+@atoms_reader('XDATCAR')
+def VASP_XDATCAR_Reader(xdatcar, species=None, format=None):
+
+    p = open(xdatcar, 'r')
+
+    def read_header(xdatcar):
+       comment = p.readline().rstrip()
+       if comment.find("Direct configuration") == 0: # is the beginning of some positions
+	 return (None, None, comment, None, None, None)
+       l = p.readline().strip(); lc_factor=float(l)
+       l = p.readline().strip(); a1 = np.real(l.split())
+       l = p.readline().strip(); a2 = np.real(l.split())
+       l = p.readline().strip(); a3 = np.real(l.split())
+       l = p.readline().strip(); at_species = l.split()
+       try:
+	   ns = [ int(n) for n in at_species ]
+	   no_species_read = True
+       except:
+	   no_species_read = False
+
+       if species is not None:
+	  at_species = species.split()
+	  have_species = True
+       else:
+	  if no_species_read:
+	     have_species = False
+	     for i in range(len(ns)):
+		at_species[i] = ("%d" % (i+1))
+	  else:
+	    have_species = True
+
+       if not no_species_read:
+          l = p.readline().strip();
+          ns = [ int(n) for n in l.split() ]
+
+       n=0
+       for i in range(len(ns)):
+	   n += ns[i]
+
+       lat = fzeros( (3,3) )
+       lat[:,1] = a1[0:3]
+       lat[:,2] = a2[0:3]
+       lat[:,3] = a3[0:3]
+
+       lat *= lc_factor
+       return (lat, n, comment, ns, at_species, have_species)
+
+    (lat, n, comment, ns, at_species, have_species) = read_header(xdatcar)
+    # end of header
+
+    while True:
+       try:
+	  (new_lat, new_n, new_comment, new_ns, new_at_species, new_have_species) = read_header(xdatcar)
+       except:
+	  return
+
+       if new_lat is None: # wasn't another header
+	  l = new_comment
+       else:
+	  lat = new_lat # assume nothing else has changed
+	  l=p.readline().strip()
+
+       if (re.compile("^\s*s", re.IGNORECASE).match(l)):
+	   dyn_type = l
+	   coord_type = p.readline().strip();
+       else:
+	   coord_type = l
+
+       at = Atoms(n=n, lattice=lat)
+       if (len(comment) > 0):
+	   at.params['VASP_Comment'] = comment
+
+       coord_direct=re.compile("^\s*d", re.IGNORECASE).match(coord_type);
+
+       ii = 1
+       for ti in range(len(ns)):
+	   for i in range(ns[ti]):
+	       l = p.readline().strip(); pos = np.array(l.split()[0:3], float);
+	       if (coord_direct):
+		   at.pos[:,ii] = np.dot(at.lattice[:,:],pos[:])
+	       else:
+		   at.pos[:,ii] = pos[:]*lc_factor
+	       at.species[:,ii] = at_species[ti]
+	       ii += 1
+
+       if (have_species):
+	   at.set_zs()
+       else:
+	   at.Z[:] = [ int("".join(n)) for n in at.species[:] ]
+
+       yield at
+
+
 class VASPWriter(object):
     """
     Writer for VASP POSCAR format
