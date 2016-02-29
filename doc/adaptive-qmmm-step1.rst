@@ -16,7 +16,7 @@ Import the relevant modules and functions
 We start by importing all the functions we will need. Create a new
 script named ``make_crack.py`` and add the following lines::
 
-    from ase.structure import bulk
+    from ase.lattice import bulk
     from ase.lattice.cubic import Diamond
     from ase.constraints import FixAtoms
     import ase.units as units
@@ -527,7 +527,7 @@ position of the crack tip.  This is provided by the
 This function works by fitting the components of the Irwin crack
 stress field to the per-atom stresses calculated by the classical SW
 potential, allowing the origin of the analytical stress field to move
-during the fit. Then, we simply this point to be the current crack
+during the fit. Then, we simply set this point to be the current crack
 position.
 
 Saving the output file
@@ -559,7 +559,7 @@ information, in :ref:`extendedxyz` in the `output_file`, whose name is
 defined in the :ref:`parameters section <parameters>`::
 
     print('Writing crack slab to file %s' % output_file)
-    write(crack_slab, output_file)
+    write(output_file, crack_slab)
 
 Milestone 1.3
 ^^^^^^^^^^^^^
