@@ -111,6 +111,7 @@ qm_pot = Potential(qm_init_args,
 # are not randomised.
 qmmm_pot = ForceMixingPotential(pot1=mm_pot,
                                 pot2=qm_pot,
+																atoms=atoms,
                                 qm_args_str='single_cluster cluster_periodic_z carve_cluster '+
                                             'terminate cluster_hopping=F randomise_buffer=F',
                                 fit_hops=4,
