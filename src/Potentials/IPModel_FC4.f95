@@ -111,6 +111,8 @@ type IPModel_FC4
   integer, allocatable :: findatom_sc_array(:,:,:,:)
   integer sc_min(3), sc_max(3)
 
+  real(dp) :: superlattice(3,3), inv_superlattice(3,3)
+
 end type IPModel_FC4
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -172,6 +174,8 @@ subroutine IPModel_FC4_Initialise_str(this, args_str, param_str)
   ! Read the ideal structure
   !
   call read(this%ideal_struct, trim(this%ideal_struct_file))
+  call get_param_value(this%ideal_struct, "Superlattice", this%superlattice)
+  call matrix3x3_inverse(this%superlattice, this%inv_superlattice)
   call add_property(this%ideal_struct, "cell_offset", value=0, n_cols=3, overwrite=.false.)
   call add_property(this%ideal_struct, "prim_index", value=0, n_cols=1, overwrite=.false.)
   if (.not.assign_pointer(this%ideal_struct, "prim_index", this%ideal_struct_prim_index)) &
@@ -781,7 +785,7 @@ function findatom_sc(this, tau, n, at)
   integer nwrap(3), nsc(3), tau_sc_idx
   real(dp) :: wrap(3), prim_cell_pos(3), prim_cell(3,3), inv_prim_cell(3,3), tau_prim(3), tau_frac(3), tau_frac_remap(3), n_frac(3)
 
-  namelist/NMLDEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
+  namelist/DEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
 
 ! Common case: just see if it is in the array
   if (all(n.ge.this%sc_min.and.n.le.this%sc_max)) then 
@@ -800,12 +804,12 @@ function findatom_sc(this, tau, n, at)
   
   ! express the primitive cell we asked for as a fractional
   ! coordinates of the simulation box.
-  tau_frac = matmul(at%g, matmul(prim_cell, n) + tau_prim)
+  tau_frac = matmul(this%inv_superlattice, matmul(prim_cell, n) + tau_prim)
 
   ! remap to [0,1)
   tau_frac_remap = modulo(tau_frac, 1.0_dp)
 
-  prim_cell_pos = matmul(at%lattice, tau_frac_remap) - tau_prim
+  prim_cell_pos = matmul(this%superlattice, tau_frac_remap) - tau_prim
   
   ! find the offset of the primitive cell this location coresponds to
   wrap = matmul(inv_prim_cell, prim_cell_pos)
@@ -821,7 +825,7 @@ function findatom_sc(this, tau, n, at)
   ! express in terms of primitive cell coords
 
   if (findatom_sc < 0) then
-     write (*,nml=NMLDEBUG) 
+     write (*,nml=DEBUG) 
      call system_abort("Findatom_sc: requested atom tau=" // tau &
           // ", n=" // n // " does not exist in the supercell")
   end if
