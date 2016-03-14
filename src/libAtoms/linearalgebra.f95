@@ -6966,7 +6966,7 @@ CONTAINS
    !#
    !#################################################################################
 
-    function factorial(n) result(res)
+    elemental function factorial(n) result(res)
 
      ! factorial_real
 
@@ -6975,7 +6975,8 @@ CONTAINS
      integer :: i
 
      if (n<0) then
-        call system_abort('factorial: negative argument')
+        res = huge(1.0_dp)
+        res = res + 1.0_dp
      elseif(n <= 20) then
         res = factorial_table(n)
      else
@@ -6993,7 +6994,7 @@ CONTAINS
    !#
    !#################################################################################
 
-   function factorial_int(n) result(res)
+   elemental function factorial_int(n) result(res)
 
      ! factorial_int
 
@@ -7002,7 +7003,8 @@ CONTAINS
      integer :: i
 
      if (n<0) then
-        call system_abort('factorial_int: negative argument')
+        res = huge(n)
+        res = res + 1
      else
         res=1
         do i=2,n
@@ -7123,7 +7125,7 @@ CONTAINS
 
    endfunction dcos_cutoff_function
 
-   function coordination_function_upper(r,cutoff_in,transition_width)
+   elemental function coordination_function_upper(r,cutoff_in,transition_width)
 
       real(dp)             :: coordination_function_upper
       real(dp), intent(in) :: r, cutoff_in, transition_width
@@ -7138,7 +7140,7 @@ CONTAINS
 
    endfunction coordination_function_upper
 
-   function dcoordination_function_upper(r,cutoff_in,transition_width)
+   elemental function dcoordination_function_upper(r,cutoff_in,transition_width)
 
       real(dp)             :: dcoordination_function_upper
       real(dp), intent(in) :: r, cutoff_in,transition_width
@@ -7153,7 +7155,7 @@ CONTAINS
 
    endfunction dcoordination_function_upper
 
-   function d2coordination_function_upper(r,cutoff_in,transition_width)
+   elemental function d2coordination_function_upper(r,cutoff_in,transition_width)
 
       real(dp)             :: d2coordination_function_upper
       real(dp), intent(in) :: r, cutoff_in,transition_width
@@ -7169,7 +7171,7 @@ CONTAINS
    endfunction d2coordination_function_upper
 
    !NB this third derivative is not continuous! 
-   function d3coordination_function_upper(r,cutoff_in,transition_width)
+   elemental function d3coordination_function_upper(r,cutoff_in,transition_width)
 
       real(dp)             :: d3coordination_function_upper
       real(dp), intent(in) :: r, cutoff_in,transition_width

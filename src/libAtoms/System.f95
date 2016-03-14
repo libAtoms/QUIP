@@ -218,9 +218,9 @@ module system_module
      module procedure inoutput_parse_line
   end interface parse_line
 
-  private :: reallocate_int1d, reallocate_int2d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
+  private :: reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
   interface reallocate
-     module procedure reallocate_int1d, reallocate_int2d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
+     module procedure reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
   end interface reallocate
 
   interface operator(//)
@@ -1525,6 +1525,39 @@ contains
     end if
 
   end subroutine reallocate_int2d
+
+  subroutine reallocate_int3d(array, d1, d2, d3, zero, copy)
+    integer, allocatable, dimension(:,:,:), intent(inout) :: array
+    integer,                                intent(in)    :: d1,d2,d3
+    logical, optional,                      intent(in)    :: zero, copy
+
+    logical :: do_copy
+    integer, allocatable :: tmp(:,:,:)
+
+    if (allocated(array)) then
+       if (.not. all(shape(array) == (/d1,d2,d3/))) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array,1),size(array,2),size(array,3)))
+	    tmp = array
+	  endif
+          deallocate(array)
+          allocate(array(d1,d2,d3))
+	  if (do_copy) then
+	    array = 0
+	    array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)),1:min(size(tmp,3),size(array,3))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)),1:min(size(tmp,3),size(array,3)))
+	    deallocate(tmp)
+	  endif
+       end if
+    else
+       allocate(array(d1,d2,d3))
+    end if
+
+    if (present(zero)) then
+       if (zero) array = 0
+    end if
+
+  end subroutine reallocate_int3d
 
   subroutine reallocate_real2d(array, d1, d2, zero, copy)
     real(dp), allocatable, dimension(:,:), intent(inout) :: array
