@@ -48,6 +48,7 @@ include Makefile.rules
 LIBATOMS_F95_FILES = \
   error \
   System \
+  LinkedList \
   ExtendableStr \
   MPI_context \
   Units \
