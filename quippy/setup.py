@@ -260,7 +260,7 @@ def find_wrap_sources(makefile, quip_root):
     if 'HAVE_GAP' in makefile and int(makefile['HAVE_GAP']) == 1:
         gp_dir = os.path.join(quip_root, 'src/GAP')
         source_dirs.append(gp_dir)
-        libraries.append('gap_predict')
+        libraries = ['gap_predict'] + libraries
         targets.extend([(quip_root, 'GAP')])
         wrap_sources += [os.path.join(quip_root, 'src/GAP', 'descriptors.f95')]
         wrap_types += ['descriptor']
