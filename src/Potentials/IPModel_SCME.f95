@@ -110,6 +110,9 @@ subroutine IPModel_SCME_Initialise_str(this, args_str, param_str)
   endif
   call finalise(params)
 
+  if( trim(this%label) /= "version_20160315" ) then
+     call system_abort("IPModel_SCME_Initialise_str: SCME with updated parameters/damping. Make sure your potential is compatible. Proceed with caution, email Albert for instructions.")
+  endif
   !call IPModel_SCME_read_params_xml(this, param_str)
   this%cutoff = 2.0_dp
 
