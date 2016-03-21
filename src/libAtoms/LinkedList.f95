@@ -44,6 +44,11 @@ module linkedlist_module
   use system_module
   implicit none
 
+  type LinkedList_i
+     integer, allocatable :: data
+     type(LinkedList_i), pointer :: next => null()
+  endtype LinkedList_i
+
   type LinkedList_i1d
      integer, dimension(:), allocatable :: data
      type(LinkedList_i1d), pointer :: next => null()
@@ -55,31 +60,31 @@ module linkedlist_module
   endtype LinkedList_i2d
 
   interface initialise
-     module procedure initialise_LinkedList_i1d, initialise_LinkedList_i2d
+     module procedure initialise_LinkedList_i, initialise_LinkedList_i1d, initialise_LinkedList_i2d
   endinterface initialise
 
   interface finalise
-     module procedure finalise_LinkedList_i1d, finalise_LinkedList_i2d
+     module procedure finalise_LinkedList_i, finalise_LinkedList_i1d, finalise_LinkedList_i2d
   endinterface finalise
 
   interface insert
-     module procedure insert_LinkedList_i1d, insert_LinkedList_i2d
+     module procedure insert_LinkedList_i, insert_LinkedList_i1d, insert_LinkedList_i2d
   endinterface insert
 
   interface delete_node
-     module procedure delete_node_LinkedList_i1d, delete_node_LinkedList_i2d
+     module procedure delete_node_LinkedList_i, delete_node_LinkedList_i1d, delete_node_LinkedList_i2d
   endinterface delete_node
 
   interface update
-     module procedure update_LinkedList_i1d, update_LinkedList_i2d
+     module procedure update_LinkedList_i, update_LinkedList_i1d, update_LinkedList_i2d
   endinterface update
 
   interface retrieve_node
-     module procedure retrieve_node_LinkedList_i1d, retrieve_node_LinkedList_i2d
+     module procedure retrieve_node_LinkedList_i, retrieve_node_LinkedList_i1d, retrieve_node_LinkedList_i2d
   endinterface retrieve_node
 
   interface retrieve
-     module procedure retrieve_LinkedList_i1d, retrieve_LinkedList_i2d
+     module procedure retrieve_LinkedList_i, retrieve_LinkedList_i1d, retrieve_LinkedList_i2d
   endinterface retrieve
 
   !interface next
@@ -87,22 +92,290 @@ module linkedlist_module
   !endinterface next
 
   interface last
-     module procedure last_LinkedList_i1d, last_LinkedList_i2d
+     module procedure last_LinkedList_i, last_LinkedList_i1d, last_LinkedList_i2d
   endinterface last
 
   interface append
-     module procedure append_LinkedList_i1d, append_LinkedList_i2d
+     module procedure append_LinkedList_i, append_LinkedList_i1d, append_LinkedList_i2d
   endinterface append
 
   interface size_LinkedList
-     module procedure size_LinkedList_i1d, size_LinkedList_i2d
+     module procedure size_LinkedList_i, size_LinkedList_i1d, size_LinkedList_i2d
   endinterface size_LinkedList
 
   interface is_in_LinkedList
-     module procedure is_in_LinkedList_i1d, is_in_LinkedList_i2d
+     module procedure is_in_LinkedList_i, is_in_LinkedList_i1d, is_in_LinkedList_i2d
   endinterface is_in_LinkedList
 
   contains
+
+  ! integers
+
+  subroutine initialise_LinkedList_i(this,data,error)
+
+     type(LinkedList_i), pointer, intent(inout) :: this
+     integer, intent(in), optional :: data
+     integer, intent(out), optional :: error
+
+     INIT_ERROR(error)
+
+     if(associated(this)) call finalise(this)
+
+     allocate(this)
+     if( present(data) ) then
+        this%data = data
+     endif
+     this%next => null()
+
+  endsubroutine initialise_LinkedList_i
+
+  subroutine finalise_LinkedList_i(this,error)
+     type(LinkedList_i), pointer, intent(inout) :: this
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: current, next
+
+     INIT_ERROR(error)
+
+     if( .not. associated(this) ) return
+
+     current => this
+     do while( associated(current) )
+        next => current%next
+        deallocate(current)
+        current => next
+     enddo
+     this => null()
+
+  endsubroutine finalise_LinkedList_i
+
+  subroutine insert_LinkedList_i(this,data,error)
+     type(LinkedList_i), pointer, intent(inout) :: this
+     integer, intent(in), optional :: data
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: current
+
+     INIT_ERROR(error)
+
+     if( .not. associated(this)) then
+        call initialise(this,data,error)
+     else
+        allocate(current)
+        if(present(data)) then
+           current%data = data
+        endif
+
+        current%next => this%next
+        this%next => current
+     endif
+
+  endsubroutine insert_LinkedList_i
+
+  subroutine delete_node_LinkedList_i(this,node,error)
+     type(LinkedList_i), pointer, intent(inout) :: this
+     type(LinkedList_i), pointer, intent(inout) :: node
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: delete_node => null(), previous => null()
+
+     INIT_ERROR(error)
+
+     if( .not. associated(this) ) return
+
+     if( associated(this,node) ) then
+        ! remove first node
+        delete_node => this
+        this => this%next
+        deallocate(delete_node)
+     else
+        delete_node => this
+        do
+           if(associated(delete_node,node)) then
+              previous%next => delete_node%next
+              deallocate(delete_node)
+              exit
+           endif
+           previous => delete_node
+           delete_node => delete_node%next
+           if( .not. associated(delete_node) ) exit
+        enddo
+     endif
+
+  endsubroutine delete_node_LinkedList_i
+
+  function is_in_LinkedList_i(this,data,error) result(found)
+     type(LinkedList_i), pointer, intent(in) :: this
+     integer, intent(in), optional :: data
+     integer, intent(out), optional :: error
+
+     logical :: found
+
+     type(LinkedList_i), pointer :: current
+
+     INIT_ERROR(error)
+
+     found = .false.
+     if( associated(this)) then
+        current => this
+        do 
+           if( associated(current) ) then
+              if( current%data == data ) then
+                 found = .true.
+                 exit
+              endif
+              current => current%next
+           else
+              exit
+           endif
+        enddo
+     endif
+
+  endfunction is_in_LinkedList_i
+
+  subroutine update_LinkedList_i(this,data,error)
+     type(LinkedList_i), pointer, intent(inout) :: this
+     integer, intent(in) :: data
+     integer, intent(out), optional :: error
+
+     INIT_ERROR(error)
+     
+     if( .not. associated(this)) then
+        RAISE_ERROR("update_LinkedList_i: linked list not initialised yet.",error)
+     endif
+
+     this%data = data
+
+  endsubroutine update_LinkedList_i
+
+  function retrieve_node_LinkedList_i(this,error) result(data)
+     type(LinkedList_i), pointer, intent(in) :: this
+     integer, intent(out), optional :: error
+
+     integer, pointer :: data
+
+     INIT_ERROR(error)
+     
+     if( .not. associated(this)) then
+        RAISE_ERROR("retrieve_node_LinkedList_i1d: linked list not initialised yet.",error)
+     endif
+
+     data => this%data
+
+  endfunction retrieve_node_LinkedList_i
+
+  function next_LinkedList_i(this,error) result(next)
+     type(LinkedList_i), pointer, intent(in) :: this
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: next
+
+     if( .not. associated(this)) then
+        RAISE_ERROR("next_LinkedList_i1d: linked list not initialised yet.",error)
+     endif
+
+     next => this%next
+
+  endfunction next_LinkedList_i
+
+  function last_LinkedList_i(this,error) result(last)
+     type(LinkedList_i), pointer, intent(in) :: this
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: last
+
+     if( .not. associated(this)) then
+        RAISE_ERROR("next_LinkedList_i1d: linked list not initialised yet.",error)
+     endif
+
+     last => this
+     do while( associated(last%next) )
+        last => last%next
+     enddo
+
+  endfunction last_LinkedList_i
+
+  subroutine append_LinkedList_i(this,data,error)
+     type(LinkedList_i), pointer, intent(inout) :: this
+     integer, intent(in), optional :: data
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: current, new
+
+     INIT_ERROR(error)
+
+     if( .not. associated(this)) then
+        call initialise(this,data,error)
+     else
+        allocate(new)
+        if(present(data)) then
+           new%data = data
+        endif
+        new%next => null()
+
+        current => this
+        do while( associated(current%next) )
+           current => current%next
+        enddo
+        current%next => new
+     endif
+
+  endsubroutine append_LinkedList_i
+
+  subroutine retrieve_LinkedList_i(this,data,error)
+     type(LinkedList_i), pointer, intent(inout) :: this
+     integer, dimension(:), allocatable, intent(out) :: data
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: current
+     integer :: i, d1
+
+     INIT_ERROR(error)
+
+     if( .not. associated(this)) then
+        call reallocate(data,0)
+        return
+     endif
+
+     d1 = size_LinkedList(this,error)
+
+     call reallocate(data,d1)
+     current => this
+     i = 0
+     do
+        if( associated(current) ) then
+           i = i + 1
+           data(i) = current%data
+           current => current%next
+        else
+           exit
+        endif
+     enddo
+
+  endsubroutine retrieve_LinkedList_i
+
+  function size_LinkedList_i(this,error) result(n)
+     type(LinkedList_i), pointer, intent(in) :: this
+     integer, intent(out), optional :: error
+
+     type(LinkedList_i), pointer :: current
+
+     integer :: n
+
+     n = 0
+     if( associated(this) ) then
+        current => this
+        do
+           if( associated(current) ) then
+              n = n + 1
+              current => current%next
+           else
+              exit
+           endif
+        enddo
+     endif
+
+  endfunction size_LinkedList_i
 
   ! 1D integer arrays
 
