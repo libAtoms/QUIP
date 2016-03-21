@@ -114,7 +114,7 @@ module linearalgebra_module
   public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_RL_sub
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
-  public :: is_diagonal
+  public :: is_diagonal, integerDigits
 
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
@@ -179,12 +179,14 @@ module linearalgebra_module
   private :: matrix_print_mainlog, matrix_print, vector_print_mainlog, vector_print
   private :: matrix_z_print_mainlog, matrix_z_print, vector_z_print_mainlog, vector_z_print
   private :: int_matrix_print_mainlog, int_matrix_print
+  private :: logical_matrix_print_mainlog, logical_matrix_print
   private :: integer_array_print, integer_array_print_mainlog, logical_array_print, logical_array_print_mainlog
   interface print
      module procedure matrix_print_mainlog, matrix_print, vector_print_mainlog, vector_print
      module procedure matrix_z_print_mainlog, matrix_z_print, vector_z_print_mainlog, vector_z_print
      module procedure integer_array_print, integer_array_print_mainlog, logical_array_print_mainlog
      module procedure int_matrix_print_mainlog, int_matrix_print, logical_array_print
+     module procedure logical_matrix_print_mainlog, logical_matrix_print
   end interface
 
   private :: matrix_z_print_mathematica, matrix_print_mathematica
@@ -366,10 +368,11 @@ module linearalgebra_module
   end interface
 
   !% Test if matrix is square 
-  private :: matrix_square, matrix_z_square, int_matrix_square
+  private :: matrix_square, matrix_z_square, int_matrix_square, logical_matrix_square
   interface is_square
-     module procedure matrix_square, matrix_z_square, int_matrix_square
+     module procedure matrix_square, matrix_z_square, int_matrix_square, logical_matrix_square
   end interface
+  public :: is_square
 
   !% Test is matrix is unitary i.e. if $M M^{-1} = I$
   private :: matrix_is_orthogonal
@@ -1396,6 +1399,16 @@ CONTAINS
      sq = size(matrix,1) == size(matrix,2)
      
    end function int_matrix_square
+
+   function logical_matrix_square(matrix) result(sq)
+
+     logical, dimension(:,:), intent(in) :: matrix
+
+     logical :: sq
+     
+     sq = size(matrix,1) == size(matrix,2)
+     
+   end function logical_matrix_square
 
    ! is_square(matrix_z)
    !
@@ -3974,6 +3987,31 @@ CONTAINS
 
   end subroutine logical_array_print
 
+  subroutine logical_matrix_print_mainlog(this, verbosity)
+    logical, intent(in),dimension(:,:) :: this
+    integer, optional :: verbosity
+    call logical_matrix_print(this,verbosity,mainlog)
+  end subroutine logical_matrix_print_mainlog
+
+  subroutine logical_matrix_print(this,verbosity,file)
+
+    logical, dimension(:,:), intent(in) :: this
+    integer, optional,       intent(in) :: verbosity
+    type(inoutput),          intent(in) :: file
+
+    integer :: i,N,M
+    character(20) :: format
+    
+    N = size(this,1)
+    M = size(this,2)
+    write(format,'(a,i0,a)')'(',M,'L3)'
+
+    do i = 1, N
+       write(line,format) this(i,:)
+       call print(line,verbosity,file)
+    end do
+
+  end subroutine logical_matrix_print
 
   ! add to vector elements, random quantities in the range(-a/2,a/2)     
   subroutine vector_randomise(v,a)
@@ -7205,6 +7243,30 @@ CONTAINS
          coordination_function(r, upper_cutoff_in, upper_transition_width) * dcoordination_function(-r, -lower_cutoff_in, lower_transition_width)
 
    endfunction dcoordination_function_lower_upper
+
+   subroutine integerDigits(this,base,iDigits,error)
+      integer, intent(in) :: this, base
+      integer, dimension(:), intent(out) :: iDigits
+      integer, intent(out), optional :: error
+
+      integer :: i, my_this
+      integer, dimension(size(iDigits)) :: baseDigits
+
+      INIT_ERROR(error)
+
+      baseDigits = (/ (i, i = 0, size(iDigits)-1) /)
+      baseDigits = base ** baseDigits
+      if( this > sum(baseDigits) ) then
+         RAISE_ERROR("integerDigits: number too large, wouldn't fit",error)
+      endif
+
+      my_this = this
+      do i = size(iDigits), 1, -1
+         iDigits(i) = my_this / baseDigits(i)
+         my_this = mod(my_this,baseDigits(i))
+      enddo
+
+   endsubroutine integerDigits
 
 !!$
 !!$   function fermi_dirac_function(r,cutoff_in,transition_width)
