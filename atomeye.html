@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>AtomEye atomistic configuration viewer &mdash; quippy b9f75c6+ documentation</title>
+    <title>AtomEye atomistic configuration viewer &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Visualisation Tools" href="visualisation.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="visualisation.html" accesskey="U">Visualisation Tools</a> &raquo;</li> 
       </ul>
     </div>
@@ -81,7 +81,7 @@ atomistic configuration viewer.</p>
 <p><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> and <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a>
 objects can also be visualised with the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> module.</p>
 <p>For example, to create and visualise and 8-atom silicon bulk cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy.structures</span> <span class="kn">import</span> <span class="n">diamond</span><span class="p">,</span> <span class="n">supercell</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy.structures</span> <span class="kn">import</span> <span class="n">diamond</span><span class="p">,</span> <span class="n">supercell</span>
 <span class="kn">from</span> <span class="nn">atomeye</span> <span class="kn">import</span> <span class="n">AtomEyeViewer</span>
 
 <span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.43</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
@@ -91,19 +91,19 @@ objects can also be visualised with the <a class="reference internal" href="qlab
 <p>A window will pop up containing the silicon unit cell, which you can manipulate
 with the mouse, by issuing commands in the the python console or
 with a variety of AtomEye <a class="reference external" href="http://li.mit.edu/Archive/Graphics/A3/A3.html#keybinding">keyboard shortcuts</a>. To save an image in PNG format:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">viewer</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="s">&#39;si8.png&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="s1">&#39;si8.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/si8.png" class="align-center" src="_images/si8.png" />
 <p>Then, to change the display to a <img class="math" src="_images/math/8354c30d0537d3c6686e35fbe3572fe7c23b70b9.png" alt="2       imes2   imes2"/> supercell of
 bulk silicon, change the background colour to black, set the size and
 save an image you&#8217;d do the following:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">at</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">at</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
 
 <span class="n">viewer</span><span class="o">.</span><span class="n">change_bgcolor</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="mi">300</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="s">&#39;si2x2x2.png&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="s1">&#39;si2x2x2.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/si2x2x2.png" class="align-center" src="_images/si2x2x2.png" />
@@ -121,17 +121,17 @@ is one entry for each currently open AtomEye view window.</p>
 <dd><p>Dictionary of key/value pairs passed to <code class="xref py py-meth docutils literal"><span class="pre">AtomEyeView.update()</span></code> when
 a new window is created. Change this dictionary to modfiy the properties
 of new windows. The initial value is as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">default_state</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;variables&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s">&#39;n-&gt;xtal_mode&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                   <span class="s">&#39;n-&gt;suppress_printout&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                   <span class="s">&#39;n-&gt;bond_mode&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                   <span class="s">&#39;n-&gt;atom_r_ratio&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-                   <span class="s">&#39;n-&gt;small_cell_err_handler&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                   <span class="s">&#39;key-&gt;BackSpace&#39;</span><span class="p">:</span> <span class="s">&#39;load_config_backward&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">default_state</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;variables&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;n-&gt;xtal_mode&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                   <span class="s1">&#39;n-&gt;suppress_printout&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                   <span class="s1">&#39;n-&gt;bond_mode&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                   <span class="s1">&#39;n-&gt;atom_r_ratio&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+                   <span class="s1">&#39;n-&gt;small_cell_err_handler&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                   <span class="s1">&#39;key-&gt;BackSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;load_config_backward&#39;</span>
                    <span class="p">},</span>
-    <span class="s">&#39;commands&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;xtal_origin_goto 0.5 0.5 0.5&#39;</span><span class="p">,</span>
-                 <span class="s">&#39;toggle_parallel_projection&#39;</span><span class="p">],</span>
-    <span class="s">&#39;cutoff_lengths&#39;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="s1">&#39;commands&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;xtal_origin_goto 0.5 0.5 0.5&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;toggle_parallel_projection&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;cutoff_lengths&#39;</span><span class="p">:</span> <span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -810,12 +810,12 @@ line in a blocking sense.</p>
 <code class="descname">rcut_patch</code><span class="sig-paren">(</span><em>sym1</em>, <em>sym2</em>, <em>value</em>, <em>absolute=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.rcut_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.rcut_patch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds by <cite>delta</cite>.</p>
 <p>e.g. to increase cutoff for Si-Si bonds by 0.5 A use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>With <cite>absolute</cite> set to True, <cite>value</cite> is used to set the
 absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -851,8 +851,8 @@ absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.
 <p>The command is queued for later execution, unless <a class="reference internal" href="#atomeye.AtomEyeViewer.block" title="atomeye.AtomEyeViewer.block"><code class="xref py py-attr docutils literal"><span class="pre">block</span></code></a> is True.</p>
 <p>This functionality is also available by calling an instance
 directly, i.e. the following commands are equivalent:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">viewer</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s">&#39;toggle_coordination_coloring&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="p">(</span><span class="s">&#39;toggle_coordination_coloring&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s1">&#39;toggle_coordination_coloring&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="p">(</span><span class="s1">&#39;toggle_coordination_coloring&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1248,12 +1248,12 @@ atom index or list of atom indices to highlight particular atoms.</p>
 <code class="descclassname">atomeye.</code><code class="descname">rcut_patch</code><span class="sig-paren">(</span><em>sym1</em>, <em>sym2</em>, <em>value</em>, <em>absolute=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#rcut_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.rcut_patch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds by <cite>delta</cite>.</p>
 <p>e.g. to increase cutoff for Si-Si bonds by 0.5 A use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>With <cite>absolute</cite> set to True, <cite>value</cite> is used to set the
 absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1474,14 +1474,14 @@ Default is <code class="docutils literal"><span class="pre">[0.,1.,0.]</span></c
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="visualisation.html" >Visualisation Tools</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

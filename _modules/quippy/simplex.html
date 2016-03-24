@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.simplex &mdash; quippy b9f75c6+ documentation</title>
+    <title>quippy.simplex &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -67,23 +67,23 @@
           <div class="body" role="main">
             
   <h1>Source code for quippy.simplex</h1><div class="highlight"><pre>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   Copyright James Kermode 2010</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
-<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
-<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   When using this software, please cite the following reference:</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   Copyright James Kermode 2010</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c1"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c1"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Direct mimimisation and simulated annealing using the downhill simplex</span>
@@ -92,7 +92,7 @@
 <span class="sd">Code adapted from chapter 10 of Numerical Recipes (3rd edition).</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;DownhillSimplex&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DownhillSimplex&#39;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
@@ -134,7 +134,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ftol</span> <span class="o">=</span> <span class="n">ftol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NMAX</span> <span class="o">=</span> <span class="n">nmax</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">TINY</span> <span class="o">=</span> <span class="n">tiny</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ybest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ybest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pbest</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltas</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 
@@ -143,14 +143,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">deltas</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;either &quot;p&quot; or both of &quot;x0&quot; and &quot;deltas&quot; must be present&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;either &quot;p&quot; or both of &quot;x0&quot; and &quot;deltas&quot; must be present&#39;</span><span class="p">)</span>
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="nb">len</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="n">deltas</span> <span class="o">=</span> <span class="p">[</span><span class="n">deltas</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
 
-            <span class="c"># construct initial simplex</span>
+            <span class="c1"># construct initial simplex</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">deltas</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -158,7 +158,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpts</span><span class="p">)</span>
 
-        <span class="c"># initial function evaluations</span>
+        <span class="c1"># initial function evaluations</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpts</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
 
@@ -176,32 +176,32 @@
         <span class="n">ptry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="n">fac1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">ihi</span><span class="p">,:]</span><span class="o">*</span><span class="n">fac2</span>
         <span class="n">ytry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">ptry</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
 
-        <span class="c"># Save best ever value</span>
+        <span class="c1"># Save best ever value</span>
         <span class="k">if</span> <span class="n">ytry</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ybest</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pbest</span> <span class="o">=</span> <span class="n">ptry</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ybest</span> <span class="o">=</span> <span class="n">ytry</span>
 
         <span class="k">if</span> <span class="n">temperature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c"># Subtract thermal fluctuation to give the simplex Brownian motion</span>
+            <span class="c1"># Subtract thermal fluctuation to give the simplex Brownian motion</span>
             <span class="n">ytry</span> <span class="o">=</span> <span class="n">ytry</span> <span class="o">-</span> <span class="p">(</span><span class="o">-</span><span class="n">temperature</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">ytry</span> <span class="o">&lt;</span> <span class="n">yhi</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">]</span> <span class="o">=</span> <span class="n">ytry</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">ihi</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">ptry</span>
 
-        <span class="k">return</span> <span class="n">ytry</span>
-</div>
+        <span class="k">return</span> <span class="n">ytry</span></div>
+
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="c"># Find highest (worst), next-highest and lowest (best) points</span>
+        <span class="c1"># Find highest (worst), next-highest and lowest (best) points</span>
         <span class="n">order</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">argsort</span><span class="p">()</span>
         <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span><span class="p">,</span> <span class="n">inhi</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">order</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">order</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="c"># compute fractional range from highest to lowest and</span>
-        <span class="c"># return if done, putting best point and value in slot 0</span>
+        <span class="c1"># compute fractional range from highest to lowest and</span>
+        <span class="c1"># return if done, putting best point and value in slot 0</span>
         <span class="n">rtol</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">])</span><span class="o">/</span>
                   <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">TINY</span><span class="p">))</span>
 
-        <span class="c">#print &#39;ylo&#39;, y[ilo], &#39;yhi&#39;, y[ihi], &#39;rtol&#39;, rtol</span>
+        <span class="c1">#print &#39;ylo&#39;, y[ilo], &#39;yhi&#39;, y[ihi], &#39;rtol&#39;, rtol</span>
 
         <span class="k">if</span> <span class="n">rtol</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftol</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -210,31 +210,31 @@
             <span class="k">raise</span> <span class="n">Converged</span>
 
         <span class="n">nfunc</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="c"># new iteration. Start by reflecting simplex from the high point.</span>
+        <span class="c1"># new iteration. Start by reflecting simplex from the high point.</span>
         <span class="n">ytry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">ihi</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">],</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ytry</span> <span class="o">&lt;=</span> <span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">]:</span>
-            <span class="c"># new point is better than best point, so try additional</span>
-            <span class="c"># extrapolation by factor of 2.</span>
-            <span class="k">print</span> <span class="s">&#39;reflection and expansion&#39;</span><span class="p">,</span> <span class="n">ihi</span>
+            <span class="c1"># new point is better than best point, so try additional</span>
+            <span class="c1"># extrapolation by factor of 2.</span>
+            <span class="k">print</span> <span class="s1">&#39;reflection and expansion&#39;</span><span class="p">,</span> <span class="n">ihi</span>
             <span class="n">ytry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">ihi</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">],</span> <span class="mf">2.0</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">ytry</span> <span class="o">&gt;=</span> <span class="n">y</span><span class="p">[</span><span class="n">inhi</span><span class="p">]:</span>
-            <span class="c"># Reflected point is worse than second-highest point, so look</span>
-            <span class="c"># for an intermediate lower point, i.e. do a one-dimensional</span>
-            <span class="c"># contraction.</span>
-            <span class="k">print</span> <span class="s">&#39;contraction&#39;</span><span class="p">,</span> <span class="n">ihi</span>
+            <span class="c1"># Reflected point is worse than second-highest point, so look</span>
+            <span class="c1"># for an intermediate lower point, i.e. do a one-dimensional</span>
+            <span class="c1"># contraction.</span>
+            <span class="k">print</span> <span class="s1">&#39;contraction&#39;</span><span class="p">,</span> <span class="n">ihi</span>
             <span class="n">ysave</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">]</span>
             <span class="n">ytry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">ihi</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">ihi</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ytry</span> <span class="o">&gt;=</span> <span class="n">ysave</span><span class="p">:</span>
-                <span class="c"># Can&#39;t get rid of high point. Contract around the lowest point</span>
+                <span class="c1"># Can&#39;t get rid of high point. Contract around the lowest point</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpts</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">ilo</span><span class="p">:</span>
-                        <span class="c">#print &#39;multiple contraction&#39;, i</span>
+                        <span class="c1">#print &#39;multiple contraction&#39;, i</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">ilo</span><span class="p">,:])</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
                 <span class="n">nfunc</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&#39;reflection&#39;</span><span class="p">,</span> <span class="n">ihi</span>
-            <span class="n">nfunc</span> <span class="o">-=</span> <span class="mi">1</span> <span class="c"># correct evaluation count</span>
+            <span class="k">print</span> <span class="s1">&#39;reflection&#39;</span><span class="p">,</span> <span class="n">ihi</span>
+            <span class="n">nfunc</span> <span class="o">-=</span> <span class="mi">1</span> <span class="c1"># correct evaluation count</span>
 
         <span class="k">return</span> <span class="n">nfunc</span>
 
@@ -256,9 +256,9 @@
             <span class="k">except</span> <span class="n">Converged</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NMAX</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">NotConverged</span><span class="p">(</span><span class="s">&quot;NMAX exceeded&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">NotConverged</span><span class="p">(</span><span class="s2">&quot;NMAX exceeded&quot;</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="DownhillSimplex.anneal_step"><a class="viewcode-back" href="../../simplex.html#quippy.simplex.DownhillSimplex.anneal_step">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">iter</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Anneal for *iter* steps at temperature *temperature*.</span>
@@ -267,8 +267,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-            <span class="c"># add positive logarithmically distributed random variable</span>
-            <span class="c"># proportional to temperature to function values at each vertex</span>
+            <span class="c1"># add positive logarithmically distributed random variable</span>
+            <span class="c1"># proportional to temperature to function values at each vertex</span>
             <span class="n">y_fluc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">temperature</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mpts</span><span class="p">))</span>
 
             <span class="k">try</span><span class="p">:</span>
@@ -277,9 +277,9 @@
                 <span class="k">return</span> <span class="bp">True</span>
 
             <span class="k">if</span> <span class="nb">iter</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">return</span> <span class="bp">False</span></div>
 
-</div>
+
     <span class="k">def</span> <span class="nf">anneal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">anneal_step</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
@@ -293,15 +293,15 @@
                     <span class="k">del</span> <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">patches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="k">del</span> <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">triplot</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">p</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">p</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;r.--&#39;</span><span class="p">)</span>
+                <span class="n">triplot</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">p</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">p</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;r.--&#39;</span><span class="p">)</span>
                 <span class="n">draw</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">pause</span><span class="p">:</span>
-                    <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;continue...&#39;</span><span class="p">)</span>
+                    <span class="nb">raw_input</span><span class="p">(</span><span class="s1">&#39;continue...&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&#39;step </span><span class="si">%d</span><span class="s"> temperature </span><span class="si">%f</span><span class="s"> x </span><span class="si">%s</span><span class="s"> y </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">ilo</span><span class="p">,:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">])</span>
+                <span class="k">print</span> <span class="s1">&#39;step </span><span class="si">%d</span><span class="s1"> temperature </span><span class="si">%f</span><span class="s1"> x </span><span class="si">%s</span><span class="s1"> y </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">ilo</span><span class="p">,:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">])</span></div>
 
-</div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     
     <span class="n">do_graphics</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="k">if</span> <span class="n">do_graphics</span><span class="p">:</span>
@@ -319,12 +319,12 @@
     <span class="n">ds</span> <span class="o">=</span> <span class="n">DownhillSimplex</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">],</span> <span class="n">deltas</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">anneal</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="n">do_graphics</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
-    <span class="c"># restart minimiser from best position found during annealing</span>
+    <span class="c1"># restart minimiser from best position found during annealing</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">ftol</span> <span class="o">=</span> <span class="mf">1e-6</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">pbest</span><span class="p">,</span> <span class="n">deltas</span><span class="o">=.</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">ds</span><span class="o">.</span><span class="n">minimise</span><span class="p">()</span>
 
-    <span class="c"># global minimum expected at ~[-0.195, -0.1]</span>
+    <span class="c1"># global minimum expected at ~[-0.195, -0.1]</span>
 </pre></div>
 
           </div>
@@ -341,14 +341,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

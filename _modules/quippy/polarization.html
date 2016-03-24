@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.polarization &mdash; quippy b9f75c6+ documentation</title>
+    <title>quippy.polarization &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -67,13 +67,13 @@
           <div class="body" role="main">
             
   <h1>Source code for quippy.polarization</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;This module contains utility functions for polarizable potentials.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;This module contains utility functions for polarizable potentials.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">quippy.units</span> <span class="kn">import</span> <span class="n">BOHR</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">PI</span>
 <span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">frange</span><span class="p">,</span> <span class="n">fidentity</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;born_effective_charge&#39;</span><span class="p">,</span> <span class="s">&#39;epsilon_infty&#39;</span><span class="p">,</span> <span class="s">&#39;screened_effective_charge&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;born_effective_charge&#39;</span><span class="p">,</span> <span class="s1">&#39;epsilon_infty&#39;</span><span class="p">,</span> <span class="s1">&#39;screened_effective_charge&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="born_effective_charge"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.born_effective_charge">[docs]</a><span class="k">def</span> <span class="nf">born_effective_charge</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
@@ -111,9 +111,9 @@
 
          <span class="n">born_tensor</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dip2</span> <span class="o">-</span> <span class="n">dip1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">dx</span><span class="o">*</span><span class="mf">2.0</span><span class="p">)</span>
 
-   <span class="k">return</span> <span class="n">born_tensor</span>
+   <span class="k">return</span> <span class="n">born_tensor</span></div>
          
-</div>
+
 <div class="viewcode-block" id="epsilon_infty"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.epsilon_infty">[docs]</a><span class="k">def</span> <span class="nf">epsilon_infty</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">deltafield</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">zerotol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Calculate dielectric tensor.</span>
@@ -124,14 +124,14 @@
    <span class="n">dielectric_tensor</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
    <span class="n">celldip</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
 
-   <span class="c"># Calculation with no applied field</span>
+   <span class="c1"># Calculation with no applied field</span>
    <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">applied_efield</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
    <span class="n">celldip0</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">BOHR</span>
 
-   <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;ext_efield&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+   <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;ext_efield&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
-   <span class="c"># Now we apply field along each of x,y,z in turn, and</span>
-   <span class="c"># calculate overall cell dipole moment</span>
+   <span class="c1"># Now we apply field along each of x,y,z in turn, and</span>
+   <span class="c1"># calculate overall cell dipole moment</span>
    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
 
       <span class="n">at</span><span class="o">.</span><span class="n">ext_efield</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -146,9 +146,9 @@
 
    <span class="n">dielectric_tensor</span><span class="p">[</span><span class="n">dielectric_tensor</span> <span class="o">&lt;</span> <span class="n">zerotol</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-   <span class="k">return</span> <span class="n">dielectric_tensor</span>
+   <span class="k">return</span> <span class="n">dielectric_tensor</span></div>
       
-</div>
+
 <span class="k">def</span> <span class="nf">calc_effective_charge_vectors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">born_tensor</span><span class="p">):</span>
 
    <span class="n">effective_charge</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -173,8 +173,8 @@
                <span class="k">if</span> <span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span> <span class="k">continue</span>
                <span class="n">screened</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">born</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">])</span>
 
-   <span class="k">return</span> <span class="n">screened</span>
-</div>
+   <span class="k">return</span> <span class="n">screened</span></div>
+
 <span class="k">def</span> <span class="nf">dipole_moment</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
 
@@ -201,14 +201,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

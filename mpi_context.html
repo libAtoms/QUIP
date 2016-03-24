@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>MPI parallel interface &mdash; quippy b9f75c6+ documentation</title>
+    <title>MPI parallel interface &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -83,7 +83,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-obj docutils literal"><span class="pre">MPI_context</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-obj docutils literal"><span class="pre">MPI_context</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -135,7 +135,7 @@
 </table>
 <dl class="class">
 <dt id="quippy.mpi_context.MPI_context">
-<em class="property">class </em><code class="descclassname">quippy.mpi_context.</code><code class="descname">MPI_context</code><span class="sig-paren">(</span><span class="optional">[</span><em>communicator</em>, <em>context</em>, <em>dims</em>, <em>periods</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.mpi_context.</code><code class="descname">MPI_context</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>mpi_context_initialise([communicator,context,dims,periods,error])</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -161,7 +161,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.all" title="quippy.mpi_context.MPI_context.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a>(v,[error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.all" title="quippy.mpi_context.MPI_context.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -172,7 +172,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.any" title="quippy.mpi_context.MPI_context.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a>(v,[error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.any" title="quippy.mpi_context.MPI_context.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -183,7 +183,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal"><span class="pre">barrier</span></code></a>([error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal"><span class="pre">barrier</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -197,7 +197,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.bcast" title="quippy.mpi_context.MPI_context.bcast"><code class="xref py py-obj docutils literal"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">bcast</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal"><span class="pre">cart_shift</span></code></a>(direction,displ,[error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal"><span class="pre">cart_shift</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -208,7 +208,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect" title="quippy.mpi_context.MPI_context.collect"><code class="xref py py-obj docutils literal"><span class="pre">collect</span></code></a>(v_in,n2,n3,[error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect" title="quippy.mpi_context.MPI_context.collect"><code class="xref py py-obj docutils literal"><span class="pre">collect</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -230,7 +230,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal"><span class="pre">free_context</span></code></a>([error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal"><span class="pre">free_context</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -241,13 +241,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.max" title="quippy.mpi_context.MPI_context.max"><code class="xref py py-obj docutils literal"><span class="pre">max</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.max" title="quippy.mpi_context.MPI_context.max"><code class="xref py py-obj docutils literal"><span class="pre">max</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">max</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.min" title="quippy.mpi_context.MPI_context.min"><code class="xref py py-obj docutils literal"><span class="pre">min</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.min" title="quippy.mpi_context.MPI_context.min"><code class="xref py py-obj docutils literal"><span class="pre">min</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">min</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.mpi_print" title="quippy.mpi_context.MPI_context.mpi_print"><code class="xref py py-obj docutils literal"><span class="pre">mpi_print</span></code></a>(lines)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.mpi_print" title="quippy.mpi_context.MPI_context.mpi_print"><code class="xref py py-obj docutils literal"><span class="pre">mpi_print</span></code></a>(lines)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -258,7 +261,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -269,10 +272,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sendrecv" title="quippy.mpi_context.MPI_context.sendrecv"><code class="xref py py-obj docutils literal"><span class="pre">sendrecv</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sendrecv" title="quippy.mpi_context.MPI_context.sendrecv"><code class="xref py py-obj docutils literal"><span class="pre">sendrecv</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sendrecv</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal"><span class="pre">split_context</span></code></a>(split_index,[error])</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal"><span class="pre">split_context</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -283,17 +292,17 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum" title="quippy.mpi_context.MPI_context.sum"><code class="xref py py-obj docutils literal"><span class="pre">sum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum" title="quippy.mpi_context.MPI_context.sum"><code class="xref py py-obj docutils literal"><span class="pre">sum</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sum</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum_in_place" title="quippy.mpi_context.MPI_context.sum_in_place"><code class="xref py py-obj docutils literal"><span class="pre">sum_in_place</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum_in_place" title="quippy.mpi_context.MPI_context.sum_in_place"><code class="xref py py-obj docutils literal"><span class="pre">sum_in_place</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sum_in_place</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.all">
-<code class="descname">all</code><span class="sig-paren">(</span><em>v</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.all" title="Permalink to this definition">¶</a></dt>
+<code class="descname">all</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.all" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -313,7 +322,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.any">
-<code class="descname">any</code><span class="sig-paren">(</span><em>v</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.any" title="Permalink to this definition">¶</a></dt>
+<code class="descname">any</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.any" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -333,7 +342,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.barrier">
-<code class="descname">barrier</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.barrier" title="Permalink to this definition">¶</a></dt>
+<code class="descname">barrier</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.barrier" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -359,9 +368,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -378,9 +387,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -397,8 +406,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -415,8 +424,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -433,8 +442,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;D&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -451,8 +460,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;D&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -469,8 +478,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-0 array(int,'i')</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -487,9 +496,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(*))</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('S') with bounds (qp_n0,(*))</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -506,9 +515,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-3 array(&#8216;S&#8217;) with bounds (qp_n0,qp_n1,(*))</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-3 array('S') with bounds (qp_n0,qp_n1,(*))</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -525,9 +534,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-0 array(int,'i')</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -544,9 +553,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array(float,&#8217;d&#8217;)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-0 array(float,'d')</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -563,8 +572,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -581,8 +590,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -599,9 +608,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array(string(len=-1),&#8217;c&#8217;)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-0 array(string(len=-1),'c')</em>) &#8211; </li>
 <li><strong>root</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -615,7 +624,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.cart_shift">
-<code class="descname">cart_shift</code><span class="sig-paren">(</span><em>direction</em>, <em>displ</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.cart_shift" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cart_shift</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.cart_shift" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -635,7 +644,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.collect">
-<code class="descname">collect</code><span class="sig-paren">(</span><em>v_in</em>, <em>n2</em>, <em>n3</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.collect" title="Permalink to this definition">¶</a></dt>
+<code class="descname">collect</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.collect" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -691,7 +700,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.free_context">
-<code class="descname">free_context</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.free_context" title="Permalink to this definition">¶</a></dt>
+<code class="descname">free_context</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.free_context" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -718,7 +727,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -739,7 +748,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -768,7 +777,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -789,7 +798,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -821,7 +830,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.print_" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -847,14 +856,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sendbuf</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>sendbuf</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
 <li><strong>dest</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>sendtag</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_recvbuf,0)</li>
 <li><strong>source</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>recvtag</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>nrecv</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>nrecv</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -879,7 +888,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <li><strong>sendtag</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>source</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>recvtag</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -899,14 +908,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sendbuf</strong> (<em>input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(1))</em>) &#8211; </li>
+<li><strong>sendbuf</strong> (<em>input rank-2 array('S') with bounds (qp_n0,(1))</em>) &#8211; </li>
 <li><strong>dest</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>sendtag</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_recvbuf,0)</li>
 <li><strong>source</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>recvtag</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>nrecv</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>nrecv</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -923,7 +932,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.split_context">
-<code class="descname">split_context</code><span class="sig-paren">(</span><em>split_index</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.split_context" title="Permalink to this definition">¶</a></dt>
+<code class="descname">split_context</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.split_context" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -955,7 +964,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -976,7 +985,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1004,8 +1013,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;D&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1022,8 +1031,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;D&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1040,8 +1049,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1058,8 +1067,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-0 array(int,'i')</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1076,8 +1085,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1094,8 +1103,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array(float,&#8217;d&#8217;)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-0 array(float,'d')</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1112,8 +1121,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-3 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1,qp_n2)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-3 array('d') with bounds (qp_n0,qp_n1,qp_n2)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1130,8 +1139,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1183,14 +1192,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

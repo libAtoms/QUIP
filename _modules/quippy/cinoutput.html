@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.cinoutput &mdash; quippy b9f75c6+ documentation</title>
+    <title>quippy.cinoutput &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -67,23 +67,23 @@
           <div class="body" role="main">
             
   <h1>Source code for quippy.cinoutput</h1><div class="highlight"><pre>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   Copyright James Kermode 2010</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
-<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
-<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   When using this software, please cite the following reference:</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   Copyright James Kermode 2010</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c1"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c1"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">_cinoutput</span>
 <span class="kn">from</span> <span class="nn">quippy._cinoutput</span> <span class="kn">import</span> <span class="o">*</span>
@@ -99,7 +99,7 @@
 <span class="kn">import</span> <span class="nn">itertools</span>
 
 <span class="n">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">__doc__</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;CInOutputReader&#39;</span><span class="p">,</span> <span class="s">&#39;CInOutputWriter&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;CInOutputReader&#39;</span><span class="p">,</span> <span class="s1">&#39;CInOutputWriter&#39;</span><span class="p">]</span>
 
 <span class="k">class</span> <span class="nc">CInOutput</span><span class="p">(</span><span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">INPUT</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">netcdf4</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">no_compute_index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -122,7 +122,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">got_index</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frame</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;This CInOutput does not have an index&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;This CInOutput does not have an index&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">zero</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">zero</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
@@ -133,7 +133,7 @@
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">properties_array</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
              <span class="n">zero</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">str</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">estr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">range</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">range</span> <span class="o">==</span> <span class="s">&#39;empty&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">range</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">range</span> <span class="o">==</span> <span class="s1">&#39;empty&#39;</span><span class="p">:</span>
             <span class="nb">range</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">string</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">str</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -145,7 +145,7 @@
                                       <span class="n">zero</span><span class="o">=</span><span class="n">zero</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">,</span> <span class="nb">str</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">estr</span><span class="o">=</span><span class="n">estr</span><span class="p">,</span>
                                       <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">,</span> <span class="n">re</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s">&#39;kind IO EOF&#39;</span> <span class="ow">in</span> <span class="n">__builtin__</span><span class="o">.</span><span class="n">str</span><span class="p">(</span><span class="n">re</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;kind IO EOF&#39;</span> <span class="ow">in</span> <span class="n">__builtin__</span><span class="o">.</span><span class="n">str</span><span class="p">(</span><span class="n">re</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="n">__builtin__</span><span class="o">.</span><span class="n">str</span><span class="p">(</span><span class="n">re</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span>
@@ -157,7 +157,7 @@
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">int_format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">real_format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
               <span class="n">shuffle</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">deflate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">deflate_level</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">estr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_index</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="s">&#39;dtype&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">properties</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">dtype</span><span class="p">(</span><span class="s">&#39;S1&#39;</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">properties</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;S1&#39;</span><span class="p">)):</span>
             <span class="n">properties</span> <span class="o">=</span> <span class="n">padded_str_array</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">string</span> <span class="ow">and</span> <span class="n">estr</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -173,7 +173,7 @@
 
 
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">FortranDerivedTypes</span>
-<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(cinoutput)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutput</span>
+<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s1">&#39;type(cinoutput)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutput</span>
 
 <div class="viewcode-block" id="CInOutputReader"><a class="viewcode-back" href="../../io.html#quippy.cinoutput.CInOutputReader">[docs]</a><span class="k">class</span> <span class="nc">CInOutputReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to read atoms from a CInOutput. Supports generator and random access via indexing.&quot;&quot;&quot;</span>
@@ -186,7 +186,7 @@
                                     <span class="n">no_compute_index</span><span class="o">=</span><span class="n">no_compute_index</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="n">one_frame_per_file</span><span class="p">,</span>
                                     <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">netcdf_file</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">string</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">source</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.nc&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">string</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">source</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">netcdf_file</span> <span class="o">=</span> <span class="n">netcdf_file</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
@@ -242,17 +242,17 @@
                         <span class="n">a</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">a</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Attribute </span><span class="si">%s</span><span class="s"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Attribute </span><span class="si">%s</span><span class="s1"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Attribute </span><span class="si">%s</span><span class="s"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Attribute </span><span class="si">%s</span><span class="s1"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span></div>
 
-</div>
-<span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> \
+
+<span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> \
     <span class="n">AtomsReaders</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputReader</span>
 
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;stdin&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">CInOutputStdinReader</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s">&#39;stdin&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">source</span> <span class="o">==</span> <span class="s">&#39;stdin&#39;</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;stdin&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">CInOutputStdinReader</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;stdin&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;stdin&#39;</span>
     <span class="n">source</span> <span class="o">=</span> <span class="n">CInOutput</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">INPUT</span><span class="p">)</span>
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
@@ -279,10 +279,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</div>
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;stdout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> \
-    <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputWriter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;stdout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">]</span> \
+    <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputWriter</span>
 
 <span class="k">class</span> <span class="nc">CInOutputStringReader</span><span class="p">(</span><span class="n">CInOutputReader</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">no_compute_index</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
@@ -291,18 +291,18 @@
                                  <span class="n">no_compute_index</span><span class="o">=</span><span class="n">no_compute_index</span><span class="p">,</span> <span class="n">zero</span><span class="o">=</span><span class="n">zero</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="n">one_frame_per_file</span><span class="p">,</span>
                                  <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-<span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;string&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputStringReader</span>
+<span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;string&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputStringReader</span>
 
 <span class="k">class</span> <span class="nc">CInOutputStringWriter</span><span class="p">(</span><span class="n">CInOutputWriter</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">netcdf4</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="n">dest</span> <span class="o">==</span> <span class="s">&#39;string&#39;</span>
+        <span class="k">assert</span> <span class="n">dest</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span>
         <span class="n">CInOutputWriter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">,</span> <span class="n">netcdf4</span><span class="o">=</span><span class="n">netcdf4</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="n">one_frame_per_file</span><span class="p">,</span>
                                  <span class="n">string</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">)</span>
 
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;string&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputStringWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;string&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputStringWriter</span>
 
 
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;out&#39;</span><span class="p">)</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;out&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">EvalOutputReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reader for QUIP `eval` output files</span>
@@ -310,9 +310,9 @@
 <span class="sd">    Extracts XYZ configurations from lines beginnging with &quot;AT &quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">lines</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
-    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;AT &#39;</span><span class="p">)]</span>
-    <span class="n">reader</span> <span class="o">=</span> <span class="n">CInOutputStringReader</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;AT &#39;</span><span class="p">)]</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">CInOutputStringReader</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">at</span>
 </pre></div>
@@ -331,14 +331,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

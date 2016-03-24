@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Step 1: Setup of the Silicon model system &mdash; quippy b9f75c6+ documentation</title>
+    <title>Step 1: Setup of the Silicon model system &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="next" title="Step 2: Classical MD simulation of fracture in Si" href="adaptive-qmmm-step2.html" />
     <link rel="prev" title="Theoretical background" href="adaptive-qmmm-theory.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="adaptive-qmmm-theory.html" title="Theoretical background"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
@@ -128,7 +128,7 @@ approximately 2D model system in the <a class="reference internal" href="adaptiv
 <h3>Import the relevant modules and functions<a class="headerlink" href="#import-the-relevant-modules-and-functions" title="Permalink to this headline">¶</a></h3>
 <p>We start by importing all the functions we will need. Create a new
 script named <code class="docutils literal"><span class="pre">make_crack.py</span></code> and add the following lines:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ase.structure</span> <span class="kn">import</span> <span class="n">bulk</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.lattice</span> <span class="kn">import</span> <span class="n">bulk</span>
 <span class="kn">from</span> <span class="nn">ase.lattice.cubic</span> <span class="kn">import</span> <span class="n">Diamond</span>
 <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixAtoms</span>
 <span class="kn">import</span> <span class="nn">ase.units</span> <span class="kn">as</span> <span class="nn">units</span>
@@ -164,31 +164,31 @@ the first (uncommented) one, <img class="math" src="_images/math/99efa0e4b4ea765
 means a crack propagating on the <img class="math" src="_images/math/e97bf8fc8cd6792f35fccb06cdfbe293de724fe5.png" alt="(111)"/> cleavage plane (the
 lowest surface energy of all silicon surfaces) with the crack front
 along the <img class="math" src="_images/math/845b153e656202870fc0def55c85938d9d4e8273.png" alt="[01\bar{1}]"/> direction:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># System 1. (111)[0-11]</span>
-<span class="n">crack_direction</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>      <span class="c"># Miller index of x-axis</span>
-<span class="n">cleavage_plane</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>        <span class="c"># Miller index of y-axis</span>
-<span class="n">crack_front</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>          <span class="c"># Miller index of z-axis</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># System 1. (111)[0-11]</span>
+<span class="n">crack_direction</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>      <span class="c1"># Miller index of x-axis</span>
+<span class="n">cleavage_plane</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>        <span class="c1"># Miller index of y-axis</span>
+<span class="n">crack_front</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>          <span class="c1"># Miller index of z-axis</span>
 
-<span class="c"># # System 2. (110)[001]</span>
-<span class="c"># crack_direction = (1,-1,0)</span>
-<span class="c"># cleavage_plane = (1,1,0)</span>
-<span class="c"># crack_front = (0,0,1)</span>
+<span class="c1"># # System 2. (110)[001]</span>
+<span class="c1"># crack_direction = (1,-1,0)</span>
+<span class="c1"># cleavage_plane = (1,1,0)</span>
+<span class="c1"># crack_front = (0,0,1)</span>
 
-<span class="c"># # System 3. (110)[1-10]</span>
-<span class="c"># crack_direction = (0,0,-1)</span>
-<span class="c"># cleavage_plane = (1,1,0)</span>
-<span class="c"># crack_front = (1,-1,0)</span>
+<span class="c1"># # System 3. (110)[1-10]</span>
+<span class="c1"># crack_direction = (0,0,-1)</span>
+<span class="c1"># cleavage_plane = (1,1,0)</span>
+<span class="c1"># crack_front = (1,-1,0)</span>
 </pre></div>
 </div>
 <p>If you have time later, you can come back to this point and change to
 one of the other fracture systems. Next we need various geometric
 parameters:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">width</span> <span class="o">=</span> <span class="mf">200.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>              <span class="c"># Width of crack slab</span>
-<span class="n">height</span> <span class="o">=</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>             <span class="c"># Height of crack slab</span>
-<span class="n">vacuum</span> <span class="o">=</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>             <span class="c"># Amount of vacuum around slab</span>
-<span class="n">crack_seed_length</span> <span class="o">=</span> <span class="mf">40.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>   <span class="c"># Length of seed crack</span>
-<span class="n">strain_ramp_length</span> <span class="o">=</span> <span class="mf">30.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c"># Distance over which strain is ramped up</span>
-<span class="n">initial_G</span> <span class="o">=</span> <span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c"># Initial energy flow to crack tip</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">width</span> <span class="o">=</span> <span class="mf">200.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>              <span class="c1"># Width of crack slab</span>
+<span class="n">height</span> <span class="o">=</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>             <span class="c1"># Height of crack slab</span>
+<span class="n">vacuum</span> <span class="o">=</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>             <span class="c1"># Amount of vacuum around slab</span>
+<span class="n">crack_seed_length</span> <span class="o">=</span> <span class="mf">40.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>   <span class="c1"># Length of seed crack</span>
+<span class="n">strain_ramp_length</span> <span class="o">=</span> <span class="mf">30.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c1"># Distance over which strain is ramped up</span>
+<span class="n">initial_G</span> <span class="o">=</span> <span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># Initial energy flow to crack tip</span>
 </pre></div>
 </div>
 <p>Note the explicit unit conversion: some of this is unnecessary as we
@@ -197,19 +197,19 @@ are using the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/
 widely used units of J/m<sup>2</sup>.</p>
 <p>Next we define some parameters related to the classical interatomic
 potential:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">relax_fmax</span> <span class="o">=</span> <span class="mf">0.025</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">eV</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c"># Maximum force criteria</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">relax_fmax</span> <span class="o">=</span> <span class="mf">0.025</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">eV</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c1"># Maximum force criteria</span>
 
-<span class="n">param_file</span> <span class="o">=</span> <span class="s">&#39;params.xml&#39;</span>            <span class="c"># XML file containing</span>
-                                     <span class="c"># interatomic potential parameters</span>
-<span class="n">mm_init_args</span> <span class="o">=</span> <span class="s">&#39;IP SW&#39;</span>               <span class="c"># Initialisation arguments</span>
-                                     <span class="c"># for the classical potential</span>
+<span class="n">param_file</span> <span class="o">=</span> <span class="s1">&#39;params.xml&#39;</span>            <span class="c1"># XML file containing</span>
+                                     <span class="c1"># interatomic potential parameters</span>
+<span class="n">mm_init_args</span> <span class="o">=</span> <span class="s1">&#39;IP SW&#39;</span>               <span class="c1"># Initialisation arguments</span>
+                                     <span class="c1"># for the classical potential</span>
 </pre></div>
 </div>
 <p>And finally the output file:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">output_file</span> <span class="o">=</span> <span class="s">&#39;crack.xyz&#39;</span>            <span class="c"># File to which structure will be written</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">output_file</span> <span class="o">=</span> <span class="s1">&#39;crack.xyz&#39;</span>            <span class="c1"># File to which structure will be written</span>
 </pre></div>
 </div>
-<p>You should download the <a class="reference download internal" href="_downloads/params.xml"><code class="xref download docutils literal"><span class="pre">params.xml</span></code></a> file, which contains
+<p>You should download the <a class="reference download internal" href="_downloads/params.xml" download=""><code class="xref download docutils literal"><span class="pre">params.xml</span></code></a> file, which contains
 the parameters for the SW potential (and also for DFTB, needed for
 <a class="reference internal" href="adaptive-qmmm-step3.html#step3"><span>Step 3: LOTF hybrid MD simulation of fracture in Si</span></a>)</p>
 </div>
@@ -219,7 +219,7 @@ the parameters for the SW potential (and also for DFTB, needed for
 let&#8217;s first build the 8-atom diamond cubic cell for silicon, with an initial
 guess at lattice constant of 5.44 A. This can be done using the
 <code class="xref py py-func docutils literal"><span class="pre">bulk()</span></code> function from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/structure.html#module-ase.structure" title="(in ASE v)"><code class="xref py py-mod docutils literal"><span class="pre">ase.structure</span></code></a> module:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Build the 8-atom diamond cubic cell for Si</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">si_bulk</span> <span class="o">=</span> <span class="o">...</span>            <span class="c1"># Build the 8-atom diamond cubic cell for Si</span>
 </pre></div>
 </div>
 <p>The variable <cite>si_bulk</cite> is an <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object.  It
@@ -231,7 +231,7 @@ have imported everything from the <a class="reference internal" href="qlab.html#
 able to interactively visualise the Si unit cell with the
 <a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> function from the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> module, which you
 should type in at the <cite>ipython</cite> prompt:</p>
-<div class="highlight-python"><div class="highlight"><pre>In [5]: view(si_bulk)
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [5]: view(si_bulk)
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/si_bulk.png"><img alt="_images/si_bulk.png" class="align-center" src="_images/si_bulk.png" style="width: 300px;" /></a>
@@ -246,7 +246,7 @@ one). Press <cite>b</cite> to toggle the display of bonds. For more help on
 for the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> and <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> modules.</p>
 <p>Now, we initialise the Stillinger-Weber (SW) classical interatomic
 potential using quippy&#8217;s <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> class</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s">&#39;IP SW&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s">&#39;params.xml&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;params.xml&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The equilibrium lattice constant <cite>a0</cite> can now be found by minimising the
@@ -254,7 +254,7 @@ cell degrees of freedom with respect to the virial tensor calculated by the
 SW potential. First, we need to attach a calculator (i.e. the SW
 potential, <cite>mm_pot</cite> we just created) to the <cite>si_bulk</cite> object,
 using the method <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_calculator" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">set_calculator()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span><span class="o">.</span> <span class="o">...</span>             <span class="c"># Attach the SW potential to si_bulk</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">si_bulk</span><span class="o">.</span> <span class="o">...</span>             <span class="c1"># Attach the SW potential to si_bulk</span>
 </pre></div>
 </div>
 <p>This means that subsequent requests to calculate energy or forces of
@@ -265,9 +265,9 @@ requesting that both atomic positions and cell degrees of freedom
 should be relaxed. Then run the minimisation until the maximum force
 is below <code class="docutils literal"><span class="pre">fmax=1e-2</span></code>, using the <a class="reference internal" href="potential.html#quippy.potential.Minim.run" title="quippy.potential.Minim.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a>
 method</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>                           <span class="c"># Initialise the minimiser from si_bulk</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Minimising bulk unit cell&#39;</span><span class="p">)</span>
-<span class="n">minim</span><span class="o">.</span> <span class="o">...</span>                            <span class="c"># Run the minimisation</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>                           <span class="c1"># Initialise the minimiser from si_bulk</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Minimising bulk unit cell&#39;</span><span class="p">)</span>
+<span class="n">minim</span><span class="o">.</span> <span class="o">...</span>                            <span class="c1"># Run the minimisation</span>
 </pre></div>
 </div>
 <p>The lattice constant <cite>a0</cite> can be easily obtained from the relaxed
@@ -276,22 +276,22 @@ the <cite>si_bulk</cite> object, which returns a <img class="math" src="_images/
 containing the lattice vectors as rows in Cartesian coordinates,
 i.e. <code class="docutils literal"><span class="pre">si_bulk.cell[0,0]</span></code> is the <cite>x</cite> coordinate of the first lattice
 vector.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">a0</span> <span class="o">=</span> <span class="o">...</span>                                <span class="c"># Get the lattice constant</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Lattice constant </span><span class="si">%.3f</span><span class="s"> A</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">a0</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a0</span> <span class="o">=</span> <span class="o">...</span>                                <span class="c1"># Get the lattice constant</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Lattice constant </span><span class="si">%.3f</span><span class="s1"> A</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">a0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As a check, you should find a value for <cite>a0</cite> of around 5.431 A.</p>
 <p>Once you have obtained <cite>a0</cite>, you should replace the <cite>si_bulk</cite> object
 with a new bulk cell using this lattice constant, so that the
 off-diagonal components of the lattice are exactly zero:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">si_bulk</span> <span class="o">=</span> <span class="o">...</span>   <span class="c"># Make a new 8-atom bulk cell with correct a0</span>
-<span class="n">si_bulk</span><span class="o">.</span> <span class="o">...</span>    <span class="c"># re-attach the SW potential as a calculator</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">si_bulk</span> <span class="o">=</span> <span class="o">...</span>   <span class="c1"># Make a new 8-atom bulk cell with correct a0</span>
+<span class="n">si_bulk</span><span class="o">.</span> <span class="o">...</span>    <span class="c1"># re-attach the SW potential as a calculator</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="milestone-1-1">
 <h3>Milestone 1.1<a class="headerlink" href="#milestone-1-1" title="Permalink to this headline">¶</a></h3>
-<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_1.py"><code class="xref download docutils literal"><span class="pre">make_crack_1.py</span></code></a>.</p>
+<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_1.py" download=""><code class="xref download docutils literal"><span class="pre">make_crack_1.py</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="calculation-of-elastic-and-surface-properties-of-silicon-30-minutes">
@@ -305,10 +305,10 @@ Poisson ratio <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb62
 6"/> matrix of the elastic constants <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/>. This matrix <cite>c</cite> can be
 calculated using the <a class="reference internal" href="potential.html#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><code class="xref py py-meth docutils literal"><span class="pre">get_elastic_constants()</span></code></a>
 method of the <cite>mm_pot</cite> Potential object.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span> <span class="o">=</span> <span class="n">mm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c"># Get the 6x6 C_ij matrix</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Elastic constants (GPa):&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">mm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c1"># Get the 6x6 C_ij matrix</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Elastic constants (GPa):&#39;</span><span class="p">)</span>
 <span class="k">print</span><span class="p">((</span><span class="n">c</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here, the <code class="xref py py-attr docutils literal"><span class="pre">GPa</span></code> constant from the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/units.html">ase.units module</a> module is used to
@@ -319,10 +319,10 @@ given <cite>c</cite>, the <cite>cleavage_plane</cite> and the <cite>crack_direct
 <a class="reference internal" href="elasticity.html#quippy.elasticity.youngs_modulus" title="quippy.elasticity.youngs_modulus"><code class="xref py py-func docutils literal"><span class="pre">youngs_modulus()</span></code></a> and
 <a class="reference internal" href="elasticity.html#quippy.elasticity.poisson_ratio" title="quippy.elasticity.poisson_ratio"><code class="xref py py-func docutils literal"><span class="pre">poisson_ratio()</span></code></a> from the
 <a class="reference internal" href="elasticity.html#module-quippy.elasticity" title="quippy.elasticity: Elasticity calculations"><code class="xref py py-mod docutils literal"><span class="pre">quippy.elasticity</span></code></a> module.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">E</span> <span class="o">=</span> <span class="o">...</span>                                              <span class="c"># Get E</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Young</span><span class="se">\&#39;</span><span class="s">s modulus </span><span class="si">%.1f</span><span class="s"> GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">E</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">))</span>
-<span class="n">nu</span> <span class="o">=</span> <span class="o">...</span>                                             <span class="c"># Get nu</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Poisson ratio </span><span class="si">% .3f</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">nu</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="o">...</span>                                              <span class="c1"># Get E</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Young</span><span class="se">\&#39;</span><span class="s1">s modulus </span><span class="si">%.1f</span><span class="s1"> GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">E</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">))</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="o">...</span>                                             <span class="c1"># Get nu</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Poisson ratio </span><span class="si">% .3f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">nu</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As a check, for the <img class="math" src="_images/math/99efa0e4b4ea7659c5b27713ffa809b295051bbf.png" alt="(111)[01\bar{1}]"/> crack system, you
@@ -335,22 +335,22 @@ should get a Young&#8217;s modulus of 142.8 GPa and a Poisson ratio of
 <cite>cleavage_plane</cite>, we build a Si slab unit cell aligned with the
 requested crystallographic orientation. The orientation of the crack
 system can be printed using the following command:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">print_crack_system</span><span class="p">(</span><span class="n">crack_direction</span><span class="p">,</span> <span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">crack_front</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">print_crack_system</span><span class="p">(</span><span class="n">crack_direction</span><span class="p">,</span> <span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">crack_front</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The new unit slab can be obtained using the
 <code class="xref py py-func docutils literal"><span class="pre">ase.lattice.cubic.Diamond</span></code>
 from the <code class="xref py py-mod docutils literal"><span class="pre">ase.lattice</span></code> module, which is used as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">unit_slab</span> <span class="o">=</span> <span class="n">Diamond</span><span class="p">(</span><span class="n">directions</span><span class="o">=</span><span class="p">[</span><span class="n">crack_direction</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">unit_slab</span> <span class="o">=</span> <span class="n">Diamond</span><span class="p">(</span><span class="n">directions</span><span class="o">=</span><span class="p">[</span><span class="n">crack_direction</span><span class="p">,</span>
                                 <span class="n">cleavage_plane</span><span class="p">,</span>
                                 <span class="n">crack_front</span><span class="p">],</span>
                     <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="n">symbol</span><span class="o">=</span><span class="s">&#39;Si&#39;</span><span class="p">,</span>
+                    <span class="n">symbol</span><span class="o">=</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span>
                     <span class="n">pbc</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                     <span class="n">latticeconstant</span><span class="o">=</span><span class="n">a0</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Unit slab with </span><span class="si">%d</span><span class="s"> atoms per unit cell:&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">unit_slab</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Unit slab with </span><span class="si">%d</span><span class="s1"> atoms per unit cell:&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">unit_slab</span><span class="p">))</span>
 <span class="k">print</span><span class="p">(</span><span class="n">unit_slab</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can visualise the new cell with <code class="docutils literal"><span class="pre">view(unit_slab)</span></code> (type this at
@@ -362,7 +362,7 @@ surface along a <img class="math" src="_images/math/e97bf8fc8cd6792f35fccb06cdfb
 bonds (see e.g. <a class="reference external" href="http://ej.iop.org/images/0295-5075/72/3/410/Full/img11.gif">this image</a>). This
 choice gives the lowest energy surface. We then map the positions back
 into the unit cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">unit_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">unit_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">unit_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">unit_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
                               <span class="n">unit_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
 <span class="n">unit_slab</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">unit_slab</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">())</span>
 </pre></div>
@@ -386,8 +386,8 @@ of the slab along a specified axis (use <code class="docutils literal"><span cla
 or <code class="docutils literal"><span class="pre">axis=1</span></code> for the <cite>y</cite>-axis, etc.). The amount of vacuum you add is
 not critical, but could be taken from the <cite>vacuum</cite> parameter in the
 <a class="reference internal" href="#parameters"><span>parameters section</span></a> above:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">surface</span> <span class="o">=</span> <span class="n">unit_slab</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">surface</span><span class="o">.</span> <span class="o">...</span>               <span class="c"># Add vacuum along y axis</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">surface</span> <span class="o">=</span> <span class="n">unit_slab</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">surface</span><span class="o">.</span> <span class="o">...</span>               <span class="c1"># Add vacuum along y axis</span>
 </pre></div>
 </div>
 <p>You should get a surface unit cell which looks something like this:</p>
@@ -404,12 +404,12 @@ that the number of atoms in an Atoms object can be obtained by the
 list-method <cite>len</cite> (e.g. <cite>len(si_bulk)</cite> gives the number of atoms in
 <cite>si_bulk</cite>), and that the volume of a cell can be calculated with
 <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.get_volume" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">get_volume()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">surface</span><span class="o">.</span> <span class="o">...</span>           <span class="c"># Attach SW potential to surface atoms</span>
-<span class="n">E_surf</span> <span class="o">=</span> <span class="o">...</span>           <span class="c"># Get potential energy of surface system</span>
-<span class="n">E_per_atom_bulk</span> <span class="o">=</span> <span class="o">...</span>  <span class="c"># Get potential energy per atom for bulk slab</span>
-<span class="n">area</span> <span class="o">=</span> <span class="o">...</span>             <span class="c"># Calculate surface area using volume and cell</span>
-<span class="n">gamma</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Calculate surface energy</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Surface energy of </span><span class="si">%s</span><span class="s"> surface </span><span class="si">%.4f</span><span class="s"> J/m^2</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">surface</span><span class="o">.</span> <span class="o">...</span>           <span class="c1"># Attach SW potential to surface atoms</span>
+<span class="n">E_surf</span> <span class="o">=</span> <span class="o">...</span>           <span class="c1"># Get potential energy of surface system</span>
+<span class="n">E_per_atom_bulk</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Get potential energy per atom for bulk slab</span>
+<span class="n">area</span> <span class="o">=</span> <span class="o">...</span>             <span class="c1"># Calculate surface area using volume and cell</span>
+<span class="n">gamma</span> <span class="o">=</span> <span class="o">...</span>            <span class="c1"># Calculate surface energy</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Surface energy of </span><span class="si">%s</span><span class="s1"> surface </span><span class="si">%.4f</span><span class="s1"> J/m^2</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span>
       <span class="p">(</span><span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">m</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
 </pre></div>
 </div>
@@ -421,7 +421,7 @@ distance).</p>
 </div>
 <div class="section" id="milestone-1-2">
 <h3>Milestone 1.2<a class="headerlink" href="#milestone-1-2" title="Permalink to this headline">¶</a></h3>
-<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_2.py"><code class="xref download docutils literal"><span class="pre">make_crack_2.py</span></code></a></p>
+<p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_2.py" download=""><code class="xref download docutils literal"><span class="pre">make_crack_2.py</span></code></a></p>
 </div>
 </div>
 <div class="section" id="setup-of-the-crack-slab-supercell-30-minutes">
@@ -435,48 +435,48 @@ of <cite>unit_slab</cite> cells along <cite>x</cite> and <cite>y</cite> that app
 <cite>height</cite> (see <a class="reference internal" href="#parameters"><span>parameters section</span></a>).
 Note that the python function <code class="xref py py-func docutils literal"><span class="pre">int()</span></code> can be used to
 convert a floating point number into an integer, truncating towards zero:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">nx</span> <span class="o">=</span> <span class="o">...</span>    <span class="c"># Find number of unit_slab cells along x</span>
-<span class="n">ny</span> <span class="o">=</span> <span class="o">...</span>    <span class="c"># Find number of unit_slab cells along y</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">nx</span> <span class="o">=</span> <span class="o">...</span>    <span class="c1"># Find number of unit_slab cells along x</span>
+<span class="n">ny</span> <span class="o">=</span> <span class="o">...</span>    <span class="c1"># Find number of unit_slab cells along y</span>
 </pre></div>
 </div>
 <p>To make sure that the slab is centered on a bond along the <cite>y</cite> direction,
 the number of units cell in this direction, <cite>ny</cite>,  must be even:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">ny</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ny</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
     <span class="n">ny</span> <span class="o">+=</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>The crack supercell is now simply obtained by replicating <cite>unit_slab</cite>
 <img class="math" src="_images/math/d43499a4303e1f78eac0aab30ef3f91089997bba.png" alt="nx \times ny \times 1"/> times along the three axes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span> <span class="o">=</span> <span class="n">unit_slab</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">crack_slab</span> <span class="o">=</span> <span class="n">unit_slab</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As we did before for the <cite>surface</cite> system, <cite>vacuum</cite> has to be introduced along
 the <cite>x</cite> and <cite>y</cite> axes (<em>Hint:</em> use the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.center" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">center()</span></code></a>
 method twice)</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c"># Add vacuum along x</span>
-<span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c"># Add vacuum along y</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c1"># Add vacuum along x</span>
+<span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>     <span class="c1"># Add vacuum along y</span>
 </pre></div>
 </div>
 <p>The <cite>crack_slab</cite> is now centered on the origin in the <cite>xy</cite> plane to
 make it simpler to apply strain:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>and its original width and height values are saved, and will later be used to
 measure the strain:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">orig_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span>
               <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
 <span class="n">orig_height</span> <span class="o">=</span> <span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span>
                <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
 
-<span class="k">print</span><span class="p">((</span><span class="s">&#39;Made slab with </span><span class="si">%d</span><span class="s"> atoms, original width and height: </span><span class="si">%.1f</span><span class="s"> x </span><span class="si">%.1f</span><span class="s"> A^2&#39;</span> <span class="o">%</span>
+<span class="k">print</span><span class="p">((</span><span class="s1">&#39;Made slab with </span><span class="si">%d</span><span class="s1"> atoms, original width and height: </span><span class="si">%.1f</span><span class="s1"> x </span><span class="si">%.1f</span><span class="s1"> A^2&#39;</span> <span class="o">%</span>
        <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">),</span> <span class="n">orig_width</span><span class="p">,</span> <span class="n">orig_height</span><span class="p">)))</span>
 </pre></div>
 </div>
 <p>The original <cite>y</cite> coordinates of the top and bottom of the slab and the
 original <cite>x</cite> coordinates of the left and right surfaces are also saved:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">top</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">top</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 <span class="n">bottom</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 <span class="n">left</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 <span class="n">right</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -494,7 +494,7 @@ response to forces from the interatomic potential (see the
 <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span>discussion of the thin strip geometry above</span></a>). To do
 this, we initialise a <cite>fixed_mask</cite> array that is <cite>True</cite> for each atom
 whose position needs to be fixed, and <cite>False</cite> otherwise:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">fixed_mask</span> <span class="o">=</span> <span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">top</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">|</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fixed_mask</span> <span class="o">=</span> <span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">top</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">|</span>
               <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bottom</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -502,7 +502,7 @@ whose position needs to be fixed, and <cite>False</cite> otherwise:</p>
 operation. After re-running the latest version of your script and
 executing <code class="docutils literal"><span class="pre">view(crack_slab)</span></code>, you can colour the atoms by
 <cite>fixed_mask</cite> using the <a class="reference internal" href="qlab.html#qlab.aux_property_coloring" title="qlab.aux_property_coloring"><code class="xref py py-func docutils literal"><span class="pre">aux_property_coloring()</span></code></a> function</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">fixed_mask</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">fixed_mask</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>which colours the atoms where <cite>fixed_mask</cite> is True in red and those where
@@ -512,9 +512,9 @@ it is <cite>False</cite> in blue, like this:</p>
 fix the positions of the atoms according to the mask <cite>fixed_mask</cite>, and
 then attach the constraint to <cite>crack_slab</cite> using
 <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms.set_constraint" title="(in ASE v)"><code class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">const</span> <span class="o">=</span> <span class="o">...</span>            <span class="c"># Initialise the constraint</span>
-<span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>        <span class="c"># Attach the constraint to crack_slab</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Fixed </span><span class="si">%d</span><span class="s"> atoms</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">const</span> <span class="o">=</span> <span class="o">...</span>            <span class="c1"># Initialise the constraint</span>
+<span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>        <span class="c1"># Attach the constraint to crack_slab</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Fixed </span><span class="si">%d</span><span class="s1"> atoms</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>To create the crack seed, we now apply the initial strain ramp. First,
@@ -530,9 +530,9 @@ parameters should be used. The objective is that atoms to the left of
 those to the right of <code class="docutils literal"><span class="pre">left</span> <span class="pre">+</span> <span class="pre">crack_seed_length</span> <span class="pre">+</span>
 <span class="pre">strain_ramp_length</span></code> should be uniformly strained, with a transition
 region in between.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">strain</span> <span class="o">=</span> <span class="o">...</span>                       <span class="c"># Convert G into strain</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="o">...</span>  <span class="c"># update the atoms positions along y</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Applied initial load: strain=</span><span class="si">%.4f</span><span class="s">, G=</span><span class="si">%.2f</span><span class="s"> J/m^2&#39;</span> <span class="o">%</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">strain</span> <span class="o">=</span> <span class="o">...</span>                       <span class="c1"># Convert G into strain</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="o">...</span>  <span class="c1"># update the atoms positions along y</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Applied initial load: strain=</span><span class="si">%.4f</span><span class="s1">, G=</span><span class="si">%.2f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span>
       <span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">initial_G</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
 </pre></div>
 </div>
@@ -550,10 +550,10 @@ not make sense to relax the cell since we have vacuum in two
 directions). We can then perform the minimisation until the maximum
 force is below the <cite>relax_fmax</cite> defined in the <a class="reference internal" href="#parameters"><span>parameters
 section</span></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Relaxing slab&#39;</span><span class="p">)</span>
-<span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>       <span class="c"># Attach the calculator to crack_slab</span>
-<span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>           <span class="c"># Initialise the minimiser</span>
-<span class="n">minim</span><span class="o">.</span> <span class="o">...</span>            <span class="c"># Run the minimisation until forces are relax_fmax</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s1">&#39;Relaxing slab&#39;</span><span class="p">)</span>
+<span class="n">crack_slab</span><span class="o">.</span> <span class="o">...</span>       <span class="c1"># Attach the calculator to crack_slab</span>
+<span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>           <span class="c1"># Initialise the minimiser</span>
+<span class="n">minim</span><span class="o">.</span> <span class="o">...</span>            <span class="c1"># Run the minimisation until forces are relax_fmax</span>
 </pre></div>
 </div>
 <p>Here&#8217;s what your minimised crack slab should look like:</p>
@@ -564,51 +564,51 @@ section</span></a>:</p>
 <p>Before starting the next steps, it is useful to find the initial
 position of the crack tip.  This is provided by the
 <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a> function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&#39;Found crack tip at position </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">crack_pos</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
+<span class="k">print</span> <span class="s1">&#39;Found crack tip at position </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_pos</span>
 </pre></div>
 </div>
 <p>This function works by fitting the components of the Irwin crack
 stress field to the per-atom stresses calculated by the classical SW
 potential, allowing the origin of the analytical stress field to move
-during the fit. Then, we simply this point to be the current crack
+during the fit. Then, we simply set this point to be the current crack
 position.</p>
 </div>
 <div class="section" id="saving-the-output-file">
 <h3>Saving the output file<a class="headerlink" href="#saving-the-output-file" title="Permalink to this headline">¶</a></h3>
 <p>Finally, we can save all the calculated materials properties inside the
 <cite>crack_slab</cite> <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, before writing it to disk:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;nneightol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.30</span> <span class="c"># set nearest neighbour tolerance</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;LatticeConstant&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a0</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;C11&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;C12&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;C44&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;YoungsModulus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;PoissonRatio_yx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nu</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;SurfaceEnergy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gamma</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;OrigWidth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_width</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;OrigHeight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_height</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;CrackDirection&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_direction</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;CleavagePlane&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleavage_plane</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;CrackFront&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_front</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_G</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;CrackPos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_pos</span>
-<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;nneightol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.30</span> <span class="c1"># set nearest neighbour tolerance</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;LatticeConstant&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a0</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;C11&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;C12&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;C44&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;YoungsModulus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;PoissonRatio_yx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nu</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;SurfaceEnergy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gamma</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;OrigWidth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_width</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;OrigHeight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_height</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackDirection&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_direction</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CleavagePlane&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleavage_plane</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackFront&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_front</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial_G</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackPos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_pos</span>
+<span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
 </pre></div>
 </div>
 <p>We can save our results, including all the extra properties and
 information, in <a class="reference internal" href="io.html#extendedxyz"><span>Extended XYZ</span></a> in the <cite>output_file</cite>, whose name is
 defined in the <a class="reference internal" href="#parameters"><span>parameters section</span></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Writing crack slab to file </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
-<span class="n">write</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s1">&#39;Writing crack slab to file </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
+<span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">crack_slab</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="milestone-1-3">
 <h3>Milestone 1.3<a class="headerlink" href="#milestone-1-3" title="Permalink to this headline">¶</a></h3>
 <p>At this point your final script should look something like
-<a class="reference internal" href="adaptive-qmmm-solutions.html#make-crack"><span>Step 1 solution &#8212; make_crack.py</span></a>, and your XYZ file like <a class="reference download internal" href="_downloads/crack.xyz"><code class="xref download docutils literal"><span class="pre">crack.xyz</span></code></a>.</p>
+<a class="reference internal" href="adaptive-qmmm-solutions.html#make-crack"><span>Step 1 solution &#8212; make_crack.py</span></a>, and your XYZ file like <a class="reference download internal" href="_downloads/crack.xyz" download=""><code class="xref download docutils literal"><span class="pre">crack.xyz</span></code></a>.</p>
 <p>When you are ready, proceed to <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2: Classical MD simulation of fracture in Si</span></a>.</p>
 </div>
 </div>
@@ -635,15 +635,15 @@ defined in the <a class="reference internal" href="#parameters"><span>parameters
         <li class="right" >
           <a href="adaptive-qmmm-theory.html" title="Theoretical background"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

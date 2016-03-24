@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>AtomsList and AtomsReader objects for I/O &mdash; quippy b9f75c6+ documentation</title>
+    <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -202,14 +202,14 @@ which is used to fill in information which is missing from the
 input file.</p>
 <p>All <a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><code class="xref py py-class docutils literal"><span class="pre">AtomsReaders</span></code></a> support iteration, so you can loop over
 the contents using a <a class="reference external" href="http://docs.python.org/2.7/reference/compound_stmts.html#for" title="(in Python v2.7)"><code class="xref std std-keyword docutils literal"><span class="pre">for</span></code></a> loop:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">al</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="s">&#39;input-file.xyz&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">al</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="s1">&#39;input-file.xyz&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">:</span>
-   <span class="c"># process Atoms object `at`</span>
+   <span class="c1"># process Atoms object `at`</span>
    <span class="k">print</span> <span class="n">at</span><span class="o">.</span><span class="n">energy</span>
 </pre></div>
 </div>
 <p>or using list comprehension:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>In addition to iteration, some sources allow random access. To find
@@ -303,10 +303,10 @@ that the first index runs from 0 to <cite>len(al)-1</cite>, unlike the other
 indices which are one-based since the <code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code> attributes are
 stored in a <code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code>.</p>
 <p>For example the following statements are all true:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">al</span><span class="o">.</span><span class="n">energy</span>      <span class="o">==</span>  <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span> <span class="c"># energies of all atoms</span>
-<span class="n">al</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>   <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">energy</span>             <span class="c"># energy of first frame</span>
-<span class="nb">all</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span>              <span class="c"># velocities of all atoms in first frame</span>
-<span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>           <span class="c"># velocity of last atom in first frame</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">al</span><span class="o">.</span><span class="n">energy</span>      <span class="o">==</span>  <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span> <span class="c1"># energies of all atoms</span>
+<span class="n">al</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>   <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">energy</span>             <span class="c1"># energy of first frame</span>
+<span class="nb">all</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span>              <span class="c1"># velocities of all atoms in first frame</span>
+<span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="o">==</span>  <span class="n">al</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>           <span class="c1"># velocity of last atom in first frame</span>
 </pre></div>
 </div>
 <p>In addition to the standard Python list methods and those of
@@ -319,7 +319,7 @@ methods.</p>
 <code class="xref py py-meth docutils literal"><span class="pre">list.sort()</span></code> method, except for the additional <cite>attr</cite>
 argument. If this is present then the sorted list will be
 ordered by the <code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code> attribute <cite>attr</cite>, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">al</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">attr</span><span class="o">=</span><span class="s">&#39;energy&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">al</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">attr</span><span class="o">=</span><span class="s1">&#39;energy&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will order the configurations by their <cite>energy</cite> (assuming that
@@ -342,7 +342,7 @@ configuration; otherwise an <code class="xref py py-exc docutils literal"><span 
 should be either a filename or an initiliased output object.  If
 <cite>format</cite> is not given it is inferred from the file extension of
 <cite>dest</cite>. Example usage:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">out</span> <span class="o">=</span> <span class="n">AtomsWriter</span><span class="p">(</span><span class="s">&#39;out_file.xyz&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">AtomsWriter</span><span class="p">(</span><span class="s1">&#39;out_file.xyz&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">:</span>
    <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
 <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -525,7 +525,7 @@ well as standardising the format of the comment line to include the
 cell lattice and other per-frame parameters.</p>
 <p>It&#8217;s easiest to describe the format with an example.  Here is a
 standard XYZ file containing a bulk cubic 8 atom silicon cell</p>
-<div class="highlight-python"><div class="highlight"><pre>8
+<div class="highlight-python"><div class="highlight"><pre><span></span>8
 Cubic bulk silicon cell
 Si        0.00000000      0.00000000      0.00000000
 Si        1.36000000      1.36000000      1.36000000
@@ -541,7 +541,7 @@ Si        1.36000000      4.08000000      4.08000000
 then one line per atom, giving the element symbol and cartesian
 x y, and z coordinates in Angstroms.</p>
 <p>Here&#8217;s the same configuration in extended XYZ format</p>
-<div class="highlight-python"><div class="highlight"><pre>8
+<div class="highlight-python"><div class="highlight"><pre><span></span>8
 Lattice=&quot;5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44&quot; Properties=species:S:1:pos:R:3 Time=0.0
 Si        0.00000000      0.00000000      0.00000000
 Si        1.36000000      1.36000000      1.36000000
@@ -565,7 +565,7 @@ as needed.</p>
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><code class="xref py py-attr docutils literal"><span class="pre">lattice</span></code></a> vectors, with each vector stored
 as a column and the 9 values listed in Fortran column-major order, i.e. in
 the form</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Lattice</span><span class="o">=</span><span class="s">&quot;R1x R1y R1z R2x R2y R2z R3x R3y R3z&quot;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Lattice</span><span class="o">=</span><span class="s2">&quot;R1x R1y R1z R2x R2y R2z R3x R3y R3z&quot;</span>
 </pre></div>
 </div>
 <p>where <cite>R1x R1y R1z</cite> are the Cartesian x-, y- and z-components of the
@@ -576,14 +576,14 @@ third lattice vector (<img class="math" src="_images/math/c20b076757f2c84dbfba8d
 parameter, which should take the form of a series of colon separated
 triplets giving the name, format (<cite>R</cite> for real, <cite>I</cite> for integer) and
 number of columns of each property. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">Properties</span><span class="o">=</span><span class="s">&quot;species:S:1:pos:R:3:vel:R:3:select:I:1&quot;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Properties</span><span class="o">=</span><span class="s2">&quot;species:S:1:pos:R:3:vel:R:3:select:I:1&quot;</span>
 </pre></div>
 </div>
 <p>indicates the first column represents atomic species, the next three
 columns represent atomic positions, the next three velcoities, and the
 last is an single integer called <cite>select</cite>. With this property
 definition, the line</p>
-<div class="highlight-python"><div class="highlight"><pre>Si        4.08000000      4.08000000      1.36000000   0.00000000      0.00000000      0.00000000       1
+<div class="highlight-python"><div class="highlight"><pre><span></span>Si        4.08000000      4.08000000      1.36000000   0.00000000      0.00000000      0.00000000       1
 </pre></div>
 </div>
 <p>would describe a silicon atom at position (4.08,4.08,1.36) with zero
@@ -668,7 +668,7 @@ integer 3x3 matrices with dimension <cite>(frame,spatial,spatial)</cite> are
 supported (e.g. for the virial tensor). In order to distinguish
 between integer and logical variables, a special <cite>type</cite> attribute
 should be added to the variable, set to one of the following values:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">T_INTEGER</span> <span class="o">=</span> <span class="mi">1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">T_INTEGER</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">T_REAL</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">T_LOGICAL</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">T_INTEGER_A</span> <span class="o">=</span> <span class="mi">5</span>
@@ -685,7 +685,7 @@ integer, real and logical properties can be scalar
 (dimension <cite>(frame,atom)</cite>) or vector (dimension <cite>(frame,atom,spatial)</cite>), but
 string properties must be of dimension <cite>(frame,atom,label)</cite>. Again a <cite>type</cite>
 attribute must be added to the NetCDF variable, with one of the following values:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">PROPERTY_INT</span>     <span class="o">=</span> <span class="mi">1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PROPERTY_INT</span>     <span class="o">=</span> <span class="mi">1</span>
 <span class="n">PROPERTY_REAL</span>    <span class="o">=</span> <span class="mi">2</span>
 <span class="n">PROPERTY_STR</span>     <span class="o">=</span> <span class="mi">3</span>
 <span class="n">PROPERTY_LOGICAL</span> <span class="o">=</span> <span class="mi">4</span>
@@ -720,6 +720,26 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_getcwd" title="quippy.cinoutput.quip_getcwd"><code class="xref py py-obj docutils literal"><span class="pre">quip_getcwd</span></code></a>()</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal"><span class="pre">quip_dirname</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">quip_dirname</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal"><span class="pre">quip_chdir</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">quip_chdir</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal"><span class="pre">quip_basename</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">quip_basename</span></code> containing multiple routines:</td>
+</tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
@@ -1088,7 +1108,10 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.vasp.VASPWriter" title="quippy.vasp.VASPWriter"><code class="xref py py-obj docutils literal"><span class="pre">VASPWriter</span></code></a>(out[,&nbsp;species_list])</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">Atoms</span></code>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;...)</td>
+<td>Representation of an atomic configuration and its associated properties</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.vasp.VASPWriter" title="quippy.vasp.VASPWriter"><code class="xref py py-obj docutils literal"><span class="pre">VASPWriter</span></code></a>(out[,&nbsp;species_list])</td>
 <td>Writer for VASP POSCAR format</td>
 </tr>
 </tbody>
@@ -1100,16 +1123,28 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.vasp.VASP_POSCAR_Reader" title="quippy.vasp.VASP_POSCAR_Reader"><code class="xref py py-obj docutils literal"><span class="pre">VASP_POSCAR_Reader</span></code></a>(outcar[,&nbsp;species,&nbsp;format])</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">ASEReader</span></code>(source[,&nbsp;format])</td>
+<td>Helper routine to load from ASE trajectories</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.vasp.VASP_POSCAR_Reader" title="quippy.vasp.VASP_POSCAR_Reader"><code class="xref py py-obj docutils literal"><span class="pre">VASP_POSCAR_Reader</span></code></a>(outcar[,&nbsp;species,&nbsp;format])</td>
 <td>Read a configuration from a VASP OUTCAR file.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">atoms_reader</span></code>(source)</td>
+<td>Decorator to mark a function as a reader for a particular file extension</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">frange</span></code>(min[,&nbsp;max,&nbsp;step])</td>
+<td>Fortran equivalent of <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#range" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">range()</span></code></a> builtin.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">fzeros</span></code>(shape[,&nbsp;dtype])</td>
+<td>Create an empty <code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code> with Fortran ordering.</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="17%" />
-<col width="83%" />
+<col width="21%" />
+<col width="79%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -1124,16 +1159,16 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 <td>&#8212;</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ase</span></code></td>
-<td>&lt;module &#8216;ase&#8217; from &#8216;/opt/quip/sphinx/local/lib/python2.7/site-packages/ase/__init__.pyc&#8217;&gt;</td>
+<td>&#8212;</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">np</span></code></td>
-<td>&lt;module &#8216;numpy&#8217; from &#8216;/opt/quip/sphinx/local/lib/python2.7/site-packages/numpy/__init__.pyc&#8217;&gt;</td>
+<td>&#8212;</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="index.html#module-quippy" title="quippy"><code class="xref py py-attr docutils literal"><span class="pre">quippy</span></code></a></td>
-<td>&lt;module &#8216;quippy&#8217; from &#8216;/opt/quip/sphinx/local/lib/python2.7/site-packages/quippy/__init__.pyc&#8217;&gt;</td>
+<td>&#8212;</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">re</span></code></td>
-<td>&lt;module &#8216;re&#8217; from &#8216;/opt/quip/sphinx/lib/python2.7/re.pyc&#8217;&gt;</td>
+<td>&lt;module &#8216;re&#8217; from &#8216;/home/travis/virtualenv/python2.7.9/lib/python2.7/re.pyc&#8217;&gt;</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">sys</span></code></td>
 <td>&lt;module &#8216;sys&#8217; (built-in)&gt;</td>
@@ -1161,7 +1196,7 @@ used with quippy: see <a class="reference external" href="https://wiki.fysik.dtu
 formats. To convert from <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></code></a> to
 <code class="xref py py-class docutils literal"><span class="pre">quippy.atoms,Atoms</span></code>, simply pass the ASE Atoms object to the
 quippy Atoms constructor, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">QuippyAtoms</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">QuippyAtoms</span>
 <span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">ASEAtoms</span>
 <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
 
@@ -1171,7 +1206,7 @@ quippy Atoms constructor, e.g.:</p>
 </div>
 <p>Similarily, to use one of the quippy file formats with other ASE
 tools:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">read</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">read</span>
 <span class="n">quippy_atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 <span class="n">ase_atoms</span> <span class="o">=</span> <span class="n">ASEAtoms</span><span class="p">(</span><span class="n">quippy_atoms</span><span class="p">)</span>
 </pre></div>
@@ -1181,13 +1216,13 @@ tools:</p>
 <h2>Adding a new file type<a class="headerlink" href="#adding-a-new-file-type" title="Permalink to this headline">¶</a></h2>
 <p>To add support for a new file format, implement routines which
 read from or write to files following the templates below.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="c"># insert code to open `filename` for reading</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="c1"># insert code to open `filename` for reading</span>
 
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-       <span class="c"># determine if more frame are available</span>
+       <span class="c1"># determine if more frame are available</span>
        <span class="k">if</span> <span class="n">more_frames</span><span class="p">:</span>
-          <span class="c"># read next frame from `filename` into new Atoms object</span>
+          <span class="c1"># read next frame from `filename` into new Atoms object</span>
           <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
           <span class="k">yield</span> <span class="n">at</span>
        <span class="k">else</span><span class="p">:</span>
@@ -1196,15 +1231,15 @@ read from or write to files following the templates below.</p>
 
 <span class="k">class</span> <span class="nc">sample_writer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-       <span class="c"># insert code to open `filename` for writing</span>
+       <span class="c1"># insert code to open `filename` for writing</span>
        <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
-       <span class="c"># insert code to write `at` to `filename`</span>
+       <span class="c1"># insert code to write `at` to `filename`</span>
        <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-       <span class="c"># insert code to close `filename`</span>
+       <span class="c1"># insert code to close `filename`</span>
        <span class="k">pass</span>
 </pre></div>
 </div>
@@ -1212,22 +1247,22 @@ read from or write to files following the templates below.</p>
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> objects, raising <code class="xref py py-exc docutils literal"><span class="pre">StopIteration</span></code> when there are no
 more available - for a file format which only permits one
 configuration per file, a simplified implementation template would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-   <span class="c"># insert code to open `filename` for reading</span>
-   <span class="c"># insert code to read from `filename` into new Atoms object</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+   <span class="c1"># insert code to open `filename` for reading</span>
+   <span class="c1"># insert code to read from `filename` into new Atoms object</span>
    <span class="k">yield</span> <span class="n">at</span>
 </pre></div>
 </div>
 <p>To register the new file format, you just need to set entries in
 <code class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></code> and <code class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">AtomsReaders</span><span class="p">,</span> <span class="n">AtomsWriters</span>
-<span class="n">AtomsReaders</span><span class="p">[</span><span class="s">&#39;new_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_reader</span>
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;new_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sameple_writer</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">AtomsReaders</span><span class="p">,</span> <span class="n">AtomsWriters</span>
+<span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;new_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_reader</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;new_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sameple_writer</span>
 </pre></div>
 </div>
 <p>For the case of reading, there is a generator <code class="xref py py-func docutils literal"><span class="pre">atoms_reader()</span></code>
 which can be used to simplify the registration process:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;new_format&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;new_format&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">sample_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
    <span class="o">...</span>
 </pre></div>
@@ -1252,14 +1287,14 @@ which can be used to simplify the registration process:</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

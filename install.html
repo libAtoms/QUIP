@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of QUIP and quippy &mdash; quippy b9f75c6+ documentation</title>
+    <title>Installation of QUIP and quippy &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="next" title="Examples" href="Examples/index.html" />
     <link rel="prev" title="Introduction to quippy" href="intro.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -123,7 +123,7 @@ the main <a class="reference external" href="https://github.com/libAtoms/QUIP/bl
 <div class="section" id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <p>For people who don&#8217;t read manuals:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/libAtoms/QUIP.git
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ git clone https://github.com/libAtoms/QUIP.git
 $ cd QUIP
 $ export QUIP_ARCH=linux_x86_64_gfortran
 $ make config
@@ -167,12 +167,12 @@ functionality e.g. least squares fitting, optimisation, etc.</li>
 <div class="section" id="getting-quippy">
 <h2>Getting quippy<a class="headerlink" href="#getting-quippy" title="Permalink to this headline">¶</a></h2>
 <p>You can download QUIP and quippy from our public <a class="reference external" href="https://www.github.com/libAtoms/QUIP">GitHub repository</a></p>
-<div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/libAtoms/QUIP.git
+<div class="highlight-python"><div class="highlight"><pre><span></span>git clone https://github.com/libAtoms/QUIP.git
 </pre></div>
 </div>
 <p>We&#8217;ll use the environment variable <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code> to refer
 to the root of the QUIP tree:</p>
-<div class="highlight-python"><div class="highlight"><pre>export QUIP_ROOT=~/QUIP/
+<div class="highlight-python"><div class="highlight"><pre><span></span>export QUIP_ROOT=~/QUIP/
 </pre></div>
 </div>
 <p>The <code class="file docutils literal"><span class="pre">libAtoms</span></code>, <code class="file docutils literal"><span class="pre">QUIP_Core</span></code>, <code class="file docutils literal"><span class="pre">QUIP_Util</span></code> and
@@ -188,7 +188,7 @@ quippy wraps. Architectures are defined by creating a file
 <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/Makefiles/Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></code> which describes which
 compilers and libraries should be used and where they can be found. quippy has
 been tested on the following architectures:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">darwin_x86_64_gfortran</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">darwin_x86_64_gfortran</span>
 <span class="n">linux_x86_64_gfortran</span>
 <span class="n">linux_x86_64_ifort_gcc_serial</span>
 <span class="n">linux_x86_64_pgi</span>
@@ -197,13 +197,13 @@ been tested on the following architectures:</p>
 <p>If you&#8217;re on one of these platforms then just set <span class="target" id="index-3"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code>
 appropriately, for example on 64-bit Mac OS X with gfortran you would
 do:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ export QUIP_ARCH=darwin_x86_64_gfortran
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ export QUIP_ARCH=darwin_x86_64_gfortran
 </pre></div>
 </div>
 <p>Otherwise you&#8217;ll have to make a new <code class="file docutils literal"><span class="pre">Makefile.$</span><em><span class="pre">QUIP_ARCH</span></em></code>,
 containing some of the variables defined below. The next step is to
 answer a number of questions about your system:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ make config
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ make config
 </pre></div>
 </div>
 <p>This generates a configurtion file <cite>build/${QUIP_ARCH}/Makefile.inc</cite>
@@ -216,7 +216,7 @@ options described below.</p>
 <dd><p class="first">Library options needed to link to BLAS and LAPACK libraries. Any working
 BLAS/LAPACK installation is fine. If you are using Linux, ATLAS is
 a good option, and you should use something like the following:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">atlas</span> <span class="o">-</span><span class="n">llapack</span> <span class="o">-</span><span class="n">lf77blas</span> <span class="o">-</span><span class="n">lcblas</span> <span class="o">-</span><span class="n">latlas</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">atlas</span> <span class="o">-</span><span class="n">llapack</span> <span class="o">-</span><span class="n">lf77blas</span> <span class="o">-</span><span class="n">lcblas</span> <span class="o">-</span><span class="n">latlas</span>
 </pre></div>
 </div>
 <p>On Mac OS X, there are build in LAPACK libraries in the Accelerate
@@ -229,7 +229,7 @@ framework, which you can use by entering</p>
 Should be read automatically from QUIP Makefiles.</dd>
 <dt><strong class="makevar">QUIPPY_FCOMPILER</strong></dt>
 <dd><p class="first">Fortran compiler to use. The shell command:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ f2py -c --help-fcompiler
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ f2py -c --help-fcompiler
 </pre></div>
 </div>
 <p class="last">will print a list of detected compilers on your system. Use <code class="docutils literal"><span class="pre">gnu95</span></code> for gfortran,
@@ -272,13 +272,13 @@ Should be read automatically from QUIP.</dd>
 compile the FoX Fortran XML library as well as generating the required
 Makefiles. To compile QUIP, run <cite>make</cite> from the <span class="target" id="index-4"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code>
 directory after setting <span class="target" id="index-5"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> appropriately, e.g.</p>
-<div class="highlight-python"><div class="highlight"><pre>cd ${QUIP_ROOT}
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd ${QUIP_ROOT}
 export QUIP_ARCH=linux_x86_64_gfortran
 make
 </pre></div>
 </div>
 <p>After this, it&#8217;s time to compile quippy itself</p>
-<div class="highlight-python"><div class="highlight"><pre>make quippy
+<div class="highlight-python"><div class="highlight"><pre><span></span>make quippy
 </pre></div>
 </div>
 <p>to compile quippy. The compilation process is quite long; here is an
@@ -323,7 +323,7 @@ out what&#8217;s going wrong.</p>
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>Once quippy is successfully compiled, you should run the test suite to
 check everything is working correctly:</p>
-<div class="highlight-python"><div class="highlight"><pre>make test
+<div class="highlight-python"><div class="highlight"><pre><span></span>make test
 </pre></div>
 </div>
 <p>The tests themselves can be found in <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">QUIP_ROOT</span></em><span class="pre">/tests/test*.py</span></code>.
@@ -332,14 +332,14 @@ If any of the tests fail please send me (<a class="reference external" href="mai
 <div class="section" id="id2">
 <h2>Installation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>Once all the tests have passed, run</p>
-<div class="highlight-python"><div class="highlight"><pre>make install-quippy
+<div class="highlight-python"><div class="highlight"><pre><span></span>make install-quippy
 </pre></div>
 </div>
 <p>to install in the standard place for Python extension modules on your
 system (this will probably be something like
 <code class="file docutils literal"><span class="pre">/usr/local/lib/python-2.</span><em><span class="pre">x</span></em><span class="pre">/site-packages</span></code>). To install
 elsewhere, edit the <cite>Makefile.inc</cite> to include the line:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">QUIPPY_INSTALL_OPTIONS</span><span class="o">=--</span><span class="n">prefix</span><span class="o">=</span><span class="n">PREFIX</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">QUIPPY_INSTALL_OPTIONS</span><span class="o">=--</span><span class="n">prefix</span><span class="o">=</span><span class="n">PREFIX</span>
 </pre></div>
 </div>
 <p>to install to a specific location such as <code class="file docutils literal"><span class="pre">/usr/local</span></code> or your
@@ -350,7 +350,7 @@ variable, e.g. by adding the following line your your <cite>~/.bashrc</cite> or
 <p>To test if the installation was successful, change out of the source
 directory, start Python and try to import everything from the quippy
 package:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd $HOME
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ cd $HOME
 $ python
 &gt;&gt;&gt; from quippy import *
 </pre></div>
@@ -364,7 +364,7 @@ dependencies, consult the list of <a class="reference internal" href="#install-f
 <h3>Permission errors when installing<a class="headerlink" href="#permission-errors-when-installing" title="Permalink to this headline">¶</a></h3>
 <p>If you are installing as root, you may need to make sure the value of
 the <span class="target" id="index-7"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> gets through to the install script, e.g.</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo QUIP_ARCH=darwin_x86_64_gfortran make install-quippy
+<div class="highlight-python"><div class="highlight"><pre><span></span>sudo QUIP_ARCH=darwin_x86_64_gfortran make install-quippy
 </pre></div>
 </div>
 </div>
@@ -379,7 +379,7 @@ everything, and may require extra linking arguments. See the
 <p>If, after installing quippy, you get the error shown below when you
 try to import it for the first time, then you are a victim of a bug in
 early versions of Python 2.6.</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt;&gt; import quippy
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt;&gt;&gt; import quippy
 Traceback (most recent call last):
  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
  File &quot;/home/ab686/QUIP/Tools/quippy/quippy/__init__.py&quot;, line 31, in
@@ -406,7 +406,7 @@ libraries the <code class="file docutils literal"><span class="pre">_quippy.so</
 <h3>Possible problems installing atomeye module<a class="headerlink" href="#possible-problems-installing-atomeye-module" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
 <span class="go">ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: _Config_load_libatoms</span>
 <span class="go">Referenced from: /Users/silvia/lib/python/_atomeye.so</span>
 <span class="go">Expected in: flat namespace</span>
@@ -419,7 +419,7 @@ libraries the <code class="file docutils literal"><span class="pre">_quippy.so</
 If not make clean and recompile again</p>
 <dl class="docutils">
 <dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
 <span class="go">ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: __gfortran_adjustl</span>
 <span class="go">Referenced from: /Users/silvia/lib/python/_atomeye.so</span>
 <span class="go">Expected in: flat namespace</span>
@@ -433,7 +433,7 @@ If not make clean and recompile again</p>
 <div class="section" id="error-compiling-ipmodel-gap">
 <h3>Error compiling IPModel_GAP<a class="headerlink" href="#error-compiling-ipmodel-gap" title="Permalink to this headline">¶</a></h3>
 <p>If you get the following error during compilation:</p>
-<div class="highlight-python"><div class="highlight"><pre>/QUIP/QUIP_Core/IPModel_GAP.f95:51.22:
+<div class="highlight-python"><div class="highlight"><pre><span></span>/QUIP/QUIP_Core/IPModel_GAP.f95:51.22:
 
 use descriptors_module
                       1
@@ -447,7 +447,7 @@ Fatal Error: Can&#39;t open module file &#39;descriptors_module.mod&#39; for rea
 <div class="section" id="warning-about-quippy-castep-when-importing-quippy">
 <h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><code class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></code></a> when importing quippy<a class="headerlink" href="#warning-about-quippy-castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
 <p>If you get the following warning message when importin quippy:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ python
 &gt;&gt;&gt; from quippy import *
 WARNING:root:quippy.castep import quippy.failed.
 </pre></div>
@@ -458,7 +458,7 @@ the main code. The rest of quippy works fine without it.</p>
 <div class="section" id="internal-compiler-error-with-ifort">
 <h3>Internal compiler error with <cite>ifort</cite><a class="headerlink" href="#internal-compiler-error-with-ifort" title="Permalink to this headline">¶</a></h3>
 <p>If you see an error like the following when using the Intel fortran compiler:</p>
-<div class="highlight-python"><div class="highlight"><pre>fortcom: Severe: **Internal compiler error: internal abort** Please
+<div class="highlight-python"><div class="highlight"><pre><span></span>fortcom: Severe: **Internal compiler error: internal abort** Please
 report this error along with the circumstances in which it occurred
 in a Software Problem Report.
  Note: File and line given may not be explicit cause of this error.
@@ -475,7 +475,7 @@ problem, at the cost of excluding the fracture utilities from quippy.</p>
 <h3>Linking error on Mac OS X<a class="headerlink" href="#linking-error-on-mac-os-x" title="Permalink to this headline">¶</a></h3>
 <p>When recompiling quippy on top of a previous compilation, you may see
 errors like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>collect2: ld returned 1 exit status ld: in
+<div class="highlight-python"><div class="highlight"><pre><span></span>collect2: ld returned 1 exit status ld: in
 /QUIP/build.darwin_x86_64_gfortran/libquiputils.a, malformed
 archive TOC entry for  ___elasticity_module_MOD_einstein_frequencies,
 offset 1769103734 is beyond end of file 1254096
@@ -510,13 +510,13 @@ problem.</p>
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

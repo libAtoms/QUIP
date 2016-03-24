@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Molecular Dynamics &mdash; quippy b9f75c6+ documentation</title>
+    <title>Molecular Dynamics &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Utilities for topological analysis" href="topology.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="topology.html" title="Utilities for topological analysis"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -87,13 +87,13 @@ velocities and accelerations of each atom, scalar quantities such as
 thermostat settings, and logical masks so that thermostatting can be applied
 to selected atoms etc.</p>
 <p>In Fortran code, initialise a DynamicalSystem object like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>call initialise(MyDS, MyAtoms)
+<div class="highlight-python"><div class="highlight"><pre><span></span>call initialise(MyDS, MyAtoms)
 </pre></div>
 </div>
 <p>which (shallowly) copies MyAtoms into the internal atoms structure (and so
 MyAtoms is not required by MyDS after this call and can be finalised). In Python,
 a DynamicalSystem can be initialised from an Atoms instance:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">MyDS</span> <span class="o">=</span> <span class="n">DynamicalSystem</span><span class="p">(</span><span class="n">MyAtoms</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">MyDS</span> <span class="o">=</span> <span class="n">DynamicalSystem</span><span class="p">(</span><span class="n">MyAtoms</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>A DynamicalSystem is constructed from an Atoms object
@@ -103,7 +103,7 @@ specificed as <code class="docutils literal"><span class="pre">(3,atoms.n)</span
 constraints and rigid bodies respectively (the default is zero in
 both cases).</p>
 <p>DynamicalSystem has an integrator,</p>
-<div class="highlight-python"><div class="highlight"><pre>call advance_verlet(MyDS,dt,forces)
+<div class="highlight-python"><div class="highlight"><pre><span></span>call advance_verlet(MyDS,dt,forces)
 </pre></div>
 </div>
 <p>which takes a set of forces and integrates the equations of motion forward
@@ -117,7 +117,7 @@ for a time <code class="docutils literal"><span class="pre">dt</span></code>.</p
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-obj docutils literal"><span class="pre">DynamicalSystem</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-obj docutils literal"><span class="pre">DynamicalSystem</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Initialise this DynamicalSystem from an Atoms object</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics" title="quippy.dynamicalsystem.Dynamics"><code class="xref py py-obj docutils literal"><span class="pre">Dynamics</span></code></a>(atoms,&nbsp;timestep,&nbsp;trajectory[,&nbsp;...])</td>
@@ -132,6 +132,35 @@ for a time <code class="docutils literal"><span class="pre">dt</span></code>.</p
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.gaussian_velocity_component" title="quippy.dynamicalsystem.gaussian_velocity_component"><code class="xref py py-obj docutils literal"><span class="pre">gaussian_velocity_component</span></code></a>(m,t)</td>
+<td>Draw a velocity component from the correct Gaussian distribution for</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.torque" title="quippy.dynamicalsystem.torque"><code class="xref py py-obj docutils literal"><span class="pre">torque</span></code></a>(pos,force,[origin])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.distance_relative_velocity" title="quippy.dynamicalsystem.distance_relative_velocity"><code class="xref py py-obj docutils literal"><span class="pre">distance_relative_velocity</span></code></a>(at,i,j)</td>
+<td>Return the distance between two atoms and the relative velocity between them projected along the bond direction.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.angular_momentum" title="quippy.dynamicalsystem.angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">angular_momentum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">angular_momentum</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.kinetic_virial" title="quippy.dynamicalsystem.kinetic_virial"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_virial</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">kinetic_virial</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.momentum" title="quippy.dynamicalsystem.momentum"><code class="xref py py-obj docutils literal"><span class="pre">momentum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">momentum</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.kinetic_energy" title="quippy.dynamicalsystem.kinetic_energy"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_energy</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">kinetic_energy</span></code> containing multiple routines:</td>
+</tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
@@ -204,7 +233,7 @@ for a time <code class="docutils literal"><span class="pre">dt</span></code>.</p
 </table>
 <dl class="class">
 <dt id="quippy.dynamicalsystem.DynamicalSystem">
-<em class="property">class </em><code class="descclassname">quippy.dynamicalsystem.</code><code class="descname">DynamicalSystem</code><span class="sig-paren">(</span><em>atoms_in</em><span class="optional">[</span>, <em>velocity</em>, <em>acceleration</em>, <em>constraints</em>, <em>restraints</em>, <em>rigidbodies</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#DynamicalSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.dynamicalsystem.</code><code class="descname">DynamicalSystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#DynamicalSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">quippy._dynamicalsystem.DynamicalSystem</span></code></p>
 <p>Initialise this DynamicalSystem from an Atoms object</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -301,8 +330,202 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.run" title="quippy.dynamicalsystem.DynamicalSystem.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.add_atoms" title="quippy.dynamicalsystem.DynamicalSystem.add_atoms"><code class="xref py py-obj docutils literal"><span class="pre">add_atoms</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Add one or more atoms to this DynamicalSystem.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.add_constraint" title="quippy.dynamicalsystem.DynamicalSystem.add_constraint"><code class="xref py py-obj docutils literal"><span class="pre">add_constraint</span></code></a>(...)</td>
+<td>Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom, unless <code class="docutils literal"><span class="pre">update_Ndof</span></code> is present and false.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostat" title="quippy.dynamicalsystem.DynamicalSystem.add_thermostat"><code class="xref py py-obj docutils literal"><span class="pre">add_thermostat</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Add a new thermostat to this DynamicalSystem.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostats" title="quippy.dynamicalsystem.DynamicalSystem.add_thermostats"><code class="xref py py-obj docutils literal"><span class="pre">add_thermostats</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet"><code class="xref py py-obj docutils literal"><span class="pre">advance_verlet</span></code></a>(...)</td>
+<td>Calls`` advance_verlet2`` followed by <code class="docutils literal"><span class="pre">advance_verlet1</span></code>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet1" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet1"><code class="xref py py-obj docutils literal"><span class="pre">advance_verlet1</span></code></a>(...)</td>
+<td>Advance the velocities by half the time-step <code class="docutils literal"><span class="pre">dt</span></code> and the positions by a full time-step.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet2" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet2"><code class="xref py py-obj docutils literal"><span class="pre">advance_verlet2</span></code></a>(...)</td>
+<td>Advances the velocities by the second half time-step</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.amend_constraint" title="quippy.dynamicalsystem.DynamicalSystem.amend_constraint"><code class="xref py py-obj docutils literal"><span class="pre">amend_constraint</span></code></a>(constraint,func,data,[k])</td>
+<td>Replace a constraint involving some atoms with a different constraint involving</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.angular_momentum" title="quippy.dynamicalsystem.DynamicalSystem.angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">angular_momentum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <img class="math" src="_images/math/ede2d8f94fbc6c451abbbe27d607904bcef7f7c0.png" alt="\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}"/>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_atom_plane" title="quippy.dynamicalsystem.DynamicalSystem.constrain_atom_plane"><code class="xref py py-obj docutils literal"><span class="pre">constrain_atom_plane</span></code></a>(...)</td>
+<td>Constrain an atom to lie in a particluar plane</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_bondanglecos" title="quippy.dynamicalsystem.DynamicalSystem.constrain_bondanglecos"><code class="xref py py-obj docutils literal"><span class="pre">constrain_bondanglecos</span></code></a>(...)</td>
+<td>Constrain the bond angle cosine between atoms i, j, and k</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength" title="quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength"><code class="xref py py-obj docutils literal"><span class="pre">constrain_bondlength</span></code></a>(...)</td>
+<td>Constrain the bond between atoms i and j</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength_dev_pow" title="quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength_dev_pow"><code class="xref py py-obj docutils literal"><span class="pre">constrain_bondlength_dev_pow</span></code></a>(...)</td>
+<td>Constrain the bond between atoms i and j</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength_diff" title="quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength_diff"><code class="xref py py-obj docutils literal"><span class="pre">constrain_bondlength_diff</span></code></a>(...)</td>
+<td>Constrain the difference of bond length between atoms i&#8211;j and j&#8211;k</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength_sq" title="quippy.dynamicalsystem.DynamicalSystem.constrain_bondlength_sq"><code class="xref py py-obj docutils literal"><span class="pre">constrain_bondlength_sq</span></code></a>(...)</td>
+<td>Constrain the bond between atoms i and j</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_gap_energy" title="quippy.dynamicalsystem.DynamicalSystem.constrain_gap_energy"><code class="xref py py-obj docutils literal"><span class="pre">constrain_gap_energy</span></code></a>(...)</td>
+<td>Constrain the energy gap of two resonance structures</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_struct_factor_like_i" title="quippy.dynamicalsystem.DynamicalSystem.constrain_struct_factor_like_i"><code class="xref py py-obj docutils literal"><span class="pre">constrain_struct_factor_like_i</span></code></a>(...)</td>
+<td>Constrain an atom to lie in a particluar plane</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_struct_factor_like_mag" title="quippy.dynamicalsystem.DynamicalSystem.constrain_struct_factor_like_mag"><code class="xref py py-obj docutils literal"><span class="pre">constrain_struct_factor_like_mag</span></code></a>(...)</td>
+<td>Constrain an atom to lie in a particluar plane</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_struct_factor_like_r" title="quippy.dynamicalsystem.DynamicalSystem.constrain_struct_factor_like_r"><code class="xref py py-obj docutils literal"><span class="pre">constrain_struct_factor_like_r</span></code></a>(...)</td>
+<td>Constrain an atom to lie in a particluar plane</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.disable_damping" title="quippy.dynamicalsystem.DynamicalSystem.disable_damping"><code class="xref py py-obj docutils literal"><span class="pre">disable_damping</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><p class="rubric">References</p>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.enable_damping" title="quippy.dynamicalsystem.DynamicalSystem.enable_damping"><code class="xref py py-obj docutils literal"><span class="pre">enable_damping</span></code></a>(damp_time)</td>
+<td>Enable damping, with damping time set to <cite>damp_time</cite>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.get_damping_time" title="quippy.dynamicalsystem.DynamicalSystem.get_damping_time"><code class="xref py py-obj docutils literal"><span class="pre">get_damping_time</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.is_damping_enabled" title="quippy.dynamicalsystem.DynamicalSystem.is_damping_enabled"><code class="xref py py-obj docutils literal"><span class="pre">is_damping_enabled</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_energy" title="quippy.dynamicalsystem.DynamicalSystem.kinetic_energy"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_energy</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Return the total kinetic energy <img class="math" src="_images/math/e74031185d07cfd0bd1566be386399a316a9e624.png" alt="E_k = \sum_{i} \frac{1}{2} m v^2"/></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_virial" title="quippy.dynamicalsystem.DynamicalSystem.kinetic_virial"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_virial</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Return the total kinetic virial <img class="math" src="_images/math/f394c2f44d750bbad26ca9b3257ec68688ac24d6.png" alt="w_ij = \sum_{k} \frac{1}{2} m v_i v_j"/></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.momentum" title="quippy.dynamicalsystem.DynamicalSystem.momentum"><code class="xref py py-obj docutils literal"><span class="pre">momentum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Return the total momentum <img class="math" src="_images/math/f65d5abc743368c153c92e6f5062a4127a165b1c.png" alt="\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}"/>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.n_thermostat" title="quippy.dynamicalsystem.DynamicalSystem.n_thermostat"><code class="xref py py-obj docutils literal"><span class="pre">n_thermostat</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.print_" title="quippy.dynamicalsystem.DynamicalSystem.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Print lots of information about this DynamicalSystem in text format.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.print_status" title="quippy.dynamicalsystem.DynamicalSystem.print_status"><code class="xref py py-obj docutils literal"><span class="pre">print_status</span></code></a>(...)</td>
+<td>Print a status line showing the current time, temperature, the mean temperature the total energy and the total momentum for this DynamicalSystem.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.print_thermostats" title="quippy.dynamicalsystem.DynamicalSystem.print_thermostats"><code class="xref py py-obj docutils literal"><span class="pre">print_thermostats</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>ds_print_thermostats</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.remove_atoms" title="quippy.dynamicalsystem.DynamicalSystem.remove_atoms"><code class="xref py py-obj docutils literal"><span class="pre">remove_atoms</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Remove one or more atoms from this DynamicalSystem.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.remove_thermostat" title="quippy.dynamicalsystem.DynamicalSystem.remove_thermostat"><code class="xref py py-obj docutils literal"><span class="pre">remove_thermostat</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.rescale_velo" title="quippy.dynamicalsystem.DynamicalSystem.rescale_velo"><code class="xref py py-obj docutils literal"><span class="pre">rescale_velo</span></code></a>(temp,[mass_weighted,zero_l])</td>
+<td>Rescale the atomic velocities to temperature <code class="docutils literal"><span class="pre">temp</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.restore_state" title="quippy.dynamicalsystem.DynamicalSystem.restore_state"><code class="xref py py-obj docutils literal"><span class="pre">restore_state</span></code></a>(to,from)</td>
+<td>Restore a DynamicalSystem to a previously saved state.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.run" title="quippy.dynamicalsystem.DynamicalSystem.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(...)</td>
 <td>Run <code class="docutils literal"><span class="pre">n_steps</span></code> of dynamics using forces from Potential <code class="docutils literal"><span class="pre">pot</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.save_state" title="quippy.dynamicalsystem.DynamicalSystem.save_state"><code class="xref py py-obj docutils literal"><span class="pre">save_state</span></code></a>(to,from,[error])</td>
+<td>Save the state of a DynamicalSystem.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.set_barostat" title="quippy.dynamicalsystem.DynamicalSystem.set_barostat"><code class="xref py py-obj docutils literal"><span class="pre">set_barostat</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.temperature" title="quippy.dynamicalsystem.DynamicalSystem.temperature"><code class="xref py py-obj docutils literal"><span class="pre">temperature</span></code></a>(...)</td>
+<td>Return the temperature, assuming each degree of freedom contributes <img class="math" src="_images/math/fe498c612521ddb61c9780a490b6c14663bce7d5.png" alt="\frac{1}{2}kT"/>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.thermostat_temperatures" title="quippy.dynamicalsystem.DynamicalSystem.thermostat_temperatures"><code class="xref py py-obj docutils literal"><span class="pre">thermostat_temperatures</span></code></a>(n0)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.update_thermostat" title="quippy.dynamicalsystem.DynamicalSystem.update_thermostat"><code class="xref py py-obj docutils literal"><span class="pre">update_thermostat</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.zero_momentum" title="quippy.dynamicalsystem.DynamicalSystem.zero_momentum"><code class="xref py py-obj docutils literal"><span class="pre">zero_momentum</span></code></a>([indices])</td>
+<td>Change velocities to those that the system would have in the zero momentum frame.</td>
 </tr>
 </tbody>
 </table>
@@ -321,13 +544,13 @@ but also appends the number of degrees of freedom correctly.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>z</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>mass</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1), optional</em>) &#8211; </li>
-<li><strong>p</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3), optional</em>) &#8211; </li>
-<li><strong>v</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n4,qp_n5), optional</em>) &#8211; </li>
-<li><strong>a</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n6,qp_n7), optional</em>) &#8211; </li>
-<li><strong>t</strong> (<em>input rank-2 array(&#8216;i&#8217;) with bounds (qp_n8,qp_n9), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>z</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>mass</strong> (<em>input rank-1 array('d') with bounds (qp_n1), optional</em>) &#8211; </li>
+<li><strong>p</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>input rank-2 array('d') with bounds (qp_n4,qp_n5), optional</em>) &#8211; </li>
+<li><strong>a</strong> (<em>input rank-2 array('d') with bounds (qp_n6,qp_n7), optional</em>) &#8211; </li>
+<li><strong>t</strong> (<em>input rank-2 array('i') with bounds (qp_n8,qp_n9), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -346,11 +569,11 @@ but also appends the number of degrees of freedom correctly.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>z</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>mass</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>p</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</em>) &#8211; </li>
-<li><strong>v</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</em>) &#8211; </li>
-<li><strong>a</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</em>) &#8211; </li>
-<li><strong>t</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>p</strong> (<em>input rank-1 array('d') with bounds (3), optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>input rank-1 array('d') with bounds (3), optional</em>) &#8211; </li>
+<li><strong>a</strong> (<em>input rank-1 array('d') with bounds (3), optional</em>) &#8211; </li>
+<li><strong>t</strong> (<em>input rank-1 array('i') with bounds (3), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -389,7 +612,7 @@ unless <code class="docutils literal"><span class="pre">update_Ndof</span></code
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.add_thermostat">
-<code class="descname">add_thermostat</code><span class="sig-paren">(</span><em>type</em>, <em>t</em><span class="optional">[</span>, <em>gamma</em>, <em>q</em>, <em>tau</em>, <em>tau_cell</em>, <em>p</em>, <em>bulk_modulus_estimate</em>, <em>cell_oscillation_time</em>, <em>nhl_tau</em>, <em>nhl_mu</em>, <em>massive</em>, <em>region_i</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_thermostat</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new thermostat to this DynamicalSystem. <code class="docutils literal"><span class="pre">type</span></code> should
 be one of the following thermostat types:</p>
 <ul class="simple">
@@ -434,7 +657,7 @@ pressure for the case of Langevin NPT.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.add_thermostats">
-<code class="descname">add_thermostats</code><span class="sig-paren">(</span><em>type</em>, <em>n</em><span class="optional">[</span>, <em>t</em>, <em>t_a</em>, <em>gamma</em>, <em>gamma_a</em>, <em>q</em>, <em>q_a</em>, <em>tau</em>, <em>tau_a</em>, <em>region_i</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostats" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_thermostats</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.add_thermostats" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -463,7 +686,7 @@ pressure for the case of Langevin NPT.</p>
 <code class="descname">advance_verlet</code><span class="sig-paren">(</span><em>ds</em>, <em>dt</em>, <em>f</em><span class="optional">[</span>, <em>virial</em>, <em>e</em>, <em>parallel</em>, <em>store_constraint_force</em>, <em>do_calc_dists</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls`` advance_verlet2`` followed by <code class="docutils literal"><span class="pre">advance_verlet1</span></code>. Outside this routine the
 velocities will be half-stepped. This allows a simpler MD loop:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
     <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">advance_verlet</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">force</span><span class="p">)</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">print_status</span><span class="p">(</span><span class="n">epot</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
@@ -498,7 +721,7 @@ velocities will be half-stepped. This allows a simpler MD loop:</p>
 <dd><p>Advance the velocities by half the time-step <code class="docutils literal"><span class="pre">dt</span></code> and the
 positions by a full time-step. A typical MD loop should
 resemble the following code (Python example, Fortran is similar):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
    <span class="n">ds</span><span class="o">.</span><span class="n">advance_verlet1</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
    <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -573,7 +796,7 @@ the same atoms</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.angular_momentum">
-<code class="descname">angular_momentum</code><span class="sig-paren">(</span><span class="optional">[</span><em>origin</em>, <em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.angular_momentum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">angular_momentum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.angular_momentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the angular momentum of all the atoms in this DynamicalSystem, defined by
 <img class="math" src="_images/math/ede2d8f94fbc6c451abbbe27d607904bcef7f7c0.png" alt="\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}"/>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -889,7 +1112,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.kinetic_energy">
-<code class="descname">kinetic_energy</code><span class="sig-paren">(</span><span class="optional">[</span><em>mpi_obj</em>, <em>local_ke</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">kinetic_energy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the total kinetic energy <img class="math" src="_images/math/e74031185d07cfd0bd1566be386399a316a9e624.png" alt="E_k = \sum_{i} \frac{1}{2} m v^2"/></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -911,7 +1134,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.kinetic_virial">
-<code class="descname">kinetic_virial</code><span class="sig-paren">(</span><span class="optional">[</span><em>mpi_obj</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_virial" title="Permalink to this definition">¶</a></dt>
+<code class="descname">kinetic_virial</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_virial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the total kinetic virial <img class="math" src="_images/math/f394c2f44d750bbad26ca9b3257ec68688ac24d6.png" alt="w_ij = \sum_{k} \frac{1}{2} m v_i v_j"/></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -932,7 +1155,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.momentum">
-<code class="descname">momentum</code><span class="sig-paren">(</span><span class="optional">[</span><em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.momentum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">momentum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.momentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the total momentum <img class="math" src="_images/math/f65d5abc743368c153c92e6f5062a4127a165b1c.png" alt="\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}"/>.
 Optionally only include the contribution of a subset of atoms.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -966,7 +1189,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.print_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print lots of information about this DynamicalSystem in text format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1030,7 +1253,7 @@ but also amends the number of degrees of freedom correctly.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1047,8 +1270,8 @@ but also amends the number of degrees of freedom correctly.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>atomlist_in</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>atomlist_in</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1062,7 +1285,7 @@ but also amends the number of degrees of freedom correctly.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.remove_thermostat">
-<code class="descname">remove_thermostat</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.remove_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_thermostat</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.remove_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1179,7 +1402,7 @@ state of the random number generator is also saved.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.set_barostat">
-<code class="descname">set_barostat</code><span class="sig-paren">(</span><em>type</em>, <em>p_ext</em>, <em>hydrostatic_strain</em>, <em>diagonal_strain</em>, <em>finite_strain_formulation</em>, <em>tau_epsilon</em><span class="optional">[</span>, <em>w_epsilon</em>, <em>t</em>, <em>w_epsilon_factor</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.set_barostat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_barostat</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.set_barostat" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1258,7 +1481,7 @@ masses, or whether to return the value at the last Verlet step
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.update_thermostat">
-<code class="descname">update_thermostat</code><span class="sig-paren">(</span><span class="optional">[</span><em>t</em>, <em>p</em>, <em>i</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.update_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update_thermostat</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.update_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1835,11 +2058,11 @@ This is useful for time dependent constraints.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mass</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>pos</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
-<li><strong>origin</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</em>) &#8211; </li>
-<li><strong>indices</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n5), optional</em>) &#8211; </li>
+<li><strong>mass</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>pos</strong> (<em>input rank-2 array('d') with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
+<li><strong>velo</strong> (<em>input rank-2 array('d') with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+<li><strong>origin</strong> (<em>input rank-1 array('d') with bounds (3), optional</em>) &#8211; </li>
+<li><strong>indices</strong> (<em>input rank-1 array('i') with bounds (qp_n5), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1868,8 +2091,8 @@ This is useful for time dependent constraints.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mass</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
+<li><strong>mass</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>velo</strong> (<em>input rank-2 array('d') with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1891,7 +2114,7 @@ This is useful for time dependent constraints.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>mass</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3)</em>) &#8211; </li>
+<li><strong>velo</strong> (<em>input rank-1 array('d') with bounds (3)</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1921,9 +2144,9 @@ Optionally only include the contribution of a subset of atoms.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mass</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
-<li><strong>indices</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n3), optional</em>) &#8211; </li>
+<li><strong>mass</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>velo</strong> (<em>input rank-2 array('d') with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
+<li><strong>indices</strong> (<em>input rank-1 array('i') with bounds (qp_n3), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1952,9 +2175,9 @@ Optionally only include the contribution of a subset of atoms.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mass</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
-<li><strong>local_ke</strong> (<em>in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n3), optional</em>) &#8211; </li>
+<li><strong>mass</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>velo</strong> (<em>input rank-2 array('d') with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
+<li><strong>local_ke</strong> (<em>in/output rank-1 array('d') with bounds (qp_n3), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1976,7 +2199,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>mass</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-1 array(&#8216;d&#8217;) with bounds (3)</em>) &#8211; </li>
+<li><strong>velo</strong> (<em>input rank-1 array('d') with bounds (3)</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2011,14 +2234,14 @@ Optionally only include the contribution of a subset of atoms.</p>
         <li class="right" >
           <a href="topology.html" title="Utilities for topological analysis"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

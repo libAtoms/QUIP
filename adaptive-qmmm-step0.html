@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &mdash; quippy b9f75c6+ documentation</title>
+    <title>Introduction &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="next" title="Theoretical background" href="adaptive-qmmm-theory.html" />
     <link rel="prev" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="adaptive-qmmm.html" title="Adaptive QM/MM MD of Fracture in Silicon"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
@@ -142,27 +142,27 @@ editor. Save your script with a <code class="docutils literal"><span class="pre"
 see <code class="docutils literal"><span class="pre">...</span></code> it means there is something you need to add to the code in
 order to complete it; usually there will be a comment to give you a
 hint. The source code listings are all in boxes like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&#39;Example code listing&#39;</span>     <span class="c"># Print something out</span>
-<span class="k">print</span> <span class="o">...</span>                        <span class="c"># You need to add something here</span>
-                                 <span class="c"># e.g. replace the ... with a number</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="s1">&#39;Example code listing&#39;</span>     <span class="c1"># Print something out</span>
+<span class="k">print</span> <span class="o">...</span>                        <span class="c1"># You need to add something here</span>
+                                 <span class="c1"># e.g. replace the ... with a number</span>
 </pre></div>
 </div>
 <p>To run code, we will be using <a class="reference external" href="http://ipython.org">ipython</a>, an
 interactive Python shell. You can start <cite>ipython</cite> with a simple shell
 command:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ipython
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ ipython
 </pre></div>
 </div>
 <p>Start by importing everything from the <cite>quippy</cite> package with the
 command:</p>
-<div class="highlight-python"><div class="highlight"><pre>In [1]: from qlab import *
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [1]: from qlab import *
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>If you have not installed the <cite>AtomEye</cite> plugin then the command
 above will give an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code>. You can use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 </div>
 <p class="last">instead, which only imports <cite>quippy</cite> and not <cite>AtomEye</cite>, but you
@@ -174,7 +174,7 @@ external files and visualise them with other tools such as <a class="reference e
 <p>You should prepare your Python scripts in a text editor and then run
 them from within <cite>ipython</cite> with the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing">%run</a>
 command. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>In [2]: run make_crack.py
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [2]: run make_crack.py
 </pre></div>
 </div>
 <p>If your script is taking a long time to run and you realise something
@@ -196,11 +196,11 @@ which you will find to the right of class and function definitions in
 the online documentations. You can also explore functions
 interactively from within <cite>ipython</cite> by following the name of an object
 or function with a <code class="docutils literal"><span class="pre">?</span></code>, e.g.</p>
-<div class="highlight-python"><div class="highlight"><pre>In [3]: Atoms ?
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [3]: Atoms ?
 </pre></div>
 </div>
 <p>displays information about the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> class, or</p>
-<div class="highlight-python"><div class="highlight"><pre>In [4]: write ?
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [4]: write ?
 </pre></div>
 </div>
 <p>displays information about the <a class="reference internal" href="io.html#quippy.io.write" title="quippy.io.write"><code class="xref py py-func docutils literal"><span class="pre">write()</span></code></a> function. See
@@ -236,15 +236,15 @@ script and then continue with the next section.</p>
         <li class="right" >
           <a href="adaptive-qmmm.html" title="Adaptive QM/MM MD of Fracture in Silicon"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.io &mdash; quippy b9f75c6+ documentation</title>
+    <title>quippy.io &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -67,23 +67,23 @@
           <div class="body" role="main">
             
   <h1>Source code for quippy.io</h1><div class="highlight"><pre>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   Copyright James Kermode 2010</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
-<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
-<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   When using this software, please cite the following reference:</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   Copyright James Kermode 2010</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c1"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c1"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">There are two classes for reading trajectories: :class:`AtomsReader`</span>
@@ -103,9 +103,9 @@
 <span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">FortranArray</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;AtomsReaders&#39;</span><span class="p">,</span> <span class="s">&#39;AtomsWriters&#39;</span><span class="p">,</span> <span class="s">&#39;atoms_reader&#39;</span><span class="p">,</span>
-           <span class="s">&#39;AtomsReader&#39;</span><span class="p">,</span> <span class="s">&#39;AtomsWriter&#39;</span><span class="p">,</span> <span class="s">&#39;AtomsList&#39;</span><span class="p">,</span>
-           <span class="s">&#39;read_dataset&#39;</span><span class="p">,</span> <span class="s">&#39;time_ordered_series&#39;</span><span class="p">,</span> <span class="s">&#39;read&#39;</span><span class="p">,</span> <span class="s">&#39;write&#39;</span><span class="p">,</span> <span class="s">&#39;dict2atoms&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AtomsReaders&#39;</span><span class="p">,</span> <span class="s1">&#39;AtomsWriters&#39;</span><span class="p">,</span> <span class="s1">&#39;atoms_reader&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;AtomsReader&#39;</span><span class="p">,</span> <span class="s1">&#39;AtomsWriter&#39;</span><span class="p">,</span> <span class="s1">&#39;AtomsList&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;read_dataset&#39;</span><span class="p">,</span> <span class="s1">&#39;time_ordered_series&#39;</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">,</span> <span class="s1">&#39;dict2atoms&#39;</span><span class="p">]</span>
 
 <span class="n">AtomsReaders</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">AtomsWriters</span> <span class="o">=</span> <span class="p">{}</span>
@@ -115,7 +115,7 @@
 <span class="k">if</span> <span class="p">(</span><span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
     <span class="nb">all</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">seq</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">False</span> <span class="ow">in</span> <span class="n">seq</span>
     <span class="nb">any</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">seq</span><span class="p">:</span> <span class="bp">True</span> <span class="ow">in</span> <span class="n">seq</span>
-    <span class="n">__all__</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s">&#39;all&#39;</span><span class="p">,</span> <span class="s">&#39;any&#39;</span><span class="p">])</span>
+    <span class="n">__all__</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;any&#39;</span><span class="p">])</span>
 <span class="k">del</span> <span class="n">major</span><span class="p">,</span> <span class="n">minor</span>
 
 <div class="viewcode-block" id="atoms_reader"><a class="viewcode-back" href="../../io.html#quippy.io.atoms_reader">[docs]</a><span class="k">def</span> <span class="nf">atoms_reader</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
@@ -125,15 +125,15 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">AtomsReaders</span><span class="p">:</span>
             <span class="n">AtomsReaders</span><span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
         <span class="k">return</span> <span class="n">func</span>
-    <span class="k">return</span> <span class="n">decorate</span>
-</div>
+    <span class="k">return</span> <span class="n">decorate</span></div>
+
 <span class="k">class</span> <span class="nc">AtomsReaderMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">len_self</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="n">len_self</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> source=</span><span class="si">%r</span><span class="s"> format=</span><span class="si">%r</span><span class="s"> start=</span><span class="si">%r</span><span class="s"> stop=</span><span class="si">%r</span><span class="s"> step=</span><span class="si">%r</span><span class="s"> random_access=</span><span class="si">%r</span><span class="s"> len=</span><span class="si">%r</span><span class="s">&gt;&#39;</span> <span class="o">%</span> \
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1"> source=</span><span class="si">%r</span><span class="s1"> format=</span><span class="si">%r</span><span class="s1"> start=</span><span class="si">%r</span><span class="s1"> stop=</span><span class="si">%r</span><span class="s1"> step=</span><span class="si">%r</span><span class="s1"> random_access=</span><span class="si">%r</span><span class="s1"> len=</span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> \
                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">random_access</span><span class="p">,</span> <span class="n">len_self</span><span class="p">)</span>
 
@@ -166,27 +166,27 @@
         <span class="k">if</span> <span class="n">format</span> <span class="ow">in</span> <span class="n">AtomsWriters</span><span class="p">:</span>
             <span class="n">dest</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">format</span><span class="p">](</span><span class="n">dest</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s">&#39;write&#39;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know how to write to destination </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> in format </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">format</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to write to destination </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> in format </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">format</span><span class="p">))</span>
 
         <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">write_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">write_kwargs</span><span class="p">[</span><span class="s">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
-            <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">write_kwargs</span><span class="p">[</span><span class="s">&#39;prefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix</span>
+            <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">write_kwargs</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
+            <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">write_kwargs</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;destination does not support specifying arguments </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">write_kwargs</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;destination does not support specifying arguments </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">write_kwargs</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">progress</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">%</span> <span class="n">update_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">pb</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">opened</span><span class="p">:</span>
             <span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-        <span class="c"># Special case for writing to a string</span>
-        <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s">&#39;string&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="c1"># Special case for writing to a string</span>
+        <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">el</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">res</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">res</span>
@@ -252,7 +252,7 @@
                  <span class="n">cache_mem_limit</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="nf">file_exists</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">f</span> <span class="o">==</span> <span class="s">&quot;stdin&quot;</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">f</span> <span class="o">==</span> <span class="s2">&quot;stdin&quot;</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">format</span>
@@ -261,7 +261,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="o">=</span> <span class="n">step</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cache_mem_limit</span> <span class="o">=</span> <span class="n">cache_mem_limit</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;AtomsReader memory limit </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_mem_limit</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;AtomsReader memory limit </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_mem_limit</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_source_len</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -274,15 +274,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rename</span> <span class="o">=</span> <span class="n">rename</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s">&#39;@&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;@&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.db&#39;</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">+</span><span class="s">&#39;@&#39;</span><span class="o">+</span><span class="n">frames</span>
-                    <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;db&#39;</span>
+            <span class="k">if</span> <span class="s1">&#39;@&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.db&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">+</span><span class="s1">&#39;@&#39;</span><span class="o">+</span><span class="n">frames</span>
+                    <span class="n">format</span> <span class="o">=</span> <span class="s1">&#39;db&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">frames</span> <span class="o">=</span> <span class="n">parse_slice</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Conflicting frame references start=</span><span class="si">%r</span><span class="s"> stop=</span><span class="si">%r</span><span class="s"> step=</span><span class="si">%r</span><span class="s"> and @-syntax </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Conflicting frame references start=</span><span class="si">%r</span><span class="s1"> stop=</span><span class="si">%r</span><span class="s1"> step=</span><span class="si">%r</span><span class="s1"> and @-syntax </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span>
                                          <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">frames</span><span class="p">))</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                         <span class="k">if</span> <span class="n">frames</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -297,11 +297,11 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="ow">in</span> <span class="n">AtomsReaders</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                     <span class="n">format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span>
-            <span class="k">elif</span> <span class="n">format</span> <span class="o">!=</span> <span class="s">&#39;string&#39;</span> <span class="ow">and</span> <span class="n">format</span> <span class="o">!=</span> <span class="s">&#39;db&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">format</span> <span class="o">!=</span> <span class="s1">&#39;string&#39;</span> <span class="ow">and</span> <span class="n">format</span> <span class="o">!=</span> <span class="s1">&#39;db&#39;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
                 <span class="n">glob_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">))</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;input file &#39;</span><span class="si">%s</span><span class="s">&#39; not found&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;input file &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">glob_list</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -311,15 +311,15 @@
                     <span class="k">if</span> <span class="n">format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                         <span class="n">format</span> <span class="o">=</span> <span class="n">new_format</span>
 
-        <span class="c"># special cases if source is a list or tuple of filenames or Atoms objects</span>
+        <span class="c1"># special cases if source is a list or tuple of filenames or Atoms objects</span>
         <span class="n">is_filename_sequence</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="n">is_list_of_atoms</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">is_filename_sequence</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">is_list_of_atoms</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s">&#39;@&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
-                    <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="p">[:</span><span class="n">item</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&#39;@&#39;</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="s1">&#39;@&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="p">[:</span><span class="n">item</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)]</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file_exists</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
                     <span class="n">is_filename_sequence</span> <span class="o">=</span> <span class="bp">False</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
@@ -328,7 +328,7 @@
         <span class="k">if</span> <span class="n">is_filename_sequence</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">AtomsSequenceReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="n">format</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">is_list_of_atoms</span><span class="p">:</span>
-            <span class="c"># dummy reader which copies from an existing list or tuple of Atoms objects</span>
+            <span class="c1"># dummy reader which copies from an existing list or tuple of Atoms objects</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="p">[</span> <span class="n">at</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -336,9 +336,9 @@
             <span class="k">if</span> <span class="n">format</span> <span class="ow">in</span> <span class="n">AtomsReaders</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="n">format</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="n">format</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c"># check if reader is still a string or list of strings - indicates missing files or unknown format</span>
+        <span class="c1"># check if reader is still a string or list of strings - indicates missing files or unknown format</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot read Atoms from file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Cannot read Atoms from file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">is_list_of_strings</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">:</span>
@@ -346,25 +346,25 @@
                     <span class="n">is_list_of_strings</span> <span class="o">=</span> <span class="bp">False</span>
                     <span class="k">break</span>
             <span class="k">if</span> <span class="n">is_list_of_strings</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot read Atoms from files </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Cannot read Atoms from files </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">AtomsReader</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">AtomsReaderCopier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
-            <span class="c"># call Atoms constructor - this has beneficial side effect of making a copy</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+            <span class="c1"># call Atoms constructor - this has beneficial side effect of making a copy</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="p">[</span><span class="n">Atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)]</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_len</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_source_len</span><span class="p">)))</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s">&#39;__getitem__&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">))))</span>
             <span class="k">except</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;This AtomsReader does not support random access&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;This AtomsReader does not support random access&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;This AtomsReader does not support random access&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;This AtomsReader does not support random access&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">random_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -381,19 +381,19 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Close any open files associated with this :class:`AtomsReader`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s">&#39;close&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
     <span class="k">def</span> <span class="nf">__getslice__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">last</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">first</span><span class="p">,</span><span class="n">last</span><span class="p">,</span><span class="bp">None</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_cache_fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
-        <span class="c"># least recently used (LRU) cache</span>
+        <span class="c1"># least recently used (LRU) cache</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">frame</span><span class="p">)))</span>
-            <span class="k">return</span> <span class="bp">True</span>   <span class="c"># cache hit</span>
+            <span class="k">return</span> <span class="bp">True</span>   <span class="c1"># cache hit</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># cache miss</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c1"># cache miss</span>
 
     <span class="k">def</span> <span class="nf">_cache_store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
@@ -405,18 +405,18 @@
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_mem_limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Reducing AtomsReader cache size from </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">))</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Reducing AtomsReader cache size from </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">))</span>
                     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache_mem_usage</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">mem_estimate</span><span class="p">())</span>
                 <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_mem_usage</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_mem_limit</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Reducing AtomsReader cache size from </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">))</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Reducing AtomsReader cache size from </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_cache_mem_usage</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_access</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;This AtomsReader does not support random access&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;This AtomsReader does not support random access&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
             <span class="n">source_len</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_len</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
@@ -430,16 +430,16 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache_store</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">at</span><span class="p">)</span>
 
             <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">[</span><span class="n">frame</span><span class="p">]</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s">&#39;source&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">):</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s">&#39;frame&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">):</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span>
             <span class="k">return</span> <span class="n">at</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">frame</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span> <span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;frame should be either an integer or a slice&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;frame should be either an integer or a slice&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache_store</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">at</span><span class="p">)</span>
@@ -455,7 +455,7 @@
 <span class="sd">        :attr:`random_access` is true.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_access</span><span class="p">:</span>
-            <span class="c"># iterate using __getitem__, which automatically goes through LRU cache</span>
+            <span class="c1"># iterate using __getitem__, which automatically goes through LRU cache</span>
 
             <span class="n">frames</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span> <span class="n">frames</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
@@ -463,18 +463,18 @@
                 <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="c"># source does not support random access</span>
-            <span class="c"># for each call, we make a new iterator from self.reader</span>
+            <span class="c1"># source does not support random access</span>
+            <span class="c1"># for each call, we make a new iterator from self.reader</span>
 
             <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;Cannot reverse iterate over an AtomsReader which does not support random access&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;Cannot reverse iterate over an AtomsReader which does not support random access&#39;</span><span class="p">)</span>
 
             <span class="n">frames</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
             <span class="n">atoms</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;Cannot use negative start or stop indices for an AtomsReader which does not support random access&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;Cannot use negative start or stop indices for an AtomsReader which does not support random access&#39;</span><span class="p">)</span>
 
                 <span class="n">frames</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">or</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">atoms</span>  <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">or</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
@@ -485,17 +485,17 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache_store</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">at</span><span class="p">)</span>
                 <span class="n">n_frames</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">last_frame</span> <span class="o">=</span> <span class="n">frame</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s">&#39;source&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">):</span>
                     <span class="n">at</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s">&#39;frame&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">):</span>
                     <span class="n">at</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span>
                 <span class="k">yield</span> <span class="n">at</span>
 
-            <span class="c"># once iteration is finished, random access will be possible if all frames fitted inside cache</span>
+            <span class="c1"># once iteration is finished, random access will be possible if all frames fitted inside cache</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_frames</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_dict</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_source_len</span> <span class="o">=</span> <span class="n">last_frame</span><span class="o">+</span><span class="mi">1</span>
-</div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_source_len</span> <span class="o">=</span> <span class="n">last_frame</span><span class="o">+</span><span class="mi">1</span></div>
+
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterframes</span><span class="p">()</span>
 
@@ -515,10 +515,10 @@
                     <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">new</span><span class="p">]</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">old</span><span class="p">]</span>
                     <span class="k">del</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">old</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Cannont rename: no property or parameter named &quot;</span><span class="si">%s</span><span class="s">&quot; exists&#39;</span> <span class="o">%</span> <span class="n">old</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">at</span>
+                    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cannont rename: no property or parameter named &quot;</span><span class="si">%s</span><span class="s1">&quot; exists&#39;</span> <span class="o">%</span> <span class="n">old</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">at</span></div></div>
 
-</div></div>
+
 <div class="viewcode-block" id="AtomsList"><a class="viewcode-back" href="../../io.html#quippy.io.AtomsList">[docs]</a><span class="k">class</span> <span class="nc">AtomsList</span><span class="p">(</span><span class="n">AtomsReaderMixin</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An :class:`AtomsList` is just like an :class:`AtomsReader` except</span>
@@ -565,8 +565,8 @@
         <span class="n">tmp_ar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">):</span>
-            <span class="c"># don&#39;t override any special attributes</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">):</span>
+            <span class="c1"># don&#39;t override any special attributes</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -589,9 +589,9 @@
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Array used for fancy indexing must be of type integer or bool&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;b&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Array used for fancy indexing must be of type integer or bool&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">:</span>
@@ -630,12 +630,12 @@
             <span class="nb">list</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">cmp</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">cmp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;If attr is present, cmp and key must not be present&#39;</span><span class="p">)</span>
-            <span class="nb">list</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">attrgetter</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
-</div>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;If attr is present, cmp and key must not be present&#39;</span><span class="p">)</span>
+            <span class="nb">list</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">attrgetter</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">func</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
-</div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">func</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span></div>
+
 <div class="viewcode-block" id="AtomsWriter"><a class="viewcode-back" href="../../io.html#quippy.io.AtomsWriter">[docs]</a><span class="k">def</span> <span class="nf">AtomsWriter</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a file-like object for writing Atoms to `dest` which</span>
@@ -653,9 +653,9 @@
         <span class="n">writer</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">format</span><span class="p">](</span><span class="n">dest</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">writer</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know how to write Atoms to format </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">format</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to write Atoms to format </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">format</span><span class="p">)</span></div>
 
-</div>
+
 <span class="k">class</span> <span class="nc">AtomsSequenceReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Read Atoms from a list of sources&quot;&quot;&quot;</span>
 
@@ -673,12 +673,12 @@
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">None</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;One or more sources in </span><span class="si">%r</span><span class="s"> do not support random access&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;One or more sources in </span><span class="si">%r</span><span class="s1"> do not support random access&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">None</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;One or more sources in </span><span class="si">%r</span><span class="s"> do not support random access&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;One or more sources in </span><span class="si">%r</span><span class="s1"> do not support random access&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
@@ -691,12 +691,12 @@
                     <span class="k">return</span> <span class="n">at</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="o">+</span><span class="nb">len</span>
 
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;index </span><span class="si">%d</span><span class="s"> out of range 0..</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;index </span><span class="si">%d</span><span class="s1"> out of range 0..</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)))</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="nb">slice</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">index</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)))]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;indexing object should be either int or slice&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;indexing object should be either int or slice&#39;</span><span class="p">)</span>
 
 
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -723,7 +723,7 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;indexing object should be either int or slice&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;indexing object should be either int or slice&#39;</span><span class="p">)</span>
 
 
 
@@ -733,9 +733,9 @@
 
 <span class="sd">    File format is inferred from file extension, see :ref:`fileformats`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">AtomsReader</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">readargs</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">AtomsReader</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">readargs</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span></div>
 
-</div>
+
 <div class="viewcode-block" id="write"><a class="viewcode-back" href="../../io.html#quippy.io.write">[docs]</a><span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">writeargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write `atoms` to the file `filename`</span>
@@ -744,9 +744,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-    <span class="n">AtomsWriter</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">writeargs</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="n">AtomsWriter</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">writeargs</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="read_dataset"><a class="viewcode-back" href="../../io.html#quippy.io.read_dataset">[docs]</a><span class="k">def</span> <span class="nf">read_dataset</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read atomic configurations matching glob `pattern` from each of</span>
@@ -758,9 +758,9 @@
     <span class="n">dataset</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
         <span class="n">dataset</span><span class="p">[</span><span class="nb">dir</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsList</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">pattern</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">dataset</span>
+    <span class="k">return</span> <span class="n">dataset</span></div>
 
-</div>
+
 <div class="viewcode-block" id="time_ordered_series"><a class="viewcode-back" href="../../io.html#quippy.io.time_ordered_series">[docs]</a><span class="k">def</span> <span class="nf">time_ordered_series</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given a source of Atoms configurations, return a time ordered list of filename and frame references</span>
@@ -769,9 +769,9 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">AtomsReader</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
             <span class="n">source</span> <span class="o">=</span> <span class="n">time_ordered_glob</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="s">&#39;empty&#39;</span><span class="p">)</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="s1">&#39;empty&#39;</span><span class="p">)</span>
 
-    <span class="c"># traverse backwards over source, choosing most recently modified version of each frame</span>
+    <span class="c1"># traverse backwards over source, choosing most recently modified version of each frame</span>
     <span class="n">revsource</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
     <span class="n">last</span> <span class="o">=</span> <span class="n">revsource</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">current_time</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="n">time</span>
@@ -786,9 +786,9 @@
         <span class="n">revorder</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">at</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">frame</span><span class="p">))</span>
 
     <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c"># group first by filename</span>
+    <span class="c1"># group first by filename</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">revorder</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-        <span class="c"># annotate group with stride between frames</span>
+        <span class="c1"># annotate group with stride between frames</span>
         <span class="n">group_with_stride</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">group</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">f1</span><span class="p">),</span> <span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">f2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
@@ -796,16 +796,16 @@
             <span class="n">group_with_stride</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s1</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">stride</span><span class="p">))</span>
         <span class="n">group_with_stride</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">stride</span><span class="p">,))</span>
 
-        <span class="c"># now group again by stride</span>
+        <span class="c1"># now group again by stride</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group_with_stride</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">group</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
-            <span class="n">filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">@</span><span class="si">%d</span><span class="s">:</span><span class="si">%d</span><span class="s">:</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="n">filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">@</span><span class="si">%d</span><span class="s1">:</span><span class="si">%d</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]))</span>
 
-    <span class="k">return</span> <span class="n">filenames</span>
+    <span class="k">return</span> <span class="n">filenames</span></div>
 
-</div>
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;traj&#39;</span><span class="p">)</span>
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;cfg&#39;</span><span class="p">)</span>
+
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">)</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;cfg&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ASEReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Helper routine to load from ASE trajectories</span>
@@ -815,9 +815,9 @@
     <span class="kn">from</span> <span class="nn">quippy.elasticity</span> <span class="kn">import</span> <span class="n">stress_matrix</span>
 
     <span class="n">format_converter</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&#39;POSCAR&#39;</span><span class="p">:</span> <span class="s">&#39;vasp&#39;</span><span class="p">,</span>
-        <span class="s">&#39;CONTCAR&#39;</span><span class="p">:</span> <span class="s">&#39;vasp&#39;</span><span class="p">,</span>
-        <span class="s">&#39;OUTCAR&#39;</span><span class="p">:</span> <span class="s">&#39;vasp-out&#39;</span>
+        <span class="s1">&#39;POSCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;CONTCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;OUTCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp-out&#39;</span>
         <span class="p">}</span>
     <span class="n">format</span> <span class="o">=</span> <span class="n">format_converter</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">format</span><span class="p">,</span> <span class="n">format</span><span class="p">)</span>
     <span class="n">images</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">),</span> <span class="n">format</span><span class="o">=</span><span class="n">format</span><span class="p">)</span>
@@ -843,19 +843,19 @@
         <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
             <span class="k">pass</span>
 
-        <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="c"># convert to quippy Atoms</span>
+        <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="c1"># convert to quippy Atoms</span>
         <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;force&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
         <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
         <span class="k">yield</span> <span class="n">at</span>
 
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;pupyxyz&#39;</span><span class="p">)</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;pupyxyz&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ASEExtendedXYZReader</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">ASEReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;extxyz&#39;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">ASEReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;extxyz&#39;</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">at</span>
 
 <span class="k">class</span> <span class="nc">ASEWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -882,12 +882,12 @@
 
 <span class="k">class</span> <span class="nc">ASEExtendedXYZWriter</span><span class="p">(</span><span class="n">ASEWriter</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">translate</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="n">ASEWriter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;extxyz&#39;</span><span class="p">,</span>
+        <span class="n">ASEWriter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;extxyz&#39;</span><span class="p">,</span>
                            <span class="n">translate</span><span class="o">=</span><span class="n">translate</span><span class="p">)</span>
 
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;traj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEWriter</span>
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;cfg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEWriter</span>
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;pupyxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEExtendedXYZWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;traj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;cfg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;pupyxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEExtendedXYZWriter</span>
 
 <span class="k">def</span> <span class="nf">dict2atoms</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">quippy.elasticity</span> <span class="kn">import</span> <span class="n">stress_matrix</span>
@@ -912,25 +912,25 @@
     <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
         <span class="k">pass</span>
 
-    <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="c"># convert to quippy Atoms</span>
+    <span class="n">at</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="c1"># convert to quippy Atoms</span>
     <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;force&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
     <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
-    <span class="k">if</span> <span class="s">&#39;key_value_pairs&#39;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;key_value_pairs&#39;</span><span class="p">])</span>
-        <span class="k">del</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;key_value_pairs&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;key_value_pairs&#39;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;key_value_pairs&#39;</span><span class="p">])</span>
+        <span class="k">del</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;key_value_pairs&#39;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="s">&#39;data&#39;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="c"># avoid unicode strings</span>
+    <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="c1"># avoid unicode strings</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;U&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;U&#39;</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s">&#39;S&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">T</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -940,15 +940,15 @@
 
     <span class="k">return</span> <span class="n">at</span>
 
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;db&#39;</span><span class="p">)</span>
-<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s">&#39;json&#39;</span><span class="p">)</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;db&#39;</span><span class="p">)</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ASEDatabaseReader</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">ase.db.core</span> <span class="kn">import</span> <span class="n">connect</span>
 
     <span class="n">index</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s">&#39;.json@&#39;</span> <span class="ow">in</span> <span class="n">filename</span> <span class="ow">or</span>
-                                             <span class="s">&#39;.db@&#39;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="n">filename</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;.json@&#39;</span> <span class="ow">in</span> <span class="n">filename</span> <span class="ow">or</span>
+                                             <span class="s1">&#39;.db@&#39;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
             <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
 
@@ -975,11 +975,11 @@
         <span class="n">all_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">all_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
 
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-        <span class="n">forces</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s">&#39;force&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">forces</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">forces</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">forces</span> <span class="o">=</span> <span class="n">forces</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">stress</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;virial&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">stress</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;virial&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">stress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">stress</span> <span class="o">=</span> <span class="o">-</span><span class="n">stress</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">/</span><span class="n">at</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
 
@@ -987,20 +987,20 @@
 
         <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">skip_params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;virial&#39;</span><span class="p">,</span> <span class="s">&#39;calculator&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="s">&#39;unique_id&#39;</span><span class="p">]</span> <span class="c"># filter out duplicate data</span>
+        <span class="n">skip_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;virial&#39;</span><span class="p">,</span> <span class="s1">&#39;calculator&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;unique_id&#39;</span><span class="p">]</span> <span class="c1"># filter out duplicate data</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">skip_params</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>   <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span>
                 <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
-                <span class="c"># scalar key/value pairs</span>
+                <span class="c1"># scalar key/value pairs</span>
                 <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c"># more complicated data structures</span>
+                <span class="c1"># more complicated data structures</span>
                 <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-        <span class="n">skip_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;numbers&#39;</span><span class="p">,</span> <span class="s">&#39;positions&#39;</span><span class="p">,</span> <span class="s">&#39;species&#39;</span><span class="p">]</span>
+        <span class="n">skip_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">skip_arrays</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -1012,7 +1012,7 @@
             <span class="k">if</span> <span class="n">orig_calc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">calc</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">orig_calc</span><span class="o">.</span><span class="n">name</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">calc</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">all_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;calculator&#39;</span><span class="p">,</span> <span class="s">&#39;(unknown)&#39;</span><span class="p">)</span>
+                <span class="n">calc</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">all_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;calculator&#39;</span><span class="p">,</span> <span class="s1">&#39;(unknown)&#39;</span><span class="p">)</span>
             <span class="n">at</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calc</span><span class="p">)</span>
 
             <span class="n">database</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span>
@@ -1020,8 +1020,8 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">at</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">orig_calc</span><span class="p">)</span>
 
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;db&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEDatabaseWriter</span>
-<span class="n">AtomsWriters</span><span class="p">[</span><span class="s">&#39;json&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEDatabaseWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;db&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEDatabaseWriter</span>
+<span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASEDatabaseWriter</span>
 </pre></div>
 
           </div>
@@ -1038,14 +1038,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tools for fracture simulations &mdash; quippy b9f75c6+ documentation</title>
+    <title>Tools for fracture simulations &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -83,7 +83,10 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-obj docutils literal"><span class="pre">ConstantStrainRate</span></code></a>(orig_height,&nbsp;delta_strain)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-obj docutils literal"><span class="pre">CrackParams</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>This type contains all the parameters for a crack simulation, each of which is described briefly below.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-obj docutils literal"><span class="pre">ConstantStrainRate</span></code></a>(orig_height,&nbsp;delta_strain)</td>
 <td>Constraint which increments epsilon_yy at a constant strain rate</td>
 </tr>
 </tbody>
@@ -95,55 +98,274 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_strain_energy_release_rate" title="quippy.crack.crack_strain_energy_release_rate"><code class="xref py py-obj docutils literal"><span class="pre">crack_strain_energy_release_rate</span></code></a>(at[,&nbsp;bulk,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_is_edge_atom" title="quippy.crack.crack_is_edge_atom"><code class="xref py py-obj docutils literal"><span class="pre">crack_is_edge_atom</span></code></a>(slab,i,edge_gap)</td>
+<td>Returns true if atom <code class="docutils literal"><span class="pre">i</span></code> is near to an open surface of slab.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_parse_name" title="quippy.crack.crack_parse_name"><code class="xref py py-obj docutils literal"><span class="pre">crack_parse_name</span></code></a>(crackname)</td>
+<td>Parse crack name in the format is (ijk)[lmn], with negative numbers denoted by a trailing <code class="docutils literal"><span class="pre">b</span></code> (short for <code class="docutils literal"><span class="pre">bar</span></code>), e.g.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_hybrid_calc_args" title="quippy.crack.crack_hybrid_calc_args"><code class="xref py py-obj docutils literal"><span class="pre">crack_hybrid_calc_args</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_g_to_k" title="quippy.crack.crack_g_to_k"><code class="xref py py-obj docutils literal"><span class="pre">crack_g_to_k</span></code></a>(g,e,v,[mode])</td>
+<td>Convert from energy release rate <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> to stress intensity factor <img class="math" src="_images/math/28e003020d0ae96250b302d7d779c791f183f707.png" alt="K"/></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.percolation_step" title="quippy.crack.percolation_step"><code class="xref py py-obj docutils literal"><span class="pre">percolation_step</span></code></a>(grid)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_setup_marks" title="quippy.crack.crack_setup_marks"><code class="xref py py-obj docutils literal"><span class="pre">crack_setup_marks</span></code></a>(crack_slab,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_update_selection_crack_front" title="quippy.crack.crack_update_selection_crack_front"><code class="xref py py-obj docutils literal"><span class="pre">crack_update_selection_crack_front</span></code></a>(at,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_is_topbottom_edge_atom" title="quippy.crack.crack_is_topbottom_edge_atom"><code class="xref py py-obj docutils literal"><span class="pre">crack_is_topbottom_edge_atom</span></code></a>(slab,i,edge_gap)</td>
+<td>Returns true if atom <code class="docutils literal"><span class="pre">i</span></code> is the topbottom surface of slab</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_make_slab" title="quippy.crack.crack_make_slab"><code class="xref py py-obj docutils literal"><span class="pre">crack_make_slab</span></code></a>(params,classicalpot)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_apply_strain_ramp" title="quippy.crack.crack_apply_strain_ramp"><code class="xref py py-obj docutils literal"><span class="pre">crack_apply_strain_ramp</span></code></a>(at,g1,g2,d1,d2,d3,d4)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_strain_to_g" title="quippy.crack.crack_strain_to_g"><code class="xref py py-obj docutils literal"><span class="pre">crack_strain_to_g</span></code></a>(strain,e,v,height)</td>
+<td>Calculate energy release rate <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> from strain using :math:<code class="docutils literal"><span class="pre">G</span> <span class="pre">=</span> <span class="pre">\frac{1}{2}</span> <span class="pre">\frac{E}{1-\nu^2}</span> <span class="pre">\epsilon^2</span> <span class="pre">h:math:</span></code> from thin strip result.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_find_tip_coordination" title="quippy.crack.crack_find_tip_coordination"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_tip_coordination</span></code></a>(...)</td>
+<td>Return <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> coordinate of rightmost undercoordinated atom</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.in_ellipse" title="quippy.crack.in_ellipse"><code class="xref py py-obj docutils literal"><span class="pre">in_ellipse</span></code></a>(d,ellipse)</td>
+<td>Return true if the point <code class="docutils literal"><span class="pre">d</span></code> is within an ellipse centred at the origin with the <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/>, <img class="math" src="_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/>, and <img class="math" src="_images/math/84d7271dd9e78c1e05d6c3c6ecb60309ef7dfc73.png" alt="z"/> radii specifeid in the vector <code class="docutils literal"><span class="pre">ellipse</span></code>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_find_tip_local_energy" title="quippy.crack.crack_find_tip_local_energy"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_tip_local_energy</span></code></a>(at,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_update_selection" title="quippy.crack.crack_update_selection"><code class="xref py py-obj docutils literal"><span class="pre">crack_update_selection</span></code></a>(at,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_mm_calc_args" title="quippy.crack.crack_mm_calc_args"><code class="xref py py-obj docutils literal"><span class="pre">crack_mm_calc_args</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_check_coordination_boundaries" title="quippy.crack.crack_check_coordination_boundaries"><code class="xref py py-obj docutils literal"><span class="pre">crack_check_coordination_boundaries</span></code></a>(at,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.select_ellipse" title="quippy.crack.select_ellipse"><code class="xref py py-obj docutils literal"><span class="pre">select_ellipse</span></code></a>(at,ellipse,ellipse_bias,list,c)</td>
+<td>Select atoms in ellipse centred on an atom and with given principal radii</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_uniform_load" title="quippy.crack.crack_uniform_load"><code class="xref py py-obj docutils literal"><span class="pre">crack_uniform_load</span></code></a>(...)</td>
+<td>Rescale atoms in slab, with atoms in front of either crack tip strained in y direction by <code class="docutils literal"><span class="pre">strain</span></code> and atoms behind crack tip rigidly shifted to keep top and bottom edges flat.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_g_to_strain" title="quippy.crack.crack_g_to_strain"><code class="xref py py-obj docutils literal"><span class="pre">crack_g_to_strain</span></code></a>(g,e,v,height)</td>
+<td>Calculate <img class="math" src="_images/math/6fb5df65c0e50c760e7c6462248d06b98eef7c43.png" alt="epsilon"/> from <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/>, inverse of above formula.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_k_to_g" title="quippy.crack.crack_k_to_g"><code class="xref py py-obj docutils literal"><span class="pre">crack_k_to_g</span></code></a>(k,e,v,[mode])</td>
+<td>Convert from stress intensity factor <img class="math" src="_images/math/28e003020d0ae96250b302d7d779c791f183f707.png" alt="K"/> to energy release rate <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_update_connect" title="quippy.crack.crack_update_connect"><code class="xref py py-obj docutils literal"><span class="pre">crack_update_connect</span></code></a>(at,params)</td>
+<td>Use hysteretic version of calc_connect() so we can use relative cutoffs Update the connectivity of a crack slab.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_find_surface_atoms" title="quippy.crack.crack_find_surface_atoms"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_surface_atoms</span></code></a>(at)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_find_tip" title="quippy.crack.crack_find_tip"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_tip</span></code></a>(at,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_calc_load_field" title="quippy.crack.crack_calc_load_field"><code class="xref py py-obj docutils literal"><span class="pre">crack_calc_load_field</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_apply_load_increment" title="quippy.crack.crack_apply_load_increment"><code class="xref py py-obj docutils literal"><span class="pre">crack_apply_load_increment</span></code></a>(at,[g_increment])</td>
+<td>Increase the load by adding the the load displacement field to the atomic positions.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_measure_g" title="quippy.crack.crack_measure_g"><code class="xref py py-obj docutils literal"><span class="pre">crack_measure_g</span></code></a>(at,e,v,orig_height)</td>
+<td>Measure the current height of slab and calculate energy release rate <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> from current and original heights and elastic constants <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> and <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/>, using the equation :math:`` G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:`` where <img class="math" src="_images/math/fda7c606710a3011192999c39b6c862d9db414d6.png" alt="h_0"/> is the original height and <img class="math" src="_images/math/cbb80ad77aa7a5e227d5a46bc44d235284106cfc.png" alt="h"/> the new height.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_k_field" title="quippy.crack.crack_k_field"><code class="xref py py-obj docutils literal"><span class="pre">crack_k_field</span></code></a>(...)</td>
+<td>Calculate Irwin K-field stresses and/or displacements for all atoms in <code class="docutils literal"><span class="pre">at</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_find_tip_percolation" title="quippy.crack.crack_find_tip_percolation"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_tip_percolation</span></code></a>(at,params)</td>
+<td>Locate crack tips within <code class="docutils literal"><span class="pre">at</span></code> using a percolation algorithm.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_update_selection_coordination" title="quippy.crack.crack_update_selection_coordination"><code class="xref py py-obj docutils literal"><span class="pre">crack_update_selection_coordination</span></code></a>(at,params)</td>
+<td>Update QM selection region for a crack configuration using the <code class="docutils literal"><span class="pre">nn</span></code> and <code class="docutils literal"><span class="pre">changed_nn</span></code> properties and the <code class="docutils literal"><span class="pre">CrackPos</span></code> parameter from the atoms structure, as well as the selection parameters in <code class="docutils literal"><span class="pre">params</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_make_seed" title="quippy.crack.crack_make_seed"><code class="xref py py-obj docutils literal"><span class="pre">crack_make_seed</span></code></a>(crack_slab,params)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_check_coordination" title="quippy.crack.crack_check_coordination"><code class="xref py py-obj docutils literal"><span class="pre">crack_check_coordination</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_print" title="quippy.crack.crack_print"><code class="xref py py-obj docutils literal"><span class="pre">crack_print</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Print crack slab to XYZ file, using properties defined in &#8216;params%io_print_properties&#8217; or all properties if &#8216;params%io_print_all_properties&#8217; is true.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_strain_energy_release_rate" title="quippy.crack.crack_strain_energy_release_rate"><code class="xref py py-obj docutils literal"><span class="pre">crack_strain_energy_release_rate</span></code></a>(at[,&nbsp;bulk,&nbsp;...])</td>
 <td>Compute strain energy release rate G from elastic potential energy in a strip</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_strain" title="quippy.crack.crack_strain"><code class="xref py py-obj docutils literal"><span class="pre">crack_strain</span></code></a>(at)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_strain" title="quippy.crack.crack_strain"><code class="xref py py-obj docutils literal"><span class="pre">crack_strain</span></code></a>(at)</td>
 <td>Returns strain of crack specimen</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_find_griffith_load" title="quippy.crack.crack_find_griffith_load"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_griffith_load</span></code></a>(a,&nbsp;b,&nbsp;pot[,&nbsp;relax])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_find_griffith_load" title="quippy.crack.crack_find_griffith_load"><code class="xref py py-obj docutils literal"><span class="pre">crack_find_griffith_load</span></code></a>(a,&nbsp;b,&nbsp;pot[,&nbsp;relax])</td>
 <td>Given two configurations (a, b) which differ by one broken bond, find the Griffith load, that is the load at which <cite>a</cite> and <cite>b</cite> have the same energy accorinding to the model potential <cite>pot</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.stress_intensity_factor" title="quippy.crack.stress_intensity_factor"><code class="xref py py-obj docutils literal"><span class="pre">stress_intensity_factor</span></code></a>(at)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.stress_intensity_factor" title="quippy.crack.stress_intensity_factor"><code class="xref py py-obj docutils literal"><span class="pre">stress_intensity_factor</span></code></a>(at)</td>
 <td>Returns stress instensity factor for mode I loading (K_I) in MPa sqrt(m)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.make_crack_advance_map" title="quippy.crack.make_crack_advance_map"><code class="xref py py-obj docutils literal"><span class="pre">make_crack_advance_map</span></code></a>(atoms[,&nbsp;tol])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.make_crack_advance_map" title="quippy.crack.make_crack_advance_map"><code class="xref py py-obj docutils literal"><span class="pre">make_crack_advance_map</span></code></a>(atoms[,&nbsp;tol])</td>
 <td>Find mapping from atom indices to the index of atom one step ahead of them in the crack propagation direction (i.e.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.find_crack_tip_coordination" title="quippy.crack.find_crack_tip_coordination"><code class="xref py py-obj docutils literal"><span class="pre">find_crack_tip_coordination</span></code></a>(atoms[,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.find_crack_tip_coordination" title="quippy.crack.find_crack_tip_coordination"><code class="xref py py-obj docutils literal"><span class="pre">find_crack_tip_coordination</span></code></a>(atoms[,&nbsp;...])</td>
 <td>Return position of crack tip in <cite>atoms</cite>, based on atomic coordination.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.irwin_modeI_crack_tip_stress_field" title="quippy.crack.irwin_modeI_crack_tip_stress_field"><code class="xref py py-obj docutils literal"><span class="pre">irwin_modeI_crack_tip_stress_field</span></code></a>(K,&nbsp;r,&nbsp;t)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.irwin_modeI_crack_tip_stress_field" title="quippy.crack.irwin_modeI_crack_tip_stress_field"><code class="xref py py-obj docutils literal"><span class="pre">irwin_modeI_crack_tip_stress_field</span></code></a>(K,&nbsp;r,&nbsp;t)</td>
 <td>Compute Irwin singular crack tip stress field</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.strain_to_G" title="quippy.crack.strain_to_G"><code class="xref py py-obj docutils literal"><span class="pre">strain_to_G</span></code></a>(strain,&nbsp;E,&nbsp;nu,&nbsp;orig_height)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.strain_to_G" title="quippy.crack.strain_to_G"><code class="xref py py-obj docutils literal"><span class="pre">strain_to_G</span></code></a>(strain,&nbsp;E,&nbsp;nu,&nbsp;orig_height)</td>
 <td>Convert from strain to energy release rate G for thin strip geometry</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.G_to_strain" title="quippy.crack.G_to_strain"><code class="xref py py-obj docutils literal"><span class="pre">G_to_strain</span></code></a>(G,&nbsp;E,&nbsp;nu,&nbsp;orig_height)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.G_to_strain" title="quippy.crack.G_to_strain"><code class="xref py py-obj docutils literal"><span class="pre">G_to_strain</span></code></a>(G,&nbsp;E,&nbsp;nu,&nbsp;orig_height)</td>
 <td>Convert from energy release rate G to strain for thin strip geometry</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.get_strain" title="quippy.crack.get_strain"><code class="xref py py-obj docutils literal"><span class="pre">get_strain</span></code></a>(atoms)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.get_strain" title="quippy.crack.get_strain"><code class="xref py py-obj docutils literal"><span class="pre">get_strain</span></code></a>(atoms)</td>
 <td>Return the current strain on thin strip configuration <cite>atoms</cite></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.get_energy_release_rate" title="quippy.crack.get_energy_release_rate"><code class="xref py py-obj docutils literal"><span class="pre">get_energy_release_rate</span></code></a>(atoms)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.get_energy_release_rate" title="quippy.crack.get_energy_release_rate"><code class="xref py py-obj docutils literal"><span class="pre">get_energy_release_rate</span></code></a>(atoms)</td>
 <td>Return the current energy release rate G for <a href="#id1"><span class="problematic" id="id2">`</span></a>atoms</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.get_stress_intensity_factor" title="quippy.crack.get_stress_intensity_factor"><code class="xref py py-obj docutils literal"><span class="pre">get_stress_intensity_factor</span></code></a>(atoms)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.get_stress_intensity_factor" title="quippy.crack.get_stress_intensity_factor"><code class="xref py py-obj docutils literal"><span class="pre">get_stress_intensity_factor</span></code></a>(atoms)</td>
 <td>Return stress intensity factor K_I</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.fit_crack_stress_field" title="quippy.crack.fit_crack_stress_field"><code class="xref py py-obj docutils literal"><span class="pre">fit_crack_stress_field</span></code></a>(atoms[,&nbsp;r_range,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.fit_crack_stress_field" title="quippy.crack.fit_crack_stress_field"><code class="xref py py-obj docutils literal"><span class="pre">fit_crack_stress_field</span></code></a>(atoms[,&nbsp;r_range,&nbsp;...])</td>
 <td>Perform a least squares fit of near-tip stress field to Irwin solution</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-obj docutils literal"><span class="pre">find_crack_tip_stress_field</span></code></a>(atoms[,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-obj docutils literal"><span class="pre">find_crack_tip_stress_field</span></code></a>(atoms[,&nbsp;...])</td>
 <td>Find the position of the crack tip by fitting to the Irwin <cite>K</cite>-field solution</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.plot_stress_fields" title="quippy.crack.plot_stress_fields"><code class="xref py py-obj docutils literal"><span class="pre">plot_stress_fields</span></code></a>(atoms[,&nbsp;r_range,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.plot_stress_fields" title="quippy.crack.plot_stress_fields"><code class="xref py py-obj docutils literal"><span class="pre">plot_stress_fields</span></code></a>(atoms[,&nbsp;r_range,&nbsp;...])</td>
 <td>Fit and plot atomistic and continuum stress fields</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.thin_strip_displacement_y" title="quippy.crack.thin_strip_displacement_y"><code class="xref py py-obj docutils literal"><span class="pre">thin_strip_displacement_y</span></code></a>(x,&nbsp;y,&nbsp;strain,&nbsp;a,&nbsp;b)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.thin_strip_displacement_y" title="quippy.crack.thin_strip_displacement_y"><code class="xref py py-obj docutils literal"><span class="pre">thin_strip_displacement_y</span></code></a>(x,&nbsp;y,&nbsp;strain,&nbsp;a,&nbsp;b)</td>
 <td>Return vertical displacement ramp used to apply initial strain to slab</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.print_crack_system" title="quippy.crack.print_crack_system"><code class="xref py py-obj docutils literal"><span class="pre">print_crack_system</span></code></a>(crack_direction,&nbsp;...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.print_crack_system" title="quippy.crack.print_crack_system"><code class="xref py py-obj docutils literal"><span class="pre">print_crack_system</span></code></a>(crack_direction,&nbsp;...)</td>
 <td>Pretty printing of crack crystallographic coordinate system</td>
 </tr>
 </tbody>
@@ -170,7 +392,7 @@
 </table>
 <dl class="class">
 <dt id="quippy.crack.CrackParams">
-<em class="property">class </em><code class="descclassname">quippy.crack.</code><code class="descname">CrackParams</code><span class="sig-paren">(</span><span class="optional">[</span><em>filename</em>, <em>validate</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.crack.</code><code class="descname">CrackParams</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams" title="Permalink to this definition">¶</a></dt>
 <dd><p>This type contains all the parameters for a crack simulation, each of which is described briefly
 below.</p>
 <p>Initialise this CrackParams structure and set default
@@ -592,6 +814,23 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.any_per_atom_tau" title="quippy.crack.CrackParams.any_per_atom_tau"><code class="xref py py-obj docutils literal"><span class="pre">any_per_atom_tau</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.print_" title="quippy.crack.CrackParams.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Print out this CrackParams structure</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.read_xml" title="quippy.crack.CrackParams.read_xml"><code class="xref py py-obj docutils literal"><span class="pre">read_xml</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">read_xml</span></code> containing multiple routines:</td>
+</tr>
 </tbody>
 </table>
 <dl class="method">
@@ -611,7 +850,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.crack.CrackParams.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.print_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print out this CrackParams structure</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -640,7 +879,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>xmlfile</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 <li><strong>validate</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -661,7 +900,7 @@ First we reset to default values by calling <code class="docutils literal"><span
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>filename</strong> (<em>input string(len=-1)</em>) &#8211; </li>
 <li><strong>validate</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,&#8217;i&#8217;), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1891,7 +2130,7 @@ strained in y direction by <code class="docutils literal"><span class="pre">stra
 rigidly shifted to keep top and bottom edges flat. A transition
 zone is created in between with linearly varying strain to
 avoid creation of defects.</p>
-<div class="highlight-python"><div class="highlight"><pre>    --------------------------------------
+<div class="highlight-python"><div class="highlight"><pre><span></span>    --------------------------------------
     |           |   |   |   |            |
     |           |   |___|   |            |
     |           |   |   |   |            |
@@ -2635,7 +2874,7 @@ Region <img class="math" src="_images/math/ae01b7ab4c23a57cc709ccb353c07019f30e5
 and after (right) applying the displacement, and the horizontal and
 vertical lines show the <cite>strain</cite> (red), <cite>a</cite> (green) and <cite>b</cite> (blue)
 parameters.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">strain</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">;</span> <span class="n">b</span> <span class="o">=</span>  <span class="mf">0.0</span>
@@ -2646,11 +2885,11 @@ parameters.</p>
 
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">disp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">u_y</span><span class="p">]):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">+</span> <span class="n">disp</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">+</span> <span class="n">disp</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">h</span><span class="p">]:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">strain</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">]):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">strain</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]):</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -2708,14 +2947,14 @@ a sequence of three floats</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

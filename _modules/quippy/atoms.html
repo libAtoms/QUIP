@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.atoms &mdash; quippy b9f75c6+ documentation</title>
+    <title>quippy.atoms &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -67,23 +67,23 @@
           <div class="body" role="main">
             
   <h1>Source code for quippy.atoms</h1><div class="highlight"><pre>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   Copyright James Kermode 2010</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   These portions of the source code are released under the GNU General</span>
-<span class="c"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   If you would like to license the source code under different terms,</span>
-<span class="c"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   When using this software, please cite the following reference:</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ X   http://www.jrkermode.co.uk/quippy</span>
-<span class="c"># HQ X</span>
-<span class="c"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   Copyright James Kermode 2010</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c1"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c1"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">weakref</span>
@@ -110,25 +110,25 @@
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">QUIPPY_TRUE</span><span class="p">,</span> <span class="n">QUIPPY_FALSE</span>
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">available_modules</span><span class="p">,</span> <span class="n">FortranDerivedTypes</span><span class="p">,</span> <span class="n">get_fortran_indexing</span>
 
-<span class="n">atomslog</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;quippy.atoms&#39;</span><span class="p">)</span>
-<span class="c">#atomslog.setLevel(logging.DEBUG)</span>
+<span class="n">atomslog</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;quippy.atoms&#39;</span><span class="p">)</span>
+<span class="c1">#atomslog.setLevel(logging.DEBUG)</span>
 
-<span class="n">__doc__</span> <span class="o">=</span> <span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="n">__doc__</span> <span class="o">=</span> <span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
 
-<span class="s">This module defines the :class:`Atoms`, which stores and manipulates a</span>
-<span class="s">collection of atoms, as well as the :class:`Connection` class which stores</span>
-<span class="s">topology and neighbour lists, and the :class:`DomainDecomposition` class.</span>
+<span class="s2">This module defines the :class:`Atoms`, which stores and manipulates a</span>
+<span class="s2">collection of atoms, as well as the :class:`Connection` class which stores</span>
+<span class="s2">topology and neighbour lists, and the :class:`DomainDecomposition` class.</span>
 
-<span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="n">_atoms</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;NeighbourInfo&#39;</span><span class="p">,</span> <span class="s">&#39;get_lattice_params_&#39;</span><span class="p">,</span> <span class="s">&#39;get_lattice_params&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">_atoms</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;NeighbourInfo&#39;</span><span class="p">,</span> <span class="s1">&#39;get_lattice_params_&#39;</span><span class="p">,</span> <span class="s1">&#39;get_lattice_params&#39;</span><span class="p">]</span>
 
-<span class="k">if</span> <span class="s">&#39;ase&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
+<span class="k">if</span> <span class="s1">&#39;ase&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ase</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">quippy.miniase</span> <span class="kn">as</span> <span class="nn">ase</span>
 
-<span class="k">if</span> <span class="s">&#39;phonopy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
+<span class="k">if</span> <span class="s1">&#39;phonopy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">phonopy.structure.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">PhonopyAtoms</span>
 
 <span class="n">get_lattice_params_</span> <span class="o">=</span> <span class="n">get_lattice_params</span>
@@ -143,12 +143,12 @@
     <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">farray</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span>
                               <span class="n">farray</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.</span><span class="p">))</span>
     <span class="n">_atoms</span><span class="o">.</span><span class="n">get_lattice_params</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">gamma</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">gamma</span><span class="p">))</span>
-</div>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">gamma</span><span class="p">))</span></div>
+
 <span class="k">class</span> <span class="nc">NeighbourInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Store information about a single neighbour of an atom&quot;&quot;&quot;</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;j&#39;</span><span class="p">,</span> <span class="s">&#39;distance&#39;</span><span class="p">,</span> <span class="s">&#39;diff&#39;</span><span class="p">,</span> <span class="s">&#39;cosines&#39;</span><span class="p">,</span> <span class="s">&#39;shift&#39;</span><span class="p">)</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;diff&#39;</span><span class="p">,</span> <span class="s1">&#39;cosines&#39;</span><span class="p">,</span> <span class="s1">&#39;shift&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">cosines</span><span class="p">,</span> <span class="n">shift</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="n">j</span>
@@ -161,47 +161,47 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="s">&#39;NeighbourInfo(j=</span><span class="si">%d</span><span class="s">,distance=</span><span class="si">%f</span><span class="s">,diff=</span><span class="si">%s</span><span class="s">,cosines=</span><span class="si">%s</span><span class="s">,shift=</span><span class="si">%s</span><span class="s">)&#39;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;NeighbourInfo(j=</span><span class="si">%d</span><span class="s1">,distance=</span><span class="si">%f</span><span class="s1">,diff=</span><span class="si">%s</span><span class="s1">,cosines=</span><span class="si">%s</span><span class="s1">,shift=</span><span class="si">%s</span><span class="s1">)&#39;</span>
                     <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">,</span>
                        <span class="bp">self</span><span class="o">.</span><span class="n">cosines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift</span><span class="p">))</span>
 
 <div class="viewcode-block" id="Connection"><a class="viewcode-back" href="../../connection.html#quippy.atoms.Connection">[docs]</a><span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Connection</span><span class="p">):</span>
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    The :class:`Connection` is a subclass of :class:`_atoms.Connection`</span>
-<span class="s">    which adds supports for iteration over all atoms, and indexing</span>
-<span class="s">    e.g. ``at.connect.neighbours[1]`` returns a list of the neighbours of</span>
-<span class="s">    the atom with index 1.</span>
+    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    The :class:`Connection` is a subclass of :class:`_atoms.Connection`</span>
+<span class="s2">    which adds supports for iteration over all atoms, and indexing</span>
+<span class="s2">    e.g. ``at.connect.neighbours[1]`` returns a list of the neighbours of</span>
+<span class="s2">    the atom with index 1.</span>
 
-<span class="s">    When indexed with an integer from 1 to `at.n`, returns an array</span>
-<span class="s">    of :class:`NeighbourInfo` objects, each of which corresponds to</span>
-<span class="s">    a particular pair `(i,j)` and has attributes `j`, `distance`,</span>
-<span class="s">    `diff`, `cosines` and `shift`.</span>
+<span class="s2">    When indexed with an integer from 1 to `at.n`, returns an array</span>
+<span class="s2">    of :class:`NeighbourInfo` objects, each of which corresponds to</span>
+<span class="s2">    a particular pair `(i,j)` and has attributes `j`, `distance`,</span>
+<span class="s2">    `diff`, `cosines` and `shift`.</span>
 
-<span class="s">    If ``fortran_indexing`` is True, atom and neighbour indices</span>
-<span class="s">    start from 1; otherwise they are numbered from zero.</span>
+<span class="s2">    If ``fortran_indexing`` is True, atom and neighbour indices</span>
+<span class="s2">    start from 1; otherwise they are numbered from zero.</span>
 
-<span class="s">    If connectivity information has not already been calculated</span>
-<span class="s">    :meth:`calc_connect` will be called automatically. The code to</span>
-<span class="s">    loop over the neighbours of all atoms is quite idiomatic::</span>
+<span class="s2">    If connectivity information has not already been calculated</span>
+<span class="s2">    :meth:`calc_connect` will be called automatically. The code to</span>
+<span class="s2">    loop over the neighbours of all atoms is quite idiomatic::</span>
 
-<span class="s">        for i in at.indices:</span>
-<span class="s">           for neighb in at.connect[i]:</span>
-<span class="s">               print (neighb.j, neighb.distance, neighb.diff,</span>
-<span class="s">                      neighb.cosines, neighb.shift)</span>
+<span class="s2">        for i in at.indices:</span>
+<span class="s2">           for neighb in at.connect[i]:</span>
+<span class="s2">               print (neighb.j, neighb.distance, neighb.diff,</span>
+<span class="s2">                      neighb.cosines, neighb.shift)</span>
 
-<span class="s">    Note that this provides a more Pythonic interface to the atomic</span>
-<span class="s">    connectivity information than the wrapped Fortran functions</span>
-<span class="s">    :meth:`Atoms.n_neighbours` and :meth:`Atoms.neighbour`.</span>
-<span class="s">    &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">    Note that this provides a more Pythonic interface to the atomic</span>
+<span class="s2">    connectivity information than the wrapped Fortran functions</span>
+<span class="s2">    :meth:`Atoms.n_neighbours` and :meth:`Atoms.neighbour`.</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
 
-    <span class="c"># def __init__(self, n=None, nbuffer=None, pos=None,</span>
-    <span class="c">#              lattice=None, g=None, origin=None,</span>
-    <span class="c">#              extent=None, nn_guess=None, fill=None,</span>
-    <span class="c">#              fpointer=None, finalise=True):</span>
-    <span class="c">#     _atoms.Connection.__init__(self, n, nbuffer, pos,</span>
-    <span class="c">#                                lattice, g, origin,</span>
-    <span class="c">#                                extent, nn_guess, fill,</span>
-    <span class="c">#                                fpointer, finalise)</span>
+    <span class="c1"># def __init__(self, n=None, nbuffer=None, pos=None,</span>
+    <span class="c1">#              lattice=None, g=None, origin=None,</span>
+    <span class="c1">#              extent=None, nn_guess=None, fill=None,</span>
+    <span class="c1">#              fpointer=None, finalise=True):</span>
+    <span class="c1">#     _atoms.Connection.__init__(self, n, nbuffer, pos,</span>
+    <span class="c1">#                                lattice, g, origin,</span>
+    <span class="c1">#                                extent, nn_guess, fill,</span>
+    <span class="c1">#                                fpointer, finalise)</span>
 
 
     <span class="k">def</span> <span class="nf">is_neighbour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
@@ -212,14 +212,14 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">neighbour_list</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterneighbours</span><span class="p">()):</span>
             <span class="k">for</span> <span class="n">neighb</span> <span class="ow">in</span> <span class="n">neighbour_list</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">)</span>
-</div>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">False</span>
 
-        <span class="c"># Neighbours are considered to be equal if *topology* matches,</span>
-        <span class="c"># not distances, displacement vectors and shifts.</span>
+        <span class="c1"># Neighbours are considered to be equal if *topology* matches,</span>
+        <span class="c1"># not distances, displacement vectors and shifts.</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">())</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">pairs</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
@@ -231,8 +231,8 @@
 <div class="viewcode-block" id="Connection.iterneighbours"><a class="viewcode-back" href="../../connection.html#quippy.atoms.Connection.iterneighbours">[docs]</a>    <span class="k">def</span> <span class="nf">iterneighbours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over the neighbours of all atoms&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</div>
+            <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">hysteretic_connect</span><span class="p">:</span>
@@ -247,7 +247,7 @@
 
         <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="c"># convert to 1-based indexing</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="c1"># convert to 1-based indexing</span>
 
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_neighbours</span><span class="p">(</span><span class="n">i</span><span class="p">)):</span>
             <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbour</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span>
@@ -257,7 +257,7 @@
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NeighbourInfo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">cosines</span><span class="p">,</span> <span class="n">shift</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="c"># to give 1-based indexing</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="c1"># to give 1-based indexing</span>
         <span class="k">return</span> <span class="n">res</span>
 
 <div class="viewcode-block" id="Connection.distances"><a class="viewcode-back" href="../../connection.html#quippy.atoms.Connection.distances">[docs]</a>    <span class="k">def</span> <span class="nf">distances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Z1</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">Z2</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -270,8 +270,8 @@
                     <span class="k">if</span> <span class="nb">sorted</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">]))</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">)):</span>
                         <span class="k">yield</span> <span class="n">neighb</span><span class="o">.</span><span class="n">distance</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">neighb</span><span class="o">.</span><span class="n">distance</span>
-</div>
+                    <span class="k">yield</span> <span class="n">neighb</span><span class="o">.</span><span class="n">distance</span></div>
+
 <div class="viewcode-block" id="Connection.get_neighbours"><a class="viewcode-back" href="../../connection.html#quippy.atoms.Connection.get_neighbours">[docs]</a>    <span class="k">def</span> <span class="nf">get_neighbours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return neighbours of atom i</span>
@@ -291,16 +291,16 @@
         <span class="n">neighbours</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">n</span><span class="o">.</span><span class="n">j</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbours</span><span class="p">])</span>
         <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[[</span><span class="n">n</span><span class="o">.</span><span class="n">shift</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbours</span><span class="p">]]</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Connection.get_neighbors"><a class="viewcode-back" href="../../connection.html#quippy.atoms.Connection.get_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">get_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Variant spelling of :meth:`get_neighbours`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div></div>
 
-</div></div>
+
 <span class="k">class</span> <span class="nc">PropertiesWrapper</span><span class="p">(</span><span class="n">DictMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrapper between quippy properties and ASE arrays&quot;&quot;&quot;</span>
 
@@ -311,27 +311,27 @@
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atref</span><span class="p">()</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="c">#if res.dtype == &#39;int32&#39;:   # convert dtype int32 -&gt; int</span>
-        <span class="c">#    res = res.astype(int)</span>
-        <span class="c">#    atomslog.debug(&#39;Making copy of arrays[&quot;%s&quot;] since quippy/ASE dtypes incompatible&#39; % key)</span>
+        <span class="c1">#if res.dtype == &#39;int32&#39;:   # convert dtype int32 -&gt; int</span>
+        <span class="c1">#    res = res.astype(int)</span>
+        <span class="c1">#    atomslog.debug(&#39;Making copy of arrays[&quot;%s&quot;] since quippy/ASE dtypes incompatible&#39; % key)</span>
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atref</span><span class="p">()</span>
-        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Setting arrays[&quot;</span><span class="si">%s</span><span class="s">&quot;]&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Setting arrays[&quot;</span><span class="si">%s</span><span class="s1">&quot;]&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">Atoms</span><span class="o">.</span><span class="n">name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
-            <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">((</span><span class="s">&#39;Assignment to arrays[&quot;</span><span class="si">%s</span><span class="s">&quot;]: changing size &#39;</span><span class="o">+</span>
-                           <span class="s">&#39; from </span><span class="si">%d</span><span class="s"> to </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">((</span><span class="s1">&#39;Assignment to arrays[&quot;</span><span class="si">%s</span><span class="s1">&quot;]: changing size &#39;</span><span class="o">+</span>
+                           <span class="s1">&#39; from </span><span class="si">%d</span><span class="s1"> to </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">remove_property</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
             <span class="n">at</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">at</span><span class="o">.</span><span class="n">nbuffer</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span>
             <span class="n">at</span><span class="o">.</span><span class="n">ndomain</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span>
 
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s">&#39;S&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">T</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">at</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
@@ -341,7 +341,7 @@
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atref</span><span class="p">()</span>
-        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Deletion of arrays[&quot;</span><span class="si">%s</span><span class="s">&quot;]&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Deletion of arrays[&quot;</span><span class="si">%s</span><span class="s1">&quot;]&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">remove_property</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
@@ -351,34 +351,34 @@
 
 
 <div class="viewcode-block" id="Atoms"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms">[docs]</a><span class="k">class</span> <span class="nc">Atoms</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    The :class:`Atoms` class is a Pythonic wrapper over the auto-generated</span>
-<span class="s">    :class:`quippy._atoms.Atoms` class. Atoms object are usually</span>
-<span class="s">    constructed either by reading from an input file in one of the</span>
-<span class="s">    :ref:`fileformats`, or by using the structure creation functions in</span>
-<span class="s">    the :mod:`quippy.structures` or :mod:`ase.lattice` modules.</span>
+    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    The :class:`Atoms` class is a Pythonic wrapper over the auto-generated</span>
+<span class="s2">    :class:`quippy._atoms.Atoms` class. Atoms object are usually</span>
+<span class="s2">    constructed either by reading from an input file in one of the</span>
+<span class="s2">    :ref:`fileformats`, or by using the structure creation functions in</span>
+<span class="s2">    the :mod:`quippy.structures` or :mod:`ase.lattice` modules.</span>
 
-<span class="s">    For example to read from an :ref:`extendedxyz` file, use::</span>
+<span class="s2">    For example to read from an :ref:`extendedxyz` file, use::</span>
 
-<span class="s">       from quippy.atoms import Atoms</span>
-<span class="s">       atoms = Atoms(&#39;filename.xyz&#39;)</span>
+<span class="s2">       from quippy.atoms import Atoms</span>
+<span class="s2">       atoms = Atoms(&#39;filename.xyz&#39;)</span>
 
-<span class="s">    Or, to create an 8-atom bulk diamond cubic cell of silicon::</span>
+<span class="s2">    Or, to create an 8-atom bulk diamond cubic cell of silicon::</span>
 
-<span class="s">       from quippy.structures import diamond</span>
-<span class="s">       si_bulk = diamond(5.44, 14)</span>
+<span class="s2">       from quippy.structures import diamond</span>
+<span class="s2">       si_bulk = diamond(5.44, 14)</span>
 
-<span class="s">    The :class:`Atoms` class is inherited from the</span>
-<span class="s">    :class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and</span>
-<span class="s">    methods. This means that quippy and ASE Atoms objects are fully</span>
-<span class="s">    interoperable.&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">signature</span><span class="o">=</span><span class="s">&#39;Atoms([symbols, positions, numbers, tags, momenta, masses, magmoms, charges, scaled_positions, cell, pbc, constraint, calculator, info, n, lattice, properties, params, fixed_size, **read_args])&#39;</span><span class="p">)</span>
+<span class="s2">    The :class:`Atoms` class is inherited from the</span>
+<span class="s2">    :class:`ase.atoms.Atoms` so has all the ASE Atoms attributes and</span>
+<span class="s2">    methods. This means that quippy and ASE Atoms objects are fully</span>
+<span class="s2">    interoperable.&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">signature</span><span class="o">=</span><span class="s1">&#39;Atoms([symbols, positions, numbers, tags, momenta, masses, magmoms, charges, scaled_positions, cell, pbc, constraint, calculator, info, n, lattice, properties, params, fixed_size, **read_args])&#39;</span><span class="p">)</span>
 
-    <span class="n">_cmp_skip_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;own_this&#39;</span><span class="p">,</span> <span class="s">&#39;ref_count&#39;</span><span class="p">,</span> <span class="s">&#39;domain&#39;</span><span class="p">,</span>
-                        <span class="s">&#39;connect&#39;</span><span class="p">,</span> <span class="s">&#39;hysteretic_connect&#39;</span><span class="p">,</span> <span class="s">&#39;source&#39;</span><span class="p">]</span>
+    <span class="n">_cmp_skip_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;own_this&#39;</span><span class="p">,</span> <span class="s1">&#39;ref_count&#39;</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;connect&#39;</span><span class="p">,</span> <span class="s1">&#39;hysteretic_connect&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">]</span>
 
-    <span class="n">name_map</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;positions&#39;</span>       <span class="p">:</span> <span class="s">&#39;pos&#39;</span><span class="p">,</span>
-                <span class="s">&#39;numbers&#39;</span>         <span class="p">:</span> <span class="s">&#39;Z&#39;</span><span class="p">,</span>
-                <span class="s">&#39;charges&#39;</span>         <span class="p">:</span> <span class="s">&#39;charge&#39;</span><span class="p">}</span>
+    <span class="n">name_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;positions&#39;</span>       <span class="p">:</span> <span class="s1">&#39;pos&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;numbers&#39;</span>         <span class="p">:</span> <span class="s1">&#39;Z&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;charges&#39;</span>         <span class="p">:</span> <span class="s1">&#39;charge&#39;</span><span class="p">}</span>
 
     <span class="n">rev_name_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">name_map</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">name_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
@@ -390,9 +390,9 @@
                  <span class="n">fpointer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">readargs</span><span class="p">):</span>
 
-        <span class="c"># check for mutually exclusive options</span>
+        <span class="c1"># check for mutually exclusive options</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">lattice</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;only one of cell and lattice can be present&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;only one of cell and lattice can be present&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
@@ -414,13 +414,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ase_arrays</span> <span class="o">=</span> <span class="n">PropertiesWrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="c"># If first argument is quippy.Atoms instance, copy data from it</span>
+        <span class="c1"># If first argument is quippy.Atoms instance, copy data from it</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">copy_from</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span>
             <span class="n">symbols</span> <span class="o">=</span> <span class="bp">None</span>
 
-        <span class="c"># Phonopy compatibility</span>
-        <span class="k">if</span> <span class="s">&#39;phonopy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
+        <span class="c1"># Phonopy compatibility</span>
+        <span class="k">if</span> <span class="s1">&#39;phonopy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">PhonopyAtoms</span><span class="p">):</span>
                 <span class="n">atoms</span> <span class="o">=</span> <span class="n">symbols</span>
                 <span class="n">symbols</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">()</span>
@@ -428,38 +428,39 @@
                 <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
                 <span class="n">masses</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()</span>
 
-        <span class="c"># Try to read from first argument, if it&#39;s not ase.Atoms</span>
+        <span class="c1"># Try to read from first argument, if it&#39;s not ase.Atoms</span>
         <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read_from</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="o">**</span><span class="n">readargs</span><span class="p">)</span>
             <span class="n">symbols</span> <span class="o">=</span> <span class="bp">None</span>
 
-        <span class="c">## ASE compatibility</span>
+        <span class="c1">## ASE compatibility</span>
         <span class="n">remove_properties</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">numbers</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">):</span>
                 <span class="n">numbers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-                <span class="n">remove_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;Z&#39;</span><span class="p">)</span>
+                <span class="n">remove_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">positions</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;pos&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;pos&#39;</span><span class="p">):</span>
                 <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">remove_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;pos&#39;</span><span class="p">)</span>
+                <span class="n">remove_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pos&#39;</span><span class="p">)</span>
 
-        <span class="c"># Make sure argument to ase.Atoms constructor are consistent with</span>
-        <span class="c"># properties already present in this Atoms object</span>
-        <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">momenta</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;momenta&#39;</span><span class="p">):</span>
+        <span class="c1"># Make sure argument to ase.Atoms constructor are consistent with</span>
+        <span class="c1"># properties already present in this Atoms object</span>
+        <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">momenta</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">):</span>
             <span class="n">momenta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_momenta</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">masses</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;masses&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">masses</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
             <span class="n">masses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">cell</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">pbc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">pbc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pbc</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">charges</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;charge&#39;</span><span class="p">):</span>
+            <span class="c1">#print &#39;setting pbc to &#39;, pbc</span>
+        <span class="k">if</span> <span class="n">charges</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;charge&#39;</span><span class="p">):</span>
             <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
 
         <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span>
@@ -467,55 +468,58 @@
                            <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">pbc</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span>
                            <span class="n">calculator</span><span class="p">)</span>
 
-        <span class="c"># remove anything that ASE added that we don&#39;t want</span>
+        <span class="c1"># remove anything that ASE added that we don&#39;t want</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">remove_properties</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">remove_property</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">copy_from</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span>
 
-        <span class="c">## end ASE compatibility</span>
+        <span class="c1">## end ASE compatibility</span>
 
-        <span class="k">if</span> <span class="n">set_species</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;Z&#39;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;species&#39;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;species&#39;</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">set_species</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c"># initialise species from z</span>
+                <span class="n">mass</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;mass&#39;</span><span class="p">):</span>
+                    <span class="n">mass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="n">mass</span><span class="p">)</span> <span class="c1"># initialise species from z</span>
 
         <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialised</span> <span class="o">=</span> <span class="bp">True</span>
 
-        <span class="c"># synonyms for backwards compatibility</span>
+        <span class="c1"># synonyms for backwards compatibility</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hysteretic_neighbours</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hysteretic_connect</span>
 
 
 <div class="viewcode-block" id="Atoms.set_atomic_numbers"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_atomic_numbers">[docs]</a>    <span class="k">def</span> <span class="nf">set_atomic_numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">set_species</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set atomic numbers and optionally also species property (default True)&quot;&quot;&quot;</span>
-        <span class="c"># override ase.Atoms.set_atomic_numbers() to keep QUIP Z and species in sync</span>
+        <span class="c1"># override ase.Atoms.set_atomic_numbers() to keep QUIP Z and species in sync</span>
         <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">set_atomic_numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numbers</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">set_species</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;species&#39;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;species&#39;</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c"># set species from Z</span>
-</div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c1"># set species from Z</span></div>
+
 <div class="viewcode-block" id="Atoms.set_chemical_symbols"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_chemical_symbols">[docs]</a>    <span class="k">def</span> <span class="nf">set_chemical_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">set_species</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set chemical symbols - sets Z and optionally also species properties (default True)&quot;&quot;&quot;</span>
-        <span class="c"># override ase.Atoms.set_chemical_symbols() to keep QUIP Z and species in sync</span>
+        <span class="c1"># override ase.Atoms.set_chemical_symbols() to keep QUIP Z and species in sync</span>
         <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">set_chemical_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">set_species</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;species&#39;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s">&#39;species&#39;</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c"># set species from Z</span>
-</div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c1"># set species from Z</span></div>
+
     <span class="k">def</span> <span class="nf">new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="c"># we overrride ase.Atoms.new_array() to allow &quot;special&quot; arrays</span>
-        <span class="c"># like &quot;numbers&quot;, &quot;positions&quot; to be added more than once without</span>
-        <span class="c"># raising a RuntimeError</span>
+        <span class="c1"># we overrride ase.Atoms.new_array() to allow &quot;special&quot; arrays</span>
+        <span class="c1"># like &quot;numbers&quot;, &quot;positions&quot; to be added more than once without</span>
+        <span class="c1"># raising a RuntimeError</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_map</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
             <span class="k">return</span>
@@ -525,8 +529,8 @@
         <span class="sd">&quot;&quot;&quot;Change the lattice vectors, keeping the inverse lattice vectors</span>
 <span class="sd">           up to date. Optionally map the existing atoms into the new cell</span>
 <span class="sd">           and recalculate connectivity (by default scale_positions=False).&quot;&quot;&quot;</span>
-        <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="p">)</span>
-</div>
+        <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="nf">_get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get ASE cell from QUIP lattice&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
@@ -592,8 +596,8 @@
 <div class="viewcode-block" id="Atoms.iteratoms"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.iteratoms">[docs]</a>    <span class="k">def</span> <span class="nf">iteratoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over atoms, calling get_atom() for each one&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atom</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-</div>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atom</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="Atoms.equivalent"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.equivalent">[docs]</a>    <span class="k">def</span> <span class="nf">equivalent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test for equivalence of two Atoms objects.</span>
 
@@ -615,13 +619,13 @@
             <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">arrays</span>
             <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="s">&#39;numbers&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="p">[</span><span class="s">&#39;numbers&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;numbers&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="p">[</span><span class="s1">&#39;numbers&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
-</div>
+            <span class="k">return</span> <span class="bp">False</span></div>
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Atoms.read"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -640,19 +644,19 @@
 <span class="sd">        expected to be an iterator returning :class:`Atoms` objects.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="s">&#39;@&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
-            <span class="n">source</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;@&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.db&#39;</span><span class="p">):</span>
-                <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="o">+</span><span class="s">&#39;@&#39;</span><span class="o">+</span><span class="n">frame</span>
-                <span class="n">format</span> <span class="o">=</span> <span class="s">&#39;db&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;@&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="n">source</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.db&#39;</span><span class="p">):</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="o">+</span><span class="s1">&#39;@&#39;</span><span class="o">+</span><span class="n">frame</span>
+                <span class="n">format</span> <span class="o">=</span> <span class="s1">&#39;db&#39;</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">frame</span> <span class="o">=</span> <span class="n">parse_slice</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s">&#39;frame&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Conflicting frame references given: kwarg frame=</span><span class="si">%r</span><span class="s"> and @-reference </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span>
-                                     <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;frame&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="p">))</span>
+                <span class="k">if</span> <span class="s1">&#39;frame&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Conflicting frame references given: kwarg frame=</span><span class="si">%r</span><span class="s2"> and @-reference </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span>
+                                     <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;frame&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="p">))</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Frame @-reference </span><span class="si">%r</span><span class="s"> does not resolve to single frame&quot;</span> <span class="o">%</span> <span class="n">frame</span><span class="p">)</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;frame&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frame @-reference </span><span class="si">%r</span><span class="s2"> does not resolve to single frame&quot;</span> <span class="o">%</span> <span class="n">frame</span><span class="p">)</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;frame&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span>
 
         <span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">AtomsReaders</span>
         <span class="n">filename</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">format</span> <span class="o">=</span> <span class="n">infer_format</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">AtomsReaders</span><span class="p">)</span>
@@ -663,21 +667,21 @@
             <span class="n">opened</span> <span class="o">=</span> <span class="bp">True</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know how to read from file &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">source</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s">&#39;__iter__&#39;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;Cannot read from </span><span class="si">%r</span><span class="s"> - not an iterator&#39;</span> <span class="o">%</span> <span class="n">source</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to read from file &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">source</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Cannot read from </span><span class="si">%r</span><span class="s1"> - not an iterator&#39;</span> <span class="o">%</span> <span class="n">source</span><span class="p">)</span>
 
         <span class="n">at</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Object </span><span class="si">%r</span><span class="s"> read from  </span><span class="si">%r</span><span class="s"> is not Atoms instance&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Object </span><span class="si">%r</span><span class="s1"> read from  </span><span class="si">%r</span><span class="s1"> is not Atoms instance&#39;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">source</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s">&#39;close&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">):</span>
             <span class="n">source</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">at</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
-        <span class="k">return</span> <span class="n">at</span>
+        <span class="k">return</span> <span class="n">at</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Atoms.write"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
               <span class="n">prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -691,12 +695,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c"># if filename is missing, save back to file from</span>
-            <span class="c"># which we loaded configuration</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;filename&#39;</span><span class="p">):</span>
+            <span class="c1"># if filename is missing, save back to file from</span>
+            <span class="c1"># which we loaded configuration</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">):</span>
                 <span class="n">dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;No &#39;dest&#39; and Atoms has no stored filename&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No &#39;dest&#39; and Atoms has no stored filename&quot;</span><span class="p">)</span>
 
         <span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">AtomsWriters</span>
         <span class="n">filename</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">format</span> <span class="o">=</span> <span class="n">infer_format</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">AtomsWriters</span><span class="p">)</span>
@@ -705,25 +709,25 @@
         <span class="k">if</span> <span class="n">format</span> <span class="ow">in</span> <span class="n">AtomsWriters</span><span class="p">:</span>
             <span class="n">dest</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">format</span><span class="p">](</span><span class="n">dest</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s">&#39;write&#39;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Don</span><span class="se">\&#39;</span><span class="s">t know how to write to &quot;</span><span class="si">%s</span><span class="s">&quot; in format &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Don</span><span class="se">\&#39;</span><span class="s1">t know how to write to &quot;</span><span class="si">%s</span><span class="s1">&quot; in format &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">format</span><span class="p">))</span>
 
         <span class="n">write_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">write_kwargs</span><span class="p">[</span><span class="s">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
+            <span class="n">write_kwargs</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
         <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">write_kwargs</span><span class="p">[</span><span class="s">&#39;prefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix</span>
+            <span class="n">write_kwargs</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;destination </span><span class="si">%r</span><span class="s"> doesn</span><span class="se">\&#39;</span><span class="s">t support arguments </span><span class="si">%r</span><span class="s">&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;destination </span><span class="si">%r</span><span class="s1"> doesn</span><span class="se">\&#39;</span><span class="s1">t support arguments </span><span class="si">%r</span><span class="s1">&#39;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">write_kwargs</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s">&#39;close&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">):</span>
             <span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">res</span>
-</div>
+        <span class="k">return</span> <span class="n">res</span></div>
+
 <div class="viewcode-block" id="Atoms.select"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">orig_index</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a new :class:`Atoms` containing a subset of the atoms in this Atoms object</span>
 
@@ -746,10 +750,10 @@
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">),</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
             <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">orig_index</span><span class="o">=</span><span class="n">orig_index</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Either mask or list must be present.&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either mask or list must be present.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Atoms.copy"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a copy of this :class:`Atoms` object</span>
@@ -758,21 +762,21 @@
         <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
                                <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
 
-        <span class="c"># copy any normal (not Fortran) attributes</span>
+        <span class="c1"># copy any normal (not Fortran) attributes</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
                 <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
-        <span class="c"># from _atoms.Atoms</span>
+        <span class="c1"># from _atoms.Atoms</span>
         <span class="n">other</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span>
         <span class="n">other</span><span class="o">.</span><span class="n">cutoff_skin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_skin</span>
         <span class="n">other</span><span class="o">.</span><span class="n">nneightol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nneightol</span>
 
-        <span class="c"># from ase.Atoms</span>
+        <span class="c1"># from ase.Atoms</span>
         <span class="n">other</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
         <span class="n">other</span><span class="o">.</span><span class="n">adsorbate_info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_info</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">other</span>
-</div>
+        <span class="k">return</span> <span class="n">other</span></div>
+
 <div class="viewcode-block" id="Atoms.copy_from"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.copy_from">[docs]</a>    <span class="k">def</span> <span class="nf">copy_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Replace contents of this Atoms object with data from `other`.&quot;&quot;&quot;</span>
 
@@ -789,20 +793,20 @@
             <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
             <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
 
-            <span class="c"># copy params/info dicts</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s">&#39;params&#39;</span><span class="p">):</span>
+            <span class="c1"># copy params/info dicts</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s">&#39;info&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s">&#39;nneightol&#39;</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">nneightol</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;nneightol&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s">&#39;cutoff&#39;</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;cutoff&#39;</span><span class="p">],</span>
-                                    <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;cutoff_break&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="s1">&#39;nneightol&#39;</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nneightol</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;nneightol&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;cutoff&#39;</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">],</span>
+                                    <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cutoff_break&#39;</span><span class="p">))</span>
 
-            <span class="c"># create extra properties for any non-standard arrays</span>
-            <span class="n">standard_ase_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">,</span> <span class="s">&#39;numbers&#39;</span><span class="p">,</span> <span class="s">&#39;masses&#39;</span><span class="p">,</span> <span class="s">&#39;charges&#39;</span><span class="p">,</span>
-                                   <span class="s">&#39;momenta&#39;</span><span class="p">,</span> <span class="s">&#39;tags&#39;</span><span class="p">,</span> <span class="s">&#39;magmoms&#39;</span> <span class="p">]</span>
+            <span class="c1"># create extra properties for any non-standard arrays</span>
+            <span class="n">standard_ase_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="s1">&#39;charges&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;momenta&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="s1">&#39;magmoms&#39;</span> <span class="p">]</span>
 
             <span class="k">for</span> <span class="n">ase_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                 <span class="n">quippy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ase_name</span><span class="p">,</span> <span class="n">ase_name</span><span class="p">)</span>
@@ -813,40 +817,40 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">adsorbate_info</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;can only copy from instances of quippy.Atoms or ase.Atoms&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;can only copy from instances of quippy.Atoms or ase.Atoms&#39;</span><span class="p">)</span>
 
-        <span class="c"># copy any normal (not Fortran) attributes</span>
+        <span class="c1"># copy any normal (not Fortran) attributes</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Atoms.read_from"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.read_from">[docs]</a>    <span class="k">def</span> <span class="nf">read_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">readargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Replace contents of this Atoms object with Atoms read from `source`&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">copy_from</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="n">Atoms</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">readargs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">shallow_copy_from</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
-            <span class="c"># tmp goes out of scope here, but reference counting</span>
-            <span class="c"># prevents it from being free&#39;d.</span>
-</div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shallow_copy_from</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span></div>
+            <span class="c1"># tmp goes out of scope here, but reference counting</span>
+            <span class="c1"># prevents it from being free&#39;d.</span>
+
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="c">#print &#39;getattr&#39;, name</span>
-        <span class="c">#if name in self.properties:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;_fpointer&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Atoms object not initialised!&#39;</span><span class="p">)</span>
+        <span class="c1">#print &#39;getattr&#39;, name</span>
+        <span class="c1">#if name in self.properties:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;_fpointer&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Atoms object not initialised!&#39;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Unknown Atoms attribute </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Unknown Atoms attribute </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="c">#print &#39;setattr&#39;, name, value</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;_initialised&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+        <span class="c1">#print &#39;setattr&#39;, name, value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;_initialised&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
             <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -864,14 +868,14 @@
 <span class="sd">        fed to MD5 to form the hash.&quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">rounded_string_rep</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">ndigits</span><span class="p">,</span> <span class="n">suppress_small</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-0. &#39;</span><span class="p">,</span> <span class="s">&#39; 0. &#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">ndigits</span><span class="p">,</span> <span class="n">suppress_small</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-0. &#39;</span><span class="p">,</span> <span class="s1">&#39; 0. &#39;</span><span class="p">)</span>
 
-        <span class="c"># Compute fractional positions, round them to ndigits, then sort them</span>
-        <span class="c"># for hash stability</span>
+        <span class="c1"># Compute fractional positions, round them to ndigits, then sort them</span>
+        <span class="c1"># for hash stability</span>
         <span class="n">flat_frac_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
         <span class="n">flat_frac_pos</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
 
-        <span class="c"># md5 module deprecated in Python 2.5 and later</span>
+        <span class="c1"># md5 module deprecated in Python 2.5 and later</span>
         <span class="k">try</span><span class="p">:</span>
            <span class="kn">import</span> <span class="nn">hashlib</span>
            <span class="n">md5</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span>
@@ -884,17 +888,17 @@
         <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
         <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rounded_string_rep</span><span class="p">(</span><span class="n">flat_frac_pos</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
-</div>
+        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
     <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">md5_hash</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
 
-    <span class="c">#def __getitem__(self, i):</span>
-        <span class="c"># we override ase.Atoms.__getitem__ so we can raise</span>
-        <span class="c"># exception if we&#39;re using fortran indexing</span>
-    <span class="c">#    if self.fortran_indexing:</span>
-    <span class="c">#        raise RuntimeError(&#39;Atoms[i] inconsistent with fortran indexing&#39;)</span>
-    <span class="c">#    return ase.Atoms.__getitem__(self, i)</span>
+    <span class="c1">#def __getitem__(self, i):</span>
+        <span class="c1"># we override ase.Atoms.__getitem__ so we can raise</span>
+        <span class="c1"># exception if we&#39;re using fortran indexing</span>
+    <span class="c1">#    if self.fortran_indexing:</span>
+    <span class="c1">#        raise RuntimeError(&#39;Atoms[i] inconsistent with fortran indexing&#39;)</span>
+    <span class="c1">#    return ase.Atoms.__getitem__(self, i)</span>
 
 <div class="viewcode-block" id="Atoms.get_atom"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_atom">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a dictionary containing the properties of the atom with</span>
@@ -902,40 +906,40 @@
 <span class="sd">           range 1..self.n, otherwise it should be in range 0..(self.n-1).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">get_fortran_indexing</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span> <span class="ow">or</span> \
             <span class="p">(</span><span class="ow">not</span> <span class="n">get_fortran_indexing</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&#39;Atoms index out of range&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;Atoms index out of range&#39;</span><span class="p">)</span>
         <span class="n">atom</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">atom</span><span class="p">[</span><span class="s">&#39;_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-        <span class="n">atom</span><span class="p">[</span><span class="s">&#39;atoms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">atom</span><span class="p">[</span><span class="s1">&#39;_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">atom</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;S&#39;</span><span class="p">:</span>
-                    <span class="n">v</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="k">elif</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
                     <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="n">atom</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="k">return</span> <span class="n">atom</span>
-</div>
+        <span class="k">return</span> <span class="n">atom</span></div>
+
 <div class="viewcode-block" id="Atoms.print_atom"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.print_atom">[docs]</a>    <span class="k">def</span> <span class="nf">print_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Pretty-print the properties of the atom with index `i`&quot;&quot;&quot;</span>
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atom</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Atom </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">at</span><span class="p">[</span><span class="s">&#39;_index&#39;</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\n\n</span><span class="s">&#39;</span>
-        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;</span><span class="si">%-15s</span><span class="s"> =  </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">at</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                                            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;_index&#39;</span><span class="p">,</span> <span class="s">&#39;atoms&#39;</span><span class="p">]]</span>
-        <span class="k">print</span> <span class="n">title</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
-</div>
+        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Atom </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">at</span><span class="p">[</span><span class="s1">&#39;_index&#39;</span><span class="p">]</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%-15s</span><span class="s1"> =  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">at</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                                            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_index&#39;</span><span class="p">,</span> <span class="s1">&#39;atoms&#39;</span><span class="p">]]</span>
+        <span class="k">print</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="Atoms.density"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.density">[docs]</a>    <span class="k">def</span> <span class="nf">density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Density in units of :math:`g/m^3`. If `mass` property exists,</span>
 <span class="sd">           use that, otherwise we use `z` and ElementMass table.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s">&#39;mass&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;mass&#39;</span><span class="p">):</span>
             <span class="n">mass</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">/</span><span class="n">MASSCONVERT</span><span class="o">/</span><span class="mf">1.0e3</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mass</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ElementMass</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span><span class="o">/</span><span class="n">MASSCONVERT</span><span class="o">/</span><span class="mf">1.0e3</span>
 
-        <span class="k">return</span> <span class="n">mass</span><span class="o">/</span><span class="p">(</span><span class="n">N_A</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">*</span><span class="mf">1.0e-30</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e3</span>
+        <span class="k">return</span> <span class="n">mass</span><span class="o">/</span><span class="p">(</span><span class="n">N_A</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">*</span><span class="mf">1.0e-30</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e3</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Atoms.add_property"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.add_property">[docs]</a>    <span class="k">def</span> <span class="nf">add_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">overwrite</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">property_type</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -980,26 +984,26 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="n">n_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;n_cols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_cols</span>
-        <span class="k">if</span> <span class="n">overwrite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;overwrite&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overwrite</span>
+        <span class="k">if</span> <span class="n">n_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;n_cols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_cols</span>
+        <span class="k">if</span> <span class="n">overwrite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;overwrite&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overwrite</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span>
-            <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="s">&#39;S&#39;</span><span class="p">]</span> <span class="ow">and</span>
+            <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="ow">and</span>
             <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">TABLE_STRING_LENGTH</span><span class="p">)):</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">s2a</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">),</span> <span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">s2a</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">),</span> <span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
         <span class="k">if</span> <span class="n">property_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="c"># override value_ref if property_type is specified</span>
+            <span class="c1"># override value_ref if property_type is specified</span>
 
             <span class="n">new_property</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
             <span class="n">type_to_value_ref</span> <span class="o">=</span> <span class="p">{</span>
                <span class="n">T_INTEGER_A</span>  <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                <span class="n">T_REAL_A</span> <span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-               <span class="n">T_CHAR_A</span>  <span class="p">:</span> <span class="s">&quot; &quot;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">,</span>
+               <span class="n">T_CHAR_A</span>  <span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">,</span>
                <span class="n">T_LOGICAL_A</span> <span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
                <span class="n">T_INTEGER_A2</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                <span class="n">T_REAL_A2</span><span class="p">:</span> <span class="mf">0.0</span>
@@ -1007,21 +1011,21 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value_ref</span> <span class="o">=</span> <span class="n">type_to_value_ref</span><span class="p">[</span><span class="n">property_type</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unknown property_type </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">property_type</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown property_type </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">property_type</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s">&#39;shape&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;shape&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span>
                 <span class="n">property_type</span> <span class="o">!=</span> <span class="n">T_CHAR_A</span> <span class="ow">and</span> <span class="n">n_cols</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;n_cols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;n_cols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value_ref</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">new_property</span> <span class="ow">or</span> <span class="n">overwrite</span><span class="p">:</span>
-                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">())[:]</span> <span class="o">=</span> <span class="n">value</span>
-</div>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">())[:]</span> <span class="o">=</span> <span class="n">value</span></div>
+
     <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;string&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">read_from</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;string&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_from</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;string&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">Atoms</span><span class="p">,</span> <span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
@@ -1033,30 +1037,30 @@
         <span class="n">mem</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">itemsize</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
             <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span>
-            <span class="n">mem</span> <span class="o">+=</span> <span class="n">sizeof_table</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="mi">2</span> <span class="c"># neighbour1 and neighbour2 tables</span>
-            <span class="n">mem</span> <span class="o">+=</span> <span class="mi">32</span><span class="o">*</span><span class="n">c</span><span class="o">.</span><span class="n">n_neighbours_total</span><span class="p">()</span> <span class="c"># neighbour data</span>
-            <span class="n">mem</span> <span class="o">+=</span> <span class="n">c</span><span class="o">.</span><span class="n">cell_heads</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="n">c</span><span class="o">.</span><span class="n">cell_heads</span><span class="o">.</span><span class="n">itemsize</span> <span class="c"># cell data</span>
+            <span class="n">mem</span> <span class="o">+=</span> <span class="n">sizeof_table</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="mi">2</span> <span class="c1"># neighbour1 and neighbour2 tables</span>
+            <span class="n">mem</span> <span class="o">+=</span> <span class="mi">32</span><span class="o">*</span><span class="n">c</span><span class="o">.</span><span class="n">n_neighbours_total</span><span class="p">()</span> <span class="c1"># neighbour data</span>
+            <span class="n">mem</span> <span class="o">+=</span> <span class="n">c</span><span class="o">.</span><span class="n">cell_heads</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="n">c</span><span class="o">.</span><span class="n">cell_heads</span><span class="o">.</span><span class="n">itemsize</span> <span class="c1"># cell data</span>
 
-        <span class="k">return</span> <span class="n">mem</span>
-</div>
+        <span class="k">return</span> <span class="n">mem</span></div>
+
 <div class="viewcode-block" id="Atoms.extend"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.extend">[docs]</a>    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Extend atoms object by appending atoms from *other*.&quot;&quot;&quot;</span>
-        <span class="c"># modified version of ase.Atoms.extend() to work with QUIP data storage</span>
+        <span class="c1"># modified version of ase.Atoms.extend() to work with QUIP data storage</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atom</span><span class="p">):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">([</span><span class="n">other</span><span class="p">])</span>
 
         <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
-        <span class="c"># first make a copy of self.arrays so that we can resize Atoms</span>
+        <span class="c1"># first make a copy of self.arrays so that we can resize Atoms</span>
         <span class="n">arrays</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="p">])</span>
 
-        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;old arrays </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">arrays</span><span class="p">)</span>
+        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;old arrays </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">arrays</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">a1</span> <span class="ow">in</span> <span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span> <span class="o">+</span> <span class="n">n2</span><span class="p">,)</span> <span class="o">+</span> <span class="n">a1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">a1</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">a</span><span class="p">[:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">a1</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;masses&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;masses&#39;</span><span class="p">:</span>
                 <span class="n">a2</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">a2</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -1069,35 +1073,35 @@
                 <span class="k">continue</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n1</span> <span class="o">+</span> <span class="n">n2</span><span class="p">,)</span> <span class="o">+</span> <span class="n">a2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">a2</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">a</span><span class="p">[</span><span class="n">n1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">a2</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;masses&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;masses&#39;</span><span class="p">:</span>
                 <span class="n">a</span><span class="p">[:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()[:</span><span class="n">n1</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">a</span><span class="p">[:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;new arrays </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">)</span>
+        <span class="n">atomslog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;new arrays </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span>
-</div>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
     <span class="n">__iadd__</span> <span class="o">=</span> <span class="n">extend</span>
 
 
     <span class="k">def</span> <span class="nf">__imul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;In-place repeat of atoms.&quot;&quot;&quot;</span>
-        <span class="c"># modified version of ase.Atoms.extend() to work with QUIP data storage</span>
+        <span class="c1"># modified version of ase.Atoms.extend() to work with QUIP data storage</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
 
         <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="c"># first make a copy of self.arrays so that we can resize Atoms</span>
+        <span class="c1"># first make a copy of self.arrays so that we can resize Atoms</span>
         <span class="n">arrays</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="p">])</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
 
-        <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;positions&#39;</span><span class="p">]</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span>
         <span class="n">i0</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">m0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="k">for</span> <span class="n">m1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -1111,11 +1115,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
 
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-</div>
-<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(atoms)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Atoms</span>
-<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s">&#39;type(connection)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Connection</span>
+
+<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s1">&#39;type(atoms)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Atoms</span>
+<span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s1">&#39;type(connection)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Connection</span>
 </pre></div>
 
           </div>
@@ -1132,14 +1136,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

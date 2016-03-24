@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Structure building routines &mdash; quippy b9f75c6+ documentation</title>
+    <title>Structure building routines &mdash; quippy 171eef2+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'b9f75c6+',
+        VERSION:     '171eef2+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="index.html" />
+    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -96,25 +96,300 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.orthorhombic_slab" title="quippy.structures.orthorhombic_slab"><code class="xref py py-obj docutils literal"><span class="pre">orthorhombic_slab</span></code></a>(at[,&nbsp;tol,&nbsp;min_nrep,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.void_analysis" title="quippy.structures.void_analysis"><code class="xref py py-obj docutils literal"><span class="pre">void_analysis</span></code></a>(at,grid_size,cutoff,grid,radii)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.alpha_quartz_cubic" title="quippy.structures.alpha_quartz_cubic"><code class="xref py py-obj docutils literal"><span class="pre">alpha_quartz_cubic</span></code></a>(a,c,u,x,y,z)</td>
+<td>Non-primitive 18-atom cubic quartz cell</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_closest" title="quippy.structures.find_closest"><code class="xref py py-obj docutils literal"><span class="pre">find_closest</span></code></a>(at,r,n0)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.sh2" title="quippy.structures.sh2"><code class="xref py py-obj docutils literal"><span class="pre">sh2</span></code></a>(a,c,[z])</td>
+<td>Creates a 2-atom simple hexagonal lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">c</span></code></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_compatible_supercells" title="quippy.structures.find_compatible_supercells"><code class="xref py py-obj docutils literal"><span class="pre">find_compatible_supercells</span></code></a>(...)</td>
+<td>find supercells of two lattices that are compatible (i.e.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.imma" title="quippy.structures.imma"><code class="xref py py-obj docutils literal"><span class="pre">imma</span></code></a>(a,b,c,u,[z])</td>
+<td>Creates a 2-atom Imma cell</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphite_rhombohedral" title="quippy.structures.graphite_rhombohedral"><code class="xref py py-obj docutils literal"><span class="pre">graphite_rhombohedral</span></code></a>(a,c,[z])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.fcc_z111_ortho" title="quippy.structures.fcc_z111_ortho"><code class="xref py py-obj docutils literal"><span class="pre">fcc_z111_ortho</span></code></a>(a0)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_motif" title="quippy.structures.find_motif"><code class="xref py py-obj docutils literal"><span class="pre">find_motif</span></code></a>(...)</td>
+<td>Subgraph isomorphism identifier based on J.R.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.diamond" title="quippy.structures.diamond"><code class="xref py py-obj docutils literal"><span class="pre">diamond</span></code></a>(a,[z])</td>
+<td>Creates an 8-atom diamond-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code> and atomic number <code class="docutils literal"><span class="pre">Z</span></code>, e.g.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.unit_slab" title="quippy.structures.unit_slab"><code class="xref py py-obj docutils literal"><span class="pre">unit_slab</span></code></a>(axes,a,[atnum,lat_type,c,u,x,y,z])</td>
+<td>Return a slab of material with the x, y, and z axes desribed by the Miller indices in the array axes (with <code class="docutils literal"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">axes[:,1])</span></code>, <code class="docutils literal"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">axes[:,2]</span></code> and <code class="docutils literal"><span class="pre">z</span> <span class="pre">=</span> <span class="pre">axes[:,3]</span></code>).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.fcc1" title="quippy.structures.fcc1"><code class="xref py py-obj docutils literal"><span class="pre">fcc1</span></code></a>(a,[z])</td>
+<td>Creates a 1-atom fcc-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.remove_too_close_atoms" title="quippy.structures.remove_too_close_atoms"><code class="xref py py-obj docutils literal"><span class="pre">remove_too_close_atoms</span></code></a>(at,distance,[error])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.bulk" title="quippy.structures.bulk"><code class="xref py py-obj docutils literal"><span class="pre">bulk</span></code></a>(lat_type,a,[c,u,x,y,z,atnum])</td>
+<td>Construct a bulk primitive cell with a given lattice type and lattice parameters</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.supercell" title="quippy.structures.supercell"><code class="xref py py-obj docutils literal"><span class="pre">supercell</span></code></a>(...)</td>
+<td>Replicates the unit cell <code class="docutils literal"><span class="pre">n1*n2*n3</span></code> times along the lattice vectors.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.structure_from_file" title="quippy.structures.structure_from_file"><code class="xref py py-obj docutils literal"><span class="pre">structure_from_file</span></code></a>(...)</td>
+<td>create a supercell of a structure, read from a file, with chosen</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.map_nearest_atoms" title="quippy.structures.map_nearest_atoms"><code class="xref py py-obj docutils literal"><span class="pre">map_nearest_atoms</span></code></a>(at1,at2,types)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.fcc_z100" title="quippy.structures.fcc_z100"><code class="xref py py-obj docutils literal"><span class="pre">fcc_z100</span></code></a>(a0)</td>
+<td>Make an FCC 100 surface, such that the repeating squares of the</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.min_neighbour_dist" title="quippy.structures.min_neighbour_dist"><code class="xref py py-obj docutils literal"><span class="pre">min_neighbour_dist</span></code></a>(at)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.rutile" title="quippy.structures.rutile"><code class="xref py py-obj docutils literal"><span class="pre">rutile</span></code></a>(a,c,u)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.fcc_disloc_malc" title="quippy.structures.fcc_disloc_malc"><code class="xref py py-obj docutils literal"><span class="pre">fcc_disloc_malc</span></code></a>(a0,nu,n1,n2,n3,d,type)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.graphite" title="quippy.structures.graphite"><code class="xref py py-obj docutils literal"><span class="pre">graphite</span></code></a>(a,c,[z])</td>
+<td>Creates a 4-atom graphite lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">c</span></code></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.tube_radius" title="quippy.structures.tube_radius"><code class="xref py py-obj docutils literal"><span class="pre">tube_radius</span></code></a>(tube)</td>
+<td>Calcualte average radius of a nanotube</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.transform" title="quippy.structures.transform"><code class="xref py py-obj docutils literal"><span class="pre">transform</span></code></a>(at_in,t)</td>
+<td>Transform cell and lattice coordinates by the 3 x 3 matrix <cite>t</cite></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphene_tube" title="quippy.structures.graphene_tube"><code class="xref py py-obj docutils literal"><span class="pre">graphene_tube</span></code></a>(a,n,m,nz)</td>
+<td>Construct a <img class="math" src="_images/math/a931e0da81084e1196139da4d88d9305b81853c8.png" alt="(n,m)"/> nanotube with lattice parameter <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">nz</span></code> unit cells along the tube length.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.fcc_z111" title="quippy.structures.fcc_z111"><code class="xref py py-obj docutils literal"><span class="pre">fcc_z111</span></code></a>(a0)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphene_cubic" title="quippy.structures.graphene_cubic"><code class="xref py py-obj docutils literal"><span class="pre">graphene_cubic</span></code></a>(a)</td>
+<td>Cubic graphene unit cell with lattice parameter <code class="docutils literal"><span class="pre">a</span></code>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.hcp" title="quippy.structures.hcp"><code class="xref py py-obj docutils literal"><span class="pre">hcp</span></code></a>(a,[z])</td>
+<td>Creates a 2-atom hcp lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphene_sheet" title="quippy.structures.graphene_sheet"><code class="xref py py-obj docutils literal"><span class="pre">graphene_sheet</span></code></a>(a,n,m,rep_x,rep_y)</td>
+<td>Construct a graphene sheet of index <img class="math" src="_images/math/a931e0da81084e1196139da4d88d9305b81853c8.png" alt="(n,m)"/> with lattice constant <code class="docutils literal"><span class="pre">a</span></code> with <code class="docutils literal"><span class="pre">rep_x</span></code> repeat units in the <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> direction and <code class="docutils literal"><span class="pre">rep_y</span></code> in the <img class="math" src="_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> direction.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.beta_tin" title="quippy.structures.beta_tin"><code class="xref py py-obj docutils literal"><span class="pre">beta_tin</span></code></a>(a,c,[z])</td>
+<td>Creates a 2-atom beta-tin structure with lattice constants of a and c</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphene_slab" title="quippy.structures.graphene_slab"><code class="xref py py-obj docutils literal"><span class="pre">graphene_slab</span></code></a>(a,theta,width,height)</td>
+<td>Construct a slab of graphene of a given with and height, at a given angle.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.imma4" title="quippy.structures.imma4"><code class="xref py py-obj docutils literal"><span class="pre">imma4</span></code></a>(a,b,c,u,[z])</td>
+<td>Creates a 4-atom Imma cell</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.beta_tin4" title="quippy.structures.beta_tin4"><code class="xref py py-obj docutils literal"><span class="pre">beta_tin4</span></code></a>(a,c,[z])</td>
+<td>Creates a 4-atom beta-tin structure with lattice constants of a and c</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.wurtzite" title="quippy.structures.wurtzite"><code class="xref py py-obj docutils literal"><span class="pre">wurtzite</span></code></a>(a,[c,z1,z2,u])</td>
+<td>Creates a 4-atom wurtzite lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">c</span></code></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.anatase_cubic" title="quippy.structures.anatase_cubic"><code class="xref py py-obj docutils literal"><span class="pre">anatase_cubic</span></code></a>(a,c,u)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.bond_angle_mean_dev" title="quippy.structures.bond_angle_mean_dev"><code class="xref py py-obj docutils literal"><span class="pre">bond_angle_mean_dev</span></code></a>(at)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.alpha_quartz" title="quippy.structures.alpha_quartz"><code class="xref py py-obj docutils literal"><span class="pre">alpha_quartz</span></code></a>(a,c,u,x,y,z)</td>
+<td>Primitive 9-atom trigonal alpha quartz cell, with lattice constants <cite>a</cite> and <cite>c</cite> and internal coordinates <cite>u</cite> (Si), <cite>x</cite>, <cite>y</cite> and <cite>z</cite> (O).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.water" title="quippy.structures.water"><code class="xref py py-obj docutils literal"><span class="pre">water</span></code></a>()</td>
+<td>Return an atoms object containing one TIP3P water molecule in a box</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.fcc" title="quippy.structures.fcc"><code class="xref py py-obj docutils literal"><span class="pre">fcc</span></code></a>(a,[z])</td>
+<td>Creates a 4-atom fcc-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.delaunay_reduce" title="quippy.structures.delaunay_reduce"><code class="xref py py-obj docutils literal"><span class="pre">delaunay_reduce</span></code></a>(lat)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.fcc_11b2_edge_disloc" title="quippy.structures.fcc_11b2_edge_disloc"><code class="xref py py-obj docutils literal"><span class="pre">fcc_11b2_edge_disloc</span></code></a>(a0,n1,n2,n3)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.disloc_noam" title="quippy.structures.disloc_noam"><code class="xref py py-obj docutils literal"><span class="pre">disloc_noam</span></code></a>(at,p,l,b,[close_threshold])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.bcc" title="quippy.structures.bcc"><code class="xref py py-obj docutils literal"><span class="pre">bcc</span></code></a>(a,[z])</td>
+<td>Creates a 2-atom bcc-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.bcc1" title="quippy.structures.bcc1"><code class="xref py py-obj docutils literal"><span class="pre">bcc1</span></code></a>(a,[z])</td>
+<td>Creates a 1-atom primitive bcc-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.sh" title="quippy.structures.sh"><code class="xref py py-obj docutils literal"><span class="pre">sh</span></code></a>(a,c,[z])</td>
+<td>Creates a 1-atom simple hexagonal lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">c</span></code></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.arbitrary_supercell" title="quippy.structures.arbitrary_supercell"><code class="xref py py-obj docutils literal"><span class="pre">arbitrary_supercell</span></code></a>(a_in,i1,[error])</td>
+<td>construct an arbitrary supercell from a primitive structure and a combination of primitive vectors that form supercell</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.diamond2" title="quippy.structures.diamond2"><code class="xref py py-obj docutils literal"><span class="pre">diamond2</span></code></a>(a,[z1,z2])</td>
+<td>Creates a 2-atom diamond-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.surface_unit_cell" title="quippy.structures.surface_unit_cell"><code class="xref py py-obj docutils literal"><span class="pre">surface_unit_cell</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.slab" title="quippy.structures.slab"><code class="xref py py-obj docutils literal"><span class="pre">slab</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">slab</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.orthorhombic_slab" title="quippy.structures.orthorhombic_slab"><code class="xref py py-obj docutils literal"><span class="pre">orthorhombic_slab</span></code></a>(at[,&nbsp;tol,&nbsp;min_nrep,&nbsp;...])</td>
 <td>Try to construct an orthorhombic cell equivalent to the primitive cell <cite>at</cite>, using supercells up to at most <cite>max_nrep</cite> repeats.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.rotation_matrix" title="quippy.structures.rotation_matrix"><code class="xref py py-obj docutils literal"><span class="pre">rotation_matrix</span></code></a>(unit,&nbsp;y[,&nbsp;z,&nbsp;x,&nbsp;tol])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.rotation_matrix" title="quippy.structures.rotation_matrix"><code class="xref py py-obj docutils literal"><span class="pre">rotation_matrix</span></code></a>(unit,&nbsp;y[,&nbsp;z,&nbsp;x,&nbsp;tol])</td>
 <td>Return 3x3 matrix rotation matrix defining a crack with open surface defined by the plane <cite>y`=(l,m.n) or (h,k,i,l), and either crack tip line `z</cite> or crack propagation direction <cite>x</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.get_bulk_params" title="quippy.structures.get_bulk_params"><code class="xref py py-obj docutils literal"><span class="pre">get_bulk_params</span></code></a>(bulk,&nbsp;lat_type[,&nbsp;verbose])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.get_bulk_params" title="quippy.structures.get_bulk_params"><code class="xref py py-obj docutils literal"><span class="pre">get_bulk_params</span></code></a>(bulk,&nbsp;lat_type[,&nbsp;verbose])</td>
 <td>Return 6-tuple of lattice parameters a, c, u, x, y, z for</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.get_bond_lengths" title="quippy.structures.get_bond_lengths"><code class="xref py py-obj docutils literal"><span class="pre">get_bond_lengths</span></code></a>(at)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.get_bond_lengths" title="quippy.structures.get_bond_lengths"><code class="xref py py-obj docutils literal"><span class="pre">get_bond_lengths</span></code></a>(at)</td>
 <td>Return a dictionary mapping tuples (Species1, Species2) to an farray of bond-lengths</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.MillerPlane" title="quippy.structures.MillerPlane"><code class="xref py py-obj docutils literal"><span class="pre">MillerPlane</span></code></a>(v)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.MillerPlane" title="quippy.structures.MillerPlane"><code class="xref py py-obj docutils literal"><span class="pre">MillerPlane</span></code></a>(v)</td>
 <td>Special case of <a class="reference internal" href="#quippy.structures.MillerIndex" title="quippy.structures.MillerIndex"><code class="xref py py-class docutils literal"><span class="pre">MillerIndex</span></code></a> with <code class="docutils literal"><span class="pre">type=&quot;plane&quot;</span></code></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.MillerDirection" title="quippy.structures.MillerDirection"><code class="xref py py-obj docutils literal"><span class="pre">MillerDirection</span></code></a>(v)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.MillerDirection" title="quippy.structures.MillerDirection"><code class="xref py py-obj docutils literal"><span class="pre">MillerDirection</span></code></a>(v)</td>
 <td>Special case of <a class="reference internal" href="#quippy.structures.MillerIndex" title="quippy.structures.MillerIndex"><code class="xref py py-class docutils literal"><span class="pre">MillerIndex</span></code></a> with <code class="docutils literal"><span class="pre">type=&quot;direction&quot;</span></code> (the default)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.angle_between" title="quippy.structures.angle_between"><code class="xref py py-obj docutils literal"><span class="pre">angle_between</span></code></a>(a,&nbsp;b)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.angle_between" title="quippy.structures.angle_between"><code class="xref py py-obj docutils literal"><span class="pre">angle_between</span></code></a>(a,&nbsp;b)</td>
 <td>Angle between crystallographic directions between a=[ijk] and b=[lmn], in radians.</td>
 </tr>
 </tbody>
@@ -141,11 +416,11 @@
 <em class="property">class </em><code class="descclassname">quippy.structures.</code><code class="descname">MillerIndex</code><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Representation of a three of four index Miller direction or plane</p>
 <p>A <a class="reference internal" href="#quippy.structures.MillerIndex" title="quippy.structures.MillerIndex"><code class="xref py py-class docutils literal"><span class="pre">MillerIndex</span></code></a> can be constructed from vector or parsed from a string:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s">&#39;-211&#39;</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s">&#39;111&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;plane&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s1">&#39;-211&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s1">&#39;111&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;plane&#39;</span><span class="p">)</span>
 <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">x</span> <span class="c"># prints &quot;[-211]&quot;</span>
-<span class="k">print</span> <span class="n">y</span> <span class="c"># prints &quot;(111)&quot;, note round brackets denoting a plane</span>
+<span class="k">print</span> <span class="n">x</span> <span class="c1"># prints &quot;[-211]&quot;</span>
+<span class="k">print</span> <span class="n">y</span> <span class="c1"># prints &quot;(111)&quot;, note round brackets denoting a plane</span>
 <span class="k">print</span> <span class="n">z</span><span class="o">.</span><span class="n">latex</span><span class="p">()</span>
 <span class="k">assert</span><span class="p">(</span><span class="n">angle_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 <span class="k">assert</span><span class="p">(</span><span class="n">angle_between</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">==</span> <span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
@@ -425,19 +700,19 @@ motif(i,1) is the atomic number of an atom
 motif(i,2), motif(i,3) etc. are the indices of atoms to which this atom connects in this motif
 or zero if there are no more neighbours.</p>
 <p>E.g. to match a water molecule we could use:</p>
-<div class="highlight-python"><div class="highlight"><pre>water_motif  = reshape( (/  8, 1, 1, &amp;
+<div class="highlight-python"><div class="highlight"><pre><span></span>water_motif  = reshape( (/  8, 1, 1, &amp;
                             2, 1, 1, &amp;
                             3, 0, 0  /), (/3,3/) )
 </pre></div>
 </div>
 <p>or, alternatively:</p>
-<div class="highlight-python"><div class="highlight"><pre>water_motif2 = reshape( (/ 1, 8, 1, &amp;
+<div class="highlight-python"><div class="highlight"><pre><span></span>water_motif2 = reshape( (/ 1, 8, 1, &amp;
                            2, 1, 2, &amp;
                            0, 3, 0/), (/3,3/) )
 </pre></div>
 </div>
 <p>and for an alpha carbon</p>
-<div class="highlight-python"><div class="highlight"><pre>         O
+<div class="highlight-python"><div class="highlight"><pre><span></span>         O
          |
  N - C - C
      |
@@ -512,11 +787,11 @@ if the alt_connect&#8217;s cutoff were the same as at.cutoff(_break)</p>
 <code class="descclassname">quippy.structures.</code><code class="descname">diamond</code><span class="sig-paren">(</span><em>a</em><span class="optional">[</span>, <em>z</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.structures.diamond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an 8-atom diamond-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code>
 and atomic number <code class="docutils literal"><span class="pre">Z</span></code>, e.g. in Python:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>  <span class="c"># Silicon unit cell</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>  <span class="c1"># Silicon unit cell</span>
 </pre></div>
 </div>
 <p>Or, in Fortran:</p>
-<div class="highlight-python"><div class="highlight"><pre>type(Atoms) :: at
+<div class="highlight-python"><div class="highlight"><pre><span></span>type(Atoms) :: at
 ...
 call diamond(at, 5.44_dp, 14)
 </pre></div>
@@ -1425,13 +1700,13 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axes</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</em>) &#8211; </li>
+<li><strong>axes</strong> (<em>input rank-2 array('d') with bounds (3,3)</em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>nx</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>ny</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>nz</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>atnum</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</em>) &#8211; </li>
-<li><strong>lat_type</strong> (<em>in/output rank-0 array(string(len=-1),&#8217;c&#8217;), optional</em>) &#8211; </li>
+<li><strong>atnum</strong> (<em>input rank-1 array('i') with bounds (qp_n0), optional</em>) &#8211; </li>
+<li><strong>lat_type</strong> (<em>in/output rank-0 array(string(len=-1),'c'), optional</em>) &#8211; </li>
 <li><strong>c</strong> (<em>input float, optional</em>) &#8211; </li>
 <li><strong>u</strong> (<em>input float, optional</em>) &#8211; </li>
 <li><strong>x</strong> (<em>input float, optional</em>) &#8211; </li>
@@ -1456,12 +1731,12 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axes</strong> (<em>input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</em>) &#8211; </li>
+<li><strong>axes</strong> (<em>input rank-2 array('d') with bounds (3,3)</em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>width</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>height</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>nz</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>atnum</strong> (<em>input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</em>) &#8211; </li>
+<li><strong>atnum</strong> (<em>input rank-1 array('i') with bounds (qp_n0), optional</em>) &#8211; </li>
 <li><strong>lat_type</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
 <li><strong>c</strong> (<em>input float, optional</em>) &#8211; </li>
 <li><strong>u</strong> (<em>input float, optional</em>) &#8211; </li>
@@ -1555,14 +1830,14 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Mar 24, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>
