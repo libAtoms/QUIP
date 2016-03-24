@@ -23,7 +23,7 @@ cd doc
 
 # Put a working copy of the gh-pages where they are expected
 PAGES_DIR=../../QUIP-pages
-git clone -b gh-pages ${PAGES_URL} ${PAGES_DIR}
+git clone -b gh-pages ${PAGES_URL} ${PAGES_DIR} > /dev/null 2>&1 || echo "Failed to clone docs"
 
 # set up git so it can push
 git config --global user.name "Travis-CI"
