@@ -69,7 +69,14 @@ class MolproDatafile(OrderedDict):
         # split a line by the first non-alphanumeric character, then cats that character
         # to start of second item in list, if there is one.
         if key is not None:
-            self[key].append(line)
+            # If key is present, indicates a commmand block - use semicolons
+            # to split up lines containing directives and such
+            # TODO Is there another use of the 'key' argument?
+            #      It doesn't look like it...
+            if not self[key]:
+                self[key].append(';' + line)
+            else:
+                self[key][0] += (';' + line)
         else:
             nonalpha = re.compile('[^a-zA-Z0-9()\-]')
             separator = re.findall(nonalpha,line)
@@ -128,6 +135,7 @@ class MolproDatafile(OrderedDict):
 
             if open_bracket and close_bracket:
                 # superfluous brackets, no actual multi-line command or data
+                #TODO this is bad if the brackets actually delimit a command block...
                 line = line.replace("{","")
                 line = line.replace("}","")
                 open_bracket = False
@@ -251,11 +259,20 @@ class MolproDatafile(OrderedDict):
             else:
                 shortkey = key
             if len(value) > 1:
+                # TODO this appears to be designed for geometry specifications
+                #      but it also writes procedures when command blocks are
+                #      intended - rethink this.
                 datafile.write(shortkey+'={\n')
                 for line in value:
                     datafile.write(line+'\n')
                 datafile.write('}\n')
-            elif value != []:
+            elif value and value[0].startswith(';'):
+                cmdblock_lines = value[0].split(';')
+                datafile.write('{' + shortkey)
+                for line in cmdblock_lines:
+                    datafile.write(line + '\n')
+                datafile.write('}\n')
+            elif value:
                 datafile.write('%s%s\n' % (shortkey, value[0]))
             else:
                 datafile.write(shortkey+'\n')
