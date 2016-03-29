@@ -336,9 +336,12 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
     energy_names['CCSD(T)-F12'] = ["total energy"]
     energy_names['CCSD(T)'] = ["total energy"]
     energy_names['MP2'] = ["total energy"]
+    energy_names['DF-MP2'] = ["total energy"]
     energy_names['RKS'] = ["Energy"]
     energy_names['RHF'] = ["Energy"]
+    energy_names['DF-RHF'] = ["Energy"]
     energy_names['HF'] = ["Energy"]
+    energy_names['DF-HF'] = ["Energy"]
     #etc
     
     gradient_names = OrderedDict()
@@ -348,8 +351,9 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
 
     all_methods=OrderedDict()
     all_methods['HF']=["RHF"]
-    all_methods['RHF']=["RHF"]
     all_methods['DF-HF']=["RHF"]
+    all_methods['RHF']=["RHF"]
+    all_methods['DF-RHF']=["RHF"]
     all_methods['MP2']=["MP2"]
     all_methods['DF-MP2']=["MP2"]
     all_methods['RKS']=["RKS"]
