@@ -348,7 +348,10 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
 
     all_methods=OrderedDict()
     all_methods['HF']=["RHF"]
+    all_methods['RHF']=["RHF"]
+    all_methods['DF-HF']=["RHF"]
     all_methods['MP2']=["MP2"]
+    all_methods['DF-MP2']=["MP2"]
     all_methods['RKS']=["RKS"]
     all_methods['CCSD(T)-F12']=["CCSD(T)-F12a","CCSD(T)-F12b"]
     all_methods['CCSD(T)']=["CCSD(T)"]
