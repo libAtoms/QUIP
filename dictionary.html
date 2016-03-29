@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 171eef2+ documentation</title>
+    <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -60,9 +60,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -230,14 +227,14 @@ are:</p>
 </ul>
 <p>A <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> can be created from a standard Python dictionary,
 and easily converted back:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">}</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fortran_dict</span> <span class="o">=</span> <span class="n">Dictionary</span><span class="p">(</span><span class="n">py_dict</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">py_dict</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fortran_dict</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>It also supports all the standard dictionary operations and methods:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fortran_dict</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fortran_dict</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fortran_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 <span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
 </pre></div>
@@ -245,7 +242,7 @@ and easily converted back:</p>
 <p>An additional feature of the quippy <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> is that it
 can read and write itself to a string in the format used within XYZ
 files:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">fortran_dict</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">fortran_dict</span><span class="p">)</span>
 <span class="go">&#39;a=1 b=2 c=3&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d2</span> <span class="o">=</span> <span class="n">Dictionary</span><span class="p">(</span><span class="s1">&#39;a=1 b=2 c=3&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d2</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">d2</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
@@ -281,16 +278,16 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.add_array" title="quippy.dictionary.Dictionary.add_array"><code class="xref py py-obj docutils literal"><span class="pre">add_array</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">add_array</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(from)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy" title="quippy.dictionary.Dictionary.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy" title="quippy.dictionary.Dictionary.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(from,[error])</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy_no_error" title="quippy.dictionary.Dictionary.deepcopy_no_error"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy_no_error</span></code></a>(from)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal"><span class="pre">expand_string</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal"><span class="pre">expand_string</span></code></a>(in,[error])</td>
 <td>Copy extendable string from <code class="docutils literal"><span class="pre">in</span></code> to <code class="docutils literal"><span class="pre">out</span></code>, expanding variables formatted as <code class="docutils literal"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_array" title="quippy.dictionary.Dictionary.get_array"><code class="xref py py-obj docutils literal"><span class="pre">get_array</span></code></a>(key)</td>
@@ -333,10 +330,10 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.lookup_entry_i" title="quippy.dictionary.Dictionary.lookup_entry_i"><code class="xref py py-obj docutils literal"><span class="pre">lookup_entry_i</span></code></a>(key,[case_sensitive])</td>
 <td>OMIT</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_" title="quippy.dictionary.Dictionary.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_" title="quippy.dictionary.Dictionary.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([verbosity,file])</td>
 <td>Print a DictEntry or a Dictionary</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_keys" title="quippy.dictionary.Dictionary.print_keys"><code class="xref py py-obj docutils literal"><span class="pre">print_keys</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_keys" title="quippy.dictionary.Dictionary.print_keys"><code class="xref py py-obj docutils literal"><span class="pre">print_keys</span></code></a>([verbosity,file])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -347,10 +344,10 @@ files:</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.read_string" title="quippy.dictionary.Dictionary.read_string"><code class="xref py py-obj docutils literal"><span class="pre">read_string</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.read_string" title="quippy.dictionary.Dictionary.read_string"><code class="xref py py-obj docutils literal"><span class="pre">read_string</span></code></a>(str,[append,error])</td>
 <td>Read into this dictionary from a string</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal"><span class="pre">remove_value</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal"><span class="pre">remove_value</span></code></a>(key)</td>
 <td>Remove an entry from a Dictionary</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value" title="quippy.dictionary.Dictionary.set_value"><code class="xref py py-obj docutils literal"><span class="pre">set_value</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -365,10 +362,10 @@ files:</p>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(key1,key2,[case_sensitive,error])</td>
 <td>Swap the positions of two entries in the dictionary.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(...)</td>
 <td>Write a string representation of this dictionary</td>
 </tr>
 </tbody>
@@ -643,7 +640,7 @@ files:</p>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.assignment">
-<code class="descname">assignment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.assignment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">assignment</code><span class="sig-paren">(</span><em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.assignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -659,7 +656,7 @@ files:</p>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.deepcopy">
-<code class="descname">deepcopy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.deepcopy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">deepcopy</code><span class="sig-paren">(</span><em>from</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.deepcopy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -693,7 +690,7 @@ files:</p>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.expand_string">
-<code class="descname">expand_string</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.expand_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">expand_string</code><span class="sig-paren">(</span><em>in</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.expand_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy extendable string from <code class="docutils literal"><span class="pre">in</span></code> to <code class="docutils literal"><span class="pre">out</span></code>, expanding variables formatted
 as <code class="docutils literal"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary. An error
 is raised if a key is not found, or if the string ends with a dollar sign or braces aren&#8217;t matched</p>
@@ -795,7 +792,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a DictEntry or a Dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -813,7 +810,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.print_keys">
-<code class="descname">print_keys</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_keys" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_keys</code><span class="sig-paren">(</span><span class="optional">[</span><em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_keys" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -830,7 +827,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.read_string">
-<code class="descname">read_string</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.read_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_string</code><span class="sig-paren">(</span><em>str</em><span class="optional">[</span>, <em>append</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.read_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read into this dictionary from a string</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -852,7 +849,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.remove_value">
-<code class="descname">remove_value</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.remove_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_value</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.remove_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove an entry from a Dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1277,7 +1274,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.swap">
-<code class="descname">swap</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.swap" title="Permalink to this definition">¶</a></dt>
+<code class="descname">swap</code><span class="sig-paren">(</span><em>key1</em>, <em>key2</em><span class="optional">[</span>, <em>case_sensitive</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.swap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Swap the positions of two entries in the dictionary. Arrays are not moved in memory.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1297,7 +1294,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.write_string">
-<code class="descname">write_string</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.write_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_string</code><span class="sig-paren">(</span><span class="optional">[</span><em>real_format</em>, <em>entry_sep</em>, <em>char_a_sep</em>, <em>quote_char</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.write_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a string representation of this dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1415,14 +1412,14 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

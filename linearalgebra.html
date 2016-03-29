@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Linear algebra routines &mdash; quippy 171eef2+ documentation</title>
+    <title>Linear algebra routines &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Quaternions and rotation" href="quaternions.html" />
     <link rel="prev" title="Tools for electrostatic embedding" href="electrostaticembed.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -74,9 +74,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -539,7 +536,7 @@ contents in first cell is less than 2nd, with 1st array taking precendence.</p>
 <dd><p>Fit a cubic polynomial to a function given its values (<img class="math" src="_images/math/f7e73389b494d356293b5ad9e3601a3a61609e96.png" alt="y_0"/> and <img class="math" src="_images/math/f30c7e391f4cef1d7b14050b5916c857c0979cb5.png" alt="y_1"/>) and
 its derivative (<img class="math" src="_images/math/5f76549f4cb0d7f165c33f4fa2a15c3c3800efb5.png" alt="y^\prime_0"/> and <img class="math" src="_images/math/c514f6ce84e31ae3411793319f3e2787890cd43d.png" alt="y^\prime_1"/>) at two points (<img class="math" src="_images/math/c3c08496f07567285212e468b173bea9ca153fab.png" alt="x_0"/> and <img class="math" src="_images/math/b31b1ea8e4fe3f618dedfb0e2d8c69a3df7a391d.png" alt="x_1"/>)</p>
 <div class="math">
-<p><img src="_images/math/e73c41bdad603437e372290d8ba39832cc5625cc.png" alt="y = ax^3 + bx^2 + cx + d"/></p>
+<p><span class="math">y = ax^3 + bx^2 + cx + d</span></p>
 </div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1116,7 +1113,7 @@ convert the spherical polar coordinates point <img class="math" src="_images/mat
 <dd><p>Return the (smallest) angle between two vectors, in radians.
 This is calculated as</p>
 <div class="math">
-<p><img src="_images/math/9486a09be0216defc1bd257dde665b3830bf2384.png" alt="\arccos\left(\frac{\mathbf{a}\cdot\mathbf{b}}{|\mathbf{a}| |\mathbf{b}|}\right)"/></p>
+<p><span class="math">\arccos\left(\frac{\mathbf{a}\cdot\mathbf{b}}{|\mathbf{a}| |\mathbf{b}|}\right)</span></p>
 </div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2975,7 +2972,7 @@ complex hermitian postive definite matrices.</p>
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em><span class="sig-paren">)</span></dt>
 <dd><p>For two arrays of dimension <img class="math" src="_images/math/0a2ae2cfe8c0eecfedf98d86105392aebf89a070.png" alt="N \times M"/>, this is calculated as</p>
 <div class="math">
-<p><img src="_images/math/2a669355d9a1ec0ddc797f7edcc858fd4ce4434d.png" alt="\sum_{j=1}^{M} \sum_{i=1}^{N} \left(\mathbf{a_1}_{ij} - \mathbf{a_2}_{ij}\right)^2"/></p>
+<p><span class="math">\sum_{j=1}^{M} \sum_{i=1}^{N} \left(\mathbf{a_1}_{ij} - \mathbf{a_2}_{ij}\right)^2</span></p>
 </div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2999,7 +2996,7 @@ complex hermitian postive definite matrices.</p>
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>vector1</em>, <em>vector2</em><span class="sig-paren">)</span></dt>
 <dd><p>For two vectors of <img class="math" src="_images/math/75e27f04188974063be3230dca208cd495b77ce1.png" alt="N"/> dimensions, this is calculated as</p>
 <div class="math">
-<p><img src="_images/math/573d3593ebbb368ef34ca19fedb1001ecebb8121.png" alt="\sum_{i=1}^{N} \left(\mathbf{v_1}_i - \mathbf{v_2}_i\right)^2"/></p>
+<p><span class="math">\sum_{i=1}^{N} \left(\mathbf{v_1}_i - \mathbf{v_2}_i\right)^2</span></p>
 </div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3516,14 +3513,14 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
         <li class="right" >
           <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fortran Table for dynamically extendable arrays &mdash; quippy 171eef2+ documentation</title>
+    <title>Fortran Table for dynamically extendable arrays &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -60,9 +60,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -208,7 +205,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.allocate" title="quippy.table.Table.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.allocate" title="quippy.table.Table.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(...)</td>
 <td>Allocate a <code class="docutils literal"><span class="pre">Table</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.append" title="quippy.table.Table.append"><code class="xref py py-obj docutils literal"><span class="pre">append</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -220,7 +217,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.delete" title="quippy.table.Table.delete"><code class="xref py py-obj docutils literal"><span class="pre">delete</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Delete a row by index or by value.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.delete_multiple" title="quippy.table.Table.delete_multiple"><code class="xref py py-obj docutils literal"><span class="pre">delete_multiple</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.delete_multiple" title="quippy.table.Table.delete_multiple"><code class="xref py py-obj docutils literal"><span class="pre">delete_multiple</span></code></a>(indices)</td>
 <td>Delete multiple rows from a Table.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.find" title="quippy.table.Table.find"><code class="xref py py-obj docutils literal"><span class="pre">find</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -235,7 +232,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_mask" title="quippy.table.Table.from_atom_mask"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_mask</span></code></a>(atoms,&nbsp;mask[,&nbsp;...])</td>
 <td>Construct a new Table from an atom mask</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.insert" title="quippy.table.Table.insert"><code class="xref py py-obj docutils literal"><span class="pre">insert</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.insert" title="quippy.table.Table.insert"><code class="xref py py-obj docutils literal"><span class="pre">insert</span></code></a>(...)</td>
 <td>insert a row at a given position</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.int_part" title="quippy.table.Table.int_part"><code class="xref py py-obj docutils literal"><span class="pre">int_part</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -275,16 +272,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.remove_columns" title="quippy.table.Table.remove_columns"><code class="xref py py-obj docutils literal"><span class="pre">remove_columns</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.remove_columns" title="quippy.table.Table.remove_columns"><code class="xref py py-obj docutils literal"><span class="pre">remove_columns</span></code></a>(...)</td>
 <td>remove a range of columns from a table&#8217;s int or real parts</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.search" title="quippy.table.Table.search"><code class="xref py py-obj docutils literal"><span class="pre">search</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.search" title="quippy.table.Table.search"><code class="xref py py-obj docutils literal"><span class="pre">search</span></code></a>(intpart)</td>
 <td>Do a binary search (faster than find) on a pre-sorted table</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.select" title="quippy.table.Table.select"><code class="xref py py-obj docutils literal"><span class="pre">select</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.select" title="quippy.table.Table.select"><code class="xref py py-obj docutils literal"><span class="pre">select</span></code></a>(to,from,[row_mask,row_list])</td>
 <td>Select certains rows from a table based on a mask</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.set_increment" title="quippy.table.Table.set_increment"><code class="xref py py-obj docutils literal"><span class="pre">set_increment</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.set_increment" title="quippy.table.Table.set_increment"><code class="xref py py-obj docutils literal"><span class="pre">set_increment</span></code></a>(increment)</td>
 <td>Change the increment for this table.</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
@@ -293,7 +290,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.sort" title="quippy.table.Table.sort"><code class="xref py py-obj docutils literal"><span class="pre">sort</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.sort" title="quippy.table.Table.sort"><code class="xref py py-obj docutils literal"><span class="pre">sort</span></code></a>([idx,int_cols])</td>
 <td>Sort a table according to its int part</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.str_part" title="quippy.table.Table.str_part"><code class="xref py py-obj docutils literal"><span class="pre">str_part</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -316,14 +313,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.to_atom_mask" title="quippy.table.Table.to_atom_mask"><code class="xref py py-obj docutils literal"><span class="pre">to_atom_mask</span></code></a>([atoms])</td>
 <td>Return mask for atom indices that this Table represents</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.wipe" title="quippy.table.Table.wipe"><code class="xref py py-obj docutils literal"><span class="pre">wipe</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.wipe" title="quippy.table.Table.wipe"><code class="xref py py-obj docutils literal"><span class="pre">wipe</span></code></a>([zero])</td>
 <td>Clear this table, but keep the allocation.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.table.Table.allocate">
-<code class="descname">allocate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.allocate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">allocate</code><span class="sig-paren">(</span><span class="optional">[</span><em>nint</em>, <em>nreal</em>, <em>nstr</em>, <em>nlogical</em>, <em>max_length</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.allocate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate a <code class="docutils literal"><span class="pre">Table</span></code>. When allocating a table, you can
 optionally specify the number of integer and real columns and the
 initial amount of space to allocate (<code class="docutils literal"><span class="pre">max_length</span></code>). If a table is
@@ -810,7 +807,7 @@ over the row to be deleted, so the order of rows is not maintained.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.delete_multiple">
-<code class="descname">delete_multiple</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.delete_multiple" title="Permalink to this definition">¶</a></dt>
+<code class="descname">delete_multiple</code><span class="sig-paren">(</span><em>indices</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.delete_multiple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete multiple rows from a Table. Beware, the order of rows
 is not maintained.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -898,7 +895,7 @@ are converted to Fortran 1-based indexing.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.insert">
-<code class="descname">insert</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.insert" title="Permalink to this definition">¶</a></dt>
+<code class="descname">insert</code><span class="sig-paren">(</span><em>pos</em><span class="optional">[</span>, <em>intpart</em>, <em>realpart</em>, <em>strpart</em>, <em>logicalpart</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>insert a row at a given position</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1218,7 +1215,7 @@ interface below.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.remove_columns">
-<code class="descname">remove_columns</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.remove_columns" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_columns</code><span class="sig-paren">(</span><span class="optional">[</span><em>int_col_min</em>, <em>int_col_max</em>, <em>real_col_min</em>, <em>real_col_max</em>, <em>str_col_min</em>, <em>str_col_max</em>, <em>logical_col_min</em>, <em>logical_col_max</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.remove_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>remove a range of columns from a table&#8217;s int or real parts</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1242,7 +1239,7 @@ interface below.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.search">
-<code class="descname">search</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">search</code><span class="sig-paren">(</span><em>intpart</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do a binary search (faster than find) on a pre-sorted table</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1260,7 +1257,7 @@ interface below.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.select">
-<code class="descname">select</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.select" title="Permalink to this definition">¶</a></dt>
+<code class="descname">select</code><span class="sig-paren">(</span><em>to</em>, <em>from</em><span class="optional">[</span>, <em>row_mask</em>, <em>row_list</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select certains rows from a table based on a mask</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1280,7 +1277,7 @@ interface below.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.set_increment">
-<code class="descname">set_increment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.set_increment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_increment</code><span class="sig-paren">(</span><em>increment</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.set_increment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the increment for this table.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1296,7 +1293,7 @@ interface below.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.sort">
-<code class="descname">sort</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.sort" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sort</code><span class="sig-paren">(</span><span class="optional">[</span><em>idx</em>, <em>int_cols</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.sort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort a table according to its int part</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1430,7 +1427,7 @@ Table was not created in that way.</p>
 
 <dl class="method">
 <dt id="quippy.table.Table.wipe">
-<code class="descname">wipe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.wipe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">wipe</code><span class="sig-paren">(</span><span class="optional">[</span><em>zero</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.wipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear this table, but keep the allocation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1529,14 +1526,14 @@ Table was not created in that way.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

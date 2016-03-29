@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tools for fracture simulations &mdash; quippy 171eef2+ documentation</title>
+    <title>Tools for fracture simulations &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -60,9 +60,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -83,7 +80,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-obj docutils literal"><span class="pre">CrackParams</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-obj docutils literal"><span class="pre">CrackParams</span></code></a>([filename,validate])</td>
 <td>This type contains all the parameters for a crack simulation, each of which is described briefly below.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-obj docutils literal"><span class="pre">ConstantStrainRate</span></code></a>(orig_height,&nbsp;delta_strain)</td>
@@ -392,7 +389,7 @@
 </table>
 <dl class="class">
 <dt id="quippy.crack.CrackParams">
-<em class="property">class </em><code class="descclassname">quippy.crack.</code><code class="descname">CrackParams</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.crack.</code><code class="descname">CrackParams</code><span class="sig-paren">(</span><span class="optional">[</span><em>filename</em>, <em>validate</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams" title="Permalink to this definition">¶</a></dt>
 <dd><p>This type contains all the parameters for a crack simulation, each of which is described briefly
 below.</p>
 <p>Initialise this CrackParams structure and set default
@@ -825,7 +822,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.print_" title="quippy.crack.CrackParams.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.print_" title="quippy.crack.CrackParams.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
 <td>Print out this CrackParams structure</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.read_xml" title="quippy.crack.CrackParams.read_xml"><code class="xref py py-obj docutils literal"><span class="pre">read_xml</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -850,7 +847,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.crack.CrackParams.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.print_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print out this CrackParams structure</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2130,25 +2127,25 @@ strained in y direction by <code class="docutils literal"><span class="pre">stra
 rigidly shifted to keep top and bottom edges flat. A transition
 zone is created in between with linearly varying strain to
 avoid creation of defects.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>    --------------------------------------
-    |           |   |   |   |            |
-    |           |   |___|   |            |
-    |           |   |   |   |            |
-    |           |   |___|   |            |
-    |           |   |   |   |            |
-    |    1      | 2 | 3 | 4 |     5      |
-    --------------------------------------
-::
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="o">--------------------------------------</span>
+    <span class="o">|</span>           <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>
+    <span class="o">|</span>           <span class="o">|</span>   <span class="o">|</span><span class="n">___</span><span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>
+    <span class="o">|</span>           <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>
+    <span class="o">|</span>           <span class="o">|</span>   <span class="o">|</span><span class="n">___</span><span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>
+    <span class="o">|</span>           <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>
+    <span class="o">|</span>    <span class="mi">1</span>      <span class="o">|</span> <span class="mi">2</span> <span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mi">4</span> <span class="o">|</span>     <span class="mi">5</span>      <span class="o">|</span>
+    <span class="o">--------------------------------------</span>
+<span class="p">::</span>
 
-   ======  ===========================================  ======
-   Region  Position                                      Load
-   ======  ===========================================  ======
-     1     x &lt; l_crack_pos - zone_width                 G
-     2     l_crack_pos - zone_width &lt;= x &lt; l_crack_pos  G - 0
-     3     l_crack_pos &lt; x &lt;  r_crack_pos               0
-     4     r_crack_pos &lt; x &lt;= r_crack_pos + zone_width  0 - G
-     5     x  r_crack_pos + zone_width                 G
-   ======  ===========================================  ======
+   <span class="o">======</span>  <span class="o">===========================================</span>  <span class="o">======</span>
+   <span class="n">Region</span>  <span class="n">Position</span>                                      <span class="n">Load</span>
+   <span class="o">======</span>  <span class="o">===========================================</span>  <span class="o">======</span>
+     <span class="mi">1</span>     <span class="n">x</span> <span class="o">&lt;</span> <span class="n">l_crack_pos</span> <span class="o">-</span> <span class="n">zone_width</span>                 <span class="n">G</span>
+     <span class="mi">2</span>     <span class="n">l_crack_pos</span> <span class="o">-</span> <span class="n">zone_width</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">l_crack_pos</span>  <span class="n">G</span> <span class="o">-</span> <span class="mi">0</span>
+     <span class="mi">3</span>     <span class="n">l_crack_pos</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">&lt;</span>  <span class="n">r_crack_pos</span>               <span class="mi">0</span>
+     <span class="mi">4</span>     <span class="n">r_crack_pos</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">r_crack_pos</span> <span class="o">+</span> <span class="n">zone_width</span>  <span class="mi">0</span> <span class="o">-</span> <span class="n">G</span>
+     <span class="mi">5</span>     <span class="n">x</span>  <span class="n">r_crack_pos</span> <span class="o">+</span> <span class="n">zone_width</span>                 <span class="n">G</span>
+   <span class="o">======</span>  <span class="o">===========================================</span>  <span class="o">======</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2874,8 +2871,8 @@ Region <img class="math" src="_images/math/ae01b7ab4c23a57cc709ccb353c07019f30e5
 and after (right) applying the displacement, and the horizontal and
 vertical lines show the <cite>strain</cite> (red), <cite>a</cite> (green) and <cite>b</cite> (blue)
 parameters.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">strain</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">;</span> <span class="n">b</span> <span class="o">=</span>  <span class="mf">0.0</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
@@ -2947,14 +2944,14 @@ a sequence of three floats</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 171eef2+ documentation</title>
+    <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Visualisation Tools" href="visualisation.html" />
     <link rel="prev" title="Visualisation Tools" href="visualisation.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="visualisation.html" title="Visualisation Tools"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="visualisation.html" accesskey="U">Visualisation Tools</a> &raquo;</li> 
       </ul>
     </div>
@@ -79,9 +79,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -102,7 +99,7 @@ especially in conjunction with <a class="reference external" href="http://www.ip
 <p>The most important function defined in this module is <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a>, which is
 used to open a new viewer or to update what is displayed in an existing viewer.
 Here&#8217;s an example session to give some ideas of how <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> can be used:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">qlab</span> <span class="kn">import</span> <span class="o">*</span>    <span class="c1"># Import all numpy, quippy and atomeye functions</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">qlab</span> <span class="k">import</span> <span class="o">*</span>    <span class="c1"># Import all numpy, quippy and atomeye functions</span>
 
 <span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span> <span class="c1"># Make an 8-atom silicon unit cell</span>
 <span class="n">view</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>               <span class="c1"># Pops up an AtomEye window to display our cell</span>
@@ -113,12 +110,12 @@ Here&#8217;s an example session to give some ideas of how <a class="reference in
 <p>Once a viewer window is open, you can run all the methods of the
 <a class="reference internal" href="atomeye.html#atomeye.AtomEyeViewer" title="atomeye.AtomEyeViewer"><code class="xref py py-class docutils literal"><span class="pre">atomeye.AtomEyeViewer</span></code></a> class as top-level functions in the
 which affect the current viewer. This means that you can type, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>to colour the Atoms being displayed in the current viewer by their
 atomic number <code class="xref py py-attr docutils literal"><span class="pre">property</span></code>, or:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">change_bgcolor</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">change_bgcolor</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 <span class="n">resize</span><span class="p">(</span><span class="mi">640</span><span class="p">,</span><span class="mi">480</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -130,13 +127,13 @@ display, just repeat the <a class="reference internal" href="#qlab.view" title="
 <p>The <a class="reference internal" href="atomeye.html#atomeye.AtomEyeViewer.aux_property_coloring" title="atomeye.AtomEyeViewer.aux_property_coloring"><code class="xref py py-meth docutils literal"><span class="pre">aux_property_coloring()</span></code></a> method is
 overloaded to allow custom arrays to be visualised, e.g. to highlight
 the atoms where <img class="math" src="_images/math/e340e81b8736ab6a7a4263aba11b80592e1c6d2e.png" alt="x \ge a/2"/>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">&gt;=</span> <span class="n">d</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">&gt;=</span> <span class="n">d</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/qlab-aux-property-colouring.png"><img alt="_images/qlab-aux-property-colouring.png" class="align-center" src="_images/qlab-aux-property-colouring.png" style="width: 400px;" /></a>
 <p>You can quickly find individual atoms or groups of atoms by passing an
 integer or list of integers to <a class="reference internal" href="#qlab.aux_property_coloring" title="qlab.aux_property_coloring"><code class="xref py py-func docutils literal"><span class="pre">aux_property_coloring()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># highlight first atom (counting from 1 by default)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># highlight first atom (counting from 1 by default)</span>
 </pre></div>
 </div>
 <p>Note that these indices respect the global <code class="docutils literal"><span class="pre">fortran_indexing</span></code> setting
@@ -149,7 +146,7 @@ the atom are in the <code class="docutils literal"><span class="pre">_show</span
 <p>Here is a more advanced example showing how to draw arrows to visualise a vector
 property (the forces on the atoms), and to colour the atoms by a component of the
 stress tensor:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>      <span class="c1"># Make an 8-atom silicon unit cell</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>      <span class="c1"># Make an 8-atom silicon unit cell</span>
 <span class="n">s</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># Make a supercell of the Si bulk</span>
 <span class="n">view</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>                    <span class="c1"># Visualise the system</span>
 <span class="n">s</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>             <span class="c1"># Randomise the atomic positions a little</span>
@@ -171,7 +168,7 @@ stress tensor:</p>
 <p>You can also pass a list of Atoms objects or a trajectory filename to
 <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> to visualise a sequence of frames. For example, here&#8217;s a
 sequence of silicon unit cells with increasing lattice constant:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="p">[</span><span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="o">+</span><span class="mf">0.005</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="p">[</span><span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="o">+</span><span class="mf">0.005</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
 <span class="n">view</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -182,7 +179,7 @@ number is printed in the window title. There are also <a class="reference intern
 <p>There is also a command line script <cite>quippy</cite> which starts an <cite>ipython</cite> shell
 and imports everything from <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> automatically, and opens
 viewers for any file given on the command line, e.g. from the shell</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ quippy traj.nc
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ quippy traj.nc
 </pre></div>
 </div>
 <p>will fire up <cite>ipython</cite>, load everything from
@@ -198,17 +195,17 @@ in <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html
 (&#8220;get current atoms&#8221;) to get a reference to the current Atoms being viewed.
 For a trajectory with multiple frames, this corresponds to the current frame.</p>
 <p>You can set the current frame to 10 directly with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">set_frame</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">set_frame</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Or specify that the frame should advance by 5 steps each time <cite>Insert</cite>
 is pressed with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">set_delta</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">set_delta</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If you would like to make a movie of your simulation, you can use
 the <a class="reference internal" href="#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-func docutils literal"><span class="pre">render_movie()</span></code></a> function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">render_movie</span><span class="p">(</span><span class="s1">&#39;movie.mp4&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">render_movie</span><span class="p">(</span><span class="s1">&#39;movie.mp4&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This function renders each frame to a <code class="docutils literal"><span class="pre">.jpg</span></code> file, before combining the
@@ -216,7 +213,7 @@ snapshots with the <a class="reference external" href="http://www.ffmpeg.org/">f
 be installed for this to work). There is a <cite>hook</cite> function which is called at
 each frame to allow change to be made to the Atoms object. For example, to run
 a 1 ps MD and render the movie of every 10th frame:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>           <span class="c1"># Usual 8-atom cell</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>           <span class="c1"># Usual 8-atom cell</span>
 <span class="n">s</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>       <span class="c1"># Make a supercell</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">)</span>          <span class="c1"># Make a Stillinger-Weber potential</span>
 <span class="n">s</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span>     <span class="c1"># Neighbour cutoff for atoms is pot cutoff + 1 A</span>
@@ -247,29 +244,29 @@ a 1 ps MD and render the movie of every 10th frame:</p>
 <span id="qlab-select-atoms"></span><h2>Selecting Atoms<a class="headerlink" href="#selecting-atoms" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="#qlab.select_atoms" title="qlab.select_atoms"><code class="xref py py-func docutils literal"><span class="pre">select_atoms()</span></code></a> function is useful for graphically selecting a
 group of atoms, e.g. to manually define an initial QM region for a
-<a class="reference internal" href="adaptive-qmmm.html#qmmm-tutorial"><span>QM/MM calculation</span></a>. After invoking the function, right
+<a class="reference internal" href="adaptive-qmmm.html#qmmm-tutorial"><span class="std std-ref">QM/MM calculation</span></a>. After invoking the function, right
 clicking on atoms you want to select. They will be highlighted in red. When you
 are done, press <cite>Enter</cite>. Here&#8217;s an example <cite>ipython</cite> session:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>In [9]: view(s)
-Reusing viewer named at
-Out[9]: &lt;AtomsViewer object at 0x10b9f19d0 fpointer=(-33474560, 32762)&gt;
-In [10]: atoms_list = select_atoms()
-Right click to select atoms. Press ENTER to finish.
-indices = [ 224 265 261
- ]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">view</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Reusing</span> <span class="n">viewer</span> <span class="n">named</span> <span class="n">at</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">AtomsViewer</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x10b9f19d0</span> <span class="n">fpointer</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">33474560</span><span class="p">,</span> <span class="mi">32762</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">atoms_list</span> <span class="o">=</span> <span class="n">select_atoms</span><span class="p">()</span>
+<span class="n">Right</span> <span class="n">click</span> <span class="n">to</span> <span class="n">select</span> <span class="n">atoms</span><span class="o">.</span> <span class="n">Press</span> <span class="n">ENTER</span> <span class="n">to</span> <span class="n">finish</span><span class="o">.</span>
+<span class="n">indices</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">224</span> <span class="mi">265</span> <span class="mi">261</span>
+ <span class="p">]</span>
 </pre></div>
 </div>
 <p>If you want to add to the selection, run <a class="reference internal" href="#qlab.select_atoms" title="qlab.select_atoms"><code class="xref py py-func docutils literal"><span class="pre">select_atoms()</span></code></a> again with
 the <cite>reset</cite> argument set to False. To customise the value applied to atoms
 which are clicked on, use the <cite>value</cite> argument: e.g. to de-select atoms
 clicked on by mistake, you could do:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">select_atoms</span><span class="p">(</span><span class="n">reset</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">select_atoms</span><span class="p">(</span><span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>By default the selection is saved as a logical property named <code class="docutils literal"><span class="pre">selection_mask</span></code>.
 This name can be changed with the <cite>markname</cite> argument, e.g. to set the <cite>hybrid</cite>
 property, you could could use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">qm_list</span> <span class="o">=</span> <span class="n">select_atoms</span><span class="p">(</span><span class="n">markname</span><span class="o">=</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">HYBRID_ACTIVE_MARK</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">qm_list</span> <span class="o">=</span> <span class="n">select_atoms</span><span class="p">(</span><span class="n">markname</span><span class="o">=</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">HYBRID_ACTIVE_MARK</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -279,8 +276,8 @@ property, you could could use:</p>
 objects, while a new window is opened for each different trajectory
 filename. You can override this with the <cite>recycle</cite> argument to
 <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a>, e.g. to open a second window for a copy of <cite>d</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">view</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">view</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can close a viewer by pressing <cite>q</cite> when it has the mouse focus.
@@ -295,18 +292,18 @@ all the viewers currently open.</p>
 but you may want to change the default focus for console commands with
 <a class="reference internal" href="#qlab.scv" title="qlab.scv"><code class="xref py py-func docutils literal"><span class="pre">scv()</span></code></a>, e.g. to set the current viewer to the one visualising the
 file <code class="docutils literal"><span class="pre">traj.nc</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">scv</span><span class="p">(</span><span class="n">get_viewer</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">scv</span><span class="p">(</span><span class="n">get_viewer</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p><a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> combines all the <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#module-numpy" title="(in NumPy v1.10)"><code class="xref py py-mod docutils literal"><span class="pre">numpy</span></code></a>, <a class="reference internal" href="index.html#module-quippy" title="quippy"><code class="xref py py-mod docutils literal"><span class="pre">quippy</span></code></a> and <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> functions
 into a single namespace, so <code class="docutils literal"><span class="pre">from</span> <span class="pre">qlab</span> <span class="pre">import</span> <span class="pre">*</span></code> is roughly equivalent to:</p>
-<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">quippy</span>
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">atomeye</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">atomeye</span> <span class="k">import</span> <span class="o">*</span>
 </pre></div>
 </div>
 </div>
@@ -632,7 +629,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <code class="descclassname">qlab.</code><code class="descname">aux_property_coloring</code><span class="sig-paren">(</span><em>auxprop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#aux_property_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.aux_property_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colour the currently viewed atoms according to <cite>auxprop</cite>.</p>
 <p>Overloaded to allow 
-See <a class="reference internal" href="#qlab-atom-coloring"><span>Custom Atom Colouring</span></a> for more details and examples.</p>
+See <a class="reference internal" href="#qlab-atom-coloring"><span class="std std-ref">Custom Atom Colouring</span></a> for more details and examples.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -903,12 +900,12 @@ a hook function to render_movie().</p>
 <code class="descclassname">qlab.</code><code class="descname">rcut_patch</code><span class="sig-paren">(</span><em>sym1</em>, <em>sym2</em>, <em>value</em>, <em>absolute=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#rcut_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.rcut_patch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds by <cite>delta</cite>.</p>
 <p>e.g. to increase cutoff for Si-Si bonds by 0.5 A use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>With <cite>absolute</cite> set to True, <cite>value</cite> is used to set the
 absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -987,7 +984,7 @@ absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.
 <p>Specify reset=False to modify an existing property. The name of the
 property is <cite>markname</cite> (default &#8220;selection_mark&#8221;) and the value of
 clicked atoms is given by the <cite>value</cite> argument (default True).</p>
-<p>See also <a class="reference internal" href="#qlab-select-atoms"><span>Selecting Atoms</span></a></p>
+<p>See also <a class="reference internal" href="#qlab-select-atoms"><span class="std std-ref">Selecting Atoms</span></a></p>
 </dd></dl>
 
 <dl class="function">
@@ -1142,14 +1139,14 @@ lattice vectors.</p>
         <li class="right" >
           <a href="visualisation.html" title="Visualisation Tools"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="visualisation.html" >Visualisation Tools</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

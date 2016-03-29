@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Theoretical background &mdash; quippy 171eef2+ documentation</title>
+    <title>Theoretical background &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="next" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html" />
     <link rel="prev" title="Introduction" href="adaptive-qmmm-step0.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="adaptive-qmmm-step0.html" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
@@ -96,9 +96,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -154,7 +151,7 @@ by the observation that materials break at much lower loads than the
 theoretical stress needed to break their chemical bonds For example,
 in glass, the theoretical strength is given by</p>
 <div class="math">
-<p><img src="_images/math/352b6a61bd3a517e57aefce807e2db9fcb2274a0.png" alt="\sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}"/></p>
+<p><span class="math">\sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}</span></p>
 </div><p>where <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/>, <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> and <img class="math" src="_images/math/7dd2a5ea01fbd72ad2a58dd1f3d6ecbfde6208a1.png" alt="a"/> are the Young&#8217;s modulus, surface
 energy and bond length, respectively.</p>
 <p>For a slowly-moving crack of length <cite>c</cite> in an infinite plane, the
@@ -165,7 +162,7 @@ which is proportional to <cite>c</cite>, as illustrated below.</p>
 <a class="reference internal image-reference" href="_images/griffith-criterion.png"><img alt="_images/griffith-criterion.png" class="align-center" src="_images/griffith-criterion.png" style="width: 600px;" /></a>
 <p>This leads to a Griffith fracture strength for glass of</p>
 <div class="math">
-<p><img src="_images/math/d8d57c23af8bdc976bc340d5ff4931152cf4eed8.png" alt="\sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}"/></p>
+<p><span class="math">\sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}</span></p>
 </div><p>which is much lower than the theoretical strength. Here the additional
 parameters are <img class="math" src="_images/math/f574498915fa9e02eeb5141c24835d077eba3e75.png" alt="\rho"/>, the radius of curvature and the crack
 length <cite>c</cite>. The effect of stress concentration increases for sharper and
@@ -180,12 +177,12 @@ flaws can be identified and treated before they become critical.</p>
 describe the flow of energy to a crack tip. <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> is the driving force for
 crack propagation. It is defined by</p>
 <div class="math">
-<p><img src="_images/math/29389354fd734a04b5dd7dd1c56445eec4482d17.png" alt="G = - \frac{\partial U_E}{\partial c}"/></p>
+<p><span class="math">G = - \frac{\partial U_E}{\partial c}</span></p>
 </div><p>where <img class="math" src="_images/math/df59b75647a9ec45fbacbc17d914e92e51f54a25.png" alt="U_E"/> is the total strain energy and <cite>c</cite> is the crack length.
 The Griffith criterion can be reformulated in terms of <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> to show that
 crack propagation becomes favourable when</p>
 <div class="math">
-<p><img src="_images/math/2e3d0f1c60fa2cd0c45db43a5c498de7da100c7d.png" alt="G &gt; 2\gamma"/></p>
+<p><span class="math">G &gt; 2\gamma</span></p>
 </div><p>where <img class="math" src="_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/> is the surface energy density, i.e. when the energy flow to
 the crack tip exceeds the cost of creating two new surfaces.</p>
 </div>
@@ -196,7 +193,7 @@ the crack tip exceeds the cost of creating two new surfaces.</p>
 simulate fracture at the atomic level, to examine the combined effects
 of stress and chemistry (&#8216;chemomechanics&#8217;). A first approach would be
 to use classical interatomic potentials to carry out molecular
-dynamics (MD). However, as we will see in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span>Step 2: Classical MD simulation of fracture in Si</span></a>, most classical
+dynamics (MD). However, as we will see in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span class="std std-ref">Step 2: Classical MD simulation of fracture in Si</span></a>, most classical
 potentials fail to accurately reproduce brittle fracture. This is due
 to stress concentration which has been shown to diverge as
 <img class="math" src="_images/math/a753df954a690f1a44e0dce6255b050f3208d8aa.png" alt="\sigma \sim 1/\sqrt{r}"/> near a crack tip <a class="reference internal" href="adaptive-qmmm-references.html#irwin1948" id="id5">[Irwin1948]</a>, leading
@@ -246,7 +243,7 @@ archetypical coupled multiscale problem, with thousands of atoms
 contributing to the elastic relaxation of the near-tip region. We will
 describe how classical and QM descriptions can be coupled to study
 problems in fracture using the &#8216;Learn on the Fly&#8217; (LOTF) approach in
-<a class="reference internal" href="#theory3"><span>more detail</span></a> later in this tutorial.</p>
+<a class="reference internal" href="#theory3"><span class="std std-ref">more detail</span></a> later in this tutorial.</p>
 <div class="figure align-center" id="id32">
 <a class="reference internal image-reference" href="_images/multiscale-coupling.png"><img alt="_images/multiscale-coupling.png" src="_images/multiscale-coupling.png" style="width: 500px;" /></a>
 <p class="caption"><span class="caption-text">Hierarchy of materials modelling techniques, showing simultaneous coupling
@@ -271,7 +268,7 @@ in uniaxial tension: <img class="math" src="_images/math/70d80c184ea034973fcb9dd
 \epsilon_{0}"/>, and therefore the elastic energy per unit length and
 per unit thickness far ahead of the crack tip is</p>
 <div class="math">
-<p><img src="_images/math/56d342dcb9ab91729bf01a75b99145cfa3a61dd3.png" alt="W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}"/></p>
+<p><span class="math">W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}</span></p>
 </div><p>where <img class="math" src="_images/math/fdbdb6243522f89db716f229b94be1c028a97b8a.png" alt="E'"/> is the effective Young&#8217;s modulus.</p>
 <p>Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
@@ -281,18 +278,18 @@ density zero.</p>
 <p>The energy supplied to the crack tip is therefore equal to <img class="math" src="_images/math/5ca8a622ad69b5462bad1ec1355fa2a93ec78a88.png" alt="W_\infty"/>,
 so the energy release rate is simply</p>
 <div class="math">
-<p><img src="_images/math/9bbd47527e98f77ba1dead77cb7b1dfc33d4fef3.png" alt="G = W_\infty = \frac{\delta^2 E'}{h}"/></p>
+<p><span class="math">G = W_\infty = \frac{\delta^2 E'}{h}</span></p>
 </div><p>In our simulations we will use periodic boundary conditions in the <img class="math" src="_images/math/84d7271dd9e78c1e05d6c3c6ecb60309ef7dfc73.png" alt="z"/>
 direction, so we have plane strain loading (<img class="math" src="_images/math/0a7ac706cf4f2bfe8044f6099706b6e942edb738.png" alt="\epsilon_{zz} = 0"/>), which
 means that the effective Young&#8217;s modulus <img class="math" src="_images/math/fdbdb6243522f89db716f229b94be1c028a97b8a.png" alt="E'"/> is given by
 <img class="math" src="_images/math/bbb0848717262dfd82509b0ce2fe4989a476690f.png" alt="E/(1-\nu^2)"/>, where <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> is the Young&#8217;s modulus in the <img class="math" src="_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> relevant
 direction and <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> is the Poisson ratio, so finally we have</p>
 <div class="math" id="thin-strip-equation">
-<p><img src="_images/math/adff9677d1de9b2b56db6d17a8f76dbe4ea6397d.png" alt="G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}"/></p>
+<p><span class="math">G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}</span></p>
 </div><p>We can see that, in order to relate the strain we apply to the system
 with the energy release rate, we will need to calculate the Young&#8217;s
 modulus and Poisson ratio for our model material. We will see how to
-do this from the elastic constant matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span>below</span></a>.</p>
+do this from the elastic constant matrix <img class="math" src="_images/math/949e305594f67ec0c0af08516116e44b0055a318.png" alt="C_{ij}"/> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span class="std std-ref">below</span></a>.</p>
 </div>
 </div>
 <div class="section" id="classical-interatomic-potentials-for-silicon">
@@ -302,13 +299,13 @@ description of many properties of crystalline and amorphous silicon. Its
 functional form is a two- and three-body expansion suitable for the
 representation of highly directional covalent bonds between Si atoms:</p>
 <div class="math">
-<p><img src="_images/math/f68903e3ae078c288c48e5f68e4e05a55e2df916.png" alt="V = \sum_{ij} V_2(r_{ij}) + \sum_{ijk} V_3(r_{ij}, r_{ik},
+<p><span class="math">V = \sum_{ij} V_2(r_{ij}) + \sum_{ijk} V_3(r_{ij}, r_{ik},
 \theta_{jik}) \\
 V_2(r_{ij}) = A\left(\frac{B}{r_{ij}^4} - 1\right) \exp
 \frac{1}{r-a}, \; r &lt; a \\
 V_3(r_{ij},r_{jk},\theta_{jik}) = \lambda \exp \left[
 \frac{\gamma}{r_{ij} - a} + \frac{\gamma}{r_{jk} - a} \right] \left(\cos
-\theta_{jik} + \frac{1}{3}\right)"/></p>
+\theta_{jik} + \frac{1}{3}\right)</span></p>
 </div><p>In particular, the three-body term stabilises the ideal tetrahedral
 structure with respect to all the other possible structures. The
 parameters of the SW potential were determined by fitting experimental
@@ -388,7 +385,7 @@ region (dark grey) are discarded to give accurate QM or MM forces on all atoms
 </div>
 <p>The buffer region must be large enough to minimize the errors on the QM forces
 due to the presence of the outer artificial surface. The size of the buffer
-region can be determined through some tests (see <a class="reference internal" href="adaptive-qmmm-step3.html#buffer-region-size"><span>this extension task</span></a>) , and is typically around 8 A, or 4 neighbour hops, for
+region can be determined through some tests (see <a class="reference internal" href="adaptive-qmmm-step3.html#buffer-region-size"><span class="std std-ref">this extension task</span></a>) , and is typically around 8 A, or 4 neighbour hops, for
 Si. This near-sightedness of quantum mechanics is ultimately due to the locality
 of the density matrix in covalent materials.</p>
 <p>Once accurate QM forces have been obtained, only the QM forces on the atoms
@@ -444,7 +441,7 @@ takes the form of a shell of constant width around the QM atoms. Here
 we will use inner and outer buffer radii of 7 A and 9 A, respectively.
 This leads to overall QM active + buffer clusters with a radius of
 around 15 A, containing around 150 atoms, including terminating
-hydrogens (see the <a class="reference internal" href="adaptive-qmmm-step3.html#cluster"><span>example cluster</span></a> below).</p>
+hydrogens (see the <a class="reference internal" href="adaptive-qmmm-step3.html#cluster"><span class="std std-ref">example cluster</span></a> below).</p>
 <p>Further tricks which can be used to stabilise the QM and buffer region include
 growing the regions using bond hopping rather than distance criteria, and using
 time-averaged positions <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id26">[Bernstein2009]</a>. For simplicity, in this tutorial we
@@ -462,7 +459,7 @@ SW potential here) and of a so called <em>adjustable potential</em>. This potent
 a general analytical expression and a set of parameters that can be adjusted. In
 this case, we will use a simple two-body linear &#8216;spring&#8217; potential with the form</p>
 <div class="math">
-<p><img src="_images/math/5cbe9d4afdce46ae52836202012728947a3cb33b.png" alt="V_\mathrm{adj} = \sum_{\mathrm{pairs}\; ij} \alpha_{ij} r_{ij}"/></p>
+<p><span class="math">V_\mathrm{adj} = \sum_{\mathrm{pairs}\; ij} \alpha_{ij} r_{ij}</span></p>
 </div><p>where <img class="math" src="_images/math/a581f053bbfa5115f42c13094857cdd12a37ec49.png" alt="i"/> and <img class="math" src="_images/math/d32c78b759903e3f4bd4fd2ce0b86358f7500c5d.png" alt="j"/> indicate a pair of atoms which are closer than an
 arbitrary spring length (typically around 3 neighbour hops),
 and <img class="math" src="_images/math/45819dcee1b2b0c6e6f6c7467184dbacdcece016.png" alt="\{\alpha_{ij}\}"/> are the set of adjustable parameters. We then define
@@ -524,7 +521,7 @@ parameters linear interpolated between <img class="math" src="_images/math/e6565
 <p>The number of extrapolation steps that can be made before the potential
 parameters change too much can be checked by keeping an eye on the force errors
 made by the LOTF scheme in comparison with doing a QM force evaluation at each
-time step: there is an <a class="reference internal" href="adaptive-qmmm-step3.html#pred-corr-error"><span>extension task</span></a> at the end of
+time step: there is an <a class="reference internal" href="adaptive-qmmm-step3.html#pred-corr-error"><span class="std std-ref">extension task</span></a> at the end of
 this tutorial to do exactly that.</p>
 </div>
 </div>
@@ -551,15 +548,15 @@ this tutorial to do exactly that.</p>
         <li class="right" >
           <a href="adaptive-qmmm-step0.html" title="Introduction"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

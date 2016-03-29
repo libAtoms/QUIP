@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy 171eef2+ documentation</title>
+    <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Tutorials" href="tutorials.html" />
     <link rel="next" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="prev" title="Introductory Tutorial" href="tutorial.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="tutorial.html" title="Introductory Tutorial"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>
@@ -95,9 +95,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -126,7 +123,7 @@ is a Python command which should be typed into the <cite>ipython</cite> shell. I
 you&#8217;re not familiar with Python don&#8217;t worry, it&#8217;s quite easy to pickup
 and the syntax is very similar to Fortran.</p>
 <p>This tutorial assumes you have installed <cite>QUIP</cite> and <cite>quippy</cite>; see the
-<a class="reference internal" href="install.html#installation"><span>Installation of QUIP and quippy</span></a> section if you need some help on doing this.</p>
+<a class="reference internal" href="install.html#installation"><span class="std std-ref">Installation of QUIP and quippy</span></a> section if you need some help on doing this.</p>
 </div>
 <div class="section" id="starting-a-fracture-simulation">
 <h2>Starting a fracture simulation<a class="headerlink" href="#starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
@@ -151,7 +148,7 @@ uniaxial tension in the <cite>y</cite> direction with a strain of 23%.</p>
 </div></blockquote>
 <p>Before we begin, we need to make sure that the QUIP <cite>crack</cite> program is compiled
 by running the following commands:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ export QUIP_ARCH=linux_x86_64_gfortran # or whichever arch is relevant
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ export QUIP_ARCH=linux_x86_64_gfortran # or whichever arch is relevant
 $ cd $QUIP_ROOT
 $ make QUIP_Programs/crack
 </pre></div>
@@ -160,21 +157,21 @@ $ make QUIP_Programs/crack
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The value you should assign to the variable <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> depends on your
-platform (see <a class="reference internal" href="install.html#installation"><span>Installation of QUIP and quippy</span></a> for more details). <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code>
+platform (see <a class="reference internal" href="install.html#installation"><span class="std std-ref">Installation of QUIP and quippy</span></a> for more details). <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code>
 refers to the directory where the the QUIP source code is located.</p>
 </div>
 <p>To make the command <cite>crack</cite> availale, copy the executable
 <code class="docutils literal"><span class="pre">${QUIP_ROOT}/build.${QUIP_ARCH}</span></code> to a directory on your <span class="target" id="index-2"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.5.1)"><code class="xref std std-envvar docutils literal"><span class="pre">PATH</span></code></a>,
 e.g. <code class="docutils literal"><span class="pre">~/bin</span></code>.</p>
 <p>Similarly, to compile <cite>eval</cite> run:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ make QUIP_Programs/eval
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ make QUIP_Programs/eval
 </pre></div>
 </div>
 <p>It is highly recommended to change the name when copying the <cite>eval</cite> prgram to a
 directory on <span class="target" id="index-3"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v1.5.1)"><code class="xref std std-envvar docutils literal"><span class="pre">PATH</span></code></a> to avoid a clash with the builtin <code class="docutils literal"><span class="pre">eval</span></code> command.</p>
 <p>Start the simulation by running the <cite>crack</cite> program, which takes
 the &#8220;stem&#8221; of the input filenames as its only argument:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ crack quartz_crack &gt; quartz_crack.out &amp;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ crack quartz_crack &gt; quartz_crack.out &amp;
 </pre></div>
 </div>
 <p>Note that we&#8217;re redirecting the output to <cite>quartz_crack.out</cite> and
@@ -183,7 +180,7 @@ information to <cite>quartz_crack.out</cite>, the simulation will periodically
 write the MD trajectory to a file named <cite>quartz_crack_movie_1.xyz</cite>.</p>
 <p>You can monitor the progress of the simulation by opening the
 trajectory file with my <a class="reference external" href="http://www.jrkermode.co.uk/AtomEye">modified version</a> of <cite>AtomEye</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ A quartz_crack_movie_1.xyz
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ A quartz_crack_movie_1.xyz
 </pre></div>
 </div>
 <p>In <cite>AtomEye</cite>, you can move the system within the periodic boundaries
@@ -200,7 +197,7 @@ useful (copy to <cite>~/.A</cite> to use).</p>
 <p>Have a look at the output in <cite>quartz_crack.out</cite>. To see how the
 simulation is progressing, you can search this for lines starting with
 &#8220;D&#8221;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ grep &quot;^D &quot; quartz_crack.out
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ grep &quot;^D &quot; quartz_crack.out
 </pre></div>
 </div>
 <p>The first number gives the time in femtoseconds (the integration
@@ -231,14 +228,14 @@ expected behaviour of a crack in quartz according to continuum
 elasticity. We&#8217;ll start by performing some calculations on the quartz
 primitive cell using <cite>quippy</cite>.</p>
 <p>Start <cite>ipython</cite> and import all the <cite>quippy</cite> routines:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ ipython
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ ipython
 ...
 In [1]: from quippy import *
 </pre></div>
 </div>
 <p>Construct an <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz primitive unit cell and save it to
 an XYZ file:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aq</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.84038097073</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">5.3285240037</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="mf">0.464175616171</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aq</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.84038097073</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">5.3285240037</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="mf">0.464175616171</span><span class="p">,</span>
   <span class="n">x</span><span class="o">=</span><span class="mf">0.411742710542</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.278727453998</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.109736032769</span><span class="p">)</span>
 <span class="n">aq</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;quartz.xyz&quot;</span><span class="p">)</span>
 </pre></div>
@@ -251,22 +248,22 @@ the internal coordinates of the oxygens (see image below).</p>
 various attributes representing the system of interest which you can
 inspect from the <cite>ipython</cite> command line, e.g. to print out the lattice
 vectors, which are stored as columns in the <code class="xref py py-attr docutils literal"><span class="pre">lattice</span></code> matrix</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">lattice</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">lattice</span>
 </pre></div>
 </div>
 <p>Or to print the atomic number and position of the first atom</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">aq</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">aq</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>If you want to find out the syntax for a <cite>quippy</cite> function, type its
 name following by a question mark, e.g.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>alpha_quartz ?
+<div class="highlight-default"><div class="highlight"><pre><span></span>alpha_quartz ?
 </pre></div>
 </div>
 <p>will print out the function signature and list of parameter types, as
 well as a brief description of what <code class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></code> does. If
 you are interested in learning more about using <cite>QUIP</cite> and <cite>quippy</cite>,
-you could take a look at the online <a class="reference internal" href="tutorial.html#tutorial-intro"><span>Introductory Tutorial</span></a>.</p>
+you could take a look at the online <a class="reference internal" href="tutorial.html#tutorial-intro"><span class="std std-ref">Introductory Tutorial</span></a>.</p>
 <p>Keep your <cite>ipython</cite> session open as we&#8217;ll need it later. Open the
 <cite>quartz.xyz</cite> file you created with <cite>AtomEye</cite>. You should see something
 like this:</p>
@@ -298,16 +295,16 @@ from the <img class="math" src="_images/math/a49b80c3c28c15d0119a35c44b6f4cd68a5
 <img class="math" src="_images/math/4aa45545462ee0c2c40731b2e43340b24d08d57a.png" alt="\bm\epsilon"/> are six component stress and strain vectors following
 the Voigt convention:</p>
 <div class="math">
-<p><img src="_images/math/2e7b7aa93997f5c130f8ea41bc7b9d3756647efa.png" alt="\bm\sigma  = \left( \sigma_{xx}, \sigma_{yy}, \sigma_{zz},
+<p><span class="math">\bm\sigma  = \left( \sigma_{xx}, \sigma_{yy}, \sigma_{zz},
     \sigma_{yz}, \sigma_{xz}, \sigma_{xy} \right)
 
 \bm\epsilon = \left( \varepsilon_{xx}, \varepsilon_{yy}, \varepsilon_{zz},
-    2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)"/></p>
+    2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)</span></p>
 </div><p>The simplest way to calculate <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> with <cite>QUIP</cite> is to use the
 command line QUIP <cite>eval</cite> program. You will need the file <cite>quartz.xyz</cite>
 you made earlier, as well as an <a class="reference download internal" href="_downloads/TS_params.xml" download=""><code class="xref download docutils literal"><span class="pre">XML</span> <span class="pre">file</span></code></a>
 containing the parameters of the classical potential:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ eval init_args=&quot;IP TS&quot; at_file=quartz.xyz param_file=TS_params.xml cij
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ eval init_args=&quot;IP TS&quot; at_file=quartz.xyz param_file=TS_params.xml cij
 </pre></div>
 </div>
 <p>Here <cite>init_args</cite> describes the kind of potential to use, <cite>at_file</cite> is
@@ -322,13 +319,13 @@ this model and silicon (atomic number 14) is not.</p>
 <p>Make a file called <cite>cij.dat</cite> containing the matrix output by <cite>eval</cite>
 (remove the &#8220;CIJ&#8221; at the beginning of each line). You can load this
 matrix into <cite>quippy</cite> using the command</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;cij.dat&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;cij.dat&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Extension</strong>: For trigonal crystals like <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz, there
 are only actually 6 independent values in the <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> matrix:</p>
 <div class="math">
-<p><img src="_images/math/bac76078fb43cbcfe18713bfd0e834db59f705c1.png" alt="C = \left(
+<p><span class="math">C = \left(
 \begin{array}{cccccc}
 C_{11} &amp; C_{12} &amp; C_{13} &amp; C_{14} &amp; 0 &amp; 0\\
 C_{12} &amp; C_{11} &amp; C_{13} &amp; -C_{14} &amp; 0 &amp; 0 \\
@@ -337,7 +334,7 @@ C_{14} &amp; -C_{14} &amp; 0 &amp; C_{44} &amp; 0 &amp; 0 \\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; C_{44} &amp; C_{14} \\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; C_{14} &amp; C_{66}
 \end{array}
-\right)"/></p>
+\right)</span></p>
 </div><p>where <img class="math" src="_images/math/b18a647fb208314df9a0032eebead5f333bc5366.png" alt="C_{66}"/> is given by <img class="math" src="_images/math/958b1109a9784919e84aa309f30db1dd2cebefa1.png" alt="\frac{1}{2}(C_{11} -
 C_{12})"/>. We can exploit this symmetry to get all these values using
 only two strain patterns: <img class="math" src="_images/math/a212fa57386be89184093d1d3bc139e2798d26d9.png" alt="\epsilon_{xx}"/> and
@@ -345,8 +342,8 @@ only two strain patterns: <img class="math" src="_images/math/a212fa57386be89184
 <p>If you like, you could try using the following <cite>quippy</cite> code to
 evaluate <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> taking the cystal symmetry into account to see how
 the results differ from those obtained with <cite>eval</cite>.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP TS&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;TS_params.xml&#39;</span><span class="p">)</span>
-<span class="n">C</span> <span class="o">=</span> <span class="n">elastic_constants</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">aq</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s1">&#39;trigonal_low&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP TS&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;TS_params.xml&#39;</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">elastic_constants</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">aq</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s1">&#39;trigonal_low&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Which components are most different? Why do you think this is? Think
@@ -361,13 +358,13 @@ relaxation?</p>
 quartz fracture simulation, we need to rotate the elastic constant
 matrix to align it with the axes of our <img class="math" src="_images/math/7da6ecf59b395c1d977c37da2a5300a058469bb7.png" alt="(0001)[\bar{1}10]"/>
 fracture geometry. You can create the required rotation matrix using:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-<span class="k">print</span> <span class="n">R</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span> <span class="n">R</span>
 </pre></div>
 </div>
 <p>Next we transform <img class="math" src="_images/math/2bcc65482aa8e15cd4c9e9f2542451fb4e971a91.png" alt="C"/> using the rotation matrix, and calculate
 the compliance matrix <img class="math" src="_images/math/dcf2cd37608c5aa18fe166dd81c3b4f2b5949203.png" alt="S = C^{-1}"/>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">C_eff</span> <span class="o">=</span> <span class="n">transform_elasticity</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C_eff</span> <span class="o">=</span> <span class="n">transform_elasticity</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
 <span class="n">S_eff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">C_eff</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -375,19 +372,19 @@ the compliance matrix <img class="math" src="_images/math/dcf2cd37608c5aa18fe166
 stress and strain is <img class="math" src="_images/math/5a54f777f53a7064ae6c3d1ebae97c067c5ca991.png" alt="\sigma_{ij} = c_{ijkl} \epsilon_{kl}"/>,
 meaning that the transformed tensor is</p>
 <div class="math">
-<p><img src="_images/math/17083885482f734fd2293110da96f33acbb1ca64.png" alt="c'_{ijkl} = \sum_{p,q,r,s = 1}^{3} R_{pi}R_{qj}R_{rk}R_{sl} c_{pqrs}"/></p>
+<p><span class="math">c'_{ijkl} = \sum_{p,q,r,s = 1}^{3} R_{pi}R_{qj}R_{rk}R_{sl} c_{pqrs}</span></p>
 </div><p>Finally we can work out the values of the effective Young&#8217;s modulus
 and Poisson ratio in the standard way from the components of the
 compliance matrix:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
-<span class="k">print</span> <span class="s2">&quot;Young&#39;s modulus&quot;</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="s2">&quot;GPa&quot;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="nb">print</span> <span class="s2">&quot;Young&#39;s modulus&quot;</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="s2">&quot;GPa&quot;</span>
 
 <span class="n">nu</span> <span class="o">=</span> <span class="o">-</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
-<span class="k">print</span> <span class="s2">&quot;Poisson ratio&quot;</span><span class="p">,</span> <span class="n">nu</span>
+<span class="nb">print</span> <span class="s2">&quot;Poisson ratio&quot;</span><span class="p">,</span> <span class="n">nu</span>
 </pre></div>
 </div>
 <p><strong>Extension</strong>: Try rotating the quartz primitive cell directly:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aqr</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aqr</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
 <span class="n">aqr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;quartz_rotated.xyz&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -410,7 +407,7 @@ to calculate the potential energy of the input cell. If you use
 <cite>quippy</cite>, you should construct a <code class="xref py py-class docutils literal"><span class="pre">Potential</span></code> object using the
 XML parameters from the file <cite>TS_params.xml</cite> as shown above. You can
 then calculate the energy using the <code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code>
-function - see the tutorial section on <a class="reference internal" href="tutorial.html#moleculardynamics"><span>Potentials and DynamicalSystems</span></a> for
+function - see the tutorial section on <a class="reference internal" href="tutorial.html#moleculardynamics"><span class="std std-ref">Potentials and DynamicalSystems</span></a> for
 more details.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -419,7 +416,7 @@ units are Angstrom (<img class="math" src="_images/math/427e2f652b16cec5fd40e796
 </div>
 <p><strong>Hint</strong>: you can use the expression</p>
 <div class="math">
-<p><img src="_images/math/6f89b4b479560d9ff72ca8a9d0bc7e36fee36ba8.png" alt="\gamma = \frac{E_{surf} - E_{bulk}}{2A}"/></p>
+<p><span class="math">\gamma = \frac{E_{surf} - E_{bulk}}{2A}</span></p>
 </div><p>where <img class="math" src="_images/math/db5f51d9706cdeb8d3a9b9315f85ae8016c90d45.png" alt="E_{surf}"/> and <img class="math" src="_images/math/c3b11d72a2bfa7b28c7b5b1d4acbb69bed6efd88.png" alt="E_{bulk}"/> are the energies of
 surface and bulk configurations containing the same number of atoms,
 and <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> is the area of the open surface (with a factor of two
@@ -429,7 +426,7 @@ because there are two open surfaces in this unit cell).</p>
 the surface energy? (use the <cite>relax</cite> argument to the <cite>eval</cite>
 program, or the <code class="xref py py-meth docutils literal"><span class="pre">minim()</span></code> function in <cite>quippy</cite>). What
 happens if you anneal the surface using the <cite>md</cite> program?</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ md pot_init_args=&quot;IP TS&quot; params_in_file=TS_params.xml \
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ md pot_init_args=&quot;IP TS&quot; params_in_file=TS_params.xml \
     atoms_in_file=quartz_0001.xyz dt=0.5 N_steps=1000
 </pre></div>
 </div>
@@ -441,7 +438,7 @@ onset of fracture, relaxed or unrelaxed?</p>
 <p>According to continuum elasticity, the strain energy release rate of an
 advancing crack is defined by</p>
 <div class="math">
-<p><img src="_images/math/29389354fd734a04b5dd7dd1c56445eec4482d17.png" alt="G = - \frac{\partial U_E}{\partial c}"/></p>
+<p><span class="math">G = - \frac{\partial U_E}{\partial c}</span></p>
 </div><p>where <img class="math" src="_images/math/df59b75647a9ec45fbacbc17d914e92e51f54a25.png" alt="U_E"/> is the total strain energy and <img class="math" src="_images/math/65868d23a5bfe5b3b2d819386b19c14fa36af134.png" alt="c"/> is the crack length.
 The well-known Griffith criteria uses an energy-balance argument to
 equate the critical value of <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> at which fracture can first occur to
@@ -467,7 +464,7 @@ in uniaxial tension: <img class="math" src="_images/math/70d80c184ea034973fcb9dd
 \epsilon_{0}"/>, and therefore the elastic energy per unit length and
 per unit thickness far ahead of the crack tip is</p>
 <div class="math">
-<p><img src="_images/math/56d342dcb9ab91729bf01a75b99145cfa3a61dd3.png" alt="W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}"/></p>
+<p><span class="math">W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}</span></p>
 </div><p>where <img class="math" src="_images/math/fdbdb6243522f89db716f229b94be1c028a97b8a.png" alt="E'"/> is the effective Young&#8217;s modulus.</p>
 <p>Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
@@ -477,14 +474,14 @@ density zero.</p>
 <p>The energy supplied to the crack tip is therefore equal to <img class="math" src="_images/math/5ca8a622ad69b5462bad1ec1355fa2a93ec78a88.png" alt="W_\infty"/>,
 so the energy release rate is simply</p>
 <div class="math">
-<p><img src="_images/math/9bbd47527e98f77ba1dead77cb7b1dfc33d4fef3.png" alt="G = W_\infty = \frac{\delta^2 E'}{h}"/></p>
+<p><span class="math">G = W_\infty = \frac{\delta^2 E'}{h}</span></p>
 </div><p>In our simulations we will use periodic boundary conditions in the <img class="math" src="_images/math/84d7271dd9e78c1e05d6c3c6ecb60309ef7dfc73.png" alt="z"/>
 direction, so we have plane strain loading (<img class="math" src="_images/math/0a7ac706cf4f2bfe8044f6099706b6e942edb738.png" alt="\epsilon_{zz} = 0"/>),
 which means that the effective Young&#8217;s modulus <img class="math" src="_images/math/fdbdb6243522f89db716f229b94be1c028a97b8a.png" alt="E'"/> is given by
 <img class="math" src="_images/math/bbb0848717262dfd82509b0ce2fe4989a476690f.png" alt="E/(1-\nu^2)"/>, where <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> is the Young&#8217;s modulus in the <img class="math" src="_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> relevant
 direction and <img class="math" src="_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> is the Poisson ratio, so finally we have</p>
 <div class="math">
-<p><img src="_images/math/adff9677d1de9b2b56db6d17a8f76dbe4ea6397d.png" alt="G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}"/></p>
+<p><span class="math">G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}</span></p>
 </div><p>Use your values for the Young&#8217;s modulus, Poisson ratio and surface
 energy to calculate the value of <img class="math" src="_images/math/b92c09a649305a0aef3239729d93cdf941e0e5cf.png" alt="G"/> (in units of J/m<sup>2</sup>)
 and strain <img class="math" src="_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/> at which a sample of <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz
@@ -508,7 +505,7 @@ equilibrium crack velocity <cite>V</cite>.</p>
 directory. This is a checkpoint file which contains a full snapshot
 of all the instantaneous positions and velocities of the atoms in the
 system. Load this file into <cite>quippy</cite> and rescale it as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;quartz_crack_check.xyz&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;quartz_crack_check.xyz&#39;</span><span class="p">)</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">CrackParams</span><span class="p">(</span><span class="s1">&#39;quartz_crack.xml&#39;</span><span class="p">)</span>
 
 <span class="n">b</span> <span class="o">=</span> <span class="n">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">new_strain</span><span class="p">)</span>
@@ -521,7 +518,7 @@ you should see it&#8217;s identical to the orignal apart from the rescaling
 in the <cite>x</cite> and <cite>y</cite> directions (not along <cite>z</cite> since the system is
 periodic in that direction). Copy the bulk cell and XML parameters and
 start a new crack simulation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ cp quartz_crack_bulk.xyz quartz_crack_rescaled_bulk.xyz
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cp quartz_crack_bulk.xyz quartz_crack_rescaled_bulk.xyz
 $ cp quartz_crack.xml quartz_crack_rescaled.xml
 $ crack quartz_crack_rescaled &gt; quartz_crack_rescaled.out &amp;
 </pre></div>
@@ -544,12 +541,12 @@ the static energy release rate <img class="math" src="_images/math/b92c09a649305
 function which he showed can be approximated as a linear
 function of the crack speed <img class="math" src="_images/math/c99df7a209495334da442b1ec998abaabfa320d8.png" alt="V"/></p>
 <div class="math">
-<p><img src="_images/math/819ed57208309321f9a0a243d66e791e955b707b.png" alt="2\gamma \sim G \left( 1 - \frac{V}{c_R} \right)"/></p>
+<p><span class="math">2\gamma \sim G \left( 1 - \frac{V}{c_R} \right)</span></p>
 </div><p>The Rayleigh surface wave speed <img class="math" src="_images/math/c4428a54b0e184e3ceed64207cc5b35e8e78c360.png" alt="c_R"/> sets the ultimate limit for the
 crack propagation speed. The expected velocity as a function of the
 loading <img class="math" src="_images/math/6af785aa34f1f75d5bfdd70f0d647cbbfcc9bf0d.png" alt="G/2\gamma"/> is then</p>
 <div class="math">
-<p><img src="_images/math/d33403ff0289de39707f99d97af71970f828cac7.png" alt="\frac{V}{c_R} = 1 - \frac{2 \gamma}{G}"/></p>
+<p><span class="math">\frac{V}{c_R} = 1 - \frac{2 \gamma}{G}</span></p>
 </div><p>This is the Freund equation of motion. Calculating the Rayleigh wave
 speed - the speed with which elastic waves travel on a free surface - is
 fairly straightforward for isotropic materials. For anisotropic
@@ -583,12 +580,12 @@ approximation by performing a tensile test: take the rotated
 configuration <cite>aqr</cite> apply a series of small strains in the <cite>y</cite>
 direction, and compute the stress using the classical potential,
 using code based on the following:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>p = Potential(&#39;IP TS&#39;, param_filename=&#39;TS_params.xml&#39;)
-...
-T = numpy.diag([1., 1+.eps_yy, 1.])            # matrix for strain in y
-aqr_t = transform(aqr, T)                      # apply transformation
-p.calc(aqr_t, virial=True)                     # compute virial tensor
-sig_yy = -v[2,2]/aqr_t.cell_volume()*GPA       # convert to stress
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP TS&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;TS_params.xml&#39;</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mi">1</span><span class="o">+.</span><span class="n">eps_yy</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>            <span class="c1"># matrix for strain in y</span>
+<span class="n">aqr_t</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">aqr</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>                      <span class="c1"># apply transformation</span>
+<span class="n">p</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">aqr_t</span><span class="p">,</span> <span class="n">virial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                     <span class="c1"># compute virial tensor</span>
+<span class="n">sig_yy</span> <span class="o">=</span> <span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">aqr_t</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">*</span><span class="n">GPA</span>       <span class="c1"># convert to stress</span>
 </pre></div>
 </div>
 <p>Calculate an improved estimate for <img class="math" src="_images/math/eed3f5a2f1fa5adc7148bc1c7ad93b0a0dcf37bb.png" alt="E_y"/> by fitting a straight line
@@ -646,14 +643,14 @@ limitations be overcome in a more complete simulation?</p>
         <li class="right" >
           <a href="tutorial.html" title="Introductory Tutorial"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

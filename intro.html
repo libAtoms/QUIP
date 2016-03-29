@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction to quippy &mdash; quippy 171eef2+ documentation</title>
+    <title>Introduction to quippy &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="next" title="Installation of QUIP and quippy" href="install.html" />
     <link rel="prev" title="QUIP and quippy documentation" href="index.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="QUIP and quippy documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -119,9 +119,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -336,11 +333,11 @@ future as a standalone utility, or merged into f2py</li>
 <div class="section" id="creating-structures">
 <h3>Creating structures<a class="headerlink" href="#creating-structures" title="Permalink to this headline">¶</a></h3>
 <p>Python interactive session:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">qlab</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">qlab</span> <span class="k">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">n</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">n</span>
 <span class="go">8</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span>
 <span class="go">[[ 0.    0.    0.  ]</span>
 <span class="go"> [ 1.36  1.36  1.36]</span>
 <span class="go"> [ 2.72  2.72  0.  ]</span>
@@ -356,14 +353,14 @@ future as a standalone utility, or merged into f2py</li>
 <h3>Interactive visualisation with <code class="docutils literal"><span class="pre">AtomEye</span></code><a class="headerlink" href="#interactive-visualisation-with-atomeye" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal"><span class="pre">quippy</span></code> includes a <code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code> to the <a class="reference internal" href="#atomeye" id="id7">[AtomEye]</a> atomic
 visualisation programme. To print values, and visualise structure:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 <span class="go">[ 0.  0.  0.]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">dia</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/si8-1.png"><img alt="_images/si8-1.png" class="align-center" src="_images/si8-1.png" style="width: 300px;" /></a>
 <p>Modify data:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">O_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span><span class="o">/</span><span class="mf">2.</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">O_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">dia</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span><span class="o">/</span><span class="mf">2.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">O_pos</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">redraw</span><span class="p">()</span>
 </pre></div>
@@ -373,7 +370,7 @@ visualisation programme. To print values, and visualise structure:</p>
 <div class="section" id="manipulating-atoms">
 <h3>Manipulating atoms<a class="headerlink" href="#manipulating-atoms" title="Permalink to this headline">¶</a></h3>
 <p>Setup <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>-quartz cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.92</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.92</span><span class="p">,</span>
 <span class="gp">... </span>                    <span class="n">c</span><span class="o">=</span><span class="mf">5.40</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq</span><span class="p">)</span>
@@ -381,7 +378,7 @@ visualisation programme. To print values, and visualise structure:</p>
 </div>
 <a class="reference internal image-reference" href="_images/quartz.png"><img alt="_images/quartz.png" class="align-center" src="_images/quartz.png" style="width: 300px;" /></a>
 <p>Custom atom colouring:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s2">&quot;charge&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s2">&quot;charge&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="o">==</span><span class="mi">8</span><span class="p">]</span>  <span class="o">=</span> <span class="o">-</span><span class="mf">1.4</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">aq</span><span class="o">.</span><span class="n">z</span><span class="o">==</span><span class="mi">14</span><span class="p">]</span> <span class="o">=</span>  <span class="mf">2.8</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="s2">&quot;charge&quot;</span><span class="p">)</span>
@@ -389,14 +386,14 @@ visualisation programme. To print values, and visualise structure:</p>
 </div>
 <a class="reference internal image-reference" href="_images/quartz-charge.png"><img alt="_images/quartz-charge.png" class="align-center" src="_images/quartz-charge.png" style="width: 300px;" /></a>
 <p>Filtering atoms:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span> <span class="o">=</span> <span class="n">aq</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">aq</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq2</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/quartz-filtered.png"><img alt="_images/quartz-filtered.png" class="align-center" src="_images/quartz-filtered.png" style="width: 300px;" /></a>
 <p>Configurations can be written out in number of formats, e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;aq.xyz&#39;</span><span class="p">)</span>  <span class="c1"># XYZ</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;aq.xyz&#39;</span><span class="p">)</span>  <span class="c1"># XYZ</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;aq.cell&#39;</span><span class="p">)</span> <span class="c1"># CASTEP</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;aq.cube&#39;</span><span class="p">)</span> <span class="c1"># Gaussian</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;INCAR&#39;</span><span class="p">)</span>   <span class="c1"># VASP</span>
@@ -409,7 +406,7 @@ visualisation programme. To print values, and visualise structure:</p>
 <h4>Reading configurations<a class="headerlink" href="#reading-configurations" title="Permalink to this headline">¶</a></h4>
 <p>Individual snapshots or entire trajectories can be read in, also in a
 variety of formats:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;md.xyz&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;md.xyz&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">final</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;md.xyz@-1&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">traj</span> <span class="o">=</span> <span class="n">AtomsList</span><span class="p">(</span><span class="s1">&#39;md.xyz&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
@@ -418,7 +415,7 @@ variety of formats:</p>
 </div>
 <a class="reference internal image-reference" href="_images/forces.png"><img alt="_images/forces.png" class="align-center" src="_images/forces.png" style="width: 600px;" /></a>
 <p>Plotting with the <a class="reference external" href="http://matplotlib.org">matplotlib</a> library:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pylab</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pylab</span> <span class="k">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">traj</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Potential energy&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time / fs&#39;</span><span class="p">)</span>
@@ -431,7 +428,7 @@ variety of formats:</p>
 <div class="section" id="post-processing-calculations">
 <h4>Post processing calculations<a class="headerlink" href="#post-processing-calculations" title="Permalink to this headline">¶</a></h4>
 <p>Calculate kinetic energy, and add total energy to the plot:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">mass</span><span class="o">*</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">mass</span><span class="o">*</span>
 <span class="gp">... </span>            <span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm2</span><span class="p">())</span>
 <span class="gp">... </span>            <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
@@ -442,13 +439,13 @@ variety of formats:</p>
 <a class="reference internal image-reference" href="_images/totalenergy2.png"><img alt="_images/totalenergy2.png" class="align-center" src="_images/totalenergy2.png" style="width: 600px;" /></a>
 <p>Maxwell-Boltzmann distribution of atomic velocities</p>
 <div class="math">
-<p><img src="_images/math/ad4ec527efe60144f574ad3f790dda0837b784cf.png" alt="f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v"/></p>
-</div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+<p><span class="math">f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v</span></p>
+</div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
 <span class="gp">... </span>   <span class="s2">&quot;Maxwell-Boltmann distribution of speeds at temperature T for particles of mass m&quot;</span>
 <span class="gp">... </span>   <span class="k">return</span> <span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">BOLTZMANN_K</span><span class="o">*</span><span class="n">T</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">BOLTZMANN_K</span><span class="o">*</span><span class="n">T</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">speeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:]]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">all_speeds</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">(</span><span class="n">speeds</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">all_speeds</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">all_speeds</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">max_bolt</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">500.0</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
 </pre></div>
@@ -476,11 +473,11 @@ Potential object (very similar to the
 <div class="section" id="creating-a-potential">
 <h4>Creating a Potential<a class="headerlink" href="#creating-a-potential" title="Permalink to this headline">¶</a></h4>
 <p>Internal potential:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sw_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sw_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>External potential:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;FilePot&#39;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;FilePot&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                   <span class="n">command</span><span class="o">=</span><span class="s1">&#39;./castep-driver.sh&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -519,7 +516,7 @@ properties predicted by a number of DFT codes</p>
 <li>Basis set parameters have been converged for each code</li>
 </ul>
 <p>Definition of H<sub>2</sub> molecule:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">h2_molecule</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mf">10.0</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">h2_molecule</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mf">10.0</span><span class="p">):</span>
     <span class="n">h2</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="n">vacuum</span><span class="p">,</span> <span class="n">vacuum</span><span class="p">,</span> <span class="n">vacuum</span><span class="p">]))</span>
     <span class="n">h2</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">h2</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;bond_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
@@ -529,35 +526,35 @@ properties predicted by a number of DFT codes</p>
 </pre></div>
 </div>
 <p><code class="docutils literal"><span class="pre">CASTEP</span></code> calculation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">h2</span> <span class="o">=</span> <span class="n">h2_molecule</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">h2</span><span class="o">.</span><span class="n">energy</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">h2</span><span class="o">.</span><span class="n">force</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">h2</span> <span class="o">=</span> <span class="n">h2_molecule</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">h2</span><span class="o">.</span><span class="n">energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">h2</span><span class="o">.</span><span class="n">force</span>
 </pre></div>
 </div>
 <div class="section" id="alternative-invocation-methods">
 <h3>Alternative invocation methods<a class="headerlink" href="#alternative-invocation-methods" title="Permalink to this headline">¶</a></h3>
 <p>ASE-compatible calculator interface:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">h2</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">castep</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">h2</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">castep</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">h2</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">h2</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Most of these tools can also be used without the <code class="docutils literal"><span class="pre">quippy</span></code> Python
 interface, using the QUIP <code class="docutils literal"><span class="pre">eval</span></code> tool:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>eval init_args=&quot;FilePot command=./castep-driver.sh&quot; at_file=h2.xyz F E
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">eval</span> <span class="n">init_args</span><span class="o">=</span><span class="s2">&quot;FilePot command=./castep-driver.sh&quot;</span> <span class="n">at_file</span><span class="o">=</span><span class="n">h2</span><span class="o">.</span><span class="n">xyz</span> <span class="n">F</span> <span class="n">E</span>
 </pre></div>
 </div>
 <p>There is also a command line tool <code class="docutils literal"><span class="pre">convert.py</span></code> which can convert
 between file formats, e.g. .xyz to/from <code class="docutils literal"><span class="pre">CASTEP</span></code> .cell, <code class="docutils literal"><span class="pre">VASP</span></code>
-<code class="docutils literal"><span class="pre">INCAR</span></code>, etc. (plus more <a class="reference internal" href="io.html#fileformats"><span>Supported File Formats</span></a>).</p>
+<code class="docutils literal"><span class="pre">INCAR</span></code>, etc. (plus more <a class="reference internal" href="io.html#fileformats"><span class="std std-ref">Supported File Formats</span></a>).</p>
 </div>
 <div class="section" id="changing-parameters">
 <h3>Changing parameters<a class="headerlink" href="#changing-parameters" title="Permalink to this headline">¶</a></h3>
 <p>The template input files and other options can be changed by passing
 extra arguments to the <a class="reference internal" href="potential.html#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code></a> routine, e.g. to do
 a geometry optimisation instead of a single point calculation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">castep</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="gp">... </span>            <span class="n">template</span><span class="o">=</span><span class="s1">&#39;h2&#39;</span><span class="p">,</span>
 <span class="gp">... </span>            <span class="n">task</span><span class="o">=</span><span class="s1">&#39;geometryoptimisation&#39;</span><span class="p">)</span>
 </pre></div>
@@ -573,7 +570,7 @@ can extract other information such as bond populations</li>
 <h3>Harmonic fit to data<a class="headerlink" href="#harmonic-fit-to-data" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal"><span class="pre">numpy</span></code> provides routines that make it easy to fit a parabola to
 these data</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_and_plot</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_and_plot</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
     <span class="n">energy</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">molecules</span><span class="p">,</span> <span class="n">code</span><span class="o">+</span><span class="s1">&#39;_energy&#39;</span><span class="p">)</span>
     <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
     <span class="n">plot</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">color</span><span class="o">+</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39; data&#39;</span><span class="p">)</span>
@@ -583,7 +580,7 @@ these data</p>
     <span class="n">spring_constant</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">molecules</span><span class="o">.</span><span class="n">bond_length</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
     <span class="n">plot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">color</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39; fit&#39;</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s1">&#39;|</span><span class="si">%-10s</span><span class="s1">|</span><span class="si">%10.3f</span><span class="s1">|</span><span class="si">%10.1f</span><span class="s1">|&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">bond_length</span><span class="p">,</span> <span class="n">spring_constant</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s1">&#39;|</span><span class="si">%-10s</span><span class="s1">|</span><span class="si">%10.3f</span><span class="s1">|</span><span class="si">%10.1f</span><span class="s1">|&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">bond_length</span><span class="p">,</span> <span class="n">spring_constant</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Complete script for download: <a class="reference download internal" href="_downloads/hydrogen-bond-length.py" download=""><code class="xref download docutils literal"><span class="pre">hydrogen-bond-length.py</span></code></a>.</p>
@@ -778,13 +775,13 @@ Modified version: <a class="reference external" href="http://jrkermode.co.uk/Ato
         <li class="right" >
           <a href="index.html" title="QUIP and quippy documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Structure building routines &mdash; quippy 171eef2+ documentation</title>
+    <title>Structure building routines &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -60,9 +60,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -416,12 +413,12 @@
 <em class="property">class </em><code class="descclassname">quippy.structures.</code><code class="descname">MillerIndex</code><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Representation of a three of four index Miller direction or plane</p>
 <p>A <a class="reference internal" href="#quippy.structures.MillerIndex" title="quippy.structures.MillerIndex"><code class="xref py py-class docutils literal"><span class="pre">MillerIndex</span></code></a> can be constructed from vector or parsed from a string:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s1">&#39;-211&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s1">&#39;-211&#39;</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="s1">&#39;111&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;plane&#39;</span><span class="p">)</span>
 <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">x</span> <span class="c1"># prints &quot;[-211]&quot;</span>
-<span class="k">print</span> <span class="n">y</span> <span class="c1"># prints &quot;(111)&quot;, note round brackets denoting a plane</span>
-<span class="k">print</span> <span class="n">z</span><span class="o">.</span><span class="n">latex</span><span class="p">()</span>
+<span class="nb">print</span> <span class="n">x</span> <span class="c1"># prints &quot;[-211]&quot;</span>
+<span class="nb">print</span> <span class="n">y</span> <span class="c1"># prints &quot;(111)&quot;, note round brackets denoting a plane</span>
+<span class="nb">print</span> <span class="n">z</span><span class="o">.</span><span class="n">latex</span><span class="p">()</span>
 <span class="k">assert</span><span class="p">(</span><span class="n">angle_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 <span class="k">assert</span><span class="p">(</span><span class="n">angle_between</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">==</span> <span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 <span class="k">assert</span><span class="p">(</span><span class="n">angle_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">==</span> <span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
@@ -700,28 +697,28 @@ motif(i,1) is the atomic number of an atom
 motif(i,2), motif(i,3) etc. are the indices of atoms to which this atom connects in this motif
 or zero if there are no more neighbours.</p>
 <p>E.g. to match a water molecule we could use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>water_motif  = reshape( (/  8, 1, 1, &amp;
-                            2, 1, 1, &amp;
-                            3, 0, 0  /), (/3,3/) )
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">water_motif</span>  <span class="o">=</span> <span class="n">reshape</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span>  <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span>
+                            <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span>
+                            <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>  <span class="o">/</span><span class="p">),</span> <span class="p">(</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="o">/</span><span class="p">)</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>or, alternatively:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>water_motif2 = reshape( (/ 1, 8, 1, &amp;
-                           2, 1, 2, &amp;
-                           0, 3, 0/), (/3,3/) )
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">water_motif2</span> <span class="o">=</span> <span class="n">reshape</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span>
+                           <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">&amp;</span>
+                           <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="o">/</span><span class="p">),</span> <span class="p">(</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="o">/</span><span class="p">)</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>and for an alpha carbon</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>         O
-         |
- N - C - C
-     |
-     H
+<div class="highlight-default"><div class="highlight"><pre><span></span>         <span class="n">O</span>
+         <span class="o">|</span>
+ <span class="n">N</span> <span class="o">-</span> <span class="n">C</span> <span class="o">-</span> <span class="n">C</span>
+     <span class="o">|</span>
+     <span class="n">H</span>
 
-c_alpha = reshape( (/ 6,6,7,8,1, &amp;
-                      2,1,1,2,1, &amp;
-                      3,4,0,0,0, &amp;
-                      5,0,0,0,0/), (/5,4/) )
+<span class="n">c_alpha</span> <span class="o">=</span> <span class="n">reshape</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span> <span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span>
+                      <span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span>
+                      <span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span>
+                      <span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="o">/</span><span class="p">),</span> <span class="p">(</span><span class="o">/</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="o">/</span><span class="p">)</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>The routine will identify an optimum atom in the motif which it will try to find in the
@@ -787,13 +784,13 @@ if the alt_connect&#8217;s cutoff were the same as at.cutoff(_break)</p>
 <code class="descclassname">quippy.structures.</code><code class="descname">diamond</code><span class="sig-paren">(</span><em>a</em><span class="optional">[</span>, <em>z</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.structures.diamond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an 8-atom diamond-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code>
 and atomic number <code class="docutils literal"><span class="pre">Z</span></code>, e.g. in Python:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>  <span class="c1"># Silicon unit cell</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>  <span class="c1"># Silicon unit cell</span>
 </pre></div>
 </div>
 <p>Or, in Fortran:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>type(Atoms) :: at
-...
-call diamond(at, 5.44_dp, 14)
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">(</span><span class="n">Atoms</span><span class="p">)</span> <span class="p">::</span> <span class="n">at</span>
+<span class="o">...</span>
+<span class="n">call</span> <span class="n">diamond</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="mf">5.44</span><span class="n">_dp</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1830,14 +1827,14 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

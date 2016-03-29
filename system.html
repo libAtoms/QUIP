@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Low-level system routines &mdash; quippy 171eef2+ documentation</title>
+    <title>Low-level system routines &mdash; quippy 9f4f6a7+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '171eef2+',
+        VERSION:     '9f4f6a7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 171eef2+ documentation" href="index.html" />
+    <link rel="top" title="quippy 9f4f6a7+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Units and physical constants" href="units.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -67,9 +67,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -93,7 +90,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(...)</td>
 <td>Open a file for reading or writing.</td>
 </tr>
 </tbody>
@@ -644,7 +641,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 <dl class="class">
 <dt id="quippy.system.InOutput">
-<em class="property">class </em><code class="descclassname">quippy.system.</code><code class="descname">InOutput</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.system.</code><code class="descname">InOutput</code><span class="sig-paren">(</span><span class="optional">[</span><em>filename</em>, <em>action</em>, <em>isformatted</em>, <em>append</em>, <em>verbosity</em>, <em>verbosity_cascade</em>, <em>master_only</em>, <em>unit</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>Open a file for reading or writing. The action optional parameter can
 be one of <code class="docutils literal"><span class="pre">INPUT</span></code> (default), <code class="docutils literal"><span class="pre">OUTPUT</span></code> or <code class="docutils literal"><span class="pre">INOUT</span></code>.
@@ -716,7 +713,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>([value])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -727,7 +724,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(delimiters,fields,[status])</td>
 <td>Call parse_string on the next line from a file</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.print_mem_info" title="quippy.system.InOutput.print_mem_info"><code class="xref py py-obj docutils literal"><span class="pre">print_mem_info</span></code></a>([file])</td>
@@ -741,7 +738,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>([value])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -755,7 +752,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal"><span class="pre">read_ascii</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">read_ascii</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>([status])</td>
 <td>Read a line of text from a file (up to a line break, or 1024 characters).</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal"><span class="pre">rewind</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -829,7 +826,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.mpi_all_inoutput">
-<code class="descname">mpi_all_inoutput</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mpi_all_inoutput</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -844,7 +841,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.parse_line">
-<code class="descname">parse_line</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_line</code><span class="sig-paren">(</span><em>delimiters</em>, <em>fields</em><span class="optional">[</span>, <em>status</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call parse_string on the next line from a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -881,7 +878,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.print_mpi_id">
-<code class="descname">print_mpi_id</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_mpi_id</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -949,7 +946,7 @@ derived types.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.read_line">
-<code class="descname">read_line</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_line</code><span class="sig-paren">(</span><span class="optional">[</span><em>status</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a line of text from a file (up to a line break, or 1024 characters).
 This can then be parsed by the calling routine (using <code class="docutils literal"><span class="pre">parse_line</span></code> for example)</p>
 <p>Optionally, a status is returned which is:</p>
@@ -1088,12 +1085,12 @@ this routine aborts of _MPI is not defined</p>
 matching <code class="docutils literal"><span class="pre">name</span></code> parameter. Calls to <code class="docutils literal"><span class="pre">system_timer</span></code> must be properly
 nested (i.e. start and stop from different pairs can&#8217;t overlap), and
 maximum depth of calls is set by the <code class="docutils literal"><span class="pre">TIMER_STACK</span></code> parameter.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>  call system_timer(name)  start the clock
-  ...                      do something
-  call system_timer(name)  stop clock and print elapsed time
+<div class="highlight-default"><div class="highlight"><pre><span></span>  <span class="n">call</span> <span class="n">system_timer</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>  <span class="n">start</span> <span class="n">the</span> <span class="n">clock</span>
+  <span class="o">...</span>                      <span class="n">do</span> <span class="n">something</span>
+  <span class="n">call</span> <span class="n">system_timer</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>  <span class="n">stop</span> <span class="n">clock</span> <span class="ow">and</span> <span class="nb">print</span> <span class="n">elapsed</span> <span class="n">time</span>
 
-If optional do_always argument is true, routine will do its thing even
-if system_do_timing is false.
+<span class="n">If</span> <span class="n">optional</span> <span class="n">do_always</span> <span class="n">argument</span> <span class="ow">is</span> <span class="n">true</span><span class="p">,</span> <span class="n">routine</span> <span class="n">will</span> <span class="n">do</span> <span class="n">its</span> <span class="n">thing</span> <span class="n">even</span>
+<span class="k">if</span> <span class="n">system_do_timing</span> <span class="ow">is</span> <span class="n">false</span><span class="o">.</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -3083,14 +3080,14 @@ Other user-defined types define the Print interface in the same way.</p>
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 171eef2+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 9f4f6a7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Mar 24, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+      Last updated on Mar 29, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>
