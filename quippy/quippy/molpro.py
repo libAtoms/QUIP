@@ -85,7 +85,12 @@ class MolproDatafile(OrderedDict):
                 separator = separator[0]
             else:
                 separator = ","
-            fields = line.split(separator,1)
+            # Note the colon ':' has special meaning for defining labels
+            if separator == ':' and line.endswith(separator):
+                # in which case the colon should be kept
+                fields = [line, ]
+            else:
+                fields = line.split(separator,1)
             key = fields[0].upper()
             if key not in self._keys:
                 self[key] = []
