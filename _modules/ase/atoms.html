@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ase.atoms &mdash; quippy 6089185+ documentation</title>
+    <title>ase.atoms &mdash; quippy d272153+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '6089185+',
+        VERSION:     'd272153+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 6089185+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy d272153+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6089185+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy d272153+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -84,7 +84,7 @@
 <span class="kn">from</span> <span class="nn">ase.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
 <span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">chemical_symbols</span><span class="p">,</span> <span class="n">atomic_masses</span>
 <span class="kn">from</span> <span class="nn">ase.utils</span> <span class="kn">import</span> <span class="nb">basestring</span>
-<span class="kn">from</span> <span class="nn">ase.utils.geometry</span> <span class="kn">import</span> <span class="n">wrap_positions</span><span class="p">,</span> <span class="n">find_mic</span>
+<span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="kn">import</span> <span class="n">wrap_positions</span><span class="p">,</span> <span class="n">find_mic</span>
 
 
 <span class="k">class</span> <span class="nc">Atoms</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -167,7 +167,7 @@
 <span class="sd">    &gt;&gt;&gt; d = 1.104  # N2 bondlength</span>
 <span class="sd">    &gt;&gt;&gt; a = Atoms(&#39;N2&#39;, [(0, 0, 0), (0, 0, d)])</span>
 <span class="sd">    &gt;&gt;&gt; a = Atoms(numbers=[7, 7], positions=[(0, 0, 0), (0, 0, d)])</span>
-<span class="sd">    &gt;&gt;&gt; a = Atoms([Atom(&#39;N&#39;, (0, 0, 0)), Atom(&#39;N&#39;, (0, 0, d)])</span>
+<span class="sd">    &gt;&gt;&gt; a = Atoms([Atom(&#39;N&#39;, (0, 0, 0)), Atom(&#39;N&#39;, (0, 0, d))])</span>
 
 <span class="sd">    FCC gold:</span>
 
@@ -355,12 +355,14 @@
 
 <span class="sd">        Two equivalent ways to define an orthorhombic cell:</span>
 
-<span class="sd">        &gt;&gt;&gt; a.set_cell([a, b, c])</span>
-<span class="sd">        &gt;&gt;&gt; a.set_cell([(a, 0, 0), (0, b, 0), (0, 0, c)])</span>
+<span class="sd">        &gt;&gt;&gt; atoms = Atoms(&#39;He&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; a, b, c = 7, 7.5, 8</span>
+<span class="sd">        &gt;&gt;&gt; atoms.set_cell([a, b, c])</span>
+<span class="sd">        &gt;&gt;&gt; atoms.set_cell([(a, 0, 0), (0, b, 0), (0, 0, c)])</span>
 
 <span class="sd">        FCC unit cell:</span>
 
-<span class="sd">        &gt;&gt;&gt; a.set_cell([(0, b, b), (b, 0, b), (b, b, 0)])</span>
+<span class="sd">        &gt;&gt;&gt; atoms.set_cell([(0, b, b), (b, 0, b), (b, b, 0)])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">fix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -1177,7 +1179,9 @@
 <span class="sd">        Rotate 90 degrees around the z-axis, so that the x-axis is</span>
 <span class="sd">        rotated into the y-axis:</span>
 
+<span class="sd">        &gt;&gt;&gt; from math import pi</span>
 <span class="sd">        &gt;&gt;&gt; a = pi / 2</span>
+<span class="sd">        &gt;&gt;&gt; atoms = Atoms()</span>
 <span class="sd">        &gt;&gt;&gt; atoms.rotate(&#39;z&#39;, a)</span>
 <span class="sd">        &gt;&gt;&gt; atoms.rotate((0, 0, 1), a)</span>
 <span class="sd">        &gt;&gt;&gt; atoms.rotate(&#39;-z&#39;, -a)</span>
@@ -1347,9 +1351,11 @@
 <span class="sd">        example: the following defines a very crude</span>
 <span class="sd">        ethane-like molecule and twists one half of it by 30 degrees.</span>
 
+<span class="sd">        &gt;&gt;&gt; from math import pi</span>
 <span class="sd">        &gt;&gt;&gt; atoms = Atoms(&#39;HHCCHH&#39;, [[-1, 1, 0], [-1, -1, 0], [0, 0, 0],</span>
-<span class="sd">                                     [1, 0, 0], [2, 1, 0], [2, -1, 0]])</span>
-<span class="sd">        &gt;&gt;&gt; atoms.set_dihedral([1,2,3,4],7*pi/6,mask=[0,0,0,1,1,1])</span>
+<span class="sd">        ...                          [1, 0, 0], [2, 1, 0], [2, -1, 0]])</span>
+<span class="sd">        &gt;&gt;&gt; atoms.set_dihedral([1, 2, 3, 4], 7 * pi / 6,</span>
+<span class="sd">        ...                    mask=[0, 0, 0, 1, 1, 1])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if not provided, set mask to the last atom in the</span>
         <span class="c1"># dihedral description</span>
@@ -1548,7 +1554,7 @@
 <span class="sd">            Small number to prevent slightly negative coordinates from being</span>
 <span class="sd">            wrapped.</span>
 
-<span class="sd">        See also the :func:`ase.utils.geometry.wrap_positions` function.</span>
+<span class="sd">        See also the :func:`ase.geometry.wrap_positions` function.</span>
 <span class="sd">        Example:</span>
 
 <span class="sd">        &gt;&gt;&gt; a = Atoms(&#39;H&#39;,</span>
@@ -1785,13 +1791,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6089185+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy d272153+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Apr 19, 2016.
+      Last updated on Apr 22, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
