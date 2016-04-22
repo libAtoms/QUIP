@@ -37,8 +37,8 @@ env:
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
     - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
 #    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
-global:
-    secure: "Rf5lXPfUtz+dgBhOdSy0hlJhBDqDVearmnbaJev/OzXBE7ZJENF6grnfxIgleTNKcUvlG21R/eWdGee8l37IWTIx/46iYuwSGeHfhQ9LwRIA4Ks6VruXqJfNMJ9iqowUt8ok6/EQ0usW7KfQFg0SenmtA8Hjmenoj0cPdlkLP5U="
+  global:
+    secure: "OJ/c5whiQxYm8q3Ys0eiJxUeuaewyr731iQv1kXa0b/3IVCSz3MBZNffZ87xRX3zegMxSMSMLhziMI9tfJIdfqVf9/qK98sgvCRYzam+qyqS6zZxcsXniNhIX0ufj9zEr6zJ/kGd7XdvKLYThSZeoLbMAQFIx2qisqhmQ5faIB8="
 matrix:
   allow_failures:
     - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true

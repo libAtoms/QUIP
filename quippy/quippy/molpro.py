@@ -69,7 +69,14 @@ class MolproDatafile(OrderedDict):
         # split a line by the first non-alphanumeric character, then cats that character
         # to start of second item in list, if there is one.
         if key is not None:
-            self[key].append(line)
+            # If key is present, indicates a commmand block - use semicolons
+            # to split up lines containing directives and such
+            # TODO Is there another use of the 'key' argument?
+            #      It doesn't look like it...
+            if not self[key]:
+                self[key].append(';' + line)
+            else:
+                self[key][0] += (';' + line)
         else:
             nonalpha = re.compile('[^a-zA-Z0-9()\-]')
             separator = re.findall(nonalpha,line)
@@ -78,7 +85,12 @@ class MolproDatafile(OrderedDict):
                 separator = separator[0]
             else:
                 separator = ","
-            fields = line.split(separator,1)
+            # Note the colon ':' has special meaning for defining labels
+            if separator == ':' and line.endswith(separator):
+                # in which case the colon should be kept
+                fields = [line, ]
+            else:
+                fields = line.split(separator,1)
             key = fields[0].upper()
             if key not in self._keys:
                 self[key] = []
@@ -128,6 +140,7 @@ class MolproDatafile(OrderedDict):
 
             if open_bracket and close_bracket:
                 # superfluous brackets, no actual multi-line command or data
+                #TODO this is bad if the brackets actually delimit a command block...
                 line = line.replace("{","")
                 line = line.replace("}","")
                 open_bracket = False
@@ -251,11 +264,20 @@ class MolproDatafile(OrderedDict):
             else:
                 shortkey = key
             if len(value) > 1:
+                # TODO this appears to be designed for geometry specifications
+                #      but it also writes procedures when command blocks are
+                #      intended - rethink this.
                 datafile.write(shortkey+'={\n')
                 for line in value:
                     datafile.write(line+'\n')
                 datafile.write('}\n')
-            elif value != []:
+            elif value and value[0].startswith(';'):
+                cmdblock_lines = value[0].split(';')
+                datafile.write('{' + shortkey)
+                for line in cmdblock_lines:
+                    datafile.write(line + '\n')
+                datafile.write('}\n')
+            elif value:
                 datafile.write('%s%s\n' % (shortkey, value[0]))
             else:
                 datafile.write(shortkey+'\n')
@@ -319,9 +341,12 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
     energy_names['CCSD(T)-F12'] = ["total energy"]
     energy_names['CCSD(T)'] = ["total energy"]
     energy_names['MP2'] = ["total energy"]
+    energy_names['DF-MP2'] = ["total energy"]
     energy_names['RKS'] = ["Energy"]
     energy_names['RHF'] = ["Energy"]
+    energy_names['DF-RHF'] = ["Energy"]
     energy_names['HF'] = ["Energy"]
+    energy_names['DF-HF'] = ["Energy"]
     #etc
     
     gradient_names = OrderedDict()
@@ -331,7 +356,11 @@ def read_xml_output(xmlfile,energy_from=None, extract_forces=False, extract_dipo
 
     all_methods=OrderedDict()
     all_methods['HF']=["RHF"]
+    all_methods['DF-HF']=["RHF"]
+    all_methods['RHF']=["RHF"]
+    all_methods['DF-RHF']=["RHF"]
     all_methods['MP2']=["MP2"]
+    all_methods['DF-MP2']=["MP2"]
     all_methods['RKS']=["RKS"]
     all_methods['CCSD(T)-F12']=["CCSD(T)-F12a","CCSD(T)-F12b"]
     all_methods['CCSD(T)']=["CCSD(T)"]

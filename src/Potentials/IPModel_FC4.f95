@@ -111,6 +111,8 @@ type IPModel_FC4
   integer, allocatable :: findatom_sc_array(:,:,:,:)
   integer sc_min(3), sc_max(3)
 
+  real(dp) :: superlattice(3,3), inv_superlattice(3,3)
+
 end type IPModel_FC4
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -172,6 +174,8 @@ subroutine IPModel_FC4_Initialise_str(this, args_str, param_str)
   ! Read the ideal structure
   !
   call read(this%ideal_struct, trim(this%ideal_struct_file))
+  call get_param_value(this%ideal_struct, "Superlattice", this%superlattice)
+  call matrix3x3_inverse(this%superlattice, this%inv_superlattice)
   call add_property(this%ideal_struct, "cell_offset", value=0, n_cols=3, overwrite=.false.)
   call add_property(this%ideal_struct, "prim_index", value=0, n_cols=1, overwrite=.false.)
   if (.not.assign_pointer(this%ideal_struct, "prim_index", this%ideal_struct_prim_index)) &
@@ -801,12 +805,12 @@ function findatom_sc(this, tau, n, at)
   
   ! express the primitive cell we asked for as a fractional
   ! coordinates of the simulation box.
-  tau_frac = matmul(at%g, matmul(prim_cell, n) + tau_prim)
+  tau_frac = matmul(this%inv_superlattice, matmul(prim_cell, n) + tau_prim)
 
   ! remap to [0,1)
   tau_frac_remap = modulo(tau_frac, 1.0_dp)
 
-  prim_cell_pos = matmul(at%lattice, tau_frac_remap) - tau_prim
+  prim_cell_pos = matmul(this%superlattice, tau_frac_remap) - tau_prim
   
   ! find the offset of the primitive cell this location coresponds to
   wrap = matmul(inv_prim_cell, prim_cell_pos)

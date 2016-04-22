@@ -383,6 +383,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
+     call gpCoordinates_precalculate_sparse(this%my_gp%coordinate(i_coordinate))
+
      if(do_gap_variance) then
         call gpCoordinates_initialise_variance_estimate(this%my_gp%coordinate(i_coordinate), gap_variance_regularisation)
      endif
