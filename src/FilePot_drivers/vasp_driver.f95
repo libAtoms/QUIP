@@ -80,6 +80,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    integer :: i_charge
    real(dp) :: nelect, nelect_of_elem(size(ElementName)), r_charge
+   real(dp), pointer :: magmom_p(:)
 
    character(len=STRING_LENGTH) :: run_dir
    type(Inoutput) :: io
@@ -271,6 +272,10 @@ subroutine do_vasp_calc(at, args_str, error)
    endif
    if (r_charge .fne. 0.0_dp) then ! set total number of electrons
       call set_value(incar_dict, "NELECT", nelect)
+   endif
+
+   if (assign_pointer(at, "magmom", magmom_p)) then
+      call set_value(incar_dict, "MAGMOM", magmom_p)
    endif
 
    if (.not. persistent_already_started) then
