@@ -88,12 +88,12 @@ and Gromacs, but has a number of unique features:
 0.  Clone the QUIP repository from GitHub. The ``--recursive`` option
     brings in submodules automatically (If you don't do this, then
     you will need to run ``git submodule update --init``
-    from the top-level QUIP directory after cloning).
+    from the top-level QUIP directory after cloning) ::
 
 		git clone --recursive https://github.com/libAtoms/QUIP.git
 
 1.  Decide your architecture by looking in the arch/ directory, and
-    define an environmental variable QUIP_ARCH, e.g.
+    define an environmental variable QUIP_ARCH, e.g.::
     
 		export QUIP_ARCH=linux_x86_64_ifort_icc
     
@@ -104,7 +104,7 @@ and Gromacs, but has a number of unique features:
     using GNU compiler suite, you need version 4.4 or later. From
     Intel, you need version > 11.0.084.
     
-3.  Customise QUIP, set the maths libraries and provide linking options:
+3.  Customise QUIP, set the maths libraries and provide linking options::
     
 		make config
     
@@ -122,7 +122,7 @@ and Gromacs, but has a number of unique features:
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
     
-4.  Compile all modules, libraries and programs with:
+4.  Compile all modules, libraries and programs with::
     
 		make
 
@@ -140,13 +140,13 @@ and Gromacs, but has a number of unique features:
     
 5.  A good starting point is to use the `quip` program, which can 
     calculate the properties of an atomic configuration using a
-    variety of models. For example:
+    variety of models. For example::
     
     		quip at_file=test.xyz init_args='IP LJ' \
     			param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
     
     assuming that you have a file called `test.xyz` with the following
-    data in it representing Cu atoms in a simple cubic lattice:
+    data in it representing Cu atoms in a simple cubic lattice::
     
     		1
     		Lattice="4 0 0 0 4 0 0 0 4" Properties=Z:I:1:pos:R:3
@@ -170,7 +170,7 @@ and Gromacs, but has a number of unique features:
     is recursive,  so `init_args="IP --help"`  will then proceed  to list
     the types of interatomic potentials (IP) that are available.
 
-6.  To compile the Python wrappers (`quippy`), run
+6.  To compile the Python wrappers (`quippy`), run::
 
 		make quippy
 
@@ -182,7 +182,7 @@ and Gromacs, but has a number of unique features:
 	More details on the quippy installation process are available in
 	the [online documentation](http://libatoms.github.io/QUIP/).
 
-7.  To run the unit and regression tests, which depend on `quippy`:
+7.  To run the unit and regression tests, which depend on `quippy`::
 
 		make test
     

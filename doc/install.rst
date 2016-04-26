@@ -25,9 +25,16 @@ These intructions provide more details on the compilation and
 installation of `QUIP` (Fortran library and main programs) and
 `quippy` (Python interface).
 
-Please start by following the instructions in the main `README
+Compilation Instructions
+------------------------
+
+These instructions are excerpted from the top-level `README
 <https://github.com/libAtoms/QUIP/blob/public/README.md>`_, which is
 the most up-to-date source of information.
+
+  .. include:: ../README.md
+    :start-after: Compilation Instructions
+
 
 Custom settings
 ---------------
