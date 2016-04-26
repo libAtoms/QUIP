@@ -465,7 +465,7 @@
       <point a="5.981497093788" rho="0.000010425739"/>
       <point a="6.000000000000" rho="0.000000000000"/>
     </density>
-    <potential_density num_points="151" density_y1="1e+30" density_yn="1e+30">
+    <potential_density num_points="151" y1="1e+30" yn="1e+30">
       <point rho="-0.174079068660" E="0.880859487545"/>
       <point rho="-0.164015533786" E="0.845073090587"/>
       <point rho="-0.153951998912" E="0.809869882280"/>
@@ -621,7 +621,7 @@
   </per_type_data>
   <per_pair_data type1="1" type2="1">
     <!-- Ca-Ca -->
-    <potential_pair num_points="151" density_y1="1.0e30" density_yn="0.0">
+    <potential_pair num_points="151" y1="1.0e30" yn="0.0">
       <point r="1.821428571429" E="10.782171000701"/>
       <point r="1.958439351595" E="7.767397270301"/>
       <point r="2.086472464937" E="5.584644314392"/>
@@ -777,7 +777,7 @@
   </per_pair_data>
   <per_pair_data type1="1" type2="2">
     <!-- Ca-Cd -->
-    <potential_pair num_points="151" density_y1="1.0e30" density_yn="0.0">
+    <potential_pair num_points="151" y1="1.0e30" yn="0.0">
       <point r="1.500000000000" E="16.074526345236"/>
       <point r="1.665833124896" E="11.315730725387"/>
       <point r="1.816590212458" E="7.964304058409"/>
@@ -933,7 +933,7 @@
   </per_pair_data>
   <per_pair_data type1="2" type2="2">
     <!-- Cd-Cd -->
-    <potential_pair num_points="151" density_y1="1.0e30" density_yn="0.0">
+    <potential_pair num_points="151" y1="1.0e30" yn="0.0">
       <point r="1.228571428571" E="34.232423949073"/>
       <point r="1.428049428440" E="22.940202556207"/>
       <point r="1.602891944279" E="15.389360480758"/>
