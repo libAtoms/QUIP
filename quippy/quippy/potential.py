@@ -30,7 +30,7 @@ from quippy.oo_fortran import update_doc_string
 from quippy.atoms import Atoms
 from quippy.util import quip_xml_parameters, dict_to_args_str
 from quippy.elasticity import stress_matrix
-from quippy.farray import fzeros
+from quippy.farray import farray, frange, fzeros
 
 __doc__ = _potential.__doc__
 __all__ = _potential.__all__ + ['force_test', 'Minim', 'ForceMixingPotential']
@@ -722,9 +722,9 @@ def force_test(at, p, dx=1e-4):
 
     Finite difference derivates are calculated by moving each atom by `dx`.
     """
-    analytic_f = fzeros((3,at.n))
+    analytic_f = fzeros((3, at.n))
     p.calc(at, force=analytic_f)
-    num_f = fzeros((3,at.n))
+    num_f = fzeros((3, at.n))
     ep, em = farray(0.0), farray(0.0)
 
     for i in frange(at.n):
