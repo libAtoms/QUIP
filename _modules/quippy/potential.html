@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.potential &mdash; quippy e89bf11+ documentation</title>
+    <title>quippy.potential &mdash; quippy 2ed12d7+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'e89bf11+',
+        VERSION:     '2ed12d7+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy e89bf11+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 2ed12d7+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e89bf11+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 2ed12d7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -96,7 +96,7 @@
 <span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span> <span class="nn">quippy.util</span> <span class="kn">import</span> <span class="n">quip_xml_parameters</span><span class="p">,</span> <span class="n">dict_to_args_str</span>
 <span class="kn">from</span> <span class="nn">quippy.elasticity</span> <span class="kn">import</span> <span class="n">stress_matrix</span>
-<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">fzeros</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">farray</span><span class="p">,</span> <span class="n">frange</span><span class="p">,</span> <span class="n">fzeros</span>
 
 <span class="n">__doc__</span> <span class="o">=</span> <span class="n">_potential</span><span class="o">.</span><span class="n">__doc__</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="n">_potential</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;force_test&#39;</span><span class="p">,</span> <span class="s1">&#39;Minim&#39;</span><span class="p">,</span> <span class="s1">&#39;ForceMixingPotential&#39;</span><span class="p">]</span>
@@ -788,9 +788,9 @@
 
 <span class="sd">    Finite difference derivates are calculated by moving each atom by `dx`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">analytic_f</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">analytic_f</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
     <span class="n">p</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="n">analytic_f</span><span class="p">)</span>
-    <span class="n">num_f</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">num_f</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
     <span class="n">ep</span><span class="p">,</span> <span class="n">em</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
@@ -821,13 +821,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e89bf11+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 2ed12d7+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Apr 26, 2016.
+      Last updated on May 11, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
