@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Linear algebra routines &mdash; quippy 2ed12d7+ documentation</title>
+    <title>Linear algebra routines &mdash; quippy f294ac3+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2ed12d7+',
+        VERSION:     'f294ac3+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 2ed12d7+ documentation" href="index.html" />
+    <link rel="top" title="quippy f294ac3+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Quaternions and rotation" href="quaternions.html" />
     <link rel="prev" title="Tools for electrostatic embedding" href="electrostaticembed.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 2ed12d7+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy f294ac3+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -193,14 +193,28 @@ as well as array searching, sorting and averaging.</p>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.binom" title="quippy.linearalgebra.binom"><code class="xref py py-obj docutils literal"><span class="pre">binom</span></code></a>(n,r)</td>
 <td>Binomial coefficient, real result</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.is_diagonal" title="quippy.linearalgebra.is_diagonal"><code class="xref py py-obj docutils literal"><span class="pre">is_diagonal</span></code></a>(matrix)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.int_array_lt" title="quippy.linearalgebra.int_array_lt"><code class="xref py py-obj docutils literal"><span class="pre">int_array_lt</span></code></a>(array1,array2)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.is_diagonal" title="quippy.linearalgebra.is_diagonal"><code class="xref py py-obj docutils literal"><span class="pre">is_diagonal</span></code></a>(matrix)</td>
 <td>Test if this matrix is diagonal</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.factorial2" title="quippy.linearalgebra.factorial2"><code class="xref py py-obj docutils literal"><span class="pre">factorial2</span></code></a>(n)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.factorial2" title="quippy.linearalgebra.factorial2"><code class="xref py py-obj docutils literal"><span class="pre">factorial2</span></code></a>(n)</td>
 <td>Double factorial, real result</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.zero_sum" title="quippy.linearalgebra.zero_sum"><code class="xref py py-obj docutils literal"><span class="pre">zero_sum</span></code></a>(array)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.zero_sum" title="quippy.linearalgebra.zero_sum"><code class="xref py py-obj docutils literal"><span class="pre">zero_sum</span></code></a>(array)</td>
 <td>Subtract the average value from each element of a real array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.unit_vector" title="quippy.linearalgebra.unit_vector"><code class="xref py py-obj docutils literal"><span class="pre">unit_vector</span></code></a>(theta,phi)</td>
+<td>Return a unit vector in the direction given by the angles <code class="docutils literal"><span class="pre">theta</span></code> and <code class="docutils literal"><span class="pre">phi</span></code>, i.e.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.d3poly_switch" title="quippy.linearalgebra.d3poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d3poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -224,10 +238,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.unit_vector" title="quippy.linearalgebra.unit_vector"><code class="xref py py-obj docutils literal"><span class="pre">unit_vector</span></code></a>(theta,phi)</td>
-<td>Return a unit vector in the direction given by the angles <code class="docutils literal"><span class="pre">theta</span></code> and <code class="docutils literal"><span class="pre">phi</span></code>, i.e.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.symmetric_linear_solve" title="quippy.linearalgebra.symmetric_linear_solve"><code class="xref py py-obj docutils literal"><span class="pre">symmetric_linear_solve</span></code></a>(m,a,n3)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.symmetric_linear_solve" title="quippy.linearalgebra.symmetric_linear_solve"><code class="xref py py-obj docutils literal"><span class="pre">symmetric_linear_solve</span></code></a>(m,a,n3)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -238,7 +249,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.dcos_cutoff_function" title="quippy.linearalgebra.dcos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">dcos_cutoff_function</span></code></a>(r,cutoff_in)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.dcos_cutoff_function" title="quippy.linearalgebra.dcos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">dcos_cutoff_function</span></code></a>(r,cutoff_in)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -249,7 +260,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.inverse_svd_threshold" title="quippy.linearalgebra.inverse_svd_threshold"><code class="xref py py-obj docutils literal"><span class="pre">inverse_svd_threshold</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.inverse_svd_threshold" title="quippy.linearalgebra.inverse_svd_threshold"><code class="xref py py-obj docutils literal"><span class="pre">inverse_svd_threshold</span></code></a>(...)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -260,7 +271,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.cos_cutoff_function" title="quippy.linearalgebra.cos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">cos_cutoff_function</span></code></a>(r,cutoff_in)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.cos_cutoff_function" title="quippy.linearalgebra.cos_cutoff_function"><code class="xref py py-obj docutils literal"><span class="pre">cos_cutoff_function</span></code></a>(r,cutoff_in)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -271,10 +282,10 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.angle" title="quippy.linearalgebra.angle"><code class="xref py py-obj docutils literal"><span class="pre">angle</span></code></a>(a,b)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.angle" title="quippy.linearalgebra.angle"><code class="xref py py-obj docutils literal"><span class="pre">angle</span></code></a>(a,b)</td>
 <td>Return the (smallest) angle between two vectors, in radians.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.dpoly_switch" title="quippy.linearalgebra.dpoly_switch"><code class="xref py py-obj docutils literal"><span class="pre">dpoly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.dpoly_switch" title="quippy.linearalgebra.dpoly_switch"><code class="xref py py-obj docutils literal"><span class="pre">dpoly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -285,7 +296,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.d2poly_switch" title="quippy.linearalgebra.d2poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d2poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.d2poly_switch" title="quippy.linearalgebra.d2poly_switch"><code class="xref py py-obj docutils literal"><span class="pre">d2poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -296,7 +307,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.svdfact" title="quippy.linearalgebra.svdfact"><code class="xref py py-obj docutils literal"><span class="pre">svdfact</span></code></a>(in_matrix,n2,n3,n4,n5,n6)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.svdfact" title="quippy.linearalgebra.svdfact"><code class="xref py py-obj docutils literal"><span class="pre">svdfact</span></code></a>(in_matrix,n2,n3,n4,n5,n6)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -307,16 +318,16 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.factorial_int" title="quippy.linearalgebra.factorial_int"><code class="xref py py-obj docutils literal"><span class="pre">factorial_int</span></code></a>(n)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.factorial_int" title="quippy.linearalgebra.factorial_int"><code class="xref py py-obj docutils literal"><span class="pre">factorial_int</span></code></a>(n)</td>
 <td>Factorial, integer result</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_inverse" title="quippy.linearalgebra.matrix3x3_inverse"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_inverse</span></code></a>(matrix)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_inverse" title="quippy.linearalgebra.matrix3x3_inverse"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_inverse</span></code></a>(matrix)</td>
 <td>Calculate <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix inverse of <code class="docutils literal"><span class="pre">lattice</span></code> and store result in <code class="docutils literal"><span class="pre">g</span></code>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_det" title="quippy.linearalgebra.matrix3x3_det"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_det</span></code></a>(m)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_det" title="quippy.linearalgebra.matrix3x3_det"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_det</span></code></a>(m)</td>
 <td>Calulates determinant of <img class="math" src="_images/math/59ca78535a2bfd005ddf503222102c74a0199b90.png" alt="3\times3"/> matrix</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.fill_random_integer" title="quippy.linearalgebra.fill_random_integer"><code class="xref py py-obj docutils literal"><span class="pre">fill_random_integer</span></code></a>(n,n0,[b])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.fill_random_integer" title="quippy.linearalgebra.fill_random_integer"><code class="xref py py-obj docutils literal"><span class="pre">fill_random_integer</span></code></a>(n,n0,[b])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -327,7 +338,7 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.pseudo_inverse" title="quippy.linearalgebra.pseudo_inverse"><code class="xref py py-obj docutils literal"><span class="pre">pseudo_inverse</span></code></a>(n2,n3,[error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.pseudo_inverse" title="quippy.linearalgebra.pseudo_inverse"><code class="xref py py-obj docutils literal"><span class="pre">pseudo_inverse</span></code></a>(n2,n3,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -338,10 +349,10 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.scalar_triple_product" title="quippy.linearalgebra.scalar_triple_product"><code class="xref py py-obj docutils literal"><span class="pre">scalar_triple_product</span></code></a>(x,y,z)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.scalar_triple_product" title="quippy.linearalgebra.scalar_triple_product"><code class="xref py py-obj docutils literal"><span class="pre">scalar_triple_product</span></code></a>(x,y,z)</td>
 <td>Return the scalar triple product <img class="math" src="_images/math/b8ea76bffe9d3d676798e6cde9f5db21f5538c5b.png" alt="\mathbf{x} \cdot \mathbf{y} \times \mathbf{z}"/> of the 3-vectors <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code> and <code class="docutils literal"><span class="pre">z</span></code>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.invsqrt_real_array1d" title="quippy.linearalgebra.invsqrt_real_array1d"><code class="xref py py-obj docutils literal"><span class="pre">invsqrt_real_array1d</span></code></a>(x)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.invsqrt_real_array1d" title="quippy.linearalgebra.invsqrt_real_array1d"><code class="xref py py-obj docutils literal"><span class="pre">invsqrt_real_array1d</span></code></a>(x)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -352,23 +363,12 @@ as well as array searching, sorting and averaging.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.frobenius_norm" title="quippy.linearalgebra.frobenius_norm"><code class="xref py py-obj docutils literal"><span class="pre">frobenius_norm</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.frobenius_norm" title="quippy.linearalgebra.frobenius_norm"><code class="xref py py-obj docutils literal"><span class="pre">frobenius_norm</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.int_array_lt" title="quippy.linearalgebra.int_array_lt"><code class="xref py py-obj docutils literal"><span class="pre">int_array_lt</span></code></a>(array1,array2)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -908,6 +908,26 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </dd></dl>
 
 <dl class="function">
+<dt id="quippy.linearalgebra.int_array_lt">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">int_array_lt</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.int_array_lt" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>array1</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>array2</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (size(qp_array1))</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lt</strong> :  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_lt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="quippy.linearalgebra.is_diagonal">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">is_diagonal</code><span class="sig-paren">(</span><em>matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.is_diagonal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test if this matrix is diagonal</p>
@@ -960,6 +980,28 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </dd></dl>
 
 <dl class="function">
+<dt id="quippy.linearalgebra.unit_vector">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">unit_vector</code><span class="sig-paren">(</span><em>theta</em>, <em>phi</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.unit_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a unit vector in the direction given by the angles <code class="docutils literal"><span class="pre">theta</span></code> and <code class="docutils literal"><span class="pre">phi</span></code>, i.e.
+convert the spherical polar coordinates point <img class="math" src="_images/math/c2cb757dbfef144e8880f3a6c21e3bddd3d454ec.png" alt="(1,\theta,\phi)"/> to cartesians.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> :  input float</p>
+<p><strong>phi</strong> :  input float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_unit_vector</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">unit_vector</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="quippy.linearalgebra.d3poly_switch">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">d3poly_switch</code><span class="sig-paren">(</span><em>r</em>, <em>cutoff_in</em>, <em>transition_width</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.d3poly_switch" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -999,28 +1041,6 @@ Returns the interpolated <img class="math" src="_images/math/b124ff74afb0914bb43
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">poly_switch</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="quippy.linearalgebra.unit_vector">
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">unit_vector</code><span class="sig-paren">(</span><em>theta</em>, <em>phi</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.unit_vector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a unit vector in the direction given by the angles <code class="docutils literal"><span class="pre">theta</span></code> and <code class="docutils literal"><span class="pre">phi</span></code>, i.e.
-convert the spherical polar coordinates point <img class="math" src="_images/math/c2cb757dbfef144e8880f3a6c21e3bddd3d454ec.png" alt="(1,\theta,\phi)"/> to cartesians.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> :  input float</p>
-<p><strong>phi</strong> :  input float</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_unit_vector</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">unit_vector</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1371,26 +1391,6 @@ of the 3-vectors <code class="docutils literal"><span class="pre">x</span></code
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">frobenius_norm</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="quippy.linearalgebra.int_array_lt">
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">int_array_lt</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.int_array_lt" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>array1</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
-<p><strong>array2</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (size(qp_array1))</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lt</strong> :  int</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">int_array_lt</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3169,6 +3169,25 @@ on which the same reordering is performed
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
 </dd></dl>
 
+<dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">heap_sort</code><span class="sig-paren">(</span><em>array</em><span class="optional">[</span>, <em>i_data</em>, <em>r_data</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>array</strong> (<em>in/output rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>i_data</strong> (<em>in/output rank-1 array('i') with bounds (qp_n2), optional</em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n3), optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">heap_sort_i_2dim</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
 </div></blockquote>
 </dd></dl>
 
@@ -3513,13 +3532,13 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
         <li class="right" >
           <a href="electrostaticembed.html" title="Tools for electrostatic embedding"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 2ed12d7+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy f294ac3+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on May 11, 2016.
+      Last updated on May 20, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
