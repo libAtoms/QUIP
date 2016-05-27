@@ -22,7 +22,7 @@ for at in ar:
      print >> sys.stderr, "config %d" % i_frame
   if 'velo' in at.properties.keys():
     if not prev_at is None:
-      dt = at.params['time'] - prev_at.params['time']
+      dt = float(at.params['time'] - prev_at.params['time'])
     for i in frange(n_atoms):
       vels[i_frame+n_frames, 1:3*at.n:3]   = at.velo[1,1:at.n]
       vels[i_frame+n_frames, 2:1+3*at.n:3] = at.velo[2,1:at.n]
@@ -30,7 +30,7 @@ for at in ar:
     prev_at = at.copy()
   else:
     if not prev_at is None:
-      dt = at.params['time'] - prev_at.params['time']
+      dt = float(at.params['time'] - prev_at.params['time'])
       for i in frange(n_atoms):
 	vels[i_frame+n_frames, 1:3*at.n:3]   = (at.pos[1,1:at.n] - prev_at.pos[1,1:at.n])*dt
 	vels[i_frame+n_frames, 2:1+3*at.n:3] = (at.pos[2,1:at.n] - prev_at.pos[2,1:at.n])*dt
