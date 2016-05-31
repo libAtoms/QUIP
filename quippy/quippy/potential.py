@@ -163,9 +163,13 @@ with `atoms` to the new :class:`Potential` instance, by calling
                 if not 'label' in init_args:
                     init_args = init_args + ' label=%d' % id(self)
             else:
-                # if param_str missing, try to find default set of QUIP params
+                # if param_str missing, try to find default set of QUIP params,
+                # falling back on a do-nothing parameter string.
                 if param_str is None and pot1 is None and pot2 is None:
-                    param_str = quip_xml_parameters(init_args)
+                    try:
+                        param_str = quip_xml_parameters(init_args)
+                    except IOError:
+                        param_str = r'<params></params>'
 
         if kwargs != {}:
             if init_args is not None:
