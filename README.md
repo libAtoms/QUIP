@@ -68,8 +68,8 @@ The following external packages can be called:
  - VASP
  - CP2K
  - ASAP
- - ASE (latest svn trunk recommended)
  - Molpro
+ - ASE (required if using quippy Python interface; latest gitlab development version recommended)
 
 ## Code philosophy and goals
 

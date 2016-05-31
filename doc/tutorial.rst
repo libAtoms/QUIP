@@ -33,9 +33,10 @@ don't have these components installed.
 Other tutorials that may be useful:
 
 #. If you're new to Python, you might like to start with the `offical
-   Python tutorial <http://docs.python.org/dev/tutorial/index.html>`_. 
+   Python tutorial <http://docs.python.org/dev/tutorial/index.html>`_.
 
-#. quippy is compatible with the Atomic Simulation Environnment (ASE),
+#. quippy depends on and is compatible with the
+   Atomic Simulation Environnment (ASE),
    so their `tutorials
    <https://wiki.fysik.dtu.dk/ase/tutorials/tutorials.html>`_ are a
    useful resource. In particular, there's a good `introductory Python
@@ -113,14 +114,14 @@ copy of `dia`, but `dia is dia2` is `False` since there are two separate
 Atoms objects, residing at different memory locations.
 
 .. warning::
-   
+
    Be aware that the assignment operator (i.e. the = sign) in Python
    does not behave as you may expect from other programming languages:
    assignment always creates *references* not *copies*.
 
    In Python, variables are *names* for values, and assignment binds a
    name to a value. For example the sequence of commands ::
-   
+
       >>> a = 1
       >>> b = a
       >>> print a
@@ -131,7 +132,7 @@ Atoms objects, residing at different memory locations.
       True
       >>> print a is b
       True
-      
+
    creates one value (1) with two names (`a` and `b`). The comparison
    operator == checks whether two names corresond to the same *value*,
    wheras the `is` operator checks if they correspond to the same
@@ -182,7 +183,7 @@ Atoms objects, residing at different memory locations.
 
 
    For more information, consult the `offical Python tutorial`_.
-      
+
 
 Various different file formats are supported, see :ref:`fileformats`.
 
@@ -203,7 +204,7 @@ silicon crystal. Right clicking on an atom prints information about it::
   pos             =  [ 2.72  2.72  0.  ]
   species         =  Si
   z               =  14
-    
+
 The positions and atomic numbers of each atom are available in the ``pos``
 and ``z`` :attr:`~Atoms.properties`::
 
@@ -276,7 +277,7 @@ question marks for even more information). Here's the help for
    >>> help(get_lattice_params)
    get_lattice_params(lattice)
        Wrapper around Fortran :func:`get_lattice_params_`
-    
+
        Returns parameters of `lattice` as 6-tuple (a,b,c,alpha,beta,gamma).
 
 From this we can see that this function takes a 3x3  matrix `lattice`
@@ -336,7 +337,7 @@ are within the first unit cell using :meth:`~.Atoms.map_into_cell`::
 .. image:: alphaquartz2.png
    :align: center
 
-.. note:: 
+.. note::
 
    AtomEye has a different idea of the first unit-cell than quippy.
    I've shifted the cell by lattice coordinates of ``(0.5, 0.5, 0.5)``
@@ -372,7 +373,7 @@ and backwards::
 
    >>> view(al)
 
-.. note:: 
+.. note::
 
    The previous two steps can be accompished in one go using the
    ``quippy`` script from the shell command prompt::
@@ -384,7 +385,7 @@ and backwards::
    basname of the input filename, e.g. ``si_1000`` in this case.
    You can check the name of the current viewer with the
    :func:`~qlab.gcv` function::
-  
+
        >>> print gcv().name
        'si_1000'
        >>> print len(si_1000)
@@ -402,7 +403,7 @@ The first frame in the data we've loaded has the following properties
 and parameters::
 
    >>> print al[0].properties.keys()
-   ['species', 'pos', 'Z', 'travel', 'mass', 'move_mask', 'damp_mask', 
+   ['species', 'pos', 'Z', 'travel', 'mass', 'move_mask', 'damp_mask',
     'thermostat_region', 'avg_ke', 'velo', 'acc', 'avgpos', 'oldpos', 'force']
 
    >>> print al[0].params.keys()
@@ -478,7 +479,7 @@ energies to our graph::
    >>> plot(al.time, ke)                              # Plot kinetic energy
    >>> plot(al.time, ke + al.energy)                  # Plot total energy
 
-Here's the graph we get after adding a legend with. 
+Here's the graph we get after adding a legend with.
 
    >>> legend(['Potential energy', 'Kinetic energy', 'Total energy'],loc='center right')
 
@@ -539,7 +540,7 @@ and legends, we get the figure shown below.
    >>> ylabel('Frequency')
    >>> legend(['Maxwell-Boltzmann Distribution', 'Simulation Results'])
 
-.. note:: 
+.. note::
 
    LaTeX mathematical symbols can be used in matplotlib plots by
    enclosing them between dollar signs: ``$...$``. Note how we put an
@@ -599,7 +600,7 @@ Alternatively, you can read the XML string from a file::
 If no XML parameters are given, the QUIP parameter database (located
 in the directory :git:`/QUIP_Core/parameters`) is searched for
 matching parameters::
-  
+
    >>> pot = Potential('IP SW')
 
 Our new potential object has several methods, the most important being
@@ -647,7 +648,7 @@ zero by symmetry in the unperturbed bulk configuration::
    >>> pot.calc(s, force=True)
    >>> print s.force.max()
    1.74703475792e-14
-   
+
 As an example, let's make a copy of the Atoms object and randomise the
 positions a little. ::
 
@@ -655,7 +656,7 @@ positions a little. ::
    >>> c.pos += numpy.random.uniform(-0.1, 0.1, 3*c.n).reshape(3,c.n)
    >>> c.calc_connect()
    >>> pot.calc(c, force=True)
-   
+
 The extended AtomEye plugin can draw arrows to represent these forces
 using the :func:`~atomeye.draw_arrows` function::
 
@@ -679,8 +680,8 @@ The molecular dynamics loop would then look something like this::
 
     n_steps          = 100           # Number of simulation steps
     dt               = 1.0           # Time-step, in fs
-    connect_interval = 10            # How frequently to update connectivity    
-    ds.atoms.calc_connect() 
+    connect_interval = 10            # How frequently to update connectivity
+    ds.atoms.calc_connect()
     for n in range(n_steps):
         ds.advance_verlet1(dt)
         pot.calc(ds.atoms, force=True, energy=True)
@@ -756,7 +757,7 @@ cubic Si cell using conjugate-gradients (``cg``), to a tolerance of
    Goodbye from minim()
 
 :meth:`~Potential.minim` overwrites the original atoms object with
-the new positions and lattice coordinates, so we can check the 
+the new positions and lattice coordinates, so we can check the
 lattice properties of the minimised configuration::
 
    >>> a, b, c, alpha, beta, gamma = get_lattice_params(at0.lattice)
@@ -805,7 +806,7 @@ The energy as a function of volume is
 
    E(V) = E_0 + \frac{9V_0B_0}{16}
    \left\{
-   \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^3B_0^\prime + 
+   \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^3B_0^\prime +
    \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^2
    \left[6-4\left(\frac{V_0}{V}\right)^\frac{2}{3}\right]\right\}.
 
@@ -843,7 +844,7 @@ We can use this function to plot an energy-volume curve::
    >>> at0 = diamond(5.43, 14)
    >>> volumes, energies = compress_expand(at0, pot)
    >>> plot(volumes, energies, 'bo', label='Unrelaxed')
-   
+
 .. image:: energyvolume1.png
    :align: center
    :width: 600px
@@ -873,7 +874,7 @@ Here's a function to estimate initial values for the four parameters `eo`, `vo`,
       vo = volumes[energies.argmin()]
       bo = 30.0
       bop = 1.0
-     
+
       (vo,eo,bo,bop), success = leastsq(errfunc, (vo, eo, bo, bop), args=(volumes, energies))
       print 'Volume vo =', vo, 'A^3'
       print 'Energy eo =', eo, 'eV'
