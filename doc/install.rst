@@ -23,123 +23,44 @@ Installation of QUIP and quippy
 
 These intructions provide more details on the compilation and
 installation of `QUIP` (Fortran library and main programs) and
-`quippy` (Python interface). They should be read in conjunction with
-the main `README
-<https://github.com/libAtoms/QUIP/blob/public/README.md>`_.
+`quippy` (Python interface).
 
+Compilation Instructions
+------------------------
 
-Quick start
------------
+These instructions are excerpted from the top-level `README
+<https://github.com/libAtoms/QUIP/blob/public/README.md>`_, which is
+the most up-to-date source of information.
 
-For people who don't read manuals::
+  .. include:: ../README.md
+    :start-after: Compilation Instructions
 
- $ git clone https://github.com/libAtoms/QUIP.git
- $ cd QUIP
- $ export QUIP_ARCH=linux_x86_64_gfortran
- $ make config
- $ make
- $ make quippy
- $ make install-quippy
-
-Then add the installation directory to your :envvar:`PYTHONPATH`.
-
-Requirements
-------------
-
-Essential:
- * `Python 2.6 <http://www.python.org>`_ or later
- * `numpy`_  - version 1.2.1 or later
- * A working fortran compiler:
-
-   * ifort 10 or later (tested with 10.1.015 and 11.0.084)
-   * gfortran 4.3.3 or later
-   * Others that should work but haven't been tested: `pathf95`, `g95`, `pgf95`, `xlf95`
-
-Optional:
- * `ipython <http://ipython.scipy.org>`_ makes using python interactively 
-   much more productive.
- * `matplotlib <http://matplotlib.sourceforge.net>`_ is a useful plotting library which integrates well with ipython
- * `AtomEye <http://mt.seas.upenn.edu/Archive/Graphics/A3/A3.html>`_
-   atomistic configuration viewer.  A modified version of AtomEye
-   which integrates with quippy is available from my `GitHub
-   repository <https://www.github.com/jameskermode/AtomEye>`_
- * `scipy <http://www.scipy.org>`_ provides more scientific
-   functionality e.g. least squares fitting, optimisation, etc.
-
-Getting quippy
---------------
-
-You can download QUIP and quippy from our public `GitHub repository
-<https://www.github.com/libAtoms/QUIP>`_ ::
-
-  git clone https://github.com/libAtoms/QUIP.git
-
-We'll use the environment variable :envvar:`QUIP_ROOT` to refer
-to the root of the QUIP tree::
-
-  export QUIP_ROOT=~/QUIP/
-
-The :file:`libAtoms`, :file:`QUIP_Core`, :file:`QUIP_Util` and
-:file:`QUIP_Programs` directories contain Fortran 95 source
-code. quippy itself lives in the :file:`{QUIP_ROOT}/Tools/quippy`
-directory.
-
-Configuring quippy
-------------------
-
-Before compiling quippy, you need to set the environment variable
-:envvar:`QUIP_ARCH`. This sets the architecture for the QUIP framework which
-quippy wraps. Architectures are defined by creating a file
-:file:`${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH}` which describes which
-compilers and libraries should be used and where they can be found. quippy has
-been tested on the following architectures::
-
-  darwin_x86_64_gfortran
-  linux_x86_64_gfortran
-  linux_x86_64_ifort_gcc_serial
-  linux_x86_64_pgi
-
-If you're on one of these platforms then just set :envvar:`QUIP_ARCH`
-appropriately, for example on 64-bit Mac OS X with gfortran you would
-do::
-
-  $ export QUIP_ARCH=darwin_x86_64_gfortran
-
-Otherwise you'll have to make a new :file:`Makefile.${QUIP_ARCH}`,
-containing some of the variables defined below. The next step is to
-answer a number of questions about your system::
-
-  $ make config
-
-This generates a configurtion file `build/${QUIP_ARCH}/Makefile.inc`
-which you can subsequently edit if you need to customize any of the
-options described below.
 
 Custom settings
-^^^^^^^^^^^^^^^
+---------------
 
 :makevar:`MATHS_LINKOPTS`
    Library options needed to link to BLAS and LAPACK libraries. Any working
    BLAS/LAPACK installation is fine. If you are using Linux, ATLAS is
    a good option, and you should use something like the following::
- 
+
      -L/usr/local/atlas -llapack -lf77blas -lcblas -latlas
 
    On Mac OS X, there are build in LAPACK libraries in the Accelerate
    framework, which you can use by entering
-    
+
      -framework Accelerate
 
 :makevar:`FOX_LIBDIR`, :makevar:`FOX_INCDIR` and :makevar:`FOX_LIBS`
-  Directories containing FoX libraries and header files, and required link options. 
+  Directories containing FoX libraries and header files, and required link options.
   Should be read automatically from QUIP Makefiles.
 
 :makevar:`QUIPPY_FCOMPILER`
    Fortran compiler to use. The shell command::
 
-     $ f2py -c --help-fcompiler 
+     $ f2py -c --help-fcompiler
 
-   will print a list of detected compilers on your system. Use ``gnu95`` for gfortran, 
+   will print a list of detected compilers on your system. Use ``gnu95`` for gfortran,
    ``intel`` for ifort on 32-bit platforms and ``intelem`` for ifort on 64-bit platforms.
 
 :makevar:`QUIPPY_DEFINES` Preprocessor macros which should be defined
@@ -148,7 +69,7 @@ Custom settings
    important to put all the `-D` options needed here and not in
    :makevar:`QUIPPY_F90FLAGS`.
 
-	    
+
 :makevar:`QUIPPY_F90FLAGS` and :makevar:`QUIPPY_F77FLAGS`
    Extra flags to pass to Fortran 90 and 77 compilers
 
@@ -156,7 +77,7 @@ Custom settings
    Optimisation settings for Fortran compiler
 
 :makevar:`QUIPPY_DEBUG`
-   Set this to `1` to include debugging information in the compiled extension code. 
+   Set this to `1` to include debugging information in the compiled extension code.
    This also disables optimisation.
 
 :makevar:`QUIPPY_CPP`
@@ -179,111 +100,9 @@ Custom settings
   If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP.
 
 :makevar:`NETCDF_LIBDIR`, :makevar:`NETCDF_INCDIR`, :makevar:`NETCDF_LIBS` and :makevar:`NETCDF4_LIBS`
-  Directories containing NetCDF libraries and header files, and required link options. 
+  Directories containing NetCDF libraries and header files, and required link options.
   Should be read automatically from QUIP.
 
-
-Compilation
------------
-
-It's best to compile QUIP before trying to compile quippy. This will
-compile the FoX Fortran XML library as well as generating the required
-Makefiles. To compile QUIP, run `make` from the :envvar:`QUIP_ROOT`
-directory after setting :envvar:`QUIP_ARCH` appropriately, e.g. ::
-
-  cd ${QUIP_ROOT}
-  export QUIP_ARCH=linux_x86_64_gfortran
-  make
-
-After this, it's time to compile quippy itself ::
-
-  make quippy
-  
-to compile quippy. The compilation process is quite long; here is an
-overview of the various steps that are performed.
-
-- :mod:`patch_f2py` is invoked to patch the :mod:`numpy.f2py`
-  package at runtime to make several changes to the f2py-generated
-  C code. This will fail if you don't have :mod:`numpy` 1.2.1 or
-  later.
-
-- Fortran sources are imported from the :file:`libAtoms`, :file:`QUIP_Core`, 
-  :file:`QUIP_Utils` (if :makevar:`QUIPPY_NO_TOOLS` is not set) 
-  and :file:`QUIP_Programs` (if :makevar:`QUIPPY_NO_CRACK` is not set)
-  directories. At this stage the sources are preprocessed with the
-  :makevar:`QUIPPY_CPP` preprocessor. This removes ``#ifdef`` sections
-  so that the tools which read the Fortran source do not get confused
-  by multiple version of routines.
-
-- The :mod:`f90doc` module is used to parse Fortran sources and
-  analyse all the types, subroutines and functions.
-
-- Using the definitions read by :mod:`f90doc`, the
-  :mod:`f2py_wrapper_gen` module writes a Fortran wrapper file for
-  each source file that we're going to wrap. These files are named
-  :file:`quippy_${STEM}_wrap.f90` and are designed to use the
-  restricted set of Fortran 90 features understood by f2py.
-
-- The :file:`quippy_${STEM}_wrap.f90` files are passed to f2py, which 
-  generates a Python extension module :mod:`_quippy`. This is a low-level
-  module which allows all the Fortran functions to be called from Python,
-  but doesn't know anything about derived-types. See :ref:`wrapping-fortran-90-code`
-  for more details.
-
-- All the Fortran sources - both those imported and the generated
-  wrappers - are compiled using the Fortran compiler specified in
-  the :makevar:`QUIPPY_FCOMPILER` Makefile variable. The :mod:`_quippy`
-  C extension module is also compiled.
-
-- Finally all the object files are linked, together with external
-  libraries such as NetCDF and LAPACK, to create
-  :file:`_quippy.so`, the Python extension module. 
-
-If the compilation fails with an error message, please send the full
-output to me at j.r.kermode@warwick.ac.uk and I'll do my best to work
-out what's going wrong.
-
-Testing
--------
-
-Once quippy is successfully compiled, you should run the test suite to 
-check everything is working correctly::
-
-   make test
-
-The tests themselves can be found in :file:`${QUIP_ROOT}/tests/test*.py`.
-If any of the tests fail please send me (j.r.kermode@warwick.ac.uk) the output.
-
-Installation
-------------
-
-Once all the tests have passed, run ::
-
-   make install-quippy
-
-to install in the standard place for Python extension modules on your
-system (this will probably be something like
-:file:`/usr/local/lib/python-2.{x}/site-packages`). To install
-elsewhere, edit the `Makefile.inc` to include the line::
-
-  QUIPPY_INSTALL_OPTIONS=--prefix=PREFIX
-
-to install to a specific location such as :file:`/usr/local` or your
-home directory. You will need to add the installation directory
-containing the Python modules to your :envvar:`PYTHONPATH` environment
-variable, e.g. by adding the following line your your `~/.bashrc` or
-`~/.profile` file::
-
-To test if the installation was successful, change out of the source
-directory, start Python and try to import everything from the quippy
-package::
-
-   $ cd $HOME
-   $ python
-   >>> from quippy import *
-
-If you have any problems as this stage such as unresolved linking
-dependencies, consult the list of :ref:`install_faq` below.
 
 .. _install_faq:
 
@@ -359,7 +178,7 @@ If you get an :exc:`ImportError` with a message ::
    Expected in: flat namespace
    in /Users/silvia/lib/python/_atomeye.so
 
-be sure that the gfortran libraries are properly set in :makevar:`ATOMEYE_LIBS` in Makefile.atomeye 
+be sure that the gfortran libraries are properly set in :makevar:`ATOMEYE_LIBS` in Makefile.atomeye
 
 Error compiling IPModel_GAP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -367,7 +186,7 @@ Error compiling IPModel_GAP
 If you get the following error during compilation::
 
    /QUIP/QUIP_Core/IPModel_GAP.f95:51.22:
-   
+
    use descriptors_module
                          1
    Fatal Error: Can't open module file 'descriptors_module.mod' for reading at (1): No such file or directory
@@ -381,7 +200,7 @@ Warning about :mod:`quippy.castep` when importing quippy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you get the following warning message when importin quippy::
-   
+
    $ python
    >>> from quippy import *
    WARNING:root:quippy.castep import quippy.failed.
@@ -397,7 +216,7 @@ If you see an error like the following when using the Intel fortran compiler::
 
    fortcom: Severe: **Internal compiler error: internal abort** Please
    report this error along with the circumstances in which it occurred
-   in a Software Problem Report. 
+   in a Software Problem Report.
     Note: File and line given may not be explicit cause of this error.
 
    ifort: error #10014: problem during multi-file optimization compilation (code 3)
@@ -416,7 +235,7 @@ errors like this::
 
    collect2: ld returned 1 exit status ld: in
    /QUIP/build.darwin_x86_64_gfortran/libquiputils.a, malformed
-   archive TOC entry for  ___elasticity_module_MOD_einstein_frequencies, 
+   archive TOC entry for  ___elasticity_module_MOD_einstein_frequencies,
    offset 1769103734 is beyond end of file 1254096
 
 This seems to be a Mac OS X Lion problem with rebuilding static
