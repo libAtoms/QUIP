@@ -178,6 +178,13 @@ and Gromacs, but has a number of unique features:
 	[Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/)
 	(ASE) and some features require [scipy](http://www.scipy.org)
 	and/or [matscipy](https://github.com/libAtoms/matscipy).
+
+        If you are using a Python virtual environment (virtualenv) and would
+        like to install `quippy` into it, ensure the environment is activated
+        (`source <env_dir>/bin/activate`, where `<env_dir>` is the root of your
+        virtual environment) _before_ making quippy.  Also be sure to set the
+        variable `QUIPPY_INSTALL_OPTS` to include `--prefix=<env_dir>`;  this
+        can be done in the file `build/${QUIP_ARCH}/Makefile.inc`.
 	
 	More details on the quippy installation process are available in
 	the [online documentation](http://libatoms.github.io/QUIP/).
