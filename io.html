@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 1926a35+ documentation</title>
+    <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 221e7f0+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1926a35+',
+        VERSION:     '221e7f0+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 1926a35+ documentation" href="index.html" />
+    <link rel="top" title="quippy 221e7f0+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 1926a35+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 221e7f0+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -198,7 +198,7 @@ everything, use an <a class="reference internal" href="#quippy.io.AtomsList" tit
 which is used to fill in information which is missing from the
 input file.</p>
 <p>All <a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><code class="xref py py-class docutils literal"><span class="pre">AtomsReaders</span></code></a> support iteration, so you can loop over
-the contents using a <a class="reference external" href="http://docs.python.org/2.7/reference/compound_stmts.html#for" title="(in Python v2.7)"><code class="xref std std-keyword docutils literal"><span class="pre">for</span></code></a> loop:</p>
+the contents using a <a class="reference external" href="https://docs.python.org/2.7/reference/compound_stmts.html#for" title="(in Python v2.7)"><code class="xref std std-keyword docutils literal"><span class="pre">for</span></code></a> loop:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">al</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="s1">&#39;input-file.xyz&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">:</span>
    <span class="c1"># process Atoms object `at`</span>
@@ -211,7 +211,7 @@ the contents using a <a class="reference external" href="http://docs.python.org/
 </div>
 <p>In addition to iteration, some sources allow random access. To find
 out if an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></code></a> supports random access, either try
-to get it&#8217;s length with <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#len" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">len()</span></code></a>, or check if the
+to get it&#8217;s length with <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#len" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">len()</span></code></a>, or check if the
 <a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><code class="xref py py-attr docutils literal"><span class="pre">random_access</span></code></a> property is true. If <cite>cache_limit</cite> is large
 enough to store all the frames in the file, all
 <a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><code class="xref py py-class docutils literal"><span class="pre">AtomsReaders</span></code></a> will allow random access once the entire
@@ -765,14 +765,14 @@ NetCDF reading and writing routines, in pure Python.</p>
 <dl class="class">
 <dt id="quippy.cinoutput.CInOutputReader">
 <em class="property">class </em><code class="descclassname">quippy.cinoutput.</code><code class="descname">CInOutputReader</code><span class="sig-paren">(</span><em>source</em>, <em>frame=None</em>, <em>range=None</em>, <em>start=0</em>, <em>stop=None</em>, <em>step=1</em>, <em>no_compute_index=False</em>, <em>zero=False</em>, <em>one_frame_per_file=False</em>, <em>indices=None</em>, <em>string=False</em>, <em>format=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cinoutput.html#CInOutputReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cinoutput.CInOutputReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Class to read atoms from a CInOutput. Supports generator and random access via indexing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="quippy.cinoutput.CInOutputWriter">
 <em class="property">class </em><code class="descclassname">quippy.cinoutput.</code><code class="descname">CInOutputWriter</code><span class="sig-paren">(</span><em>dest</em>, <em>append=False</em>, <em>netcdf4=False</em>, <em>one_frame_per_file=False</em>, <em>string=False</em>, <em>**write_kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cinoutput.html#CInOutputWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cinoutput.CInOutputWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Class to write atoms sequentially to a CInOutput stream</p>
 </dd></dl>
 
@@ -1130,7 +1130,7 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 <td>Decorator to mark a function as a reader for a particular file extension</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">frange</span></code>(min[,&nbsp;max,&nbsp;step])</td>
-<td>Fortran equivalent of <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#range" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">range()</span></code></a> builtin.</td>
+<td>Fortran equivalent of <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#range" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">range()</span></code></a> builtin.</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">fzeros</span></code>(shape[,&nbsp;dtype])</td>
 <td>Create an empty <code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code> with Fortran ordering.</td>
@@ -1284,14 +1284,14 @@ which can be used to simplify the registration process:</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 1926a35+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 221e7f0+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 02, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.2.
+      Last updated on Jun 07, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.3.
     </div>
   </body>
 </html>
