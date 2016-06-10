@@ -910,19 +910,9 @@ subroutine IPModel_GAP_Print (this, file)
 
 #ifdef HAVE_GAP
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
+  call Print("IPModel_GAP : label = "//this%label, file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
-  call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
-  call Print("IPModel_GAP : z0 = "//this%z0, file=file)
   call Print("IPModel_GAP : E_scale = "//this%E_scale, file=file)
-  call Print("IPModel_GAP : n_species = "//this%n_species, file=file)
-
-  do i = 1, this%n_species
-     call Print("IPModel_GAP : Z = "//this%Z(i), file=file)
-     call Print("IPModel_GAP : z_eff = "//this%z_eff(this%Z(i)), file=file)
-!     call Print("IPModel_GAP : delta = "//this%my_gp%delta(i), file=file)
-!     call Print("IPModel_GAP : theta = "//this%my_gp%theta(:,i), file=file)
-  enddo
-
   call Print("IPModel_GAP : command_line = "//string(this%command_line))
 #endif
 
