@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ase.atoms &mdash; quippy e35f3f6+ documentation</title>
+    <title>ase.atoms &mdash; quippy db66102+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'e35f3f6+',
+        VERSION:     'db66102+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy e35f3f6+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy db66102+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e35f3f6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy db66102+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -300,12 +300,9 @@
 
 <div class="viewcode-block" id="Atoms.set_calculator"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_calculator">[docs]</a>    <span class="k">def</span> <span class="nf">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Attach calculator object.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="s1">&#39;_SetListOfAtoms&#39;</span><span class="p">):</span>
-            <span class="kn">from</span> <span class="nn">ase.old</span> <span class="kn">import</span> <span class="n">OldASECalculatorWrapper</span>
-            <span class="n">calc</span> <span class="o">=</span> <span class="n">OldASECalculatorWrapper</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="o">=</span> <span class="n">calc</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="s1">&#39;set_atoms&#39;</span><span class="p">):</span>
-            <span class="n">calc</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="o">=</span> <span class="n">calc</span></div>
+            <span class="n">calc</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atoms.get_calculator"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_calculator">[docs]</a>    <span class="k">def</span> <span class="nf">get_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get currently attached calculator object.&quot;&quot;&quot;</span>
@@ -750,14 +747,14 @@
 <span class="sd">        Ask the attached calculator to calculate the forces and apply</span>
 <span class="sd">        constraints.  Use *apply_constraint=False* to get the raw</span>
 <span class="sd">        forces.</span>
-<span class="sd">        </span>
+
 <span class="sd">        For molecular dynamics (md=True) we don&#39;t apply the constraint</span>
 <span class="sd">        to the forces but to the momenta.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Atoms object has no calculator.&#39;</span><span class="p">)</span>
         <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">apply_constraint</span><span class="p">:</span>
             <span class="c1"># We need a special md flag here because for MD we want</span>
             <span class="c1"># to skip real constraints but include special &quot;constraints&quot;</span>
@@ -835,15 +832,17 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Atoms.get_number_of_atoms"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_number_of_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_number_of_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns the global number of atoms in a distributed-atoms parallel simulation.</span>
+        <span class="sd">&quot;&quot;&quot;Returns the global number of atoms in a distributed-atoms parallel</span>
+<span class="sd">        simulation.</span>
 
 <span class="sd">        DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!</span>
-<span class="sd">        </span>
-<span class="sd">        Equivalent to len(atoms) in the standard ASE Atoms class.  You should normally</span>
-<span class="sd">        use len(atoms) instead.  This function&#39;s only purpose is to make compatibility</span>
-<span class="sd">        between ASE and Asap easier to maintain by having a few places in ASE use this</span>
-<span class="sd">        function instead.  It is typically only when counting the global number of</span>
-<span class="sd">        degrees of freedom or in similar situations.</span>
+
+<span class="sd">        Equivalent to len(atoms) in the standard ASE Atoms class.  You should</span>
+<span class="sd">        normally use len(atoms) instead.  This function&#39;s only purpose is to</span>
+<span class="sd">        make compatibility between ASE and Asap easier to maintain by having a</span>
+<span class="sd">        few places in ASE use this function instead.  It is typically only</span>
+<span class="sd">        when counting the global number of degrees of freedom or in similar</span>
+<span class="sd">        situations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
@@ -1791,14 +1790,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e35f3f6+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy db66102+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 10, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.3.
+      Last updated on Jun 15, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
 </html>
