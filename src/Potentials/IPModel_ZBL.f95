@@ -71,7 +71,7 @@ type IPModel_ZBL
   real(dp) :: p_exp_3 = -0.40290
   real(dp) :: p_pre_exp_4 = 0.02817
   real(dp) :: p_exp_4 = -0.20162
-
+  real(dp) :: E_scale
   character(len=STRING_LENGTH) :: label
 
 end type IPModel_ZBL
@@ -111,6 +111,7 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ZBL_Initialise_str args_str')) then
     call system_abort("IPModel_ZBL_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
+  call param_register(params, 'E_scale', '1.0', this%E_scale, help_string="E_scale")
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string="cutoff")
   call param_register(params, 'a_pre_exp', '0.46850', this%a_pre_exp, help_string="pre-exponential factor for screening parameter")
   call param_register(params, 'a_exp', '0.23', this%a_exp, help_string="exponent of charge of nuclei")
@@ -123,6 +124,7 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   call param_register(params, 'p_pre_exp_4', '0.02817', this%p_pre_exp_4, help_string="fourth pre-exponential factor of screening function")
   call param_register(params, 'p_exp_4', '-0.20162', this%p_exp_4, help_string="fourth exponent of screening function")
 
+  
   if (param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ZBL_Initialise_str args_str')) then
   end if
 
@@ -214,6 +216,11 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
       end do
    end do
 
+   if(present(e)) e = e*this%E_scale
+   if(present(f)) f = f*this%E_scale
+   if(present(virial)) virial = virial*this%E_scale
+   if(present(local_e)) local_e = local_e*this%E_scale
+   
    if (present(mpi)) then
       if (present(e)) e = sum(mpi, e)
       if (present(local_e)) call sum_in_place(mpi, local_e)
