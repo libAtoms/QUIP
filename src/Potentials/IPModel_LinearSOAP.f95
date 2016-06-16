@@ -132,9 +132,9 @@ subroutine IPModel_LinearSOAP_Initialise_str(this, args_str, param_str)
 end subroutine IPModel_LinearSOAP_Initialise_str
 
 subroutine IPModel_LinearSOAP_Finalise(this)
-#ifdef HAVE_GAP
   type(IPModel_LinearSOAP), intent(inout) :: this
 
+#ifdef HAVE_GAP
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
 
@@ -163,7 +163,9 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
-#ifdef HAVE_GAP 
+
+#ifdef HAVE_GAP
+
   integer i, atomtype, d
 
   type(Dictionary)                :: params
@@ -348,6 +350,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=*), intent(in)   :: name 
   type(dictionary_t), intent(in) :: attributes
 
+#ifdef HAVE_GAP
   integer :: status
   character(len=1024) :: value
 
@@ -465,6 +468,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
      
   endif
+#endif
 
 end subroutine IPModel_startElement_handler
 
