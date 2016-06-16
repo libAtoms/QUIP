@@ -55,7 +55,9 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+#ifdef HAVE_GAP
 use descriptors_module
+#endif
 use mpi_context_module
 use QUIP_Common_module
 use extendable_str_module
@@ -108,6 +110,7 @@ subroutine IPModel_LinearSOAP_Initialise_str(this, args_str, param_str)
   type(IPModel_LinearSOAP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
 
+#ifdef HAVE_GAP
   type(Dictionary) :: params
 
   call Finalise(this)
@@ -121,12 +124,14 @@ subroutine IPModel_LinearSOAP_Initialise_str(this, args_str, param_str)
   call finalise(params)
 
   call IPModel_LinearSOAP_read_params_xml(this, param_str)
+#endif
 
 end subroutine IPModel_LinearSOAP_Initialise_str
 
 subroutine IPModel_LinearSOAP_Finalise(this)
   type(IPModel_LinearSOAP), intent(inout) :: this
 
+#ifdef HAVE_GAP
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
 
@@ -135,6 +140,7 @@ subroutine IPModel_LinearSOAP_Finalise(this)
 
   this%n_types = 0
   this%label = ''
+#endif
 end subroutine IPModel_LinearSOAP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -154,6 +160,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   integer, intent(out), optional :: error
 
 
+#ifdef HAVE_GAP
   integer i, atomtype, d
 
   type(Dictionary)                :: params
@@ -311,6 +318,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   if(allocated(local_e_in)) deallocate(local_e_in)
   
 
+#endif
   
 end subroutine IPModel_LinearSOAP_Calc
 
@@ -338,6 +346,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=*), intent(in)   :: name 
   type(dictionary_t), intent(in) :: attributes
 
+#ifdef HAVE_GAP
   integer :: status
   character(len=1024) :: value
 
@@ -455,6 +464,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
      
   endif
+#endif
 
 end subroutine IPModel_startElement_handler
 
