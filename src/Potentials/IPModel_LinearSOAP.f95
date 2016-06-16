@@ -55,7 +55,9 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+#ifdef HAVE_GAP
 use descriptors_module
+#endif 
 use mpi_context_module
 use QUIP_Common_module
 use extendable_str_module
@@ -112,6 +114,11 @@ subroutine IPModel_LinearSOAP_Initialise_str(this, args_str, param_str)
 
   call Finalise(this)
 
+! now initialise the potential
+#ifndef HAVE_GAP
+  call system_abort('IPModel_LinearSOAP_Initialise_str: must be compiled with HAVE_GAP')
+#else
+
   call initialise(params)
   this%label = ''
   call param_register(params, 'label', '', this%label, help_string="XML label of the potential")
@@ -121,10 +128,11 @@ subroutine IPModel_LinearSOAP_Initialise_str(this, args_str, param_str)
   call finalise(params)
 
   call IPModel_LinearSOAP_read_params_xml(this, param_str)
-
+#endif
 end subroutine IPModel_LinearSOAP_Initialise_str
 
 subroutine IPModel_LinearSOAP_Finalise(this)
+#ifdef HAVE_GAP
   type(IPModel_LinearSOAP), intent(inout) :: this
 
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
@@ -135,6 +143,8 @@ subroutine IPModel_LinearSOAP_Finalise(this)
 
   this%n_types = 0
   this%label = ''
+
+#endif
 end subroutine IPModel_LinearSOAP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -153,7 +163,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
-
+#ifdef HAVE_GAP 
   integer i, atomtype, d
 
   type(Dictionary)                :: params
@@ -310,7 +320,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   ! cleanup
   if(allocated(local_e_in)) deallocate(local_e_in)
   
-
+#endif 
   
 end subroutine IPModel_LinearSOAP_Calc
 
