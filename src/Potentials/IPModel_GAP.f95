@@ -156,7 +156,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
 
   ! now initialise the potential
 #ifndef HAVE_GAP
-  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GAP')
+  call system_abort('IPModel_GAP_Initialise_str: must be compiled with HAVE_GAP')
 #else
 
   call initialise(params)
