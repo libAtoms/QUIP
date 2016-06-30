@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ase.calculators.calculator &mdash; quippy 5055fec+ documentation</title>
+    <title>ase.calculators.calculator &mdash; quippy b558eef+ documentation</title>
     
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '5055fec+',
+        VERSION:     'b558eef+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 5055fec+ documentation" href="../../../index.html" />
+    <link rel="top" title="quippy b558eef+ documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy 5055fec+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy b558eef+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -85,9 +85,9 @@
 
 
 <span class="c1"># Recognized names of calculators sorted alphabetically:</span>
-<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abinit&#39;</span><span class="p">,</span> <span class="s1">&#39;aims&#39;</span><span class="p">,</span> <span class="s1">&#39;asap&#39;</span><span class="p">,</span> <span class="s1">&#39;castep&#39;</span><span class="p">,</span> <span class="s1">&#39;cp2k&#39;</span><span class="p">,</span> <span class="s1">&#39;dftb&#39;</span><span class="p">,</span> <span class="s1">&#39;eam&#39;</span><span class="p">,</span> <span class="s1">&#39;elk&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;emt&#39;</span><span class="p">,</span> <span class="s1">&#39;exciting&#39;</span><span class="p">,</span> <span class="s1">&#39;fleur&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;gpaw&#39;</span><span class="p">,</span> <span class="s1">&#39;gromacs&#39;</span><span class="p">,</span> <span class="s1">&#39;hotbit&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;jacapo&#39;</span><span class="p">,</span> <span class="s1">&#39;lammps&#39;</span><span class="p">,</span> <span class="s1">&#39;lammpslib&#39;</span><span class="p">,</span> <span class="s1">&#39;lj&#39;</span><span class="p">,</span> <span class="s1">&#39;mopac&#39;</span><span class="p">,</span> <span class="s1">&#39;morse&#39;</span><span class="p">,</span>
+<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abinit&#39;</span><span class="p">,</span> <span class="s1">&#39;aims&#39;</span><span class="p">,</span> <span class="s1">&#39;asap&#39;</span><span class="p">,</span> <span class="s1">&#39;castep&#39;</span><span class="p">,</span> <span class="s1">&#39;cp2k&#39;</span><span class="p">,</span> <span class="s1">&#39;demon&#39;</span><span class="p">,</span> <span class="s1">&#39;dftb&#39;</span><span class="p">,</span> <span class="s1">&#39;eam&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;elk&#39;</span><span class="p">,</span> <span class="s1">&#39;emt&#39;</span><span class="p">,</span> <span class="s1">&#39;exciting&#39;</span><span class="p">,</span> <span class="s1">&#39;fleur&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;gpaw&#39;</span><span class="p">,</span> <span class="s1">&#39;gromacs&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;hotbit&#39;</span><span class="p">,</span> <span class="s1">&#39;jacapo&#39;</span><span class="p">,</span> <span class="s1">&#39;lammps&#39;</span><span class="p">,</span> <span class="s1">&#39;lammpslib&#39;</span><span class="p">,</span> <span class="s1">&#39;lj&#39;</span><span class="p">,</span> <span class="s1">&#39;mopac&#39;</span><span class="p">,</span> <span class="s1">&#39;morse&#39;</span><span class="p">,</span>
          <span class="s1">&#39;nwchem&#39;</span><span class="p">,</span> <span class="s1">&#39;octopus&#39;</span><span class="p">,</span> <span class="s1">&#39;siesta&#39;</span><span class="p">,</span> <span class="s1">&#39;tip3p&#39;</span><span class="p">,</span> <span class="s1">&#39;turbomole&#39;</span><span class="p">,</span> <span class="s1">&#39;vasp&#39;</span><span class="p">]</span>
 
 
@@ -449,11 +449,7 @@
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_calculation</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">None</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">system_changes</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-                <span class="k">raise</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">system_changes</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;magmom&#39;</span> <span class="ow">and</span> <span class="s1">&#39;magmom&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
@@ -485,7 +481,7 @@
 <span class="sd">            and &#39;magmoms&#39;.</span>
 <span class="sd">        system_changes: list of str</span>
 <span class="sd">            List of what has changed since last calculation.  Can be</span>
-<span class="sd">            any combination of these five: &#39;positions&#39;, &#39;numbers&#39;, &#39;cell&#39;,</span>
+<span class="sd">            any combination of these six: &#39;positions&#39;, &#39;numbers&#39;, &#39;cell&#39;,</span>
 <span class="sd">            &#39;pbc&#39;, &#39;initial_charges&#39; and &#39;initial_magmoms&#39;.</span>
 
 <span class="sd">        Subclasses need to implement this, but can ignore properties</span>
@@ -633,13 +629,13 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy 5055fec+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy b558eef+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 16, 2016.
+      Last updated on Jun 30, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
