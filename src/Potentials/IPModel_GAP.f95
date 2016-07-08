@@ -156,7 +156,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
 
   ! now initialise the potential
 #ifndef HAVE_GAP
-  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GAP')
+  call system_abort('IPModel_GAP_Initialise_str: must be compiled with HAVE_GAP')
 #else
 
   call initialise(params)
@@ -382,8 +382,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
-
-     call gpCoordinates_precalculate_sparse(this%my_gp%coordinate(i_coordinate))
 
      if(do_gap_variance) then
         call gpCoordinates_initialise_variance_estimate(this%my_gp%coordinate(i_coordinate), gap_variance_regularisation)
@@ -912,19 +910,9 @@ subroutine IPModel_GAP_Print (this, file)
 
 #ifdef HAVE_GAP
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
+  call Print("IPModel_GAP : label = "//this%label, file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
-  call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
-  call Print("IPModel_GAP : z0 = "//this%z0, file=file)
   call Print("IPModel_GAP : E_scale = "//this%E_scale, file=file)
-  call Print("IPModel_GAP : n_species = "//this%n_species, file=file)
-
-  do i = 1, this%n_species
-     call Print("IPModel_GAP : Z = "//this%Z(i), file=file)
-     call Print("IPModel_GAP : z_eff = "//this%z_eff(this%Z(i)), file=file)
-!     call Print("IPModel_GAP : delta = "//this%my_gp%delta(i), file=file)
-!     call Print("IPModel_GAP : theta = "//this%my_gp%theta(:,i), file=file)
-  enddo
-
   call Print("IPModel_GAP : command_line = "//string(this%command_line))
 #endif
 
