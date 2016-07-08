@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ase.calculators.calculator &mdash; quippy b558eef+ documentation</title>
+    <title>ase.calculators.calculator &mdash; quippy 83f0969+ documentation</title>
     
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     'b558eef+',
+        VERSION:     '83f0969+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="quippy b558eef+ documentation" href="../../../index.html" />
+    <link rel="top" title="quippy 83f0969+ documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy b558eef+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy 83f0969+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -185,7 +185,19 @@
 
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
+        
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">other</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+            
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read parameters from file.&quot;&quot;&quot;</span>
@@ -195,7 +207,7 @@
         <span class="k">return</span> <span class="n">parameters</span>
 
     <span class="k">def</span> <span class="nf">tostring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;dict(&#39;</span> <span class="o">+</span> <span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">     &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)</span><span class="se">\n</span><span class="s1">&#39;</span>
 
@@ -305,10 +317,19 @@
         <span class="k">return</span> <span class="n">Parameters</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">todict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_parameters</span><span class="p">()</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">default</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">default</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_parameters</span><span class="p">()</span>
+        <span class="n">dct</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">default</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">defaults</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">default</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;todict&#39;</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">todict</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="c1"># Only keep values that are not default:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">default</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="n">dct</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">dct</span>
 
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Clear all information from old calculation.&quot;&quot;&quot;</span>
@@ -373,13 +394,7 @@
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">oldvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">equal</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">oldvalue</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">oldvalue</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="c1"># Special treatment for dictionary parameters:</span>
-                    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">oldvalue</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                                <span class="s1">&#39;Unknown subparameter &quot;</span><span class="si">%s</span><span class="s1">&quot; in &#39;</span>
-                                <span class="s1">&#39;dictionary parameter &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">oldvalue</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                     <span class="n">oldvalue</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                     <span class="n">value</span> <span class="o">=</span> <span class="n">oldvalue</span>
                 <span class="n">changed_parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -629,13 +644,13 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy b558eef+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">quippy 83f0969+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jun 30, 2016.
+      Last updated on Jul 08, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
