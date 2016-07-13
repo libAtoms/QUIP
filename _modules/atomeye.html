@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>atomeye &mdash; quippy 0837f4c+ documentation</title>
+    <title>atomeye &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -160,8 +160,8 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">atexit</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">log10</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">log10</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AtomEyeViewer&#39;</span><span class="p">,</span> <span class="s1">&#39;view&#39;</span><span class="p">,</span> <span class="s1">&#39;redraw&#39;</span><span class="p">,</span> <span class="s1">&#39;run_command&#39;</span><span class="p">,</span> <span class="s1">&#39;run_script&#39;</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">,</span>
            <span class="s1">&#39;setp&#39;</span><span class="p">,</span> <span class="s1">&#39;save_script&#39;</span><span class="p">,</span> <span class="s1">&#39;toggle_coordination_coloring&#39;</span><span class="p">,</span> <span class="s1">&#39;translate&#39;</span><span class="p">,</span>
@@ -180,12 +180,12 @@
 
 <span class="k">try</span><span class="p">:</span>
     <span class="c1"># try to use same fortran_indexing setting as quippy, if it&#39;s installed</span>
-    <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">get_fortran_indexing</span><span class="p">,</span> <span class="n">set_fortran_indexing</span>
+    <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">get_fortran_indexing</span><span class="p">,</span> <span class="n">set_fortran_indexing</span>
     
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="c1"># quippy is not available, so we define our own fortran_indexing setting</span>
 
-    <span class="n">_fortran_indexing</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">_fortran_indexing</span> <span class="o">=</span> <span class="kc">False</span>
     
     <span class="k">def</span> <span class="nf">get_fortran_indexing</span><span class="p">():</span>
         <span class="k">global</span> <span class="n">_fortran_indexing</span>
@@ -198,13 +198,13 @@
     <span class="n">__all__</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;get_fortran_indexing&#39;</span><span class="p">,</span> <span class="s1">&#39;set_fortran_indexing&#39;</span><span class="p">])</span>
                              
 
-<span class="k">def</span> <span class="nf">_tmp_pkg</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_tmp_pkg</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a temporary package.</span>
 
 <span class="sd">    Returns (name, path)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="nb">dir</span><span class="p">)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -213,7 +213,7 @@
             <span class="n">os</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">break</span>
-    <span class="n">init</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;__init__.py&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">init</span> <span class="o">=</span> <span class="n">file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;__init__.py&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">init</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="c1"># remove directory at exit</span>
@@ -357,31 +357,31 @@
 
     <span class="n">CONFIG_MAX_AUXILIARY</span> <span class="o">=</span> <span class="mi">64</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">viewer_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">nowindow</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">viewer_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">nowindow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">showargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_previous_atoms</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_previous_atoms</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frame</span> <span class="o">=</span> <span class="n">frame</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">echo</span> <span class="o">=</span> <span class="n">echo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="k">if</span> <span class="n">viewer_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">viewer_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">copy</span><span class="p">,</span> <span class="n">nowindow</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span> <span class="o">=</span> <span class="n">viewer_id</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_window_id</span> <span class="o">=</span> <span class="n">viewer_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">viewers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="o">**</span><span class="n">showargs</span><span class="p">)</span>
 
            
-<div class="viewcode-block" id="AtomEyeViewer.start"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nowindow</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.start"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nowindow</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Start the AtomEye thread, wait for it to load and apply</span>
 <span class="sd">        default commands.</span>
@@ -398,7 +398,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span><span class="p">:</span> <span class="k">return</span>
         <span class="n">icopy</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">copy</span><span class="p">,</span> <span class="n">AtomEye</span><span class="p">):</span>
                 <span class="n">icopy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">_window_id</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">copy</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
@@ -414,11 +414,11 @@
                                    <span class="n">AtomEyeViewer</span><span class="o">.</span><span class="n">on_new_window</span><span class="p">,</span>
                                    <span class="n">AtomEyeViewer</span><span class="o">.</span><span class="n">on_redraw</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomeye</span><span class="o">.</span><span class="n">count</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_window_id</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span> <span class="n">viewer</span> <span class="k">for</span> <span class="n">viewer</span> <span class="ow">in</span> <span class="n">viewers</span> <span class="k">if</span> <span class="n">viewer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_id</span> <span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_module_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_id</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s1">&#39;Initialising AtomEyeViewer with module_id </span><span class="si">%d</span><span class="s1"> and window id </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span>
+        <span class="nb">print</span> <span class="s1">&#39;Initialising AtomEyeViewer with module_id </span><span class="si">%d</span><span class="s1"> and window id </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span>
         <span class="n">viewers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="n">atomeye_window_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomeye</span><span class="o">.</span><span class="n">open_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_module_id</span><span class="p">,</span> <span class="n">icopy</span><span class="p">,</span> <span class="n">nowindow</span><span class="p">)</span>
         <span class="c1">#assert atomeye_window_id == self._window_id</span>
@@ -453,7 +453,7 @@
         <span class="bp">self</span> <span class="o">=</span> <span class="n">viewers</span><span class="p">[(</span><span class="n">mod</span><span class="p">,</span><span class="n">iw</span><span class="p">)]</span>
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">()</span>
         
-        <span class="k">if</span> <span class="n">at</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">at</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
@@ -476,14 +476,14 @@
         <span class="k">if</span> <span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">iw</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">viewers</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Unexpected window id </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">iw</span><span class="p">)</span>
         <span class="bp">self</span> <span class="o">=</span> <span class="n">viewers</span><span class="p">[(</span><span class="n">mod</span><span class="p">,</span><span class="n">iw</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">del</span> <span class="n">viewers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_close_hook</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">on_new_window</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">iw</span><span class="p">):</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">iw</span><span class="p">)</span> <span class="ow">in</span> <span class="n">viewers</span><span class="p">:</span>
-            <span class="n">viewers</span><span class="p">[(</span><span class="n">mod</span><span class="p">,</span><span class="n">iw</span><span class="p">)]</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">viewers</span><span class="p">[(</span><span class="n">mod</span><span class="p">,</span><span class="n">iw</span><span class="p">)]</span><span class="o">.</span><span class="n">is_alive</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">new_viewer</span> <span class="o">=</span> <span class="n">AtomEyeViewer</span><span class="p">(</span><span class="n">viewer_id</span><span class="o">=</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">iw</span><span class="p">))</span>
             
@@ -495,23 +495,23 @@
 
         <span class="c1"># keep a reference to old atoms around so memory doesn&#39;t get free&#39;d prematurely</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_previous_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_previous_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_previous_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_exit_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_atoms</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="o">=</span> <span class="kc">None</span>
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;(null)&#39;</span>
             <span class="n">n_atom</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">cell</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="n">arrays</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">redraw</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Atoms&#39;</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="o">.</span><span class="n">filename</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="o">.</span><span class="n">name</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
                 <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">0</span><span class="si">%d</span><span class="s2">d&quot;</span> <span class="o">%</span> <span class="n">ceil</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> frame </span><span class="si">%s</span><span class="s1"> length </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">))</span>
@@ -539,26 +539,26 @@
             <span class="n">redraw</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># FIXME, we should decide if we really have to redraw here</span>
 
         <span class="k">if</span> <span class="n">redraw</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-            <span class="k">print</span> <span class="n">title</span>
-            <span class="k">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s1">&#39;Number of atoms: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n_atom</span>
-            <span class="k">print</span> <span class="s1">&#39;Fortran indexing: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">get_fortran_indexing</span><span class="p">()</span>
-            <span class="k">print</span> <span class="s1">&#39;Unit cell:&#39;</span>
-            <span class="k">print</span> <span class="n">cell</span>
+            <span class="nb">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="n">title</span>
+            <span class="nb">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="s1">&#39;Number of atoms: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n_atom</span>
+            <span class="nb">print</span> <span class="s1">&#39;Fortran indexing: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">get_fortran_indexing</span><span class="p">()</span>
+            <span class="nb">print</span> <span class="s1">&#39;Unit cell:&#39;</span>
+            <span class="nb">print</span> <span class="n">cell</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_redraw_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         
         <span class="k">return</span> <span class="p">(</span><span class="n">redraw</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">n_atom</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">arrays</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AtomEyeViewer.gcat"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.gcat">[docs]</a>    <span class="k">def</span> <span class="nf">gcat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.gcat"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.gcat">[docs]</a>    <span class="k">def</span> <span class="nf">gcat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get current atoms - return Atoms object currently being visualised.</span>
 
 <span class="sd">        If update=False (the default), we return what is currently being visualised,</span>
 <span class="sd">        even if this is not in sync with self.atoms[self.frame].&quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">update</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">update</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_atoms</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
@@ -566,15 +566,15 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span></div>
 
-<div class="viewcode-block" id="AtomEyeViewer.scat"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.scat">[docs]</a>    <span class="k">def</span> <span class="nf">scat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.scat"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.scat">[docs]</a>    <span class="k">def</span> <span class="nf">scat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set current atoms (and optionally also current frame)&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span>
-        <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_frame</span> <span class="o">=</span> <span class="n">frame</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redraw</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="AtomEyeViewer.show"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.show"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update what is shown in this AtomEye viewer window.</span>
 
@@ -598,9 +598,9 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;is_alive is False&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scat</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">property</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">property</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="nb">property</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">arrows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">arrows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">draw_arrows</span><span class="p">(</span><span class="n">arrows</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redraw</span><span class="p">()</span></div>
                 
@@ -631,7 +631,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_alive</span><span class="p">:</span> 
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;is_alive is False&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">echo</span><span class="p">:</span>
-            <span class="k">print</span> <span class="n">command</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="nb">print</span> <span class="n">command</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_atomeye</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_window_id</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
@@ -695,7 +695,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;cutoff_lengths&#39;</span><span class="p">:</span>
                 <span class="k">for</span> <span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">cutoff</span><span class="p">),</span> <span class="n">absolute</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">cutoff</span><span class="p">),</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
@@ -714,7 +714,7 @@
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;set&#39;</span><span class="p">):</span>
-                <span class="n">dummy</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">dummy</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">variables</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
@@ -882,7 +882,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;toggle_aux_property_thresholds_rigid&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AtomEyeViewer.rcut_patch"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.rcut_patch">[docs]</a>    <span class="k">def</span> <span class="nf">rcut_patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.rcut_patch"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.rcut_patch">[docs]</a>    <span class="k">def</span> <span class="nf">rcut_patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Change the cutoff distance for `sym1`--`sym2` bonds by `delta`.</span>
 
@@ -923,16 +923,16 @@
     <span class="k">def</span> <span class="nf">flip_cutting_plane</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;flip_cutting_plane </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AtomEyeViewer.capture"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.capture">[docs]</a>    <span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.capture"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.capture">[docs]</a>    <span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Render the current view to image `filename`</span>
 
 <span class="sd">        Format is determined from file extension: .png, .jpeg, or .eps.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">resolution</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">resolution</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="n">format</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="n">filename</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">resolution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">resolution</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="n">filename</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;capture </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">format</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;capture </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">format</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="nf">change_wireframe_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;change_wireframe_mode&quot;</span><span class="p">)</span>
@@ -963,7 +963,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span></div>
 
-<div class="viewcode-block" id="AtomEyeViewer.forward"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.forward"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Move forward by `delta` frames (default value is self.delta).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -971,7 +971,7 @@
         <span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="AtomEyeViewer.backward"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.backward">[docs]</a>    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.backward"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.backward">[docs]</a>    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Move backward by `delta` frames (default values is self.delta).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1052,7 +1052,7 @@
 <span class="sd">           Default is ``[0.,1.,0.]``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
-        <span class="k">if</span> <span class="nb">property</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">property</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s1">&#39;draw_arrows off&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">property</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">(),</span> <span class="nb">property</span><span class="p">)</span>
@@ -1080,11 +1080,11 @@
         <span class="k">return</span> <span class="n">indices</span></div>
 
 
-<div class="viewcode-block" id="AtomEyeViewer.get_size_pixels"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.get_size_pixels">[docs]</a>    <span class="k">def</span> <span class="nf">get_size_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.get_size_pixels"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.get_size_pixels">[docs]</a>    <span class="k">def</span> <span class="nf">get_size_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return (width, height) in pixels of this viewer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;commands&#39;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">command</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;resize&#39;</span><span class="p">):</span>
@@ -1097,13 +1097,13 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="AtomEyeViewer.get_size_angstrom"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.get_size_angstrom">[docs]</a>    <span class="k">def</span> <span class="nf">get_size_angstrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomEyeViewer.get_size_angstrom"><a class="viewcode-back" href="../atomeye.html#atomeye.AtomEyeViewer.get_size_angstrom">[docs]</a>    <span class="k">def</span> <span class="nf">get_size_angstrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return (width, height) in Angstrom of currently projected view</span>
 
 <span class="sd">        Assumes object lies in plane z=0</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
         <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_size_pixels</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
@@ -1126,12 +1126,12 @@
         <span class="n">fname</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.png&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">display</span>
+        <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">display</span>
         <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">fname</span><span class="p">))</span>
         <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div></div>
         
 
-<span class="n">_viewer</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">_viewer</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="k">def</span> <span class="nf">gcv</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">_viewer</span>
@@ -1144,7 +1144,7 @@
 <span class="sd">    Convenience wrapper to create/reuse a default `AtomEyeViewer`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_viewer</span>
-    <span class="k">if</span> <span class="n">_viewer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">_viewer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_viewer</span> <span class="o">=</span> <span class="n">AtomEyeViewer</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">_viewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -1328,7 +1328,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">toggle_aux_property_thresholds_rigid</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="rcut_patch"><a class="viewcode-back" href="../atomeye.html#atomeye.rcut_patch">[docs]</a><span class="k">def</span> <span class="nf">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="rcut_patch"><a class="viewcode-back" href="../atomeye.html#atomeye.rcut_patch">[docs]</a><span class="k">def</span> <span class="nf">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Change the cutoff distance for `sym1`--`sym2` bonds by `delta`.</span>
 
@@ -1375,7 +1375,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">flip_cutting_plane</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="capture"><a class="viewcode-back" href="../atomeye.html#atomeye.capture">[docs]</a><span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="capture"><a class="viewcode-back" href="../atomeye.html#atomeye.capture">[docs]</a><span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Render the current view to image `filename`</span>
 
@@ -1433,13 +1433,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">last</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="forward"><a class="viewcode-back" href="../atomeye.html#atomeye.forward">[docs]</a><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="forward"><a class="viewcode-back" href="../atomeye.html#atomeye.forward">[docs]</a><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Move forward by `delta` frames (default value is gcv().delta).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="backward"><a class="viewcode-back" href="../atomeye.html#atomeye.backward">[docs]</a><span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="backward"><a class="viewcode-back" href="../atomeye.html#atomeye.backward">[docs]</a><span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Move backward by `delta` frames (default values is gcv().delta).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1551,14 +1551,14 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

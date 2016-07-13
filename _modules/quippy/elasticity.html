@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.elasticity &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.elasticity &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -82,14 +82,14 @@
 <span class="c1"># HQ X</span>
 <span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">available_modules</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">available_modules</span>
 <span class="k">if</span> <span class="s1">&#39;scipy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
-<span class="kn">from</span> <span class="nn">farray</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">_elasticity</span>
-<span class="kn">from</span> <span class="nn">quippy._elasticity</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">farray</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">_elasticity</span>
+<span class="kn">from</span> <span class="nn">quippy._elasticity</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="n">_elasticity</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;strain_matrix&#39;</span><span class="p">,</span> <span class="s1">&#39;stress_matrix&#39;</span><span class="p">,</span> <span class="s1">&#39;strain_vector&#39;</span><span class="p">,</span>
                                  <span class="s1">&#39;stress_vector&#39;</span><span class="p">,</span> <span class="s1">&#39;fit_elastic_constants&#39;</span><span class="p">,</span>
                                  <span class="s1">&#39;elastic_constants&#39;</span><span class="p">,</span> <span class="s1">&#39;atomic_strain&#39;</span><span class="p">,</span>
@@ -198,14 +198,14 @@
                               <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span>  <span class="mi">21</span><span class="p">,</span> <span class="mi">6</span> <span class="p">]]),</span>
    <span class="p">}</span>
 
-<div class="viewcode-block" id="fit_elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.fit_elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">fit_elastic_constants</span><span class="p">(</span><span class="n">configs</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">N_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="fit_elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.fit_elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">fit_elastic_constants</span><span class="p">(</span><span class="n">configs</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">N_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    quippy.elasticity.fit_elastic_constants() deprecated, please use</span>
 <span class="sd">      matscipy.elasticity.fit_elastic_constants() instead</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;quippy.elasticity.fit_elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span>    </div>
 
-<div class="viewcode-block" id="elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">elastic_constants</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">elastic_constants</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    quippy.elasticity.elastic_contants() deprecated, please use</span>
 <span class="sd">       matscipy.elasticity.fit_elastic_constants() instead</span>
@@ -230,8 +230,8 @@
 
 <span class="n">elastic_fields_fortran</span> <span class="o">=</span> <span class="n">elastic_fields</span> <span class="c1"># Fortran elastic fields routine</span>
 
-<div class="viewcode-block" id="elastic_fields"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.elastic_fields">[docs]</a><span class="k">def</span> <span class="nf">elastic_fields</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>  <span class="n">bond_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">c_vector</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cij</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                   <span class="n">save_reference</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">use_reference</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+<div class="viewcode-block" id="elastic_fields"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.elastic_fields">[docs]</a><span class="k">def</span> <span class="nf">elastic_fields</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">bond_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">c_vector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cij</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">save_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">cutoff_factor</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="s1">&#39;tetrahedric&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute atomistic strain field and linear elastic stress response.</span>
@@ -278,17 +278,17 @@
         <span class="n">D</span><span class="p">,</span> <span class="n">SigEvecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">stress_matrix</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">stress</span><span class="p">[:,</span><span class="n">i</span><span class="p">]))</span>
 
         <span class="c1"># Order by descending size of eigenvalues</span>
-        <span class="n">sorted_evals</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span><span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="n">sorted_evals</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
         <span class="n">at</span><span class="o">.</span><span class="n">stress_eval</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>  <span class="o">=</span> <span class="n">sorted_evals</span>
         <span class="n">at</span><span class="o">.</span><span class="n">stress_evec1</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">SigEvecs</span><span class="p">[:,</span><span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
         <span class="n">at</span><span class="o">.</span><span class="n">stress_evec2</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">SigEvecs</span><span class="p">[:,</span><span class="n">order</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">at</span><span class="o">.</span><span class="n">stress_evec3</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">SigEvecs</span><span class="p">[:,</span><span class="n">order</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
 
-    <span class="k">if</span> <span class="nb">sum</span><span class="p">([</span><span class="n">a</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="n">bond_length</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">sum</span><span class="p">([</span><span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bond_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;One of lattice constant or bond length must be given&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">a</span> <span class="o">=</span> <span class="n">bond_length</span><span class="o">*</span><span class="mi">4</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.</span><span class="p">)</span>
 
     <span class="c1"># Use hysteretic connect as we want nearest neighbour connectivity only</span>
@@ -299,7 +299,7 @@
 
     <span class="c1"># Add various properties to store results</span>
     <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;strain&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">cij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;stress&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;stress_eval&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;stress_evec1&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -317,12 +317,12 @@
 
     <span class="c1"># Consider first atoms with four neighbours</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="k">continue</span>
 
         <span class="n">neighb</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">system</span> <span class="o">==</span> <span class="s1">&#39;anatase&#39;</span> <span class="ow">and</span> <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">22</span><span class="p">):</span>
-           <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighb</span><span class="p">)</span>
+           <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighb</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">system</span> <span class="o">==</span> <span class="s1">&#39;tetrahedric&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighb</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">system</span> <span class="o">==</span> <span class="s1">&#39;anatase&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighb</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">):</span>
 
@@ -357,7 +357,7 @@
 
                 <span class="n">n_at</span> <span class="o">=</span> <span class="n">n_at</span> <span class="o">+</span> <span class="mi">1</span>
 
-                <span class="k">if</span><span class="p">(</span><span class="n">c_vector</span><span class="o">==</span><span class="bp">None</span><span class="p">):</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">c_vector</span><span class="o">==</span><span class="kc">None</span><span class="p">):</span>
                     <span class="n">c_vector</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
                     <span class="n">c_vector</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
 
@@ -408,7 +408,7 @@
             <span class="c1">#print &#39;E&#39;, E</span>
 
             <span class="c1"># Kill near zero elements</span>
-            <span class="n">E</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">E</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">E</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span> <span class="n">E</span> <span class="o">=</span> <span class="o">-</span><span class="n">E</span>
 
@@ -460,7 +460,7 @@
             <span class="n">RtSR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">),</span> <span class="n">R</span><span class="p">)</span>
             <span class="c1">#print &#39;RtSR:&#39;, RtSR</span>
 
-            <span class="k">if</span> <span class="n">cij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">sig</span> <span class="o">=</span> <span class="n">stress_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">cij</span><span class="p">,</span> <span class="n">strain_vector</span><span class="p">(</span><span class="n">RtSR</span><span class="p">)))</span>
 
                 <span class="c1"># Rotate back to local coordinate system</span>
@@ -478,20 +478,20 @@
     <span class="c1"># For atoms without 4 neighbours, interpolate stress and strain fields</span>
     <span class="k">if</span> <span class="n">interpolate</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="k">continue</span>
 
             <span class="n">neighb</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">8</span> <span class="ow">or</span>  <span class="nb">len</span><span class="p">(</span><span class="n">neighb</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">:</span> <span class="k">continue</span>
 
             <span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,[</span><span class="n">n</span><span class="o">.</span><span class="n">j</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighb</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">cij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cij</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">stress</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">stress</span><span class="p">[:,[</span><span class="n">n</span><span class="o">.</span><span class="n">j</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighb</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">compute_stress_eig</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
             <span class="n">at</span><span class="o">.</span><span class="n">strain_energy_density</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">stress</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">system</span> <span class="o">==</span> <span class="s1">&#39;anatase&#39;</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s1">&#39;Ti atoms computed&#39;</span><span class="p">,</span> <span class="n">n_at</span></div>
+        <span class="nb">print</span> <span class="s1">&#39;Ti atoms computed&#39;</span><span class="p">,</span> <span class="n">n_at</span></div>
 
 
 <div class="viewcode-block" id="AtomResolvedStressField"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.AtomResolvedStressField">[docs]</a><span class="k">class</span> <span class="nc">AtomResolvedStressField</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -518,17 +518,17 @@
 <span class="sd">       for non-cubic cells.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">bulk</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cij</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;fortran&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_args</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">bulk</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cij</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;fortran&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_args</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;fortran&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;method should be one of &quot;fortran&quot; or &quot;python&quot;&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cij</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">cij</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">extra_args</span> <span class="o">=</span> <span class="n">extra_args</span>
-        <span class="k">if</span> <span class="n">bulk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bulk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">bulk</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">calc</span> <span class="o">=</span> <span class="n">bulk</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">calc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">calc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;bulk Atoms passed to AtomResolvedStressField has no calculator!&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cij</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">calc</span><span class="o">.</span><span class="n">get_elastic_constants</span><span class="p">(</span><span class="n">bulk</span><span class="p">))</span>
         
@@ -585,7 +585,7 @@
     <span class="sd">&quot;&quot;&quot;Given full tensor c_ijkl, return compressed Voigt form C_ij.</span>
 <span class="sd">    First checks that c_ijkl obeys required symmetries.&quot;&quot;&quot;</span>
 
-    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-10</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -630,7 +630,7 @@
 <span class="sd">    </span>
 <span class="sd">    First checks that c_ijkl obeys required symmetries.&quot;&quot;&quot;</span>
 
-    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-10</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -656,9 +656,9 @@
 <span class="sd">    converted to 3x3x3x3 form, and then converted back after the</span>
 <span class="sd">    transformation.&quot;&quot;&quot;</span>
 
-    <span class="n">made_tensor</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">made_tensor</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
-        <span class="n">made_tensor</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">made_tensor</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">elasticity_matrix_to_tensor</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -682,7 +682,7 @@
         <span class="k">return</span> <span class="n">cp</span></div>
 
 
-<div class="viewcode-block" id="rayleigh_wave_speed"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.rayleigh_wave_speed">[docs]</a><span class="k">def</span> <span class="nf">rayleigh_wave_speed</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">4000.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">6000.</span><span class="p">,</span> <span class="n">isotropic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="rayleigh_wave_speed"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.rayleigh_wave_speed">[docs]</a><span class="k">def</span> <span class="nf">rayleigh_wave_speed</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">4000.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">6000.</span><span class="p">,</span> <span class="n">isotropic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rayleigh wave speed in a crystal.</span>
 
@@ -707,11 +707,11 @@
     <span class="k">if</span> <span class="s1">&#39;scipy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;scipy is needed for rayleigh_wave_speed()&#39;</span><span class="p">)</span>
 
-    <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">bisect</span>
+    <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">bisect</span>
 
     <span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">C</span> <span class="o">*=</span> <span class="mf">1e9</span> <span class="c1"># convert GPa -&gt; Pa</span>
-    <span class="n">rho</span> <span class="o">*=</span> <span class="mf">1e3</span> <span class="c1"># convert g/cm^3 -&gt; kg/m^3</span>
+    <span class="n">C</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">e9</span> <span class="c1"># convert GPa -&gt; Pa</span>
+    <span class="n">rho</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">e3</span> <span class="c1"># convert g/cm^3 -&gt; kg/m^3</span>
 
     <span class="k">if</span> <span class="n">isotropic</span><span class="p">:</span>
         <span class="n">vp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">rho</span><span class="p">)</span>
@@ -743,14 +743,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

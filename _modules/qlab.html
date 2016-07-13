@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>qlab &mdash; quippy 0837f4c+ documentation</title>
+    <title>qlab &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -308,14 +308,14 @@
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="o">*</span>
 
 <span class="kn">import</span> <span class="nn">quippy</span>
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">atomeye</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">atomeye</span> <span class="k">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">quippy.cinoutput</span> <span class="kn">import</span> <span class="n">CInOutputReader</span>
+<span class="kn">from</span> <span class="nn">quippy.cinoutput</span> <span class="k">import</span> <span class="n">CInOutputReader</span>
 
 <span class="n">__alldoc__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;QuippyViewer&#39;</span><span class="p">,</span> <span class="s1">&#39;AtomsViewer&#39;</span><span class="p">,</span> <span class="s1">&#39;AtomsListViewer&#39;</span><span class="p">,</span> <span class="s1">&#39;AtomsReaderViewer&#39;</span><span class="p">,</span>
               <span class="s1">&#39;view&#39;</span><span class="p">,</span> <span class="s1">&#39;gcv&#39;</span><span class="p">,</span> <span class="s1">&#39;gcat&#39;</span><span class="p">,</span> <span class="s1">&#39;scv&#39;</span><span class="p">,</span> <span class="s1">&#39;get_viewer_names&#39;</span><span class="p">,</span> <span class="s1">&#39;get_viewers&#39;</span><span class="p">,</span>
@@ -337,7 +337,7 @@
               <span class="s1">&#39;set_cutoffs&#39;</span><span class="p">]</span>
 
 <span class="n">_viewers</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">_current_viewer</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">_current_viewer</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="QuippyViewer"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer">[docs]</a><span class="k">class</span> <span class="nc">QuippyViewer</span><span class="p">(</span><span class="n">AtomEyeViewer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;quippy-specific extensions to AtomEyeViewer&quot;&quot;&quot;</span>
@@ -346,12 +346,12 @@
                <span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
                <span class="s1">&#39;cache_mem_limit&#39;</span><span class="p">,</span> <span class="s1">&#39;block&#39;</span><span class="p">]</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">global</span> <span class="n">_viewers</span><span class="p">,</span> <span class="n">_current_viewer</span>
 
         <span class="n">AtomEyeViewer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_selection_value</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_selection_value</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prev_viewer</span> <span class="o">=</span> <span class="n">_current_viewer</span>
         <span class="n">_current_viewer</span> <span class="o">=</span> <span class="bp">self</span>
@@ -364,7 +364,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">):</span>
             <span class="k">return</span>
 
-        <span class="k">if</span> <span class="n">auxprop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxprop</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">auxprop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxprop</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxprop</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span>
                 <span class="n">_show</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">==</span> <span class="n">auxprop</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">indices</span><span class="p">]</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxprop</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxprop</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxprop</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
@@ -378,7 +378,7 @@
 
             <span class="k">if</span> <span class="n">at</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;_show&#39;</span><span class="p">):</span>
                 <span class="k">del</span> <span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;_show&#39;</span><span class="p">]</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;_show&#39;</span><span class="p">,</span> <span class="n">_show</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;_show&#39;</span><span class="p">,</span> <span class="n">_show</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">auxprop</span> <span class="o">=</span> <span class="s1">&#39;_show&#39;</span>
 
         <span class="c1"># Ensure auxprop is one of the first AUX_PROPERTY_COLORING</span>
@@ -418,29 +418,29 @@
             <span class="n">_current_viewer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_viewer</span>
 
     <span class="k">def</span> <span class="nf">_click_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selection_value</span>
-            <span class="k">print</span> <span class="n">idx</span><span class="p">,</span>
+            <span class="nb">print</span> <span class="n">idx</span><span class="p">,</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">redraw</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="k">print</span>
+            <span class="nb">print</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">print_atom</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_redraw_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">):</span>
-           <span class="k">print</span> <span class="s1">&#39;Properties:&#39;</span>
+           <span class="nb">print</span> <span class="s1">&#39;Properties:&#39;</span>
            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span>  <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-               <span class="k">print</span> <span class="s1">&#39;</span><span class="si">%-10s</span><span class="s1"> shape </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+               <span class="nb">print</span> <span class="s1">&#39;</span><span class="si">%-10s</span><span class="s1"> shape </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">):</span>
-           <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Params:&#39;</span>
+           <span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Params:&#39;</span>
            <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-               <span class="k">print</span> <span class="s1">&#39;</span><span class="si">%-20s</span><span class="s1"> = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+               <span class="nb">print</span> <span class="s1">&#39;</span><span class="si">%-20s</span><span class="s1"> = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;</span><span class="si">%-20s</span><span class="s1"> = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="s1">&#39;</span><span class="si">%-20s</span><span class="s1"> = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
 
-<div class="viewcode-block" id="QuippyViewer.show"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="QuippyViewer.show"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update what is shown in this AtomEye viewer window.</span>
 
@@ -452,23 +452,23 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">AtomEyeViewer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">arrows</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="QuippyViewer.clip_visible"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.clip_visible">[docs]</a>    <span class="k">def</span> <span class="nf">clip_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orig_index</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="QuippyViewer.clip_visible"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.clip_visible">[docs]</a>    <span class="k">def</span> <span class="nf">clip_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orig_index</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Remove atoms outside the visible window from the Atoms object. Also sets indices for frames not yet loaded from disk.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_visible</span><span class="p">()</span>
-        <span class="k">print</span> <span class="s1">&#39;Clipping view to include </span><span class="si">%d</span><span class="s1"> atoms&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="s1">&#39;Clipping view to include </span><span class="si">%d</span><span class="s1"> atoms&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
 
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">()</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-        <span class="n">mask</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">mask</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">mask</span><span class="p">[:]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">at</span><span class="o">.</span><span class="n">remove_atoms</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orig_index</span><span class="p">:</span>
             <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;orig_index&#39;</span><span class="p">,</span>
                             <span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                            <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redraw</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;reader&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">CInOutputReader</span><span class="p">):</span>
@@ -478,7 +478,7 @@
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;reader&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">reader</span><span class="p">,</span> <span class="n">CInOutputReader</span><span class="p">):</span>
                     <span class="n">r</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span></div>
 
-<div class="viewcode-block" id="QuippyViewer.select_atoms"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.select_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">select_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">markname</span><span class="o">=</span><span class="s1">&#39;selection_mark&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="QuippyViewer.select_atoms"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.select_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">select_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">markname</span><span class="o">=</span><span class="s1">&#39;selection_mark&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select atoms by clicking on them. Returns a list of atom indices.</span>
 
@@ -488,28 +488,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">reset</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">at</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="n">markname</span><span class="p">):</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">markname</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">markname</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="o">=</span> <span class="n">markname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_selection_value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">markname</span><span class="p">)</span>
         <span class="n">saved_verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="k">print</span> <span class="s1">&#39;Right click to select atoms. Press ENTER to finish.&#39;</span>
-        <span class="k">print</span> <span class="s1">&#39;indices = [&#39;</span><span class="p">,</span>
-        <span class="nb">raw_input</span><span class="p">()</span>
-        <span class="k">print</span> <span class="s1">&#39;]&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span> <span class="s1">&#39;Right click to select atoms. Press ENTER to finish.&#39;</span>
+        <span class="nb">print</span> <span class="s1">&#39;indices = [&#39;</span><span class="p">,</span>
+        <span class="n">raw_input</span><span class="p">()</span>
+        <span class="nb">print</span> <span class="s1">&#39;]&#39;</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span><span class="p">]</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_selection_markname</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">saved_verbose</span>
         <span class="k">return</span> <span class="n">indices</span></div>
 
-<div class="viewcode-block" id="QuippyViewer.render_movie"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.render_movie">[docs]</a>    <span class="k">def</span> <span class="nf">render_movie</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moviefile</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hook</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="QuippyViewer.render_movie"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.render_movie">[docs]</a>    <span class="k">def</span> <span class="nf">render_movie</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moviefile</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;ffmpeg -i </span><span class="si">%s</span><span class="s1"> -r 25 -b 30M </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Render a movie for the trajectory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">frames</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">frames</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
@@ -519,18 +519,18 @@
         
         <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">hook</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hook</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
                 <span class="n">hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gcat</span><span class="p">())</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">redraw</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">out_fmt</span> <span class="o">%</span> <span class="p">(</span><span class="n">frame</span> <span class="o">+</span> <span class="n">offset</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
-        <span class="k">print</span> <span class="s1">&#39;Encoding movie...&#39;</span>
+        <span class="nb">print</span> <span class="s1">&#39;Encoding movie...&#39;</span>
         <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">encoder</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_fmt</span><span class="p">,</span> <span class="n">moviefile</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">inject</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inject</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__getinitargs__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">):</span>
@@ -547,7 +547,7 @@
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="n">AtomEyeViewer</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
 
-<div class="viewcode-block" id="QuippyViewer.set_cutoffs"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.set_cutoffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_cutoffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nneighb_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="QuippyViewer.set_cutoffs"><a class="viewcode-back" href="../qlab.html#qlab.QuippyViewer.set_cutoffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_cutoffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nneighb_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set cutoffs for AtomEye bonds and coordination colouring</span>
 
@@ -563,21 +563,21 @@
                     <span class="k">continue</span>
                 <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">min</span><span class="p">(</span><span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">)))</span>
                 <span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span> <span class="o">=</span> <span class="n">ElementName</span><span class="p">[</span><span class="n">Z1</span><span class="p">],</span> <span class="n">ElementName</span><span class="p">[</span><span class="n">Z2</span><span class="p">]</span>
-                <span class="k">print</span> <span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> 
+                <span class="nb">print</span> <span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> 
                 <span class="k">if</span> <span class="n">nneighb_only</span><span class="p">:</span>
                     <span class="n">cutoff</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">nneightol</span><span class="o">*</span><span class="n">bond_length</span><span class="p">(</span><span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">)</span>
-                    <span class="k">print</span> <span class="s1">&#39;nneigbb&#39;</span><span class="p">,</span> <span class="n">cutoff</span>
+                    <span class="nb">print</span> <span class="s1">&#39;nneigbb&#39;</span><span class="p">,</span> <span class="n">cutoff</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">cutoff</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">cutoff</span>
-                    <span class="k">print</span> <span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="n">cutoff</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div></div>
+                    <span class="nb">print</span> <span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="n">cutoff</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
     
 
 <div class="viewcode-block" id="AtomsViewer"><a class="viewcode-back" href="../qlab.html#qlab.AtomsViewer">[docs]</a><span class="k">class</span> <span class="nc">AtomsViewer</span><span class="p">(</span><span class="n">Atoms</span><span class="p">,</span> <span class="n">QuippyViewer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Subclass of Atoms and AtomEyeViewer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">shallow_copy_from</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
@@ -585,10 +585,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">read_from</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">QuippyViewer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">gcat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">gcat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">scat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">scat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">update_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -608,14 +608,14 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Subclass of AtomsReader and AtomEyeViewer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
             <span class="n">total_mem</span><span class="p">,</span> <span class="n">free_mem</span> <span class="o">=</span> <span class="n">mem_info</span><span class="p">()</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;cache_mem_limit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">free_mem</span>
         <span class="n">AtomsReader</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="n">rename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">QuippyViewer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">update_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
             <span class="n">total_mem</span><span class="p">,</span> <span class="n">free_mem</span> <span class="o">=</span> <span class="n">mem_info</span><span class="p">()</span>
@@ -632,7 +632,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Subclass of AtomsList and AtomEyeViewer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">AtomsList</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="n">rename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">QuippyViewer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
@@ -646,13 +646,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">()</span></div>
 
 
-<span class="k">def</span> <span class="nf">find_viewer</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_viewer</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="k">global</span> <span class="n">_viewers</span><span class="p">,</span> <span class="n">_current_viewer</span>
 
-    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">):</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">name</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">source</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
@@ -670,16 +670,16 @@
         <span class="n">name</span> <span class="o">=</span> <span class="n">new_name</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_viewers</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s1">&#39;Reusing viewer named </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span>
+        <span class="nb">print</span> <span class="s1">&#39;Reusing viewer named </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span>
         <span class="n">scv</span><span class="p">(</span><span class="n">_viewers</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">_viewers</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s1">&#39;Creating viewer named </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="s1">&#39;Creating viewer named </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         
 
-<div class="viewcode-block" id="view"><a class="viewcode-back" href="../qlab.html#qlab.view">[docs]</a><span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">loadall</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">inject</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-         <span class="n">rename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="view"><a class="viewcode-back" href="../qlab.html#qlab.view">[docs]</a><span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recycle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">loadall</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inject</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+         <span class="n">rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read atoms from `source` and open in an AtomEye viewer window.</span>
 
@@ -699,7 +699,7 @@
 
     <span class="n">name</span><span class="p">,</span> <span class="n">viewer</span> <span class="o">=</span> <span class="n">find_viewer</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">recycle</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">viewer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">viewer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">tmp_reader</span> <span class="o">=</span> <span class="n">AtomsReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">rename</span><span class="o">=</span><span class="n">rename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">tmp_reader</span><span class="o">.</span><span class="n">random_access</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp_reader</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
@@ -725,7 +725,7 @@
 <span class="sd">    Return the current (most recently created or used) AtomEye viewer instance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_current_viewer</span>
-    <span class="k">if</span> <span class="n">_current_viewer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">_current_viewer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No viewers are currently open!&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_current_viewer</span></div>
 
@@ -763,7 +763,7 @@
     <span class="k">global</span> <span class="n">_viewers</span>
     <span class="k">return</span> <span class="n">_viewers</span><span class="o">.</span><span class="n">values</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="highlight_qm_region"><a class="viewcode-back" href="../qlab.html#qlab.highlight_qm_region">[docs]</a><span class="k">def</span> <span class="nf">highlight_qm_region</span><span class="p">(</span><span class="n">at</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">run_suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="highlight_qm_region"><a class="viewcode-back" href="../qlab.html#qlab.highlight_qm_region">[docs]</a><span class="k">def</span> <span class="nf">highlight_qm_region</span><span class="p">(</span><span class="n">at</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Highlight QM region by replacing Si atoms with Al,</span>
 <span class="sd">    and O atoms with N, and changing colour of QM atoms to dark blue. Can be used as</span>
@@ -772,7 +772,7 @@
 <span class="sd">    If at is None, uses Atoms associated with current viewer</span>
 <span class="sd">    (i.e., at = gcat()).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">at</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">at</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">at</span> <span class="o">=</span> <span class="n">gcat</span><span class="p">()</span>
     <span class="n">hybrid_mark</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;hybrid_mark&#39;</span><span class="o">+</span><span class="n">run_suffix</span><span class="p">)</span>
     <span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">[(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span> <span class="o">==</span> <span class="mi">14</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">hybrid_mark</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">13</span>
@@ -780,18 +780,18 @@
     <span class="n">at</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">highlight_qm_region</span><span class="o">.</span><span class="n">first_time</span><span class="p">:</span>
         <span class="n">save_block</span> <span class="o">=</span> <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">block</span>
-        <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">redraw</span><span class="p">()</span>
         <span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="o">+</span><span class="mf">0.3</span><span class="p">)</span>
         <span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.55</span><span class="p">)</span>
         <span class="n">run_command</span><span class="p">(</span><span class="s1">&#39;change_normal_color 13 0.0 0.0 0.7 1.2&#39;</span><span class="p">)</span>
         <span class="n">run_command</span><span class="p">(</span><span class="s1">&#39;change_normal_color 5 0.9 0.4 0 1.5&#39;</span><span class="p">)</span>
         <span class="n">run_command</span><span class="p">(</span><span class="s1">&#39;change_normal_color 7 0.0 0.7 0.7 0.7&#39;</span><span class="p">)</span>
-        <span class="n">highlight_qm_region</span><span class="o">.</span><span class="n">first_time</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">highlight_qm_region</span><span class="o">.</span><span class="n">first_time</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">save_block</span>
     <span class="n">redraw</span><span class="p">()</span></div>
 
-<span class="n">highlight_qm_region</span><span class="o">.</span><span class="n">first_time</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">highlight_qm_region</span><span class="o">.</span><span class="n">first_time</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="redraw"><a class="viewcode-back" href="../qlab.html#qlab.redraw">[docs]</a><span class="k">def</span> <span class="nf">redraw</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -971,7 +971,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">toggle_aux_property_thresholds_rigid</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="rcut_patch"><a class="viewcode-back" href="../qlab.html#qlab.rcut_patch">[docs]</a><span class="k">def</span> <span class="nf">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="rcut_patch"><a class="viewcode-back" href="../qlab.html#qlab.rcut_patch">[docs]</a><span class="k">def</span> <span class="nf">rcut_patch</span><span class="p">(</span><span class="n">sym1</span><span class="p">,</span> <span class="n">sym2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Change the cutoff distance for `sym1`--`sym2` bonds by `delta`.</span>
 
@@ -1018,7 +1018,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">flip_cutting_plane</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="capture"><a class="viewcode-back" href="../qlab.html#qlab.capture">[docs]</a><span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="capture"><a class="viewcode-back" href="../qlab.html#qlab.capture">[docs]</a><span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Render the current view to image `filename`</span>
 
@@ -1076,13 +1076,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">first</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="forward"><a class="viewcode-back" href="../qlab.html#qlab.forward">[docs]</a><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="forward"><a class="viewcode-back" href="../qlab.html#qlab.forward">[docs]</a><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Move forward by `delta` frames (default value is gcv().delta).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="backward"><a class="viewcode-back" href="../qlab.html#qlab.backward">[docs]</a><span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="backward"><a class="viewcode-back" href="../qlab.html#qlab.backward">[docs]</a><span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Move backward by `delta` frames (default values is gcv().delta).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1176,13 +1176,13 @@
     <span class="k">return</span> <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">get_visible</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="clip_visible"><a class="viewcode-back" href="../qlab.html#qlab.clip_visible">[docs]</a><span class="k">def</span> <span class="nf">clip_visible</span><span class="p">(</span><span class="n">orig_index</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="clip_visible"><a class="viewcode-back" href="../qlab.html#qlab.clip_visible">[docs]</a><span class="k">def</span> <span class="nf">clip_visible</span><span class="p">(</span><span class="n">orig_index</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove atoms outside the visible window from the Atoms object. Also sets indices for frames not yet loaded from disk.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">clip_visible</span><span class="p">(</span><span class="n">orig_index</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="select_atoms"><a class="viewcode-back" href="../qlab.html#qlab.select_atoms">[docs]</a><span class="k">def</span> <span class="nf">select_atoms</span><span class="p">(</span><span class="n">reset</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">markname</span><span class="o">=</span><span class="s1">&#39;selection_mark&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="select_atoms"><a class="viewcode-back" href="../qlab.html#qlab.select_atoms">[docs]</a><span class="k">def</span> <span class="nf">select_atoms</span><span class="p">(</span><span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">markname</span><span class="o">=</span><span class="s1">&#39;selection_mark&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Select atoms by clicking on them. Returns a list of atom indices.</span>
 
@@ -1194,14 +1194,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="n">reset</span><span class="p">,</span> <span class="n">markname</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="render_movie"><a class="viewcode-back" href="../qlab.html#qlab.render_movie">[docs]</a><span class="k">def</span> <span class="nf">render_movie</span><span class="p">(</span><span class="n">moviefile</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hook</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="render_movie"><a class="viewcode-back" href="../qlab.html#qlab.render_movie">[docs]</a><span class="k">def</span> <span class="nf">render_movie</span><span class="p">(</span><span class="n">moviefile</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;ffmpeg -i </span><span class="si">%s</span><span class="s1"> -r 25 -b 30M </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Render a movie for the trajectory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gcv</span><span class="p">()</span><span class="o">.</span><span class="n">render_movie</span><span class="p">(</span><span class="n">moviefile</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">encoder</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="set_cutoffs"><a class="viewcode-back" href="../qlab.html#qlab.set_cutoffs">[docs]</a><span class="k">def</span> <span class="nf">set_cutoffs</span><span class="p">(</span><span class="n">nneighb_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="set_cutoffs"><a class="viewcode-back" href="../qlab.html#qlab.set_cutoffs">[docs]</a><span class="k">def</span> <span class="nf">set_cutoffs</span><span class="p">(</span><span class="n">nneighb_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set cutoffs for AtomEye bonds and coordination colouring</span>
 
@@ -1226,14 +1226,14 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

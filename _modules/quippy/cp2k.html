@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.cp2k &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.cp2k &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -84,18 +84,18 @@
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">quippy.system</span> <span class="kn">import</span> <span class="n">verbosity_push</span><span class="p">,</span> <span class="n">verbosity_pop</span><span class="p">,</span> <span class="n">PRINT_SILENT</span>
-<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">atoms_reader</span>
-<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">s2a</span><span class="p">,</span> <span class="n">farray</span><span class="p">,</span> <span class="n">fenumerate</span><span class="p">,</span> <span class="n">frange</span>
-<span class="kn">from</span> <span class="nn">quippy.table</span> <span class="kn">import</span> <span class="n">TABLE_STRING_LENGTH</span>
-<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="kn">import</span> <span class="n">MASSCONVERT</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">BOHR</span>
-<span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="kn">import</span> <span class="n">HYBRID_NO_MARK</span>
-<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="kn">import</span> <span class="n">Potential</span>
-<span class="kn">from</span> <span class="nn">quippy.ordereddict</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="kn">import</span> <span class="n">read_text_file</span>
-<span class="kn">from</span> <span class="nn">quippy.cp2k_driver</span> <span class="kn">import</span> <span class="n">do_cp2k_calc</span><span class="p">,</span> <span class="n">read_output</span><span class="p">,</span> <span class="n">qmmm_qm_abc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">quippy.system</span> <span class="k">import</span> <span class="n">verbosity_push</span><span class="p">,</span> <span class="n">verbosity_pop</span><span class="p">,</span> <span class="n">PRINT_SILENT</span>
+<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">quippy.io</span> <span class="k">import</span> <span class="n">atoms_reader</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">s2a</span><span class="p">,</span> <span class="n">farray</span><span class="p">,</span> <span class="n">fenumerate</span><span class="p">,</span> <span class="n">frange</span>
+<span class="kn">from</span> <span class="nn">quippy.table</span> <span class="k">import</span> <span class="n">TABLE_STRING_LENGTH</span>
+<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">MASSCONVERT</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">BOHR</span>
+<span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="k">import</span> <span class="n">HYBRID_NO_MARK</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">Potential</span>
+<span class="kn">from</span> <span class="nn">quippy.ordereddict</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="k">import</span> <span class="n">read_text_file</span>
+<span class="kn">from</span> <span class="nn">quippy.cp2k_driver</span> <span class="k">import</span> <span class="n">do_cp2k_calc</span><span class="p">,</span> <span class="n">read_output</span><span class="p">,</span> <span class="n">qmmm_qm_abc</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CP2KPotential&#39;</span><span class="p">,</span> <span class="s1">&#39;CP2KInputHeader&#39;</span><span class="p">,</span> <span class="s1">&#39;read_cp2k_qm_kind&#39;</span><span class="p">,</span>
            <span class="s1">&#39;read_psf&#39;</span><span class="p">,</span> <span class="s1">&#39;apply_cp2k_sort_order&#39;</span><span class="p">,</span> <span class="s1">&#39;bonds_from_avgpos&#39;</span><span class="p">,</span>
@@ -108,14 +108,14 @@
 <span class="sd">    Calls do_cp2k_calc() in QUIP_FilePot_Drivers/cp2k_driver_module.f95 to do the heavy lifting</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">fpointer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">error</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                 <span class="n">fpointer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">Potential</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">do_cp2k_calc</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">do_cp2k_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
         <span class="n">args_str</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;calc_args_str&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="n">cp2k_force</span><span class="p">,</span> <span class="n">cp2k_energy</span> <span class="o">=</span> <span class="n">do_cp2k_calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">infile</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n1</span><span class="o">=</span><span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">cp2k_force</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">cp2k_force</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp2k_energy</span></div>
 
 
@@ -124,9 +124,9 @@
 <span class="sd">    Read a cp2k_input.inp.header file and parse into an ordered dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">OrderedDict</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
@@ -135,22 +135,22 @@
             <span class="n">dummy</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="nb">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">file</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="n">filename</span>
     
         <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;@SET </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;@SET </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
             
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>            
-            <span class="nb">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>            
+            <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<span class="k">def</span> <span class="nf">cp2k_run_type</span><span class="p">(</span><span class="n">cp2k_output</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cp2k_input_header</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">cp2k_run_type</span><span class="p">(</span><span class="n">cp2k_output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cp2k_input_header</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the run type of the CP2K calculation.</span>
 
@@ -161,30 +161,30 @@
 <span class="sd">    Returns one of &#39;QS&#39;, &#39;MM&#39; or &#39;QMMM&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">cp2k_output</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">cp2k_input_header</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cp2k_output</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cp2k_input_header</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;atlest one of cp2k_output and cp2k_input_header must be present&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">cp2k_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cp2k_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">got_fist</span> <span class="o">=</span> <span class="s2">&quot; MODULE FIST:  ATOMIC COORDINATES IN angstrom</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">cp2k_output</span>
         <span class="n">got_qs</span>   <span class="o">=</span> <span class="s2">&quot; MODULE QUICKSTEP:  ATOMIC COORDINATES IN angstrom</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">cp2k_output</span>
         <span class="n">got_qmmm</span> <span class="o">=</span> <span class="s2">&quot; MODULE QM/MM:  ATOMIC COORDINATES IN angstrom</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">cp2k_output</span>
         <span class="n">got_modules</span> <span class="o">=</span> <span class="p">(</span><span class="n">got_fist</span><span class="p">,</span> <span class="n">got_qs</span><span class="p">,</span> <span class="n">got_qmmm</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">cp2k_input_header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cp2k_input_header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">do_fist</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cp2k_input_header</span><span class="p">[</span><span class="s1">&#39;DO_MM&#39;</span><span class="p">])</span>
         <span class="n">do_qs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cp2k_input_header</span><span class="p">[</span><span class="s1">&#39;DO_DFT&#39;</span><span class="p">])</span>
         <span class="n">do_qmmm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cp2k_input_header</span><span class="p">[</span><span class="s1">&#39;DO_QMMM&#39;</span><span class="p">])</span>
         <span class="n">got_modules</span> <span class="o">=</span> <span class="p">(</span><span class="n">do_fist</span><span class="p">,</span> <span class="n">do_qs</span><span class="p">,</span> <span class="n">do_qmmm</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">cp2k_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">cp2k_input_header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cp2k_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cp2k_input_header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">do_fist</span> <span class="o">!=</span> <span class="n">got_fist</span> <span class="ow">or</span> <span class="n">do_qs</span> <span class="o">!=</span> <span class="n">got_qs</span> <span class="ow">or</span> <span class="n">do_qmmm</span> <span class="o">!=</span> <span class="n">got_qmmm</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;CP2K output inconsitent with cp2k input header&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">got_modules</span> <span class="o">==</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">got_modules</span> <span class="o">==</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;QMMM&quot;</span>
-    <span class="k">elif</span> <span class="n">got_modules</span> <span class="o">==</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">got_modules</span> <span class="o">==</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;MM&quot;</span>
-    <span class="k">elif</span> <span class="n">got_modules</span> <span class="o">==</span> <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">got_modules</span> <span class="o">==</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;QS&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Got inconsistent set of modules got_fist=</span><span class="si">%s</span><span class="s2">, got_qs=</span><span class="si">%s</span><span class="s2">, got_qmmm+</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">got_modules</span><span class="p">)</span>
@@ -192,7 +192,7 @@
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;cp2k_output.out&#39;</span><span class="p">)</span>
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;cp2k_output&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">CP2KOutputReader</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">type_map</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">kind_map</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">CP2KOutputReader</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">type_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="c1"># mapping from run type to (default module index, list of available module)</span>
     <span class="n">run_types</span> <span class="o">=</span> <span class="p">{</span>
@@ -204,9 +204,9 @@
     <span class="n">filename</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">read_text_file</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
     <span class="n">run_type</span> <span class="o">=</span> <span class="n">cp2k_run_type</span><span class="p">(</span><span class="n">cp2k_output</span><span class="o">=</span><span class="n">lines</span><span class="p">)</span>
     
-    <span class="k">if</span> <span class="n">type_map</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">type_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">type_map</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">kind_map</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">kind_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">kind_map</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -214,7 +214,7 @@
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown CP2K run type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">run_type</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">module</span> <span class="o">=</span> <span class="n">available_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -277,7 +277,7 @@
     <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="n">kinds</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">module</span> <span class="o">==</span> <span class="s1">&#39;FIST&#39;</span><span class="p">:</span>
         <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qm&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qm&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">qm</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;_QM_&#39;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;_LNK&#39;</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">type</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">s2a</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="n">TABLE_STRING_LENGTH</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qeff&#39;</span><span class="p">,</span> <span class="n">qeffs</span><span class="p">)</span>
@@ -289,9 +289,9 @@
 
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;cp2k_run_dir&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">CP2KDirectoryReader</span><span class="p">(</span><span class="n">run_dir</span><span class="p">,</span> <span class="n">at_ref</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">proj</span><span class="o">=</span><span class="s1">&#39;quip&#39;</span><span class="p">,</span> <span class="n">calc_qm_charges</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                        <span class="n">calc_virial</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">out_i</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">qm_vacuum</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">run_suffix</span><span class="o">=</span><span class="s1">&#39;_extended&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">at_ref</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">CP2KDirectoryReader</span><span class="p">(</span><span class="n">run_dir</span><span class="p">,</span> <span class="n">at_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proj</span><span class="o">=</span><span class="s1">&#39;quip&#39;</span><span class="p">,</span> <span class="n">calc_qm_charges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">calc_virial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">out_i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qm_vacuum</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">run_suffix</span><span class="o">=</span><span class="s1">&#39;_extended&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">at_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">filepot_xyz</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">run_dir</span><span class="p">,</span> <span class="s1">&#39;filepot.xyz&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepot_xyz</span><span class="p">):</span>
             <span class="c1"># try looking up one level </span>
@@ -301,7 +301,7 @@
             <span class="n">at_ref</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">filepot_xyz</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">at_ref</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">run_dir</span><span class="p">,</span> <span class="s1">&#39;cp2k_output.out&#39;</span><span class="p">),</span>
-                           <span class="n">format</span><span class="o">=</span><span class="s1">&#39;cp2k_output&#39;</span><span class="p">)</span>
+                           <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;cp2k_output&#39;</span><span class="p">)</span>
 
     <span class="n">at</span> <span class="o">=</span> <span class="n">at_ref</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -317,7 +317,7 @@
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
         <span class="n">qm_list_a</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">calc_qm_charges</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">calc_qm_charges</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">calc_qm_charges</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -337,31 +337,31 @@
     <span class="n">rev_sort_index</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="c1">#verbosity_push(PRINT_SILENT)</span>
     <span class="n">cp2k_energy</span><span class="p">,</span> <span class="n">cp2k_force</span> <span class="o">=</span> <span class="n">read_output</span><span class="p">(</span><span class="n">quip_cp2k_at</span><span class="p">,</span> <span class="n">qm_list_a</span><span class="p">,</span> <span class="n">cur_qmmm_qm_abc</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span>
-                                          <span class="n">calc_qm_charges</span><span class="p">,</span> <span class="n">calc_virial</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">out_i</span><span class="p">)</span>
+                                          <span class="n">calc_qm_charges</span><span class="p">,</span> <span class="n">calc_virial</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">out_i</span><span class="p">)</span>
     <span class="c1">#verbosity_pop()</span>
 
-    <span class="n">qm_list</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">qm_list</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">run_dir</span><span class="p">,</span> <span class="s1">&#39;cp2k_input.qmmm_qm_kind&#39;</span><span class="p">)):</span>
         <span class="n">qm_kind_grep_cmd</span> <span class="o">=</span> <span class="s2">&quot;grep MM_INDEX </span><span class="si">%s</span><span class="s2">/cp2k_input.qmmm_qm_kind | awk &#39;{print $2}&#39;&quot;</span> <span class="o">%</span> <span class="n">run_dir</span>
         <span class="n">qm_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="n">qm_kind_grep_cmd</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
 
-    <span class="k">if</span> <span class="n">qm_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">qm_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s1">&#39;QMMM&#39;</span><span class="p">:</span>
-            <span class="n">reordering_index</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;reordering_index&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">reordering_index</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;reordering_index&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qm&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">reordering_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qm&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">reordering_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">qm_list</span> <span class="o">=</span> <span class="n">reordering_index</span><span class="p">[</span><span class="n">qm_list</span><span class="p">]</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">qm</span><span class="p">[</span><span class="n">qm_list</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">qm</span><span class="p">[</span><span class="n">qm_list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">elif</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s1">&#39;QS&#39;</span><span class="p">:</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qm_orig_index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;qm_orig_index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">qm_at</span> <span class="ow">in</span> <span class="n">fenumerate</span><span class="p">(</span><span class="n">qm_list</span><span class="p">):</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">qm_orig_index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sort_index</span><span class="p">[</span><span class="n">qm_at</span><span class="p">]</span>
 
             
         
 
-    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">cp2k_force</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">cp2k_force</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp2k_energy</span>
     <span class="k">yield</span> <span class="n">at</span>
 
@@ -377,7 +377,7 @@
     
     <span class="n">filename</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">read_text_file</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
     <span class="n">qm_kinds</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">current_qm_kind</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">current_qm_kind</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">current_indices</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -394,7 +394,7 @@
 
     <span class="k">return</span> <span class="n">qm_kinds</span></div>
     
-<span class="k">def</span> <span class="nf">read_psf_bonds</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">rev_sort_index</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_psf_bonds</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">rev_sort_index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;!NBOND</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">nbond</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">bonds</span> <span class="o">=</span> <span class="p">[]</span>
@@ -404,14 +404,14 @@
         <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fields</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span> <span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">a</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
             <span class="n">b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">rev_sort_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rev_sort_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">rev_sort_index</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
                 <span class="n">b</span> <span class="o">=</span> <span class="n">rev_sort_index</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
             <span class="n">bonds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">bonds</span>
 
-<span class="k">def</span> <span class="nf">read_psf_angles</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">rev_sort_index</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">read_psf_angles</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">rev_sort_index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;!NTHETA</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">nangle</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
 
@@ -425,7 +425,7 @@
         <span class="n">a</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="n">c</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rev_sort_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rev_sort_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">rev_sort_index</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">rev_sort_index</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
             <span class="n">c</span> <span class="o">=</span> <span class="n">rev_sort_index</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
@@ -433,7 +433,7 @@
 
     <span class="k">return</span> <span class="n">angles</span>
 
-<div class="viewcode-block" id="read_psf"><a class="viewcode-back" href="../../cp2k.html#quippy.cp2k.read_psf">[docs]</a><span class="k">def</span> <span class="nf">read_psf</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">rev_sort_index</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="read_psf"><a class="viewcode-back" href="../../cp2k.html#quippy.cp2k.read_psf">[docs]</a><span class="k">def</span> <span class="nf">read_psf</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">rev_sort_index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Read the PSF topology file from the filename `psf`.</span>
 
 <span class="sd">       Returns a pair of lists `(bonds, angles)`. `bonds` is a list</span>
@@ -506,14 +506,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

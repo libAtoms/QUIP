@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.crack &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.crack &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -83,27 +83,27 @@
 <span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.ma</span> <span class="kn">as</span> <span class="nn">ma</span>
-<span class="kn">from</span> <span class="nn">quippy.mpi_context</span> <span class="kn">import</span> <span class="n">MPI_context</span>
-<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="kn">import</span> <span class="n">Potential</span>
-<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">quippy.structures</span> <span class="kn">import</span> <span class="n">transform</span><span class="p">,</span> <span class="n">supercell</span><span class="p">,</span> <span class="n">MillerPlane</span><span class="p">,</span> <span class="n">MillerDirection</span>
-<span class="kn">from</span> <span class="nn">quippy.system</span> <span class="kn">import</span> <span class="n">print_title</span><span class="p">,</span> <span class="n">verbosity_push</span>
-<span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="kn">import</span> <span class="n">HYBRID_NO_MARK</span>
-<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="kn">import</span> <span class="n">GPA</span>
-<span class="kn">from</span> <span class="nn">quippy.surface</span> <span class="kn">import</span> <span class="n">J_PER_M2</span>
-<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">farray</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.ma</span> <span class="k">as</span> <span class="nn">ma</span>
+<span class="kn">from</span> <span class="nn">quippy.mpi_context</span> <span class="k">import</span> <span class="n">MPI_context</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">Potential</span>
+<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">quippy.structures</span> <span class="k">import</span> <span class="n">transform</span><span class="p">,</span> <span class="n">supercell</span><span class="p">,</span> <span class="n">MillerPlane</span><span class="p">,</span> <span class="n">MillerDirection</span>
+<span class="kn">from</span> <span class="nn">quippy.system</span> <span class="k">import</span> <span class="n">print_title</span><span class="p">,</span> <span class="n">verbosity_push</span>
+<span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="k">import</span> <span class="n">HYBRID_NO_MARK</span>
+<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">GPA</span>
+<span class="kn">from</span> <span class="nn">quippy.surface</span> <span class="k">import</span> <span class="n">J_PER_M2</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">farray</span>
 
-<span class="n">MPA_SQRT_M</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="o">/</span><span class="n">GPA</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0e10</span><span class="p">)</span>
+<span class="n">MPA_SQRT_M</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="n">GPA</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0e10</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[]</span>
  
 <span class="k">try</span><span class="p">:</span>
    <span class="kn">import</span> <span class="nn">quippy.cracktools</span><span class="o">,</span> <span class="nn">quippy.crackparams</span>
-   <span class="kn">from</span> <span class="nn">quippy.crackparams</span> <span class="kn">import</span> <span class="o">*</span>
-   <span class="kn">from</span> <span class="nn">quippy.cracktools</span> <span class="kn">import</span> <span class="o">*</span>
+   <span class="kn">from</span> <span class="nn">quippy.crackparams</span> <span class="k">import</span> <span class="o">*</span>
+   <span class="kn">from</span> <span class="nn">quippy.cracktools</span> <span class="k">import</span> <span class="o">*</span>
    <span class="n">__all__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">quippy</span><span class="o">.</span><span class="n">crackparams</span><span class="o">.</span><span class="n">__all__</span><span class="p">)</span>
    <span class="n">__all__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">quippy</span><span class="o">.</span><span class="n">cracktools</span><span class="o">.</span><span class="n">__all__</span><span class="p">)</span>
    
@@ -142,7 +142,7 @@
     <span class="n">verbosity_push</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">io_verbosity</span><span class="p">)</span>
     <span class="n">params</span><span class="o">.</span><span class="n">print_</span><span class="p">()</span>
 
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Initialising classical potential with args &quot;</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">classical_args</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initialising classical potential with args &quot;</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">classical_args</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span>
           <span class="s2">&quot; from file &quot;</span> <span class="o">+</span> <span class="n">xmlfilename</span><span class="p">)</span>
     <span class="n">classicalpot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">classical_args</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="n">xmlfilename</span><span class="p">)</span>
     <span class="n">classicalpot</span><span class="o">.</span><span class="n">print_</span><span class="p">()</span>
@@ -177,20 +177,20 @@
         <span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_vacuum_size</span>
 
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_vacuum_size</span>
-    <span class="n">crack_slab</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">crack_slab</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># 3D crack with free surfaces at z = +/- depth/2</span>
     <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_free_surfaces</span><span class="p">:</span>
         <span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">3</span><span class="p">,:]</span> <span class="o">-=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">3</span><span class="p">,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="c1"># center on z=0</span>
         <span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_vacuum_size</span>
 
-    <span class="n">crack_slab</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">crack_slab</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Map atoms into cell AFTER changing to the new lattice</span>
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
 
     <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="nb">abs</span><span class="p">((</span><span class="n">maxy</span><span class="o">-</span><span class="n">miny</span><span class="p">)</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-5</span>  <span class="c1"># be sure that remapping didn&#39;t change height of slab</span>
+    <span class="k">assert</span> <span class="nb">abs</span><span class="p">((</span><span class="n">maxy</span><span class="o">-</span><span class="n">miny</span><span class="p">)</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span>  <span class="c1"># be sure that remapping didn&#39;t change height of slab</span>
 
     <span class="c1"># Add various properties to crack_slab</span>
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -201,10 +201,10 @@
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;old_nn&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;md_old_changed_nn&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;edge_mask&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;crack_surface&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-    <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;crack_front&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;crack_surface&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;crack_front&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_fix_dipoles</span><span class="p">:</span>
-	<span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;fixdip&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+	<span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;fixdip&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="n">print_title</span><span class="p">(</span><span class="s1">&#39;Fixing Atoms&#39;</span><span class="p">)</span>
 
@@ -222,7 +222,7 @@
                              <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span><span class="o">-</span><span class="n">minx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_edge_fix_tol</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> atoms. </span><span class="si">%d</span><span class="s1"> fixed atoms&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">move_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> atoms. </span><span class="si">%d</span><span class="s1"> fixed atoms&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crack_slab</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">move_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
 
     <span class="n">print_title</span><span class="p">(</span><span class="s1">&#39;Setting edge mask&#39;</span><span class="p">)</span>
 
@@ -258,7 +258,7 @@
        <span class="n">crack_make_seed</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_apply_initial_load</span><span class="p">:</span>
           <span class="n">crack_calc_load_field</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">classicalpot</span><span class="p">,</span>
-                              <span class="n">params</span><span class="o">.</span><span class="n">crack_loading</span><span class="p">,</span> <span class="n">overwrite_pos</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                              <span class="n">params</span><span class="o">.</span><span class="n">crack_loading</span><span class="p">,</span> <span class="n">overwrite_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                               <span class="n">mpi</span><span class="o">=</span><span class="n">mpi_glob</span><span class="p">)</span>
 
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;dump.xyz&#39;</span><span class="p">)</span>
@@ -267,7 +267,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="o">.</span><span class="n">simulation_classical</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">selection_method</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;crack_front&#39;</span> <span class="ow">or</span>
             <span class="n">params</span><span class="o">.</span><span class="n">crack_tip_method</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;local_energy&#39;</span><span class="p">):</span>
-            <span class="n">classicalpot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">local_energy</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">classicalpot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">local_energy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">crack_setup_marks</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
         <span class="n">crack_update_selection</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -288,9 +288,9 @@
         <span class="n">w_by_2</span>   <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">OrigWidth</span><span class="o">/</span><span class="mf">2.</span>
         <span class="n">ramp_len</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_thermostat_ramp_length</span>
         <span class="n">max_tau</span>  <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">crack_thermostat_ramp_max_tau</span>
-        <span class="k">print</span> <span class="s1">&#39;Adding thermostat ramp with length&#39;</span><span class="p">,</span> <span class="n">ramp_len</span><span class="p">,</span> <span class="s1">&#39;max_tau&#39;</span><span class="p">,</span> <span class="n">max_tau</span>
+        <span class="nb">print</span> <span class="s1">&#39;Adding thermostat ramp with length&#39;</span><span class="p">,</span> <span class="n">ramp_len</span><span class="p">,</span> <span class="s1">&#39;max_tau&#39;</span><span class="p">,</span> <span class="n">max_tau</span>
 
-        <span class="nd">@np.vectorize</span>
+        <span class="nd">@np</span><span class="o">.</span><span class="n">vectorize</span>
         <span class="k">def</span> <span class="nf">tau</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">w_by_2</span> <span class="o">+</span> <span class="n">ramp_len</span><span class="o">/</span><span class="mi">2</span><span class="p">:</span>
                 <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">w_by_2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ramp_len</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
@@ -315,14 +315,14 @@
 
 
 <span class="k">try</span><span class="p">:</span>
-   <span class="kn">from</span> <span class="nn">quippy.cracktools</span> <span class="kn">import</span> <span class="n">crack_measure_g</span> <span class="k">as</span> <span class="n">_crack_measure_g</span>
+   <span class="kn">from</span> <span class="nn">quippy.cracktools</span> <span class="k">import</span> <span class="n">crack_measure_g</span> <span class="k">as</span> <span class="n">_crack_measure_g</span>
    
-   <span class="k">def</span> <span class="nf">crack_measure_g</span><span class="p">(</span><span class="n">crack</span><span class="p">,</span> <span class="n">YoungsModulus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">PoissonRatio_yx</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">OrigHeight</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-       <span class="k">if</span> <span class="n">YoungsModulus</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+   <span class="k">def</span> <span class="nf">crack_measure_g</span><span class="p">(</span><span class="n">crack</span><span class="p">,</span> <span class="n">YoungsModulus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">PoissonRatio_yx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">OrigHeight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+       <span class="k">if</span> <span class="n">YoungsModulus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
            <span class="n">YoungsModulus</span> <span class="o">=</span> <span class="n">crack</span><span class="o">.</span><span class="n">YoungsModulus</span>
-       <span class="k">if</span> <span class="n">PoissonRatio_yx</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+       <span class="k">if</span> <span class="n">PoissonRatio_yx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
            <span class="n">PoissonRatio_yx</span> <span class="o">=</span> <span class="n">crack</span><span class="o">.</span><span class="n">PoissonRatio_yx</span>
-       <span class="k">if</span> <span class="n">OrigHeight</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+       <span class="k">if</span> <span class="n">OrigHeight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
            <span class="n">OrigHeight</span> <span class="o">=</span> <span class="n">crack</span><span class="o">.</span><span class="n">OrigHeight</span>
        <span class="k">return</span> <span class="n">_crack_measure_g</span><span class="p">(</span><span class="n">crack</span><span class="p">,</span> <span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">OrigHeight</span><span class="p">)</span>
 
@@ -340,70 +340,70 @@
     <span class="n">G</span> <span class="o">=</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">crack_g_to_k</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="s1">&#39;plane strain&#39;</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e6</span></div>
 
-<span class="k">def</span> <span class="nf">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">strain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">G</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">strain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">G</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;either strain or G must be present&#39;</span><span class="p">)</span>
 
     <span class="n">h0</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigHeight</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Original height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h0</span>
-    <span class="k">print</span> <span class="s1">&#39;Initial measured height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h</span>
+    <span class="nb">print</span> <span class="s1">&#39;Original height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h0</span>
+    <span class="nb">print</span> <span class="s1">&#39;Initial measured height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h</span>
 
-    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">strain</span> <span class="o">=</span> <span class="n">crack_g_to_strain</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
     
     <span class="n">eps0</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span>
     <span class="n">eps1</span> <span class="o">=</span> <span class="n">strain</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Initial strain_yy </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">eps0</span>
-    <span class="k">print</span> <span class="s1">&#39;Initial G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_strain_to_g</span><span class="p">(</span><span class="n">eps0</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s1">&#39;Initial strain_yy </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">eps0</span>
+    <span class="nb">print</span> <span class="s1">&#39;Initial G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_strain_to_g</span><span class="p">(</span><span class="n">eps0</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
 
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([(</span><span class="mi">1</span><span class="o">+</span><span class="n">eps1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">eps0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">eps1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">eps0</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">])</span>
 
     <span class="n">b</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
     <span class="n">h1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-    <span class="k">print</span> <span class="s1">&#39;Final strain_yy </span><span class="si">% .4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s1">&#39;Final strain_yy </span><span class="si">% .4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span><span class="p">)</span>
 
     <span class="n">b</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Final G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span>
+    <span class="nb">print</span> <span class="s1">&#39;Final G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span>
 
     <span class="n">crack_update_connect</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">b</span>
 
  
-<span class="k">def</span> <span class="nf">crack_rescale_uniaxial</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">strain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">G</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">crack_rescale_uniaxial</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">strain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">G</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;either strain or G must be present&#39;</span><span class="p">)</span>
 
     <span class="n">h0</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigHeight</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Original height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h0</span>
-    <span class="k">print</span> <span class="s1">&#39;Initial measured height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h</span>
+    <span class="nb">print</span> <span class="s1">&#39;Original height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h0</span>
+    <span class="nb">print</span> <span class="s1">&#39;Initial measured height </span><span class="si">%.4f</span><span class="s1"> A&#39;</span> <span class="o">%</span> <span class="n">h</span>
 
-    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">strain</span> <span class="o">=</span> <span class="n">crack_g_to_strain</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
     
     <span class="n">eps0</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span>
     <span class="n">eps1</span> <span class="o">=</span> <span class="n">strain</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Initial strain </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">eps0</span>
-    <span class="k">print</span> <span class="s1">&#39;Initial G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_strain_to_g</span><span class="p">(</span><span class="n">eps0</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s1">&#39;Initial strain </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">eps0</span>
+    <span class="nb">print</span> <span class="s1">&#39;Initial G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_strain_to_g</span><span class="p">(</span><span class="n">eps0</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
 
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">eps1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">eps0</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">])</span>
 
     <span class="n">b</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
     <span class="n">h1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-    <span class="k">print</span> <span class="s1">&#39;Final strain_yy </span><span class="si">% .4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s1">&#39;Final strain_yy </span><span class="si">% .4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span><span class="p">)</span>
 
     <span class="n">b</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">h0</span><span class="p">)</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Final G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span>
+    <span class="nb">print</span> <span class="s1">&#39;Final G </span><span class="si">%.4f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">b</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span>
 
     <span class="n">crack_update_connect</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 
@@ -433,20 +433,20 @@
     <span class="k">return</span> <span class="n">slab</span>
 
 
-<div class="viewcode-block" id="crack_strain_energy_release_rate"><a class="viewcode-back" href="../../crack.html#quippy.crack.crack_strain_energy_release_rate">[docs]</a><span class="k">def</span> <span class="nf">crack_strain_energy_release_rate</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">bulk</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">f_min</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span> <span class="n">f_max</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">stem</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="crack_strain_energy_release_rate"><a class="viewcode-back" href="../../crack.html#quippy.crack.crack_strain_energy_release_rate">[docs]</a><span class="k">def</span> <span class="nf">crack_strain_energy_release_rate</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">bulk</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">f_min</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span> <span class="n">f_max</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">stem</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_pos</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute strain energy release rate G from elastic potential energy in a strip</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Analytical effective elastic modulus E</span><span class="se">\&#39;</span><span class="s1"> = &#39;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;GPa&#39;</span>
-    <span class="k">print</span> <span class="s1">&#39;Analytical energy release rate G = &#39;</span><span class="p">,</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigHeight</span><span class="p">),</span> <span class="s1">&#39;J/m^2&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;Analytical effective elastic modulus E</span><span class="se">\&#39;</span><span class="s1"> = &#39;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;GPa&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;Analytical energy release rate G = &#39;</span><span class="p">,</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigHeight</span><span class="p">),</span> <span class="s1">&#39;J/m^2&#39;</span>
 
-    <span class="k">if</span> <span class="n">bulk</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">stem</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;bulk&quot; or &quot;stem&quot; must be present&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bulk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stem</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;bulk&quot; or &quot;stem&quot; must be present&#39;</span><span class="p">)</span>
         <span class="n">bulk</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;_bulk.xyz&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;local_energy&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">bulk</span><span class="p">,</span> <span class="s1">&#39;energy&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">stem</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;local_energy property not found in Atoms and &quot;stem&quot; is missing&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stem</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;local_energy property not found in Atoms and &quot;stem&quot; is missing&#39;</span><span class="p">)</span>
         <span class="n">xmlfile</span> <span class="o">=</span> <span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.xml&#39;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">CrackParams</span><span class="p">(</span><span class="n">xmlfile</span><span class="p">)</span>
         <span class="n">pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">classical_args</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.xml&#39;</span><span class="p">)</span>
@@ -470,28 +470,28 @@
     <span class="n">h</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="n">h0</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigHeight</span>
     <span class="n">strain</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span>
-    <span class="k">print</span> <span class="s1">&#39;Applied strain&#39;</span><span class="p">,</span> <span class="n">strain</span>
+    <span class="nb">print</span> <span class="s1">&#39;Applied strain&#39;</span><span class="p">,</span> <span class="n">strain</span>
 
     <span class="n">x_min</span> <span class="o">=</span> <span class="n">f_min</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">OrigWidth</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigWidth</span><span class="o">/</span><span class="mf">2.</span>
     <span class="n">x_max</span> <span class="o">=</span> <span class="n">f_max</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">OrigWidth</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigWidth</span><span class="o">/</span><span class="mf">2.</span>
     <span class="n">strip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">move_mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">&gt;</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">&lt;</span> <span class="n">x_max</span><span class="p">))</span>
-    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;strip&#39;</span><span class="p">,</span> <span class="n">strip</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;strip&#39;</span><span class="p">,</span> <span class="n">strip</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">strip_depth</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
     <span class="n">strip_width</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">strip</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">strip</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="n">strip_height</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">strip</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">strip</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="n">strip_volume</span> <span class="o">=</span> <span class="n">strip_width</span><span class="o">*</span><span class="n">strip_height</span><span class="o">*</span><span class="n">strip_depth</span>
-    <span class="k">print</span> <span class="s1">&#39;Strip contains&#39;</span><span class="p">,</span> <span class="n">strip</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s1">&#39;atoms&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="n">strip_width</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="n">strip_height</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="n">strip_volume</span>
+    <span class="nb">print</span> <span class="s1">&#39;Strip contains&#39;</span><span class="p">,</span> <span class="n">strip</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s1">&#39;atoms&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="n">strip_width</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="n">strip_height</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="n">strip_volume</span>
 
     <span class="n">strain_energy_density</span> <span class="o">=</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">local_energy</span><span class="p">[</span><span class="n">strip</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">bulk</span><span class="o">.</span><span class="n">energy</span><span class="o">/</span><span class="n">bulk</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">strip</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">/</span><span class="n">strip_volume</span>
 
-    <span class="k">print</span> <span class="s1">&#39;Strain energy density in strip&#39;</span><span class="p">,</span> <span class="n">strain_energy_density</span><span class="p">,</span> <span class="s1">&#39;eV/A**3&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;Strain energy density in strip&#39;</span><span class="p">,</span> <span class="n">strain_energy_density</span><span class="p">,</span> <span class="s1">&#39;eV/A**3&#39;</span>
 
     <span class="n">E_effective</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">strain_energy_density</span><span class="o">/</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">GPA</span>
-    <span class="k">print</span> <span class="s1">&#39;Effective elastic modulus E =&#39;</span><span class="p">,</span> <span class="n">E_effective</span><span class="p">,</span> <span class="s1">&#39;GPa&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;Effective elastic modulus E =&#39;</span><span class="p">,</span> <span class="n">E_effective</span><span class="p">,</span> <span class="s1">&#39;GPa&#39;</span>
 
     <span class="n">G_effective</span> <span class="o">=</span> <span class="n">strain_energy_density</span><span class="o">*</span><span class="n">strip_height</span><span class="o">*</span><span class="n">J_PER_M2</span>
-    <span class="k">print</span> <span class="s1">&#39;Effective energy release rate G =&#39;</span><span class="p">,</span> <span class="n">G_effective</span><span class="p">,</span> <span class="s1">&#39;J/m^2&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;Effective energy release rate G =&#39;</span><span class="p">,</span> <span class="n">G_effective</span><span class="p">,</span> <span class="s1">&#39;J/m^2&#39;</span>
 
     <span class="k">return</span> <span class="n">G_effective</span></div>
 
@@ -568,7 +568,7 @@
    <span class="n">eps</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span>
    <span class="k">return</span> <span class="n">eps</span></div>
 
-<span class="k">def</span> <span class="nf">energy_difference</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">pot</span><span class="p">,</span><span class="n">eps</span><span class="p">,</span><span class="n">relax</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">energy_difference</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">pot</span><span class="p">,</span><span class="n">eps</span><span class="p">,</span><span class="n">relax</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Compute energy difference between configurations `a` and `b` using</span>
 <span class="sd">   `pot`, after the application of a homogenous-xy rescaling to strain</span>
@@ -583,15 +583,15 @@
    <span class="n">bp</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span>
    <span class="n">bp</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
    <span class="k">if</span> <span class="n">relax</span><span class="p">:</span>
-      <span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-      <span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">bp</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+      <span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+      <span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">bp</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
    <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="s2">&quot;energy&quot;</span><span class="p">)</span>
    <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">bp</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="s2">&quot;energy&quot;</span><span class="p">)</span>
-   <span class="k">print</span> <span class="s2">&quot;ENERGY_DIFFERENCE </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">ap</span><span class="o">.</span><span class="n">energy</span><span class="o">-</span><span class="n">bp</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+   <span class="nb">print</span> <span class="s2">&quot;ENERGY_DIFFERENCE </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">ap</span><span class="o">.</span><span class="n">energy</span><span class="o">-</span><span class="n">bp</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
    <span class="k">return</span> <span class="n">ap</span><span class="o">.</span><span class="n">energy</span><span class="o">-</span><span class="n">bp</span><span class="o">.</span><span class="n">energy</span>
 
 
-<div class="viewcode-block" id="crack_find_griffith_load"><a class="viewcode-back" href="../../crack.html#quippy.crack.crack_find_griffith_load">[docs]</a><span class="k">def</span> <span class="nf">crack_find_griffith_load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="crack_find_griffith_load"><a class="viewcode-back" href="../../crack.html#quippy.crack.crack_find_griffith_load">[docs]</a><span class="k">def</span> <span class="nf">crack_find_griffith_load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Given two configurations (a, b) which differ by one broken bond,</span>
 <span class="sd">   find the Griffith load, that is the load at which `a` and `b` have</span>
@@ -611,13 +611,13 @@
    <span class="n">ap</span> <span class="o">=</span> <span class="n">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cp</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
    <span class="n">bp</span> <span class="o">=</span> <span class="n">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cp</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
 
-   <span class="k">print</span> <span class="s1">&#39;Griffith critical strain = </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
-   <span class="k">print</span> <span class="s1">&#39;Griffith critical G = </span><span class="si">%f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
+   <span class="nb">print</span> <span class="s1">&#39;Griffith critical strain = </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
+   <span class="nb">print</span> <span class="s1">&#39;Griffith critical G = </span><span class="si">%f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
 
    <span class="k">return</span> <span class="p">(</span><span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">find_mapping</span><span class="p">(</span><span class="n">at_in</span><span class="p">,</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_mapping</span><span class="p">(</span><span class="n">at_in</span><span class="p">,</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Find a mapping between pairs of atoms displaced by a given vector</span>
 <span class="sd">   (or by one of a number of given vectors).</span>
@@ -632,7 +632,7 @@
    <span class="c1"># cutoff should be larger than all displacment vectors</span>
    <span class="n">vlen</span> <span class="o">=</span> <span class="p">[</span><span class="n">farray</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">*</span><span class="n">lattice_constant</span> <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">vectors</span><span class="p">]</span>
    <span class="n">at</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">vlen</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>
-   <span class="k">print</span> <span class="s1">&#39;cutoff = &#39;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">cutoff</span>
+   <span class="nb">print</span> <span class="s1">&#39;cutoff = &#39;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">cutoff</span>
    <span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
    
    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
@@ -640,12 +640,12 @@
          <span class="k">for</span> <span class="n">neighb</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">vectors</span><span class="p">:</span>
                <span class="k">if</span> <span class="p">((</span><span class="n">neighb</span><span class="o">.</span><span class="n">diff</span><span class="o">/</span><span class="n">lattice_constant</span> <span class="o">-</span> <span class="n">vector</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
-                  <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="n">vector</span>
+                  <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="n">vector</span>
                   <span class="n">mapping</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">neighb</span><span class="o">.</span><span class="n">j</span>
                   <span class="k">raise</span> <span class="n">FoundMapping</span>
 
          <span class="c1"># corresponding atom is off the edge, so map atom onto itself</span>
-         <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;not found!&#39;</span>
+         <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;not found!&#39;</span>
          <span class="n">mapping</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
       <span class="k">except</span> <span class="n">FoundMapping</span><span class="p">:</span>
          <span class="k">continue</span>
@@ -675,18 +675,18 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">crack_unit_advance</span><span class="p">(</span><span class="n">slab</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">vectors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">transformation</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">crack_unit_advance</span><span class="p">(</span><span class="n">slab</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">vectors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transformation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Given isoatomic slab and crack configurations, return copy with crack advanced by one bond</span>
 <span class="sd">   &quot;&quot;&quot;</span>
 
-   <span class="k">if</span> <span class="n">system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
       <span class="k">try</span><span class="p">:</span>
          <span class="n">vectors</span><span class="p">,</span> <span class="n">transformation</span> <span class="o">=</span> <span class="n">crack_advance_table</span><span class="p">[</span><span class="n">system</span><span class="p">]</span>
       <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
          <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unknown crack system </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">system</span><span class="p">)</span>
 
-   <span class="k">if</span> <span class="n">vectors</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">vectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
       <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;missing vectors&quot;</span><span class="p">)</span>
 
    <span class="c1"># find mapping from old to new atom indices</span>
@@ -696,7 +696,7 @@
    <span class="n">new_disp</span> <span class="o">=</span> <span class="n">disp</span><span class="p">[</span><span class="n">mapping</span><span class="p">]</span>
 
    <span class="c1"># optionally apply a transformation to the new displacements</span>
-   <span class="k">if</span> <span class="n">transformation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">transformation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
       <span class="n">new_disp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">transformation</span><span class="p">,</span> <span class="n">new_disp</span><span class="p">)</span>
 
    <span class="n">shift</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="o">/</span><span class="mf">2.0</span><span class="p">]</span>
@@ -726,7 +726,7 @@
     <span class="p">}</span>
 
 
-<div class="viewcode-block" id="make_crack_advance_map"><a class="viewcode-back" href="../../crack.html#quippy.crack.make_crack_advance_map">[docs]</a><span class="k">def</span> <span class="nf">make_crack_advance_map</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+<div class="viewcode-block" id="make_crack_advance_map"><a class="viewcode-back" href="../../crack.html#quippy.crack.make_crack_advance_map">[docs]</a><span class="k">def</span> <span class="nf">make_crack_advance_map</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find mapping from atom indices to the index of atom one step ahead</span>
 <span class="sd">    of them in the crack propagation direction (i.e. along +x).</span>
@@ -851,7 +851,7 @@
     <span class="c1"># we want the NEXT pair of atoms, so we use the saved mapping from</span>
     <span class="c1"># atom indices to the indices of atoms one unit cell to the right</span>
     <span class="k">if</span> <span class="s1">&#39;advance_map&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Generating crack advance map...&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Generating crack advance map...&#39;</span><span class="p">)</span>
         <span class="n">make_crack_advance_map</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
         
     <span class="n">advance_map</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;advance_map&#39;</span><span class="p">]</span>
@@ -860,13 +860,13 @@
 
     <span class="c1"># Also save results in Atoms (useful for visualisation)</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackPos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tip_pos</span>
-    <span class="n">atoms</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;crack_tip&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">False</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)))</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;crack_tip&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)))</span>
     <span class="n">crack_tip</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;crack_tip&#39;</span><span class="p">]</span>
-    <span class="n">crack_tip</span><span class="p">[</span><span class="n">tip_atoms</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">crack_tip</span><span class="p">[</span><span class="n">tip_atoms</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">return</span> <span class="n">tip_pos</span></div>
 
 
-<div class="viewcode-block" id="irwin_modeI_crack_tip_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.irwin_modeI_crack_tip_stress_field">[docs]</a><span class="k">def</span> <span class="nf">irwin_modeI_crack_tip_stress_field</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">xy_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<div class="viewcode-block" id="irwin_modeI_crack_tip_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.irwin_modeI_crack_tip_stress_field">[docs]</a><span class="k">def</span> <span class="nf">irwin_modeI_crack_tip_stress_field</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">xy_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                        <span class="n">nu</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">stress_state</span><span class="o">=</span><span class="s1">&#39;plane strain&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute Irwin singular crack tip stress field</span>
@@ -918,7 +918,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculator to return Irwin near-tip stress field at atomic sites</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sxx0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">syy0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">sxy0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sxx0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">syy0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">sxy0</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
                  <span class="n">stress_state</span><span class="o">=</span><span class="s1">&#39;plane strain&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">K</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
@@ -931,13 +931,13 @@
 
     <span class="k">def</span> <span class="nf">get_stresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
-        <span class="k">if</span> <span class="n">K</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">K</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">K</span> <span class="o">=</span> <span class="n">get_stress_intensity_factor</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y0</span>
-        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">x0</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackPos&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">y0</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">y0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">y0</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackPos&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
             
         <span class="n">x</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -1053,8 +1053,8 @@
     <span class="k">return</span> <span class="n">K</span></div>
 
 
-<div class="viewcode-block" id="fit_crack_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.fit_crack_stress_field">[docs]</a><span class="k">def</span> <span class="nf">fit_crack_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">50.</span><span class="p">),</span> <span class="n">initial_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                           <span class="n">sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_decay</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="fit_crack_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.fit_crack_stress_field">[docs]</a><span class="k">def</span> <span class="nf">fit_crack_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">50.</span><span class="p">),</span> <span class="n">initial_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_decay</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform a least squares fit of near-tip stress field to Irwin solution</span>
 
@@ -1130,7 +1130,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">initial_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">initial_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">initial_params</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s1">&#39;K&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
@@ -1170,7 +1170,7 @@
            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="c1"># Override any fixed parameters</span>
-    <span class="k">if</span> <span class="n">fix_params</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">fix_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">fix_params</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fix_params</span><span class="p">)</span>
 
@@ -1179,13 +1179,13 @@
     <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="c1"># Get local stresses</span>
-    <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-       <span class="k">if</span> <span class="n">calc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+       <span class="k">if</span> <span class="n">calc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
            <span class="n">calc</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">()</span>
        <span class="n">sigma</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
     <span class="c1"># Update avg_sigma in place</span>
-    <span class="k">if</span> <span class="n">avg_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">avg_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">avg_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">avg_decay</span><span class="p">)</span><span class="o">*</span><span class="n">avg_sigma</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">avg_decay</span><span class="p">))</span><span class="o">*</span><span class="n">sigma</span>
        <span class="n">sigma</span> <span class="o">=</span> <span class="n">avg_sigma</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -1197,16 +1197,16 @@
     <span class="n">sigma</span><span class="p">[:,</span><span class="mf">2.1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="bp">Ellipsis</span> <span class="c1"># all atoms</span>
-    <span class="k">if</span> <span class="n">r_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">r_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">rmin</span><span class="p">,</span> <span class="n">rmax</span> <span class="o">=</span> <span class="n">r_range</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;</span> <span class="n">rmin</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">rmax</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-       <span class="k">print</span> <span class="s1">&#39;Fitting on </span><span class="si">%r</span><span class="s1"> atoms&#39;</span> <span class="o">%</span> <span class="n">sigma</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+       <span class="nb">print</span> <span class="s1">&#39;Fitting on </span><span class="si">%r</span><span class="s1"> atoms&#39;</span> <span class="o">%</span> <span class="n">sigma</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
     
     <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">var_params</span><span class="p">):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_params</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">fix_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fix_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fix_params</span><span class="p">)</span>
         <span class="n">irwin_sigma</span> <span class="o">=</span> <span class="n">IrwinStressField</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
         <span class="n">delta_sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">[</span><span class="n">mask</span><span class="p">,:,:]</span> <span class="o">-</span> <span class="n">irwin_sigma</span><span class="p">[</span><span class="n">mask</span><span class="p">,:,:]</span>
@@ -1216,17 +1216,17 @@
     <span class="n">var_params</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fix_params</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">])</span>
     <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">var_params</span><span class="p">]</span>
 
-    <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">leastsq</span>
+    <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">leastsq</span>
     <span class="n">fitted_params</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">infodict</span><span class="p">,</span> <span class="n">mesg</span><span class="p">,</span> <span class="n">success</span> <span class="o">=</span> <span class="n">leastsq</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span>
                                                          <span class="n">initial_params</span><span class="p">,</span>
                                                          <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">var_params</span><span class="p">),</span>
-                                                         <span class="n">full_output</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                                                         <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_params</span><span class="p">,</span> <span class="n">fitted_params</span><span class="p">))</span>
     <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fix_params</span><span class="p">)</span>
 
     <span class="c1"># estimate variance in parameter estimates</span>
-    <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="c1"># singular covariance matrix</span>
        <span class="n">err</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_params</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">fitted_params</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1235,11 +1235,11 @@
        <span class="n">err</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_params</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov</span><span class="p">))))</span>
     
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-       <span class="k">print</span> <span class="s1">&#39;K = </span><span class="si">%.3f</span><span class="s1"> MPa sqrt(m)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">MPA_SQRT_M</span><span class="p">)</span>
-       <span class="k">print</span> <span class="s1">&#39;sigma^0_{xx,yy,xy} = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxx0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span>
+       <span class="nb">print</span> <span class="s1">&#39;K = </span><span class="si">%.3f</span><span class="s1"> MPa sqrt(m)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">MPA_SQRT_M</span><span class="p">)</span>
+       <span class="nb">print</span> <span class="s1">&#39;sigma^0_{xx,yy,xy} = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxx0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span>
                                                               <span class="n">params</span><span class="p">[</span><span class="s1">&#39;syy0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span>
                                                               <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxy0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">)</span>
-       <span class="k">print</span> <span class="s1">&#39;Crack position (x0, y0) = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) A&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">])</span>
+       <span class="nb">print</span> <span class="s1">&#39;Crack position (x0, y0) = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) A&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">])</span>
 
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;sigma0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxx0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;syy0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxy0&#39;</span><span class="p">])</span>
@@ -1249,8 +1249,8 @@
 
 
 
-<div class="viewcode-block" id="find_crack_tip_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.find_crack_tip_stress_field">[docs]</a><span class="k">def</span> <span class="nf">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">initial_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                                <span class="n">sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_decay</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="find_crack_tip_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.find_crack_tip_stress_field">[docs]</a><span class="k">def</span> <span class="nf">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initial_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_decay</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the position of the crack tip by fitting to the Irwin `K`-field solution</span>
 
@@ -1268,8 +1268,8 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">],</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span></div>
     
 
-<div class="viewcode-block" id="plot_stress_fields"><a class="viewcode-back" href="../../crack.html#quippy.crack.plot_stress_fields">[docs]</a><span class="k">def</span> <span class="nf">plot_stress_fields</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">initial_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                       <span class="n">sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg_decay</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_stress_fields"><a class="viewcode-back" href="../../crack.html#quippy.crack.plot_stress_fields">[docs]</a><span class="k">def</span> <span class="nf">plot_stress_fields</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initial_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avg_decay</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fit and plot atomistic and continuum stress fields</span>
 
@@ -1281,7 +1281,7 @@
 <span class="sd">    residual error after fitting.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="kn">from</span> <span class="nn">pylab</span> <span class="kn">import</span> <span class="n">griddata</span><span class="p">,</span> <span class="n">meshgrid</span><span class="p">,</span> <span class="n">subplot</span><span class="p">,</span> <span class="n">cla</span><span class="p">,</span> <span class="n">contourf</span><span class="p">,</span> <span class="n">colorbar</span><span class="p">,</span> <span class="n">draw</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">gca</span>
+    <span class="kn">from</span> <span class="nn">pylab</span> <span class="k">import</span> <span class="n">griddata</span><span class="p">,</span> <span class="n">meshgrid</span><span class="p">,</span> <span class="n">subplot</span><span class="p">,</span> <span class="n">cla</span><span class="p">,</span> <span class="n">contourf</span><span class="p">,</span> <span class="n">colorbar</span><span class="p">,</span> <span class="n">draw</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">gca</span>
 
     <span class="n">params</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">fit_crack_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="p">,</span> <span class="n">initial_params</span><span class="p">,</span> <span class="n">fix_params</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span>
                                          <span class="n">avg_sigma</span><span class="p">,</span> <span class="n">avg_decay</span><span class="p">,</span> <span class="n">calc</span><span class="p">)</span>
@@ -1298,14 +1298,14 @@
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">,</span> <span class="n">x</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">r_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">r_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">rmin</span><span class="p">,</span> <span class="n">rmax</span> <span class="o">=</span> <span class="n">r_range</span>
        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;</span> <span class="n">rmin</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">rmax</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
        <span class="n">mask</span> <span class="o">=</span> <span class="bp">Ellipsis</span>
 
     <span class="n">atom_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
-    <span class="k">if</span> <span class="n">atom_sigma</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">atom_sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">atom_sigma</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">()</span>
 
     <span class="n">grid_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">([</span><span class="n">griddata</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">-</span><span class="n">x0</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">-</span><span class="n">y0</span><span class="p">,</span> <span class="n">atom_sigma</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span>
@@ -1338,19 +1338,19 @@
     <span class="n">clf</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">),</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
                                   <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)],</span>
-                                  <span class="p">[</span><span class="s1">&#39;\sigma_{xx}&#39;</span><span class="p">,</span> <span class="s1">r&#39;\sigma_{yy}&#39;</span><span class="p">,</span> <span class="s1">r&#39;\sigma_{xy}&#39;</span><span class="p">]):</span>
+                                  <span class="p">[</span><span class="s1">&#39;\sigma_</span><span class="si">{xx}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">r&#39;\sigma_</span><span class="si">{yy}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">r&#39;\sigma_</span><span class="si">{xy}</span><span class="s1">&#39;</span><span class="p">]):</span>
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm{atom}$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
 
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm{Irwin}$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
 
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">7</span><span class="p">)</span>
@@ -1358,7 +1358,7 @@
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span>
                            <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">])</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">dcontours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm{atom} - </span><span class="si">%s</span><span class="s1">^\mathrm{Irwin}|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
         <span class="n">draw</span><span class="p">()</span></div>
 
 
@@ -1438,10 +1438,10 @@
     <span class="n">cleavage_plane</span> <span class="o">=</span> <span class="n">MillerPlane</span><span class="p">(</span><span class="n">cleavage_plane</span><span class="p">)</span>
     <span class="n">crack_front</span> <span class="o">=</span> <span class="n">MillerDirection</span><span class="p">(</span><span class="n">crack_front</span><span class="p">)</span>
 
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Crack system              </span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">crack_front</span><span class="p">))</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Crack direction (x-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_direction</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cleavage plane  (y-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cleavage_plane</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Crack front     (z-axis)  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_front</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack system              </span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">crack_front</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack direction (x-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_direction</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cleavage plane  (y-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cleavage_plane</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack front     (z-axis)  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_front</span><span class="p">)</span></div>
 
 
 
@@ -1452,10 +1452,10 @@
 <span class="sd">    Rescaling is applied only to atoms where `mask` is True (default is all atoms)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orig_height</span><span class="p">,</span> <span class="n">delta_strain</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orig_height</span><span class="p">,</span> <span class="n">delta_strain</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span> <span class="o">=</span> <span class="n">orig_height</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delta_strain</span> <span class="o">=</span> <span class="n">delta_strain</span>
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">Ellipsis</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span>
 
@@ -1487,14 +1487,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

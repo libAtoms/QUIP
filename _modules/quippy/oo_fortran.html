@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.oo_fortran &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.oo_fortran &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -94,23 +94,23 @@
 <span class="kn">import</span> <span class="nn">imp</span>
 <span class="kn">import</span> <span class="nn">weakref</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MethodType</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="k">import</span> <span class="n">MethodType</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="kn">import</span> <span class="n">args_str</span><span class="p">,</span> <span class="n">is_interactive_shell</span>
-<span class="kn">from</span> <span class="nn">quippy.dictmixin</span> <span class="kn">import</span> <span class="n">PuPyDictionary</span>
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">get_fortran_indexing</span>
-<span class="kn">import</span> <span class="nn">quippy.arraydata</span> <span class="kn">as</span> <span class="nn">arraydata</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="k">import</span> <span class="n">args_str</span><span class="p">,</span> <span class="n">is_interactive_shell</span>
+<span class="kn">from</span> <span class="nn">quippy.dictmixin</span> <span class="k">import</span> <span class="n">PuPyDictionary</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">get_fortran_indexing</span>
+<span class="kn">import</span> <span class="nn">quippy.arraydata</span> <span class="k">as</span> <span class="nn">arraydata</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FortranDerivedType&#39;</span><span class="p">,</span> <span class="s1">&#39;FortranDerivedTypes&#39;</span><span class="p">,</span> <span class="s1">&#39;wrap_all&#39;</span><span class="p">]</span>
 
 <span class="n">major</span><span class="p">,</span> <span class="n">minor</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
 
 <span class="k">if</span> <span class="p">(</span><span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
-    <span class="nb">all</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">seq</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">False</span> <span class="ow">in</span> <span class="n">seq</span>
-    <span class="nb">any</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">seq</span><span class="p">:</span> <span class="bp">True</span> <span class="ow">in</span> <span class="n">seq</span>
+    <span class="nb">all</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">seq</span><span class="p">:</span> <span class="ow">not</span> <span class="kc">False</span> <span class="ow">in</span> <span class="n">seq</span>
+    <span class="nb">any</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">seq</span><span class="p">:</span> <span class="kc">True</span> <span class="ow">in</span> <span class="n">seq</span>
 
 <span class="n">wraplog</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;quippy.oo_fortran&#39;</span><span class="p">)</span>
 
@@ -138,9 +138,9 @@
 <span class="n">FortranDerivedTypes</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">FortranRoutines</span> <span class="o">=</span> <span class="p">{}</span>
 
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">QUIPPY_TRUE</span><span class="p">,</span> <span class="n">QUIPPY_FALSE</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">QUIPPY_TRUE</span><span class="p">,</span> <span class="n">QUIPPY_FALSE</span>
 
-<span class="kn">from</span> <span class="nn">numpy.f2py.crackfortran</span> <span class="kn">import</span> <span class="n">badnames</span>
+<span class="kn">from</span> <span class="nn">numpy.f2py.crackfortran</span> <span class="k">import</span> <span class="n">badnames</span>
 
 <span class="n">special_names</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;assignment(=)&#39;</span> <span class="p">:</span> <span class="s1">&#39;assignment&#39;</span><span class="p">,</span>
@@ -150,10 +150,10 @@
 
 
 <span class="k">def</span> <span class="nf">is_scalar_type</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">numpy_to_fortran</span><span class="o">.</span><span class="n">values</span><span class="p">():</span> <span class="k">return</span> <span class="bp">True</span>
-    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;character&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="bp">True</span>
-    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;integer&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="bp">True</span>
-    <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">numpy_to_fortran</span><span class="o">.</span><span class="n">values</span><span class="p">():</span> <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;character&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;integer&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
 
 <span class="k">def</span> <span class="nf">fortran_equivalent_type</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
     <span class="n">tmap</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;int&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
@@ -194,13 +194,13 @@
     
 
 <span class="k">def</span> <span class="nf">type_is_compatible</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-    <span class="k">if</span> <span class="s1">&#39;optional&#39;</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">arg</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="s1">&#39;optional&#39;</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">arg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">arg_type</span><span class="p">,</span> <span class="n">dims</span><span class="p">,</span> <span class="n">itemsize</span> <span class="o">=</span> <span class="n">fortran_equivalent_type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">if</span> <span class="n">dims</span> <span class="o">==</span> <span class="p">():</span> <span class="n">dims</span> <span class="o">=</span> <span class="s1">&#39;scalar&#39;</span>
 
@@ -209,7 +209,7 @@
         <span class="n">spec_type</span> <span class="o">=</span> <span class="s1">&#39;character&#39;</span>
 
     <span class="c1"># First check type matches</span>
-    <span class="k">if</span> <span class="n">arg_type</span> <span class="o">!=</span> <span class="n">spec_type</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">arg_type</span> <span class="o">!=</span> <span class="n">spec_type</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># Now check dimensions</span>
     <span class="n">dimattrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;dimension&#39;</span><span class="p">)]</span>
@@ -220,7 +220,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="p">(</span><span class="n">dimattr</span><span class="p">,)</span> <span class="o">=</span> <span class="n">dimattrs</span> <span class="c1"># asserts len(dimattr) == 1</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="n">adims</span> <span class="o">=</span> <span class="n">dimattr</span><span class="p">[</span><span class="n">dimattr</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">dimattr</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
@@ -243,11 +243,11 @@
     <span class="n">newargs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">modargs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="n">inargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">):</span>
             <span class="n">cls</span> <span class="o">=</span> <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
                 <span class="n">newargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span>
-                <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -257,18 +257,18 @@
                 <span class="k">except</span><span class="p">:</span>
                     <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Argument </span><span class="si">%s</span><span class="s1"> should be of type </span><span class="si">%s</span><span class="s1"> but got incompatible type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)))</span>
 
-        <span class="k">elif</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;character&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;character&#39;</span><span class="p">):</span>
             <span class="c1"># if arg is a list of strings of unequal length, pad with spaces</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">]):</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">s2a</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
                 <span class="n">newargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-                <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">newargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-                <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">newargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-            <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+            <span class="n">modargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
     <span class="c1"># Process keyword arguments and args_str arguments.</span>
 
@@ -298,8 +298,8 @@
             <span class="n">cls</span> <span class="o">=</span> <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="n">kwarg_lookup</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
                 <span class="n">newkwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">_fpointer</span>
-                <span class="n">modkwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="k">elif</span> <span class="n">a</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">modkwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -310,15 +310,15 @@
                 <span class="k">except</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Argument </span><span class="si">%s</span><span class="s1"> should be of type </span><span class="si">%s</span><span class="s1">, but got incompatible type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">kwarg_lookup</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">continue</span>
             <span class="n">newkwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
-            <span class="n">modkwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">modkwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Construct final args_str by merging args_str argument with args_str_kwargs</span>
     <span class="k">if</span> <span class="n">got_args_str</span><span class="p">:</span>
         <span class="n">args_str_final</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="k">if</span> <span class="n">prefix</span><span class="o">+</span><span class="s1">&#39;args_str&#39;</span> <span class="ow">in</span> <span class="n">newkwargs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">newkwargs</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s1">&#39;args_str&#39;</span><span class="p">],</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">newkwargs</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s1">&#39;args_str&#39;</span><span class="p">],</span> <span class="n">basestring</span><span class="p">):</span>
                 <span class="n">args_str_final</span> <span class="o">=</span> <span class="n">args_str_final</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">newkwargs</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s1">&#39;args_str&#39;</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">args_str_final</span> <span class="o">=</span> <span class="n">args_str_final</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">args_str</span><span class="p">(</span><span class="n">newkwargs</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s1">&#39;args_str&#39;</span><span class="p">])</span>
@@ -332,16 +332,16 @@
 <span class="k">def</span> <span class="nf">process_results</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">inargs</span><span class="p">,</span> <span class="n">outargs</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
     <span class="n">newres</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="n">madeseq</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">outargs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">madeseq</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">madeseq</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">outargs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">madeseq</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">res</span><span class="p">,)</span>
 
     <span class="c1"># intent(out) arguments form result tuple</span>
-    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">res</span><span class="p">,</span><span class="n">outargs</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">):</span>
-                <span class="n">newres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span><span class="n">fpointer</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">finalise</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+                <span class="n">newres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="n">spec</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span><span class="n">fpointer</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">finalise</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
                     <span class="c1"># Convert to one-based FortranArray</span>
@@ -363,8 +363,8 @@
         <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">FortranDerivedType</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s1">&#39;fintent(in)&#39;</span> <span class="ow">in</span> <span class="n">type_lookup</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;attributes&#39;</span><span class="p">]):</span>
             <span class="n">a</span><span class="o">.</span><span class="n">_update</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="n">madeseq</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">newres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -384,30 +384,30 @@
 <span class="sd">    the destructor frees the associated Fortran derived type.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">_modobj</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">_moddoc</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">_classdoc</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_modobj</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_moddoc</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_classdoc</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_routines</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">_subobjs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">_arrays</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">_interfaces</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">_elements</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">_cmp_skip_fields</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">_cmp_tol</span> <span class="o">=</span> <span class="mf">1e-8</span>
+    <span class="n">_cmp_tol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">8</span>
 
     <span class="n">_prefix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-        <span class="n">call_init</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_finalise</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">call_init</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalise</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_hooks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs_cache</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">if</span> <span class="s1">&#39;fpointer&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;fpointer&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="n">call_init</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;fpointer&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call_init</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;fpointer&#39;</span><span class="p">]</span>
             <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;fpointer&#39;</span><span class="p">]</span>
 
@@ -433,7 +433,7 @@
 <div class="viewcode-block" id="FortranDerivedType.is_same_fortran_object"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType.is_same_fortran_object">[docs]</a>    <span class="k">def</span> <span class="nf">is_same_fortran_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test if `self` and `other` point to the same Fortan object.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;_fpointer&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="FortranDerivedType.shallow_copy"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType.shallow_copy">[docs]</a>    <span class="k">def</span> <span class="nf">shallow_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -458,7 +458,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ref_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_count</span> <span class="o">+</span> <span class="mi">1</span></div>
 
     <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finalise</span><span class="p">:</span>
             <span class="k">return</span>
@@ -466,15 +466,15 @@
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_initialised&#39;</span><span class="p">):</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialised</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs_cache</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;__del__&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routines</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;__del__&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routines</span><span class="p">:</span>
             <span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routines</span><span class="p">[</span><span class="s1">&#39;__del__&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">fobj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fobj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">fobj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">=</span> <span class="kc">None</span>
 
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1"> object at 0x</span><span class="si">%x</span><span class="s1"> fpointer=None&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1"> object at 0x</span><span class="si">%x</span><span class="s1"> fpointer=</span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]))</span>
@@ -497,15 +497,15 @@
         <span class="c1"># Class must agree</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
             <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;class mismatch </span><span class="si">%s</span><span class="s1"> not subclass of </span><span class="si">%s</span><span class="s1"> (or vice versa)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># Don&#39;t compare uninitialised objects</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;initialised&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialised</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">True</span>
+                <span class="k">return</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">initialised</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other</span><span class="o">.</span><span class="n">initialised</span><span class="p">)</span> <span class="ow">or</span>
                 <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">initialised</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialised</span><span class="p">)):</span>
-                <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># Compare elements and sub-objects</span>
         <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elements</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -514,23 +514,23 @@
 
             <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">el</span><span class="p">):</span>
                 <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;element mismatch </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">el</span><span class="p">)</span>
-                <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># Compare arrays</span>
         <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arrays</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
             <span class="n">b</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s1">&#39;f&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                     <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;array mismatch </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">array</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="bp">False</span>
+                    <span class="k">return</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmp_tol</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
                     <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;real array mismatch </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">array</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="bp">False</span>
-        <span class="k">return</span> <span class="bp">True</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
@@ -550,7 +550,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;updating </span><span class="si">%s</span><span class="s1"> at 0x</span><span class="si">%x</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
         <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_hooks</span><span class="p">:</span>
             <span class="n">hook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
@@ -574,7 +574,7 @@
 <span class="sd">        is the number of dimensions of the array and `N_1, N_2` etc. are the lengths</span>
 <span class="sd">        of each dimension.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">None</span></div>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="FortranDerivedType._runroutine"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType._runroutine">[docs]</a>    <span class="k">def</span> <span class="nf">_runroutine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -612,7 +612,7 @@
 <span class="sd">        :class:`~quippy.farray.FortranArray`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routines</span><span class="p">:</span>
@@ -872,14 +872,14 @@
                 <span class="n">method_name</span> <span class="o">=</span> <span class="n">special_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
 
                 <span class="n">wrapped_routine</span> <span class="o">=</span> <span class="n">wraproutine</span><span class="p">(</span><span class="n">fobj</span><span class="p">,</span> <span class="n">modspec</span><span class="p">,</span> <span class="n">routine</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">method_name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
-                                              <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                                              <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
                 <span class="n">FortranRoutines</span><span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">__name__</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">method_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">wrapped_routine</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">wrapped_routine</span><span class="p">)</span>
                 <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  added method </span><span class="si">%s</span><span class="s1"> to class </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">wrapped_routine</span> <span class="o">=</span> <span class="n">wraproutine</span><span class="p">(</span><span class="n">fobj</span><span class="p">,</span> <span class="n">modspec</span><span class="p">,</span> <span class="n">routine</span><span class="p">,</span> <span class="n">routine</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
-                                              <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                                              <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">intf_name</span><span class="p">,</span><span class="n">intf_spec</span> <span class="ow">in</span> <span class="n">modspec</span><span class="p">[</span><span class="s1">&#39;interfaces&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">routine</span> <span class="ow">in</span> <span class="n">intf_spec</span><span class="p">[</span><span class="s1">&#39;routines&#39;</span><span class="p">]:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">intf_name</span> <span class="ow">in</span> <span class="n">interfaces</span><span class="p">:</span> <span class="n">interfaces</span><span class="p">[</span><span class="n">intf_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">intf_spec</span><span class="p">,</span> <span class="p">[],</span> <span class="n">modfile</span><span class="p">)</span>
@@ -917,7 +917,7 @@
 
     <span class="n">wrapmethod</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runroutine</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">wrapinterface</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runinterface</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapinit</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrapinit</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">init</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">FortranDerivedType</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">init</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
         <span class="k">return</span> <span class="n">init</span>
@@ -980,7 +980,7 @@
             <span class="n">constructor_name</span> <span class="o">=</span> <span class="n">constructor</span>
             <span class="n">constructor</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">wrapinit</span><span class="p">(</span><span class="n">constructor</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">prefix</span><span class="o">+</span><span class="n">constructor</span><span class="p">),</span>
                                   <span class="n">moddoc</span><span class="p">[</span><span class="s1">&#39;routines&#39;</span><span class="p">][</span><span class="n">constructor</span><span class="p">],</span> <span class="n">constructor</span><span class="p">,</span> <span class="n">tcls</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
-                                  <span class="n">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                                  <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
 
         <span class="n">_routines</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">_interfaces</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1018,7 +1018,7 @@
 
             <span class="n">_routines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
             <span class="n">func</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">wrapmethod</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">tcls</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">,</span>
-                           <span class="n">prefix</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                           <span class="n">prefix</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
             <span class="n">func</span><span class="o">.</span><span class="n">__module__</span> <span class="o">=</span> <span class="n">pymodname</span>
             <span class="n">methods</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
 
@@ -1030,7 +1030,7 @@
 
                     <span class="c1"># regenerate interface documentation in sphinx format and with correct names</span>
                     <span class="n">intf_func</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">wrapmethod</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">intf_name</span><span class="p">,</span>
-                                        <span class="n">prefix</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;sphinx&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                                        <span class="n">prefix</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sphinx&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
                     <span class="n">intf_func</span><span class="o">.</span><span class="n">__module__</span> <span class="o">=</span> <span class="n">pymodname</span>
                     <span class="n">interfaces</span><span class="p">[</span><span class="n">intf_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">moddoc</span><span class="p">[</span><span class="s1">&#39;routines&#39;</span><span class="p">][</span><span class="n">fullname</span><span class="p">],</span> <span class="n">intf_func</span><span class="p">))</span>
 
@@ -1058,11 +1058,11 @@
                 <span class="n">_routines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">fobj</span><span class="p">,</span> <span class="n">rspec</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;__init__&#39;</span><span class="p">:</span>
                     <span class="n">constructor</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">wrapinit</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">rspec</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
-                                          <span class="n">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                                          <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
                     <span class="n">__init__</span> <span class="o">=</span> <span class="n">constructor</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">func</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">wrapmethod</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">rspec</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
-                                   <span class="n">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                                   <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
                     <span class="n">func</span><span class="o">.</span><span class="n">__module__</span> <span class="o">=</span> <span class="n">pymodname</span>
                     <span class="n">methods</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>                    
 
@@ -1117,9 +1117,9 @@
 
         <span class="n">new_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="nb">object</span><span class="p">)(</span><span class="n">tcls</span><span class="p">,</span> <span class="p">(</span><span class="n">FortranDerivedType</span><span class="p">,),</span>
                               <span class="p">{</span><span class="s1">&#39;__doc__&#39;</span><span class="p">:</span> <span class="n">classdoc</span><span class="p">,</span>
-                               <span class="s1">&#39;_moddoc&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
-                               <span class="s1">&#39;_modobj&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
-                               <span class="s1">&#39;_classdoc&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                               <span class="s1">&#39;_moddoc&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="s1">&#39;_modobj&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="s1">&#39;_classdoc&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                                <span class="s1">&#39;_routines&#39;</span><span class="p">:</span> <span class="n">_routines</span><span class="p">,</span>
                                <span class="s1">&#39;_subobjs&#39;</span><span class="p">:</span> <span class="p">{},</span>
                                <span class="s1">&#39;_arrays&#39;</span><span class="p">:</span> <span class="p">{},</span>
@@ -1173,8 +1173,8 @@
             <span class="k">if</span> <span class="s1">&#39;array&#39;</span> <span class="ow">in</span> <span class="n">el</span><span class="p">:</span>
                 <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;    adding array </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
                 <span class="n">new_cls</span><span class="o">.</span><span class="n">_arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">el</span><span class="p">[</span><span class="s1">&#39;array&#39;</span><span class="p">]),</span> <span class="n">el</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">],</span> <span class="n">el</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">wrap_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-                                                    <span class="n">fset</span><span class="o">=</span><span class="n">wrap_array_set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">wrap_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                                                    <span class="n">fset</span><span class="o">=</span><span class="n">wrap_array_set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
                                                     <span class="n">doc</span><span class="o">=</span><span class="n">process_docstring</span><span class="p">(</span><span class="n">el</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])))</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">wrap_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
                                                 <span class="n">fset</span><span class="o">=</span><span class="n">wrap_array_set</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
@@ -1219,7 +1219,7 @@
 <span class="k">def</span> <span class="nf">wrap_get</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elements</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown element </span><span class="si">%s</span><span class="s1"> in class </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class</span><span class="o">.</span><span class="n">__name</span><span class="p">))</span>
@@ -1235,7 +1235,7 @@
 <span class="k">def</span> <span class="nf">wrap_set</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elements</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown element </span><span class="si">%s</span><span class="s1"> in class </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class</span><span class="o">.</span><span class="n">__name</span><span class="p">))</span>
@@ -1251,7 +1251,7 @@
 
 <span class="k">def</span> <span class="nf">wrap_obj_get</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="n">cls</span><span class="p">,</span> <span class="n">getfunc</span><span class="p">,</span> <span class="n">setfunc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">getfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span>
@@ -1259,7 +1259,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs_cache</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs_cache</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span> <span class="o">=</span> <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span><span class="n">fpointer</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">finalise</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs_cache</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span> <span class="o">=</span> <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span><span class="n">fpointer</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">finalise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="n">obj</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">obj</span>
 
@@ -1267,14 +1267,14 @@
 
 <span class="k">def</span> <span class="nf">wrap_obj_set</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="n">cls</span><span class="p">,</span> <span class="n">getfunc</span><span class="p">,</span> <span class="n">setfunc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">setfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span>
         
     <span class="k">return</span> <span class="n">func</span>
 
-<span class="k">def</span> <span class="nf">wrap_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">wrap_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">arrayfunc</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">arraytype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -1285,15 +1285,15 @@
             <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">nshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_array_shape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">reshape</span> <span class="ow">and</span> <span class="n">nshape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">reshape</span> <span class="ow">and</span> <span class="n">nshape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">nshape</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">a</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">return</span> <span class="n">func</span>
 
-<span class="k">def</span> <span class="nf">wrap_array_set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">wrap_array_set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">arrayfunc</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">arraytype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -1304,14 +1304,14 @@
             <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">:</span> 
                 <span class="n">a</span> <span class="o">=</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
             <span class="n">nshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_array_shape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">reshape</span> <span class="ow">and</span> <span class="n">nshape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">reshape</span> <span class="ow">and</span> <span class="n">nshape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">nshape</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">arraytype</span> <span class="o">==</span> <span class="s1">&#39;logical&#39;</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">QUIPPY_TRUE</span><span class="p">,</span> <span class="n">QUIPPY_FALSE</span><span class="p">)</span>
             <span class="n">a</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">return</span> <span class="n">func</span>
 
@@ -1366,7 +1366,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">obj</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">_subobjs_cache</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">pp</span><span class="p">)]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">_subobjs_cache</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">pp</span><span class="p">)]</span> <span class="o">=</span> <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">arraytype</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span><span class="n">fpointer</span><span class="o">=</span><span class="n">pp</span><span class="p">,</span><span class="n">finalise</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">_subobjs_cache</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">pp</span><span class="p">)]</span> <span class="o">=</span> <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">arraytype</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span><span class="n">fpointer</span><span class="o">=</span><span class="n">pp</span><span class="p">,</span><span class="n">finalise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">obj</span>
 
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -1392,15 +1392,15 @@
     <span class="c1"># turn verbatim and displayed maths sections into Sphinx blockquotes</span>
     <span class="n">indent</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">in_verbatim</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">in_math</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">in_literal</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">first_line_in_verbatim</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">in_verbatim</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">in_math</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">in_literal</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">first_line_in_verbatim</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">in_verbatim</span><span class="p">:</span>
-                <span class="n">in_verbatim</span> <span class="o">=</span> <span class="bp">True</span>
-                <span class="n">first_line_in_verbatim</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">in_verbatim</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">first_line_in_verbatim</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">indent</span> <span class="o">+=</span> <span class="mi">3</span>
                 <span class="k">if</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">):</span>
@@ -1415,29 +1415,29 @@
             <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">in_verbatim</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">first_line_in_verbatim</span><span class="p">:</span>
-                <span class="n">first_line_in_verbatim</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">first_line_in_verbatim</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
                     <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-            <span class="n">in_verbatim</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">in_verbatim</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">indent</span> <span class="o">-=</span> <span class="mi">3</span>
 
         <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;::&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">in_literal</span><span class="p">:</span>
             <span class="n">literal_start_col</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
-            <span class="n">in_literal</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">in_literal</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">in_literal</span> <span class="ow">and</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">literal_start_col</span> <span class="ow">and</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">literal_start_col</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
-                <span class="n">in_literal</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">in_literal</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin{displaymath}&#39;</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-            <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin{displaymath}&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">.. math::</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin</span><span class="si">{displaymath}</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin</span><span class="si">{displaymath}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">.. math::</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">indent</span> <span class="o">+=</span> <span class="mi">3</span>
-            <span class="n">in_math</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">in_math</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">end{displaymath}&#39;</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-            <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">end{displaymath}&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">end</span><span class="si">{displaymath}</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">end</span><span class="si">{displaymath}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
             <span class="n">indent</span> <span class="o">-=</span> <span class="mi">3</span>
-            <span class="n">in_math</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">in_math</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">in_verbatim</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">in_literal</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">in_math</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">regexp</span><span class="p">,</span> <span class="n">repl</span> <span class="ow">in</span> <span class="n">doc_subs</span><span class="p">:</span>
@@ -1453,18 +1453,18 @@
     <span class="k">return</span> <span class="n">doc</span>
 
 
-<span class="k">def</span> <span class="nf">add_doc</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">add_doc</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">func</span><span class="o">.</span><span class="n">__name__</span> <span class="o">=</span> <span class="n">fullname</span>
     <span class="n">func</span><span class="o">.</span><span class="n">_fobj</span> <span class="o">=</span> <span class="n">fobj</span>
 
-    <span class="k">if</span> <span class="n">doc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">doc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">func</span>
 
-    <span class="k">if</span> <span class="n">format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="s1">&#39;sphinx&#39;</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsuported format </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">format</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="s1">&#39;sphinx&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsuported format </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">format</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
         <span class="n">arg_header</span> <span class="o">=</span> <span class="s1">&#39;Parameters</span><span class="se">\n</span><span class="s1">----------</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">ret_header</span> <span class="o">=</span> <span class="s1">&#39;Returns</span><span class="se">\n</span><span class="s1">-------</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">ref_header</span> <span class="o">=</span> <span class="s1">&#39;References</span><span class="se">\n</span><span class="s1">----------</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -1492,7 +1492,7 @@
         <span class="n">signature_line</span> <span class="o">=</span> <span class="n">signature_line</span><span class="p">[</span><span class="n">signature_line</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">signature_line</span> <span class="o">=</span> <span class="n">signature_line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">fullname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-        <span class="n">retvar</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">retvar</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">signature_line</span> <span class="o">=</span> <span class="n">signature_line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">fullname</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">skip_this</span><span class="p">:</span>
@@ -1506,12 +1506,12 @@
     <span class="k">if</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">]:</span>
         <span class="n">final_doc</span> <span class="o">+=</span> <span class="n">process_docstring</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
-    <span class="n">got_args_str</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">got_args_str</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">arg_lines_in</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]:</span>
             <span class="n">argname</span> <span class="o">=</span> <span class="n">arg</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">argname</span> <span class="o">==</span> <span class="s1">&#39;args_str&#39;</span><span class="p">:</span>
-                <span class="n">got_args_str</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">got_args_str</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="n">argname</span> <span class="ow">in</span> <span class="n">badnames</span><span class="p">:</span> <span class="n">argname</span> <span class="o">=</span> <span class="n">badnames</span><span class="p">[</span><span class="n">argname</span><span class="p">]</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arg_lines_in</span><span class="p">):</span>
@@ -1534,14 +1534,14 @@
                 
 
             <span class="k">if</span> <span class="n">argname</span> <span class="o">==</span> <span class="n">retvar</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
                     <span class="n">ret_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> : </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">argname</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
                     <span class="k">if</span> <span class="n">arg</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">]:</span>
                         <span class="n">ret_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;    &#39;</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">process_docstring</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">ret_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;:returns: **</span><span class="si">%s</span><span class="s1">** -- </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">argname</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">arg</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
                     <span class="n">arg_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> : </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">argname</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
                     <span class="k">if</span> <span class="n">arg</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">]:</span>
                         <span class="n">arg_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;    &#39;</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">process_docstring</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="p">])</span>
@@ -1550,7 +1550,7 @@
                     <span class="k">if</span> <span class="nb">type</span><span class="p">:</span>
                         <span class="n">arg_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;:type </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">argname</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="n">format</span> <span class="o">!=</span> <span class="s1">&#39;sphinx&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">!=</span> <span class="s1">&#39;sphinx&#39;</span><span class="p">:</span>
         <span class="n">final_doc</span> <span class="o">+=</span> <span class="n">args_str_table</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">arg_lines</span><span class="p">:</span>
@@ -1625,7 +1625,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">wraproutine</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">moddoc</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">shortname</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">wraproutine</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">moddoc</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">shortname</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">doc</span> <span class="o">=</span> <span class="n">moddoc</span><span class="p">[</span><span class="s1">&#39;routines&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
     <span class="n">fobj</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">prefix</span><span class="o">+</span><span class="n">name</span><span class="p">)</span>
 
@@ -1663,10 +1663,10 @@
         <span class="k">return</span> <span class="n">newres</span>
 
     <span class="k">return</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">shortname</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
-                   <span class="n">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="n">skip_this</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+                   <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="n">skip_this</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">wrapinterface</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">intf_spec</span><span class="p">,</span> <span class="n">routines</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">wrapinterface</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">intf_spec</span><span class="p">,</span> <span class="n">routines</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Interface </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
@@ -1749,7 +1749,7 @@
     <span class="k">for</span> <span class="n">rname</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">routine</span><span class="p">,</span> <span class="n">modfile</span> <span class="ow">in</span> <span class="n">routines</span><span class="p">:</span>
 
         <span class="c1"># regenerate routine documentation, using sphinx format rather than numpydoc format</span>
-        <span class="n">tmp_routine</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">routine</span><span class="p">,</span> <span class="n">routine</span><span class="o">.</span><span class="n">_fobj</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;sphinx&#39;</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
+        <span class="n">tmp_routine</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">routine</span><span class="p">,</span> <span class="n">routine</span><span class="o">.</span><span class="n">_fobj</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sphinx&#39;</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
 
         
         <span class="n">routine_lines</span> <span class="o">=</span> <span class="n">tmp_routine</span><span class="o">.</span><span class="n">__doc__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -1765,7 +1765,7 @@
     <span class="k">return</span> <span class="n">func</span>
 
 
-<span class="k">def</span> <span class="nf">update_doc_string</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">sections</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">signature</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">update_doc_string</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">sections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">signature</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Insert `extra` in the docstring `doc`, before the first matching section</span>
 
@@ -1776,7 +1776,7 @@
 <span class="sd">    Returns the new doc string, suitable for assigning to cls.__doc__</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">sections</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">sections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
        <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;See also&#39;</span><span class="p">]</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -1789,7 +1789,7 @@
     
     <span class="n">lines</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">signature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">signature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">signature</span>
     
     <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
@@ -1820,14 +1820,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

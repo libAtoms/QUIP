@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.util &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.util &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -86,8 +86,8 @@
 
 <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">xml.dom.minidom</span>
 <span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">dictmixin</span> <span class="kn">import</span> <span class="n">PuPyDictionary</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">dictmixin</span> <span class="k">import</span> <span class="n">PuPyDictionary</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;infer_format&#39;</span><span class="p">,</span> <span class="s1">&#39;args_str&#39;</span><span class="p">,</span> <span class="s1">&#39;dict_to_args_str&#39;</span><span class="p">,</span> <span class="s1">&#39;parse_slice&#39;</span><span class="p">,</span>
            <span class="s1">&#39;parse_comma_colon_list&#39;</span><span class="p">,</span> <span class="s1">&#39;loadstring&#39;</span><span class="p">,</span>
@@ -96,30 +96,30 @@
            <span class="s1">&#39;most_recent_file&#39;</span><span class="p">,</span> <span class="s1">&#39;time_ordered_glob&#39;</span><span class="p">,</span> <span class="s1">&#39;most_recent_files&#39;</span><span class="p">,</span>
            <span class="s1">&#39;analyse_timings&#39;</span><span class="p">,</span> <span class="s1">&#39;write_timings&#39;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="infer_format"><a class="viewcode-back" href="../../util.html#quippy.util.infer_format">[docs]</a><span class="k">def</span> <span class="nf">infer_format</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">lookup</span><span class="p">):</span>
+<div class="viewcode-block" id="infer_format"><a class="viewcode-back" href="../../util.html#quippy.util.infer_format">[docs]</a><span class="k">def</span> <span class="nf">infer_format</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">lookup</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Infer the correct format to read from or write to `file`</span>
 
 <span class="sd">       If `format` is not None, there is nothing to do. Otherwise we</span>
 <span class="sd">       look for file extension in `lookup`.&quot;&quot;&quot;</span>
 
-    <span class="n">filename</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">if</span> <span class="n">format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="nb">file</span>
-            <span class="k">if</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">lookup</span><span class="p">:</span>
-                <span class="n">format</span> <span class="o">=</span> <span class="nb">file</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span>
+            <span class="k">if</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">lookup</span><span class="p">:</span>
+                <span class="nb">format</span> <span class="o">=</span> <span class="n">file</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
-                <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+                <span class="n">file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
                 <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-                    <span class="n">format</span> <span class="o">=</span> <span class="n">base</span>
+                    <span class="nb">format</span> <span class="o">=</span> <span class="n">base</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">format</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                    <span class="nb">format</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">format</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">__class__</span>
+            <span class="nb">format</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">__class__</span>
 
-    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">format</span></div>
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="nb">format</span></div>
 
 <div class="viewcode-block" id="args_str"><a class="viewcode-back" href="../../util.html#quippy.util.args_str">[docs]</a><span class="k">def</span> <span class="nf">args_str</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Construct args string from file, string or mapping object&quot;&quot;&quot;</span>
@@ -157,10 +157,10 @@
 
 <span class="k">def</span> <span class="nf">loadstring</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">StringIO</span>
-    <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">loadtxt</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">loadtxt</span>
     <span class="k">return</span> <span class="n">loadtxt</span><span class="p">(</span><span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)))</span>
 
-<div class="viewcode-block" id="quip_xml_parameters"><a class="viewcode-back" href="../../util.html#quippy.util.quip_xml_parameters">[docs]</a><span class="k">def</span> <span class="nf">quip_xml_parameters</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="quip_xml_parameters"><a class="viewcode-back" href="../../util.html#quippy.util.quip_xml_parameters">[docs]</a><span class="k">def</span> <span class="nf">quip_xml_parameters</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Search for an QUIP XML parameter set matching `name&#39; and, optionally `label`.</span>
 
 <span class="sd">    Result is the XML stanza as a string. Looks under</span>
@@ -171,9 +171,9 @@
 <span class="sd">    set can&#39;t be found, we raise an :exc:`IOError`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">QUIP_ROOT</span>
-    <span class="kn">from</span> <span class="nn">xml.parsers.expat</span> <span class="kn">import</span> <span class="n">ExpatError</span>
-    <span class="kn">from</span> <span class="nn">xml.dom.minidom</span> <span class="kn">import</span> <span class="n">Element</span>
+    <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">QUIP_ROOT</span>
+    <span class="kn">from</span> <span class="nn">xml.parsers.expat</span> <span class="k">import</span> <span class="n">ExpatError</span>
+    <span class="kn">from</span> <span class="nn">xml.dom.minidom</span> <span class="k">import</span> <span class="n">Element</span>
 
     <span class="n">param_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">QUIP_ROOT</span><span class="p">,</span> <span class="s1">&#39;share/Parameters&#39;</span><span class="p">)</span>
 
@@ -196,7 +196,7 @@
 
     <span class="n">xml_string</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">xml_file</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Read XML and extract tag with matching label attribute</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
@@ -222,13 +222,13 @@
     <span class="sd">&quot;&quot;&quot;Return True if we&#39;re running in an interactive shell (including IPython)&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s1">&#39;ps1&#39;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="kc">True</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">__IPYTHON__</span>
     <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">True</span></div>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <span class="k">def</span> <span class="nf">read_text_file</span><span class="p">(</span><span class="n">fh</span><span class="p">):</span>
@@ -241,11 +241,11 @@
 <span class="sd">    Returns a tuple (filename, lines).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">opened</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">opened</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">fh</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
         <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-        <span class="n">opened</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">opened</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">opened</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -307,7 +307,7 @@
     <span class="k">return</span> <span class="n">timings</span><span class="p">,</span> <span class="n">summary</span></div>
 
 
-<div class="viewcode-block" id="write_timings"><a class="viewcode-back" href="../../util.html#quippy.util.write_timings">[docs]</a><span class="k">def</span> <span class="nf">write_timings</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">timings</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;calls&#39;</span><span class="p">,</span> <span class="n">wall_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cpu_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="write_timings"><a class="viewcode-back" href="../../util.html#quippy.util.write_timings">[docs]</a><span class="k">def</span> <span class="nf">write_timings</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">timings</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;calls&#39;</span><span class="p">,</span> <span class="n">wall_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpu_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write a formatted summary of QUIP `timings` data to `out`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -369,14 +369,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

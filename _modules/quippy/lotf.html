@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.lotf &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.lotf &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -87,22 +87,22 @@
 <span class="sd">predictor-corrector dynamics within the ASE molecular dynamics framework.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="kn">import</span> <span class="p">(</span><span class="n">HYBRID_ACTIVE_MARK</span><span class="p">,</span> <span class="n">HYBRID_NO_MARK</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="k">import</span> <span class="p">(</span><span class="n">HYBRID_ACTIVE_MARK</span><span class="p">,</span> <span class="n">HYBRID_NO_MARK</span><span class="p">,</span>
                              <span class="n">construct_hysteretic_region</span><span class="p">,</span>
                              <span class="n">create_hybrid_weights</span><span class="p">,</span>
                              <span class="n">create_cluster_simple</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="kn">import</span> <span class="n">Potential</span><span class="p">,</span> <span class="n">ForceMixingPotential</span>
-<span class="kn">from</span> <span class="nn">quippy.table</span> <span class="kn">import</span> <span class="n">Table</span>
-<span class="kn">from</span> <span class="nn">quippy.system</span> <span class="kn">import</span> <span class="n">system_get_random_seed</span><span class="p">,</span> <span class="n">system_set_random_seeds</span><span class="p">,</span> <span class="n">system_timer</span>
-<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="kn">import</span> <span class="n">args_str</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">Potential</span><span class="p">,</span> <span class="n">ForceMixingPotential</span>
+<span class="kn">from</span> <span class="nn">quippy.table</span> <span class="k">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">quippy.system</span> <span class="k">import</span> <span class="n">system_get_random_seed</span><span class="p">,</span> <span class="n">system_set_random_seeds</span><span class="p">,</span> <span class="n">system_timer</span>
+<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="k">import</span> <span class="n">args_str</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;LOTFDynamics&#39;</span><span class="p">,</span> <span class="s1">&#39;update_hysteretic_qm_region&#39;</span><span class="p">,</span> <span class="s1">&#39;iter_atom_centered_clusters&#39;</span><span class="p">]</span>
 
 
-<span class="kn">from</span> <span class="nn">ase.md.md</span> <span class="kn">import</span> <span class="n">MolecularDynamics</span>
+<span class="kn">from</span> <span class="nn">ase.md.md</span> <span class="k">import</span> <span class="n">MolecularDynamics</span>
 
 <div class="viewcode-block" id="LOTFDynamics"><a class="viewcode-back" href="../../lotf.html#quippy.lotf.LOTFDynamics">[docs]</a><span class="k">class</span> <span class="nc">LOTFDynamics</span><span class="p">(</span><span class="n">MolecularDynamics</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -120,14 +120,14 @@
     <span class="n">Interpolation</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">extrapolate_steps</span><span class="p">,</span>
-                 <span class="n">trajectory</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">loginterval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">check_force_error</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qm_update_func</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                 <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loginterval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">check_force_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qm_update_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">MolecularDynamics</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span>
                                    <span class="n">trajectory</span><span class="p">,</span> <span class="n">logfile</span><span class="p">,</span> <span class="n">loginterval</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">extrapolate_steps</span> <span class="o">=</span> <span class="n">extrapolate_steps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">saved_state</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_state</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">LOTFDynamics</span><span class="o">.</span><span class="n">Extrapolation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_force_error</span> <span class="o">=</span> <span class="n">check_force_error</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">()</span>
@@ -285,7 +285,7 @@
         <span class="n">system_timer</span><span class="p">(</span><span class="s1">&#39;lotf_step&#39;</span><span class="p">)</span>
         <span class="n">system_timer</span><span class="p">(</span><span class="s1">&#39;lotf_extrapolate&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qm_update_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qm_update_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">qm_update_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="n">saved_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
@@ -358,11 +358,11 @@
 <span class="sd">        Returns the initial QM/MM forces on the atoms</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;lotf_adj_pot_svd&#39;</span><span class="p">,</span>
-                      <span class="n">calc_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                      <span class="n">calc_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
 
@@ -371,18 +371,18 @@
 <span class="sd">        Get LOTF forces at extrapolation step `i`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                          <span class="n">lotf_do_init</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                          <span class="n">lotf_do_map</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">lotf_do_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">lotf_do_map</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                          <span class="n">lotf_do_init</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                          <span class="n">lotf_do_map</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">lotf_do_init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">lotf_do_map</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;lotf_adj_pot_svd&#39;</span><span class="p">,</span>
-                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>                 
-                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                 
+                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
 
@@ -391,15 +391,15 @@
 <span class="sd">        Get LOTF forces at interpolation step `i`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">interp_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extrapolate_steps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;lotf_adj_pot_svd&#39;</span><span class="p">,</span>
-                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                       <span class="n">lotf_interp</span><span class="o">=</span><span class="n">interp_frac</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
@@ -411,12 +411,12 @@
 <span class="sd">        Returns the QM forces on the atoms at the fit point</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;lotf_adj_pot_svd&#39;</span><span class="p">,</span>
-                      <span class="n">calc_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_map</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                      <span class="n">calc_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
 
@@ -428,19 +428,19 @@
 <span class="sd">        Does not change the current set of adjustable potential parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">calc_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;force_mixing&#39;</span><span class="p">,</span>
-                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_map</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                      <span class="n">lotf_do_qm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">lotf_do_init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_fit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">lotf_do_interp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_calc_force_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">qm_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_calc_force_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">qm_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       Compute reference forces and compare with current forces `f`</span>
 <span class="sd">       &quot;&quot;&quot;</span>
@@ -461,7 +461,7 @@
 
 
 <div class="viewcode-block" id="update_hysteretic_qm_region"><a class="viewcode-back" href="../../lotf.html#quippy.lotf.update_hysteretic_qm_region">[docs]</a><span class="k">def</span> <span class="nf">update_hysteretic_qm_region</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">old_qm_list</span><span class="p">,</span> <span class="n">qm_centre</span><span class="p">,</span> <span class="n">qm_inner_radius</span><span class="p">,</span>
-                                <span class="n">qm_outer_radius</span><span class="p">,</span> <span class="n">use_avgpos</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">update_marks</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                                <span class="n">qm_outer_radius</span><span class="p">,</span> <span class="n">use_avgpos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">update_marks</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update the QM region in `atoms`</span>
 
@@ -492,10 +492,10 @@
     <span class="n">construct_hysteretic_region</span><span class="p">(</span><span class="n">qm_table</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">inner_radius</span><span class="o">=</span><span class="n">qm_inner_radius</span><span class="p">,</span>
                                 <span class="n">outer_radius</span><span class="o">=</span><span class="n">qm_outer_radius</span><span class="p">,</span>
                                 <span class="n">centre</span><span class="o">=</span><span class="n">qm_centre</span><span class="p">,</span> <span class="n">use_avgpos</span><span class="o">=</span><span class="n">use_avgpos</span><span class="p">,</span>
-                                <span class="n">loop_atoms_no_connectivity</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                                <span class="n">loop_atoms_no_connectivity</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">qm_list</span> <span class="o">=</span> <span class="n">qm_table</span><span class="o">.</span><span class="n">to_atom_list</span><span class="p">()</span>
     
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;update_qm_region: QM region with </span><span class="si">%d</span><span class="s1"> atoms centred on </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;update_qm_region: QM region with </span><span class="si">%d</span><span class="s1"> atoms centred on </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
           <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qm_list</span><span class="p">),</span> <span class="n">qm_centre</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">update_marks</span><span class="p">:</span>
@@ -524,7 +524,7 @@
 <span class="sd">    creation functions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">saved_hybrid_mark</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">saved_hybrid_mark</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="s1">&#39;hybrid_mark&#39;</span><span class="p">):</span>
         <span class="n">saved_hybrid_mark</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">hybrid_mark</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -533,17 +533,17 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">indices</span>
     
-    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid_mark&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid_mark&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
         <span class="n">at</span><span class="o">.</span><span class="n">hybrid_mark</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">hybrid_mark</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">hybrid_mark</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">create_hybrid_weights</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">(</span><span class="n">cluster_args</span><span class="p">))</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">create_cluster_simple</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">(</span><span class="n">cluster_args</span><span class="p">))</span>
         <span class="k">yield</span> <span class="n">c</span>
 
-    <span class="k">if</span> <span class="n">saved_hybrid_mark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid_mark&#39;</span><span class="p">,</span> <span class="n">saved_hybrid_mark</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saved_hybrid_mark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid_mark&#39;</span><span class="p">,</span> <span class="n">saved_hybrid_mark</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;hybrid_mark&#39;</span><span class="p">]</span></div>
 </pre></div>
@@ -562,14 +562,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

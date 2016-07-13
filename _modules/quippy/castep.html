@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.castep &mdash; quippy 0837f4c+ documentation</title>
+    <title>quippy.castep &mdash; quippy 5d89f37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0837f4c+',
+        VERSION:     '5d89f37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 0837f4c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy 5d89f37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -90,17 +90,17 @@
 <span class="c1"># HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">string</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">operator</span><span class="o">,</span> <span class="nn">itertools</span><span class="o">,</span> <span class="nn">logging</span><span class="o">,</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">make_lattice</span><span class="p">,</span> <span class="n">get_lattice_params</span>
-<span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">AtomsReaders</span><span class="p">,</span> <span class="n">AtomsWriters</span><span class="p">,</span> <span class="n">atoms_reader</span>
-<span class="kn">from</span> <span class="nn">quippy.dictionary</span> <span class="kn">import</span> <span class="n">Dictionary</span>
-<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="kn">import</span> <span class="n">AU_FS</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">BOHR</span><span class="p">,</span> <span class="n">BOLTZMANN_K</span><span class="p">,</span> <span class="n">GPA</span><span class="p">,</span> <span class="n">DEBYE</span>
-<span class="kn">from</span> <span class="nn">quippy.periodictable</span> <span class="kn">import</span> <span class="n">atomic_number</span>
+<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">make_lattice</span><span class="p">,</span> <span class="n">get_lattice_params</span>
+<span class="kn">from</span> <span class="nn">quippy.io</span> <span class="k">import</span> <span class="n">AtomsReaders</span><span class="p">,</span> <span class="n">AtomsWriters</span><span class="p">,</span> <span class="n">atoms_reader</span>
+<span class="kn">from</span> <span class="nn">quippy.dictionary</span> <span class="k">import</span> <span class="n">Dictionary</span>
+<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">AU_FS</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">BOHR</span><span class="p">,</span> <span class="n">BOLTZMANN_K</span><span class="p">,</span> <span class="n">GPA</span><span class="p">,</span> <span class="n">DEBYE</span>
+<span class="kn">from</span> <span class="nn">quippy.periodictable</span> <span class="k">import</span> <span class="n">atomic_number</span>
 
-<span class="kn">from</span> <span class="nn">ordereddict</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">farray</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">ordereddict</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">farray</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">pi</span>
 <span class="kn">import</span> <span class="nn">xml.dom.minidom</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CastepCell&#39;</span><span class="p">,</span> <span class="s1">&#39;CastepParam&#39;</span><span class="p">,</span> <span class="s1">&#39;CastepPotential&#39;</span><span class="p">,</span>
@@ -113,15 +113,15 @@
    <span class="p">}</span>
 
 <span class="n">castep_value_map</span> <span class="o">=</span> <span class="p">{</span>
-   <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-   <span class="s1">&#39;true&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-   <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-   <span class="s1">&#39;false&#39;</span><span class="p">:</span> <span class="bp">False</span>
+   <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+   <span class="s1">&#39;true&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+   <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+   <span class="s1">&#39;false&#39;</span><span class="p">:</span> <span class="kc">False</span>
    <span class="p">}</span>
 
 <span class="n">castep_output_map</span> <span class="o">=</span> <span class="p">{</span>
-   <span class="bp">True</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span>
-   <span class="bp">False</span><span class="p">:</span> <span class="s1">&#39;false&#39;</span>
+   <span class="kc">True</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span>
+   <span class="kc">False</span><span class="p">:</span> <span class="s1">&#39;false&#39;</span>
    <span class="p">}</span>
 
 <span class="c1"># Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 8.0.</span>
@@ -260,13 +260,13 @@
 <div class="viewcode-block" id="CastepCell"><a class="viewcode-back" href="../../io.html#quippy.castep.CastepCell">[docs]</a><span class="k">class</span> <span class="nc">CastepCell</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to wrap a CASTEP cell (.cell) file&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cellfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">xml</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cellfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">xml</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">OrderedDict</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cellfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cellfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">cellfile</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_from_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -284,7 +284,7 @@
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">cellfile</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
             <span class="n">cellfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">cellfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
-        <span class="n">current_block</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">current_block</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">cellfile</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -296,7 +296,7 @@
             <span class="c1"># Start of block</span>
             <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;%BLOCK&#39;</span><span class="p">):</span>
                 <span class="n">block</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
-                <span class="k">if</span> <span class="n">current_block</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">current_block</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">current_block</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
                     <span class="bp">self</span><span class="p">[</span><span class="n">current_block</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -308,13 +308,13 @@
                 <span class="n">block</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">current_block</span><span class="p">:</span>
-                    <span class="n">current_block</span> <span class="o">=</span> <span class="bp">None</span>
+                    <span class="n">current_block</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parse error in cell file: endblock </span><span class="si">%s</span><span class="s1"> does not match </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">current_block</span><span class="p">))</span>
 
             <span class="c1"># Stand-alone line</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">current_block</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">current_block</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="p">[</span><span class="n">current_block</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
@@ -432,7 +432,7 @@
 
         <span class="k">return</span> <span class="n">atoms</span>
 
-    <span class="k">def</span> <span class="nf">update_from_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">frac_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">lattice_abc</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_from_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">frac_pos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lattice_abc</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="c1"># Add lattice to cell</span>
         <span class="k">if</span> <span class="n">lattice_abc</span><span class="p">:</span>
@@ -463,7 +463,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;cell&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">cellreader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">cellreader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span> <span class="o">=</span> <span class="n">CastepCell</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_atoms</span><span class="p">()</span></div>
 
@@ -473,16 +473,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">dest</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">cell_template</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">param_template</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">cell_template</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">param_template</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span>
         <span class="k">if</span> <span class="s1">&#39;%&#39;</span> <span class="ow">in</span> <span class="n">dest</span><span class="p">:</span> <span class="n">dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
-        <span class="k">if</span> <span class="n">cell_template</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cell_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="n">CastepCell</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="n">CastepCell</span><span class="p">(</span><span class="n">cell_template</span><span class="p">)</span>
         <span class="n">cell</span><span class="o">.</span><span class="n">update_from_atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
         <span class="n">cell</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">param_template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">param_template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">param</span> <span class="o">=</span> <span class="n">CastepParam</span><span class="p">(</span><span class="n">param_template</span><span class="p">)</span>
             <span class="n">param</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">dest</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.param&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -492,13 +492,13 @@
 <div class="viewcode-block" id="CastepParam"><a class="viewcode-back" href="../../io.html#quippy.castep.CastepParam">[docs]</a><span class="k">class</span> <span class="nc">CastepParam</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">):</span>
     <span class="s2">&quot;Class to wrap a CASTEP parameter (.param) file&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">xml</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">OrderedDict</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">paramfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">paramfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">paramfile</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_from_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -600,18 +600,18 @@
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;geom&#39;</span><span class="p">)</span>
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;md&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">CastepGeomMDReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">CastepGeomMDReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generator to read frames from CASTEP .geom and .md files&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="n">source</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
     <span class="n">source</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">):</span>
         <span class="n">atoms_ref</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">atoms_ref</span><span class="o">.</span><span class="n">frac_pos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">atoms_ref</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
 
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">next</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="c1"># raises StopIteration at end of file</span>
 
@@ -664,7 +664,7 @@
             <span class="n">lattice</span> <span class="o">=</span> <span class="n">farray</span><span class="p">([</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span> <span class="n">BOHR</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]]</span>
                                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">,</span> <span class="n">lattice_lines</span><span class="p">)</span> <span class="p">])</span><span class="o">.</span><span class="n">T</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No lattice in .geom file and atoms_ref not present&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lattice</span> <span class="o">=</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">lattice</span><span class="p">[:]</span>
@@ -687,11 +687,11 @@
 
         <span class="n">n_atoms</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">poslines</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">forcelines</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">poslines</span> <span class="o">==</span> <span class="p">[]</span> <span class="ow">and</span> <span class="n">forcelines</span> <span class="o">==</span> <span class="p">[]:</span>
-            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No positions or forces in .geom file and atoms_ref not present&#39;</span><span class="p">)</span>
             <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">n</span>
 
-        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># If we were passed in an Atoms object, construct mapping from</span>
             <span class="c1"># CASTEP (element, number) to original atom index</span>
             <span class="k">assert</span> <span class="n">n_atoms</span> <span class="o">==</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">n</span>
@@ -703,7 +703,7 @@
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="s1">&#39;velo&#39;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span> <span class="k">del</span> <span class="n">at</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
 
-            <span class="n">at</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
             <span class="n">species_count</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">lookup</span> <span class="o">=</span> <span class="p">{}</span>
@@ -753,7 +753,7 @@
         <span class="k">if</span> <span class="n">stress_lines</span><span class="p">:</span>
             <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">virial</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms_ref</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">yield</span> <span class="n">at</span>
@@ -763,7 +763,7 @@
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;castep&#39;</span><span class="p">)</span>
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;castep_log&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">CastepOutputReader</span><span class="p">(</span><span class="n">castep_file</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">CastepOutputReader</span><span class="p">(</span><span class="n">castep_file</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse .castep file, and return Atoms object with positions,</span>
 <span class="sd">       energy, forces, and possibly stress and atomic populations as</span>
 <span class="sd">       well&quot;&quot;&quot;</span>
@@ -777,28 +777,28 @@
 
     <span class="n">param</span> <span class="o">=</span> <span class="n">CastepParam</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">):</span>
         <span class="n">atoms_ref</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">atoms_ref</span><span class="o">.</span><span class="n">frac_pos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">atoms_ref</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
 
-    <span class="n">got_header</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">eof</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">got_header</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">eof</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 
         <span class="n">castep_output</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">castep_file</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                <span class="n">eof</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">eof</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">break</span>
             <span class="n">castep_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39; Atomic calculation performed&#39;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">got_header</span><span class="p">:</span>
-                    <span class="n">got_param</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">got_param</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">got_header</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">got_header</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39; Starting MD iteration&#39;</span><span class="p">):</span>
                 <span class="k">break</span>
@@ -816,7 +816,7 @@
         <span class="n">castep_output</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">castep_output</span><span class="p">]</span>
 
         <span class="c1"># NB: CASTEP doesn&#39;t always print &#39;Total time&#39;</span>
-        <span class="n">run_time</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">run_time</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">total_time</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Total time&#39;</span><span class="p">),</span> <span class="n">castep_output</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">total_time</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="n">has_converged</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Total energy has converged&#39;</span><span class="p">),</span> <span class="n">castep_output</span><span class="p">)</span>
@@ -845,7 +845,7 @@
         <span class="n">lattice_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">castep_output</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;                                      Unit Cell&#39;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">lattice_lines</span> <span class="o">==</span> <span class="p">[]:</span>
-            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">abort</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">abort</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No unit cell found in castep file - try passing atoms_ref&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lattice</span> <span class="o">=</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -860,7 +860,7 @@
 
         <span class="n">cell_contents</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span>  <span class="nb">enumerate</span><span class="p">(</span><span class="n">castep_output</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;                                     Cell Contents&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">cell_contents</span> <span class="o">==</span> <span class="p">[]:</span>
-            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">abort</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">abort</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No cell contents found in castep file - try passing atoms_ref&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No cell contents. If this is a variable cell geometry optimisation with fixed ions this is normal&#39;</span><span class="p">)</span>
@@ -878,7 +878,7 @@
                 <span class="k">while</span> <span class="s1">&#39;xxxxxxxxxxx&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">castep_output</span><span class="p">[</span><span class="n">cell_first_line</span><span class="o">+</span><span class="n">offset</span><span class="o">+</span><span class="n">n_atoms</span><span class="p">]:</span>
                    <span class="n">n_atoms</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># If we were passed in an Atoms object, construct mapping from</span>
             <span class="c1"># CASTEP (element, number) to original atom index</span>
             <span class="k">assert</span> <span class="n">n_atoms</span> <span class="o">==</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="s1">&#39;Number of atoms must match atoms_ref&#39;</span>
@@ -890,7 +890,7 @@
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_s&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_p&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_d&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_f&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_total&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_charge&#39;</span><span class="p">,</span> <span class="s1">&#39;popn_spin&#39;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span> <span class="k">del</span> <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
 
-            <span class="n">atoms</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">species_count</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">lookup</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
@@ -1003,7 +1003,7 @@
             <span class="c1"># remove &quot;cons&quot; tags from constrained degrees of freedom</span>
             <span class="n">force_lines</span> <span class="o">=</span> <span class="p">[</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;(cons&#39; d)&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">force_lines</span> <span class="p">]</span>
 
-            <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
             <span class="c1"># Fill in the forces</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">force_lines</span><span class="p">):</span>
@@ -1013,7 +1013,7 @@
                 <span class="nb">getattr</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">name</span><span class="p">)[:,</span><span class="n">lookup</span><span class="p">[(</span><span class="n">el</span><span class="p">,</span><span class="n">num</span><span class="p">)]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">fx</span><span class="p">,</span><span class="n">fy</span><span class="p">,</span><span class="n">fz</span><span class="p">)</span>
 
         <span class="c1"># Have we calculated stress?</span>
-        <span class="n">got_virial</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">got_virial</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Stress Tensor&#39;</span><span class="p">,</span> <span class="s1">&#39;Symmetrised Stress Tensor&#39;</span><span class="p">):</span>
             <span class="n">stress_start_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">castep_output</span><span class="p">)</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;****** </span><span class="si">%s</span><span class="s1"> ******&#39;</span> <span class="o">%</span> <span class="n">sn</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">]</span>
             <span class="k">if</span> <span class="n">stress_start_lines</span><span class="p">:</span> <span class="k">break</span>
@@ -1025,7 +1025,7 @@
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fenumerate</span><span class="p">(</span><span class="n">stress_lines</span><span class="p">):</span>
                 <span class="n">star1</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">star2</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                 <span class="n">virial</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span><span class="p">)</span> <span class="p">]</span>
-            <span class="n">got_virial</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">got_virial</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="n">spin_polarised</span> <span class="o">=</span> <span class="s1">&#39;spin_polarised&#39;</span> <span class="ow">in</span> <span class="n">param</span> <span class="ow">and</span> <span class="n">param</span><span class="p">[</span><span class="s1">&#39;spin_polarised&#39;</span><span class="p">]</span>
 
@@ -1098,14 +1098,14 @@
 
         <span class="n">mod_param</span><span class="p">[</span><span class="s1">&#39;castep_file_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">castep_file_name</span>
 
-        <span class="k">if</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mod_param</span><span class="p">[</span><span class="s1">&#39;castep_run_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_time</span>
 
         <span class="c1"># Convert virial to libAtoms units and add to params</span>
         <span class="k">if</span> <span class="n">got_virial</span><span class="p">:</span>
             <span class="n">mod_param</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="o">*</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">/</span><span class="n">GPA</span>
 
-        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms_ref</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mod_param</span><span class="p">)</span>
@@ -1116,35 +1116,35 @@
             <span class="k">break</span>
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;magres&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">MagresReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">MagresReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generator to read .magres files. The specification of the format my be found at http://www.ccpnc.ac.uk/&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="n">source</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
     <span class="n">source</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atoms_ref</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">):</span>
         <span class="n">atoms_ref</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;frac_pos&#39;</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">atoms_ref</span><span class="o">.</span><span class="n">frac_pos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">atoms_ref</span><span class="o">.</span><span class="n">g</span><span class="p">,</span><span class="n">atoms_ref</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
 
-    <span class="n">eof</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">parsing_started</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">eof</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">parsing_started</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
        <span class="n">block</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
        <span class="n">atom_line</span> <span class="o">=</span> <span class="p">[]</span>
        <span class="n">ms_line</span> <span class="o">=</span> <span class="p">[]</span>
        <span class="n">efg_line</span> <span class="o">=</span> <span class="p">[]</span>
-       <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+       <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
            <span class="k">try</span><span class="p">:</span>
                <span class="n">line</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-               <span class="n">eof</span> <span class="o">=</span> <span class="bp">True</span>
+               <span class="n">eof</span> <span class="o">=</span> <span class="kc">True</span>
                
            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;#\$magres&quot;</span><span class="p">,</span><span class="n">line</span><span class="p">)</span> <span class="ow">or</span> <span class="n">eof</span><span class="p">:</span>
                <span class="k">if</span> <span class="n">parsing_started</span><span class="p">:</span>
                   <span class="k">break</span>
                <span class="k">else</span><span class="p">:</span>
-                  <span class="n">parsing_started</span> <span class="o">=</span> <span class="bp">True</span>
+                  <span class="n">parsing_started</span> <span class="o">=</span> <span class="kc">True</span>
                <span class="k">continue</span>
            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;\[[^/].*\]&quot;</span><span class="p">,</span><span class="n">line</span><span class="p">):</span>
                <span class="n">block</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1231,8 +1231,8 @@
        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
           <span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
 
-    <span class="k">print</span> <span class="s1">&#39;valid_cell_keywords = </span><span class="si">%r</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">valid_cell_keywords</span>
-    <span class="k">print</span> <span class="s1">&#39;valid_parameters_keywords = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">valid_parameters_keywords</span>
+    <span class="nb">print</span> <span class="s1">&#39;valid_cell_keywords = </span><span class="si">%r</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">valid_cell_keywords</span>
+    <span class="nb">print</span> <span class="s1">&#39;valid_parameters_keywords = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">valid_parameters_keywords</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">valid_cell_keywords</span><span class="p">,</span> <span class="n">valid_parameters_keywords</span><span class="p">)</span>
 
@@ -1247,7 +1247,7 @@
     <span class="c1"># Get list of unique elements in cluster</span>
     <span class="n">pspot_dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">cluster</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">():</span>
-        <span class="n">pspot_dict</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">pspot_dict</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">elements</span> <span class="o">=</span> <span class="n">pspot_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elements</span><span class="p">))</span>
 
@@ -1257,16 +1257,16 @@
             <span class="n">pspot_dict</span><span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="o">=</span> <span class="n">pspot</span>
 
     <span class="n">valence_charges</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">missing_pspots</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">missing_pspots</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
         <span class="n">pspot</span> <span class="o">=</span> <span class="n">pspot_dict</span><span class="p">[</span><span class="n">el</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">pspot</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pspot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Not fatal since on-the-fly pseudo-potential will be generated</span>
             <span class="c1"># however, we can&#39;t estimate then n_electrons here</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Pseudopotential missing for element </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">el</span><span class="p">)</span>
             <span class="n">valence_charges</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;?&#39;</span>
-            <span class="n">missing_pspots</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">missing_pspots</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">pspot</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/&quot;&#39;</span><span class="p">):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">orig_dir</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">pspot</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
             <span class="n">pspot_lines</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pspot</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
@@ -1294,7 +1294,7 @@
     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;unique elements and valence electrons: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">valence_charges</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">missing_pspots</span><span class="p">:</span>
-        <span class="n">n_electrons</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> \
+        <span class="n">n_electrons</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> \
                              <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">el</span><span class="p">:</span> <span class="n">valence_charges</span><span class="p">[</span><span class="n">el</span><span class="p">]</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">()</span> <span class="o">==</span> <span class="n">el</span><span class="p">),</span> \
                                  <span class="n">elements</span><span class="p">))</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;total electrons </span><span class="si">%.1f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n_electrons</span><span class="p">)</span>
@@ -1306,14 +1306,14 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;spin polarised set to true but got even number of electrons!&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_castep"><a class="viewcode-back" href="../../io.html#quippy.castep.run_castep">[docs]</a><span class="k">def</span> <span class="nf">run_castep</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">stem</span><span class="p">,</span> <span class="n">castep</span><span class="p">,</span> <span class="n">castep_log</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">save_all_check_files</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">save_all_input_files</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">test_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">copy_in_files</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">subdir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="run_castep"><a class="viewcode-back" href="../../io.html#quippy.castep.run_castep">[docs]</a><span class="k">def</span> <span class="nf">run_castep</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">stem</span><span class="p">,</span> <span class="n">castep</span><span class="p">,</span> <span class="n">castep_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_all_check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_all_input_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">test_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">copy_in_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">subdir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="s2">&quot;Invoke castep and return True if it completed successfully&quot;</span>
 
     <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;castep_driver&#39;</span><span class="p">)</span>
 
     <span class="n">orig_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">subdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">subdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">subdir</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span>
@@ -1323,7 +1323,7 @@
         <span class="c1"># ... and cell file</span>
         <span class="n">cell</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.cell&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">copy_in_files</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">copy_in_files</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">pspot</span> <span class="ow">in</span> <span class="n">copy_in_files</span><span class="p">:</span>
                 <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">pspot</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pspot</span><span class="p">)))</span>
 
@@ -1367,16 +1367,16 @@
                 <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.param&#39;</span> <span class="o">%</span> <span class="n">stem</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.param.</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stem</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
 
         <span class="n">err_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">*.err&#39;</span> <span class="o">%</span> <span class="n">stem</span><span class="p">)</span>
-        <span class="n">got_error</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">got_error</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">err_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">err_files</span><span class="p">:</span>
                 <span class="n">error_text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">error_text</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-                    <span class="n">got_error</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">got_error</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_text</span><span class="p">)</span>
 
         <span class="c1"># Write log file here so that it will always be written</span>
-        <span class="k">if</span> <span class="n">castep_log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.castep&#39;</span> <span class="o">%</span> <span class="n">stem</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">castep_log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.castep&#39;</span> <span class="o">%</span> <span class="n">stem</span><span class="p">):</span>
             <span class="n">logf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">castep_log</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
             <span class="n">castep_output</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.castep&#39;</span> <span class="o">%</span> <span class="n">stem</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
             <span class="n">logf</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">castep_output</span><span class="p">)</span>
@@ -1387,13 +1387,13 @@
 
     <span class="k">return</span> <span class="ow">not</span> <span class="n">got_error</span></div>
 
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">Potential</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">Potential</span>
 
 <span class="k">class</span> <span class="nc">CastepPotential</span><span class="p">(</span><span class="n">Potential</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">castep_exec</span><span class="o">=</span><span class="s1">&#39;castep </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">stem</span><span class="o">=</span><span class="s1">&#39;castep_callback&#39;</span><span class="p">,</span> <span class="n">test_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">little_clusters</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">copy_in_files</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">subdir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">castep_exec</span><span class="o">=</span><span class="s1">&#39;castep </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">stem</span><span class="o">=</span><span class="s1">&#39;castep_callback&#39;</span><span class="p">,</span> <span class="n">test_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">little_clusters</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">copy_in_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">subdir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-        <span class="n">Potential</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;CallbackPot little_clusters=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">({</span><span class="bp">True</span><span class="p">:</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">:</span> <span class="s1">&#39;F&#39;</span><span class="p">}[</span><span class="n">little_clusters</span><span class="p">]))</span>
+        <span class="n">Potential</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;CallbackPot little_clusters=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">({</span><span class="kc">True</span><span class="p">:</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="s1">&#39;F&#39;</span><span class="p">}[</span><span class="n">little_clusters</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1413,13 +1413,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">subdir</span> <span class="o">=</span> <span class="n">subdir</span>
 
     <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="n">CastepCell</span><span class="p">()</span>
         <span class="n">cell</span><span class="o">.</span><span class="n">update_from_atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">param</span> <span class="o">=</span> <span class="n">CastepParam</span><span class="p">()</span>
@@ -1428,7 +1428,7 @@
         <span class="n">stem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.castep&#39;</span><span class="p">):</span>
             <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">stem</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%05d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
                 <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.castep&#39;</span><span class="p">):</span> <span class="k">break</span>
@@ -1437,7 +1437,7 @@
                    <span class="n">copy_in_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">copy_in_files</span><span class="p">,</span> <span class="n">subdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">subdir</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_mode</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Reading from file </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.castep&#39;</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="s1">&#39;Reading from file </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.castep&#39;</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.castep&#39;</span><span class="p">,</span> <span class="n">atoms_ref</span><span class="o">=</span><span class="n">at</span><span class="p">)</span>
 
             <span class="c1"># Update params -- this includes contents of .cell and .param templates</span>
@@ -1445,7 +1445,7 @@
 
             <span class="c1"># Energy and force</span>
             <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">force</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">force</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># Virial stress tensor</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;virial&#39;</span><span class="p">):</span>
@@ -1456,11 +1456,11 @@
             <span class="c1"># Add popn_calculate output and force components</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;popn_&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;force_&#39;</span><span class="p">):</span>
-                    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Test mode: setting energy, force and virial to zeros&#39;</span>
+            <span class="nb">print</span> <span class="s1">&#39;Test mode: setting energy, force and virial to zeros&#39;</span>
             <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
-            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
 
 
@@ -1538,14 +1538,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 0837f4c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 5d89f37+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
       Last updated on Jul 13, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>
