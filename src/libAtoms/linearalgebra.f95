@@ -2968,6 +2968,7 @@ CONTAINS
     real(dp) :: tmp
     character(len=1) :: jobu, jobvt
     integer :: lwork, info, i, j
+    integer(kind=8) :: lwork_min
 
     INIT_ERROR(error)
 
@@ -3018,7 +3019,20 @@ CONTAINS
     allocate(work(1))
     lwork = -1
     call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, my_s, my_u, this%n, my_vt, this%m, work, lwork, info)
-    lwork = ceiling(work(1))
+    if( work(1) > huge(lwork) ) then ! optimal size of work is a bit too large.
+       ! that's the minimum size of the work array
+       lwork_min = max( 3*min(this%m, this%n) + max(this%n,this%m), 5*min(this%m,this%n) )
+       if( lwork_min > huge(lwork) ) then
+          RAISE_ERROR("LA_Matrix_SVD: temporary array for SVD would be too large.", error)
+       else
+          ! max out the work array
+          lwork = huge(lwork)
+       endif
+    else
+       ! otherwise just go with the optimum
+       lwork = ceiling(work(1))
+    endif
+       
     deallocate(work)
 
     allocate(work(lwork))
