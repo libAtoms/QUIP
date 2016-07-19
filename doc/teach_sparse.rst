@@ -26,3 +26,17 @@ Main options
 GAP options
 -----------
 .. autofunction:: quippy.teach_sparse_parse_gap_str
+
+`sparse_method` options are:
+ - RANDOM: default, chooses n_sparse random datapoints
+ - PIVOT: based on the full covariance matrix finds the n_sparse "pivoting" points
+ - CLUSTER: based on the full covariance matrix performs a k-medoid clustering into n_sparse clusters, returning the medoids
+ - UNIFORM: makes a histogram of the data based on n_sparse and returns a data point from each bin
+ - KMEANS: k-means clustering based on the data points
+ - COVARIANCE: greedy data point selection based on the sparse covariance matrix, to minimise the GP variance of all datapoints
+ - UNIQ: selects unique datapoints from the dataset
+ - FUZZY: fuzzy k-means clustering
+ - FILE: reads sparse points from a file
+ - INDEX_FILE: reads indices of sparse points from a file
+ - CUR_COVARIANCE: CUR, based on the full covariance matrix
+ - CUR_POINTS: CUR, based on the datapoints
