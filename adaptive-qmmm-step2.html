@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 1afbdc1+ documentation</title>
+    <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 99194bd+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1afbdc1+',
+        VERSION:     '99194bd+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 1afbdc1+ documentation" href="index.html" />
+    <link rel="top" title="quippy 99194bd+ documentation" href="index.html" />
     <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="next" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html" />
     <link rel="prev" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="adaptive-qmmm-step1.html" title="Step 1: Setup of the Silicon model system"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 1afbdc1+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 99194bd+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
@@ -204,14 +204,12 @@ as it is updated during the dynamical simulation.</p>
 <p>Now we can set constraints on the atomic structure which will be
 enforced during dynamics. In order to carry out the fracture MD
 simulation, we need to fix the positions of the top and bottom atomic
-rows (we call this constraint <cite>fix_atoms</cite>), and we need to apply a
-constant strain rate (the <cite>strain_atoms</cite> constraint).</p>
-<p>Let&#8217;s start with the <cite>fix_atoms</cite> constraint, which is exactly the same
-as the constraint used for <a class="reference internal" href="adaptive-qmmm-step1.html#crack-fixatoms"><span class="std std-ref">relaxing the positions of the crack
-slab</span></a> above. In order to do this, we need to find the <cite>y</cite>
-coordinate of the top, bottom atomic rows. The <cite>x</cite> coordinates of the
-left and right edges of the slab might also be useful later on. This
-can be easily done as before:</p>
+rows (we call this constraint <cite>fix_atoms</cite>).</p>
+<p>The <cite>fix_atoms</cite> constraint, which is exactly the same as the constraint used
+for <a class="reference internal" href="adaptive-qmmm-step1.html#crack-fixatoms"><span class="std std-ref">relaxing the positions of the crack slab</span></a> above. In
+order to do this, we need to find the <cite>y</cite> coordinate of the top, bottom atomic
+rows. The <cite>x</cite> coordinates of the left and right edges of the slab might also
+be useful later on. This can be easily done as before:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">top</span> <span class="o">=</span> <span class="o">...</span>     <span class="c1"># Maximum y coordinate</span>
 <span class="n">bottom</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Minimum y coordinate</span>
 <span class="n">left</span> <span class="o">=</span> <span class="o">...</span>    <span class="c1"># Minimum x coordinate</span>
@@ -228,26 +226,21 @@ the same way we did it in <cite>Step 1</cite> (i.e., using the
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fixed </span><span class="si">%d</span><span class="s1"> atoms</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="c1"># Print the number of fixed atoms</span>
 </pre></div>
 </div>
+<p>This constraint needs to be attached to our <cite>atoms</cite> object
+(see <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_constraint" title="quippy.atoms.Atoms.set_constraint"><code class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></code></a>):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span> <span class="o">...</span>  <span class="c1"># Attach the constraints to atoms</span>
+</pre></div>
+</div>
 <p>To increase <img class="math" src="_images/math/66bea7c4e8ca7e5d472ffd96a00a04587dd2f0a9.png" alt="\epsilon_{yy}"/> of all atoms at a constant rate (see
 the <cite>strain_rate</cite> and <cite>timestep</cite> <a class="reference internal" href="#parameters2"><span class="std std-ref">parameters</span></a>), we
 use the <a class="reference internal" href="crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal"><span class="pre">ConstantStrainRate</span></code></a> class:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">strain_atoms</span> <span class="o">=</span> <span class="n">ConstantStrainRate</span><span class="p">(</span><span class="n">orig_height</span><span class="p">,</span> <span class="n">strain_rate</span><span class="o">*</span><span class="n">timestep</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You can look at the documentation for the <code class="xref py py-mod docutils literal"><span class="pre">ase.constraints</span> <span class="pre">module</span></code> and the <a class="reference external" href="_modules/quippy/crack.html#ConstantStrainRate">source code</a> for the
-<a class="reference internal" href="crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal"><span class="pre">ConstantStrainRate</span></code></a> class to see how this
-works. The <code class="xref py py-meth docutils literal"><span class="pre">adjust_forces()</span></code> and
-<code class="xref py py-meth docutils literal"><span class="pre">adjust_positions()</span></code> routines are called during the
-Verlet update at each MD step. Note that in this case
-<code class="xref py py-meth docutils literal"><span class="pre">adjust_positions()</span></code> simply increases the strain of
-all atoms, while <code class="xref py py-meth docutils literal"><span class="pre">adjust_forces()</span></code> makes no changes
-to the forces.</p>
-<p>The two constraints just defined need to be attached to our <cite>atoms</cite> object
-(see <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_constraint" title="quippy.atoms.Atoms.set_constraint"><code class="xref py py-meth docutils literal"><span class="pre">set_constraint()</span></code></a> plus this <cite>ASE</cite> example of
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/constraints.html#combining-constraints">combining constraints</a>):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span> <span class="o">...</span>  <span class="c1"># Attach the constraints to atoms</span>
-</pre></div>
-</div>
+<p>You can look at the documentation for the
+<a class="reference internal" href="crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal"><span class="pre">ConstantStrainRate</span></code></a> class to see how this works. The
+<code class="xref py py-meth docutils literal"><span class="pre">adjust_positions()</span></code> routine simply increases the strain of
+all atoms. We will attach this to the dynamics in step 2.2 below.</p>
 </div>
 <div class="section" id="setup-of-the-potential">
 <h3>Setup of the potential<a class="headerlink" href="#setup-of-the-potential" title="Permalink to this headline">¶</a></h3>
@@ -356,6 +349,11 @@ and to stop incrementing the strain if it has:</p>
 system, requesting an interval of 1 step (i.e. every time) and passing the
 <cite>atoms</cite> object along to the function as an extra argument:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">check_if_cracked</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We also need to attach the <cite>:meth:`quippy.crack.ConstrainStrainRate.apply_strain</cite> method
+of <cite>strain_atoms</cite> to the dynamics:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">strain_atoms</span><span class="o">.</span><span class="n">apply_strain</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -787,14 +785,14 @@ components computed using the two methods change much?</p>
         <li class="right" >
           <a href="adaptive-qmmm-step1.html" title="Step 1: Setup of the Silicon model system"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 1afbdc1+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 99194bd+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jul 19, 2016.
+      Last updated on Jul 21, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>

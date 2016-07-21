@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tools for fracture simulations &mdash; quippy 1afbdc1+ documentation</title>
+    <title>Tools for fracture simulations &mdash; quippy 99194bd+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1afbdc1+',
+        VERSION:     '99194bd+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 1afbdc1+ documentation" href="index.html" />
+    <link rel="top" title="quippy 99194bd+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 1afbdc1+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 99194bd+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
@@ -1724,6 +1724,41 @@ converged when <img class="math" src="_images/math/0b80a8a68897d395bfdb98b717557
 <em class="property">class </em><code class="descclassname">quippy.crack.</code><code class="descname">ConstantStrainRate</code><span class="sig-paren">(</span><em>orig_height</em>, <em>delta_strain</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#ConstantStrainRate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.ConstantStrainRate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constraint which increments epsilon_yy at a constant strain rate</p>
 <p>Rescaling is applied only to atoms where <cite>mask</cite> is True (default is all atoms)</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.ConstantStrainRate.apply_strain" title="quippy.crack.ConstantStrainRate.apply_strain"><code class="xref py py-obj docutils literal"><span class="pre">apply_strain</span></code></a>(atoms[,&nbsp;rigid_constraints])</td>
+<td>Applies a constant strain to the system.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.crack.ConstantStrainRate.apply_strain">
+<code class="descname">apply_strain</code><span class="sig-paren">(</span><em>atoms</em>, <em>rigid_constraints=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#ConstantStrainRate.apply_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.ConstantStrainRate.apply_strain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a constant strain to the system.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms</strong> : ASE.atoms or quippy.Atoms</p>
+<blockquote>
+<div><p>Atomic configuration.</p>
+</div></blockquote>
+<p><strong>rigid_constraints</strong> : boolean</p>
+<blockquote class="last">
+<div><p>Apply (or not apply) strain to every atom.
+i.e. allow constrainted atoms to move during strain application</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -2814,7 +2849,7 @@ and <code class="docutils literal"><span class="pre">tau</span></code> is a char
 <blockquote>
 <div><p>If present, override the calculator used to compute stresses
 on the atoms. Default is <code class="docutils literal"><span class="pre">atoms.get_calculator</span></code>.</p>
-<p>To use the atom resolved stress tensor pass an instance of the 
+<p>To use the atom resolved stress tensor pass an instance of the
 <a class="reference internal" href="elasticity.html#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><code class="xref py py-class docutils literal"><span class="pre">AtomResolvedStressField</span></code></a> class.</p>
 </div></blockquote>
 <p><strong>verbose</strong> : bool, optional</p>
@@ -2944,13 +2979,13 @@ a sequence of three floats</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 1afbdc1+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 99194bd+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jul 19, 2016.
+      Last updated on Jul 21, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
