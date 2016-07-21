@@ -45,10 +45,11 @@ CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
-F95FLAGS += -fpp -free -warn unused  -fPIC
+F95FLAGS += -fpp -free -warn unused -fPIC
 F77FLAGS += -fpp -fixed -fPIC
-CFLAGS += -fPIC 
+CFLAGS += -fPIC
 CPLUSPLUSFLAGS += -fPIC
+LINKOPTS += -nofor-main
 
 AR_ADD = src
 

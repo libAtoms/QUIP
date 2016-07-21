@@ -16,6 +16,7 @@ COPTIM = -O3
 DEFINES = -DGETARG_F2003 -DFORTRAN_UNDERSCORE -DDARWIN
 F95FLAGS += -fpp -free 
 F77FLAGS += -fixed
+LINKOPTS += -nofor-main
 
 DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
