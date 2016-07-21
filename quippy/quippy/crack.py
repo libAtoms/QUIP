@@ -33,14 +33,14 @@ from quippy.farray import fzeros, farray
 MPA_SQRT_M = 1e-3/GPA*sqrt(1.0e10)
 
 __all__ = []
- 
+
 try:
    import quippy.cracktools, quippy.crackparams
    from quippy.crackparams import *
    from quippy.cracktools import *
    __all__.extend(quippy.crackparams.__all__)
    __all__.extend(quippy.cracktools.__all__)
-   
+
 except ImportError:
    warnings.warn('crack utilities not available')
 
@@ -250,7 +250,7 @@ def makecrack_main(params, stem):
 
 try:
    from quippy.cracktools import crack_measure_g as _crack_measure_g
-   
+
    def crack_measure_g(crack, YoungsModulus=None, PoissonRatio_yx=None, OrigHeight=None):
        if YoungsModulus is None:
            YoungsModulus = crack.YoungsModulus
@@ -286,7 +286,7 @@ def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
 
     if strain is None:
        strain = crack_g_to_strain(G, at.YoungsModulus, at.PoissonRatio_yx, h0)
-    
+
     eps0 = (h - h0)/h0
     eps1 = strain
 
@@ -308,7 +308,7 @@ def crack_rescale_homogeneous_xy(at, params, strain=None, G=None):
 
     return b
 
- 
+
 def crack_rescale_uniaxial(at, params, strain=None, G=None):
     if strain is None and G is None:
        raise ValueError('either strain or G must be present')
@@ -321,7 +321,7 @@ def crack_rescale_uniaxial(at, params, strain=None, G=None):
 
     if strain is None:
        strain = crack_g_to_strain(G, at.YoungsModulus, at.PoissonRatio_yx, h0)
-    
+
     eps0 = (h - h0)/h0
     eps1 = strain
 
@@ -343,7 +343,7 @@ def crack_rescale_uniaxial(at, params, strain=None, G=None):
 
     return b
 
- 
+
 
 def makecrack_initial_velocity_field(params, stem, advance_step, advance_time):
     crack_slab_1 = makecrack_main(params, stem)
@@ -465,7 +465,7 @@ def crack_make_seed_curved_front(slab, params):
    z1 = 0.
    z2 = orig_depth
    slope = (x2-x1)/(z2-z1)
-   
+
    dymax = 0.5*epsilon_max*orig_height
 
    z = slab.pos[3,:]
@@ -509,7 +509,7 @@ def energy_difference(a,b,pot,eps,relax=False):
    `eps`. If `relax`=True, the rescaled confiugrations are
    structurally optimised.
    """
-   
+
    ap = crack_rescale_homogeneous_xy(a, cp, eps)
    bp = crack_rescale_homogeneous_xy(b, cp, eps)
    ap.set_cutoff(pot.cutoff()+1.0)
@@ -568,7 +568,7 @@ def find_mapping(at_in, vectors, lattice_constant, tol=1e-4):
    at.set_cutoff(max(vlen)+0.5)
    print 'cutoff = ', at.cutoff
    at.calc_connect()
-   
+
    for i in at.indices:
       try:
          for neighb in at.neighbours[i]:
@@ -585,7 +585,7 @@ def find_mapping(at_in, vectors, lattice_constant, tol=1e-4):
          continue
 
    return mapping
-            
+
 
 crack_advance_table = {
    'Si(110)[001b]+1':  ([[-1.0/(2*np.sqrt(2)), 0.0,  0.25],
@@ -696,7 +696,7 @@ def make_crack_advance_map(atoms, tol=1e-3):
     crack_front = MillerDirection(crack_front)
     key = str(cleavage_plane) + str(crack_front)
     steps = a0 * crack_advance_step_frac_coords[key]
-    
+
     advance_map = np.zeros(len(atoms), dtype=int)
 
     # find biggest distance between atoms before and after a crack advance step
@@ -710,7 +710,7 @@ def make_crack_advance_map(atoms, tol=1e-3):
 
     for i in range(len(tmp_atoms)):
         advance_map[i] = find_atom_with_displacement(tmp_atoms, i, steps)
-        
+
     # save the map inside the Atoms object, and return a copy
     atoms.new_array('advance_map', advance_map)
     return advance_map
@@ -787,7 +787,7 @@ def find_crack_tip_coordination(atoms, edge_tol=10.0,
     if 'advance_map' not in atoms.arrays:
         print('Generating crack advance map...')
         make_crack_advance_map(atoms)
-        
+
     advance_map = atoms.arrays['advance_map']
     tip_atoms = advance_map[rightmost_uc]
     tip_pos = tmp_atoms.positions[tip_atoms, :].mean(axis=0)
@@ -822,7 +822,7 @@ def irwin_modeI_crack_tip_stress_field(K, r, t, xy_only=True,
     stress_state : str
        One of"plane stress" or "plane strain". Used if xyz_only=False to
        determine zz stresses.
-       
+
     Returns
     -------
     sigma : array with shape ``r.shape + (3,3)``
@@ -830,7 +830,7 @@ def irwin_modeI_crack_tip_stress_field(K, r, t, xy_only=True,
 
     if r.shape != t.shape:
         raise ValueError('shapes of radial and angular arrays "r" and "t" must match')
-    
+
     if stress_state not in ['plane strain', 'plane stress']:
         raise ValueError('stress_state should be either "plane strain" or "plane stress".')
 
@@ -873,12 +873,12 @@ class IrwinStressField(object):
             x0 = atoms.info['CrackPos'][0]
         if y0 is None:
             y0 = atoms.info['CrackPos'][1]
-            
+
         x = atoms.positions[:, 0]
         y = atoms.positions[:, 1]
         r = np.sqrt((x - x0)**2 + (y - y0)**2)
         t = np.arctan2(y - y0, x - x0)
-        
+
         sigma = irwin_modeI_crack_tip_stress_field(K, r, t, self.nu,
                                                    self.stress_state)
         sigma[:,0,0] += self.sxx0
@@ -945,7 +945,7 @@ def get_strain(atoms):
 
     Also updates value stored in ``atoms.info``.
     """
-    
+
     orig_height = atoms.info['OrigHeight']
     current_height = atoms.positions[:, 1].max() - atoms.positions[:, 1].min()
     strain = current_height / orig_height - 1.0
@@ -959,7 +959,7 @@ def get_energy_release_rate(atoms):
 
     Also updates value stored in ``atoms.info`` dictionary.
     """
-    
+
     current_strain = get_strain(atoms)
     orig_height = atoms.info['OrigHeight']
     E = atoms.info['YoungsModulus']
@@ -977,7 +977,7 @@ def get_stress_intensity_factor(atoms):
     """
 
     G = get_energy_release_rate(atoms)
-    
+
     E = atoms.info['YoungsModulus']
     nu = atoms.info['PoissonRatio_yx']
 
@@ -1048,7 +1048,7 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
        If present, override the calculator used to compute stresses
        on the atoms. Default is ``atoms.get_calculator``.
 
-       To use the atom resolved stress tensor pass an instance of the 
+       To use the atom resolved stress tensor pass an instance of the
        :class:`~quippy.elasticity.AtomResolvedStressField` class.
 
     verbose : bool, optional
@@ -1137,7 +1137,7 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
 
     if verbose:
        print 'Fitting on %r atoms' % sigma[mask,1,1].shape
-    
+
     def objective_function(params, x, y, sigma, var_params):
         params = dict(zip(var_params, params))
         if fix_params is not None:
@@ -1167,7 +1167,7 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
        s_sq = (objective_function(fitted_params, x, y, sigma, var_params)**2).sum()/(sigma.size-len(fitted_params))
        cov = cov * s_sq
        err = dict(zip(var_params, np.sqrt(np.diag(cov))))
-    
+
     if verbose:
        print 'K = %.3f MPa sqrt(m)' % (params['K']/MPA_SQRT_M)
        print 'sigma^0_{xx,yy,xy} = (%.1f, %.1f, %.1f) GPa' % (params['sxx0']*GPA,
@@ -1200,7 +1200,7 @@ def find_crack_tip_stress_field(atoms, r_range=None, initial_params=None, fix_pa
                                          avg_sigma, avg_decay, calc)
 
     return np.array((params['x0'], params['y0'], atoms.cell[2,2]/2.0))
-    
+
 
 def plot_stress_fields(atoms, r_range=None, initial_params=None, fix_params=None,
                        sigma=None, avg_sigma=None, avg_decay=0.005, calc=None):
@@ -1222,7 +1222,7 @@ def plot_stress_fields(atoms, r_range=None, initial_params=None, fix_params=None
 
     K, x0, y0, sxx0, syy0, sxy0 = (params['K'], params['x0'], params['y0'],
                                    params['sxx0'], params['syy0'], params['sxy0'])
-   
+
     x = atoms.positions[:, 0]
     y = atoms.positions[:, 1]
 
@@ -1351,18 +1351,18 @@ def thin_strip_displacement_y(x, y, strain, a, b):
 
     u_y[x < a] = np.sign(y[x < a]) * shift  # region shift for x < a
     u_y[x > b] = strain * y[x > b]          # constant strain for x > b
-    
+
     middle = (x >= a) & (x <= b)            # interpolate for a <= x <= b
     f = (x[middle] - a) / (b - a)
     u_y[middle] = (f * strain * y[middle] +
                    (1 - f) * shift * np.sign(y[middle]))
-    
+
     return u_y
 
 
 def print_crack_system(crack_direction, cleavage_plane, crack_front):
     """
-    Pretty printing of crack crystallographic coordinate system 
+    Pretty printing of crack crystallographic coordinate system
 
     Specified by Miller indices for crack_direction (x),
     cleavage_plane (y) and crack_front (z), each of which should be
@@ -1396,12 +1396,41 @@ class ConstantStrainRate(object):
     def adjust_forces(self, positions, forces):
         pass
 
-    def adjust_positions(self, oldpos, newpos):
+    def adjust_positions(self, newpos):
         current_height = newpos[:, 1].max() - newpos[:, 1].min()
         current_strain = current_height / self.orig_height - 1.0
         new_strain = current_strain + self.delta_strain
         alpha = (1.0 + new_strain) / (1.0 + current_strain)
         newpos[self.mask, 1] = newpos[self.mask, 1]*alpha
+
+    def copy(self):
+        return ConstantStrainRate(self.orig_height,
+                                  self.delta_strain,
+                                  self.mask)
+
+    def apply_strain(self, atoms, rigid_constraints=False):
+        """
+        Applies a constant strain to the system.
+
+        Parameters
+        ----------
+        atoms : ASE.atoms or quippy.Atoms
+            Atomic configuration.
+        rigid_constraints : boolean
+            Apply (or not apply) strain to every atom.
+            i.e. allow constrainted atoms to move during strain application
+        """
+
+        if rigid_constraints == False:
+            initial_constraints = atoms.constraints
+            atoms.constraints = None
+
+        newpos = atoms.get_positions()
+        self.adjust_positions(newpos)
+        atoms.set_positions(newpos)
+
+        if rigid_constraints == False:
+            atoms.constraints = initial_constraints
 
 
 
