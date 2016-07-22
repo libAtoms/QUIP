@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Solutions &mdash; quippy 99194bd+ documentation</title>
+    <title>Solutions &mdash; quippy a5d44b3+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '99194bd+',
+        VERSION:     'a5d44b3+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 99194bd+ documentation" href="index.html" />
+    <link rel="top" title="quippy a5d44b3+ documentation" href="index.html" />
     <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="next" title="References" href="adaptive-qmmm-references.html" />
     <link rel="prev" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="adaptive-qmmm-step3.html" title="Step 3: LOTF hybrid MD simulation of fracture in Si"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 99194bd+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy a5d44b3+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
@@ -469,20 +469,16 @@
 
 
 <span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">printstatus</span><span class="p">)</span>
-<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">strain_atoms</span><span class="o">.</span><span class="n">apply_strain</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
-
-<span class="c1"># Check if the crack has advanced, and stop incrementing the strain if it has</span>
-<span class="k">def</span> <span class="nf">check_if_cracked</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">atom_straining</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
     <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
+    <span class="c1"># keep straining until the crack tip has advanced to tip_move_tol</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">tip_move_tol</span><span class="p">:</span>
+      <span class="n">strain_atoms</span><span class="o">.</span><span class="n">apply_strain</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]:</span>
+      <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="c1"># stop straining if crack has advanced more than tip_move_tol</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tip_move_tol</span><span class="p">:</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">del</span> <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">strain_atoms</span><span class="p">)]</span>
-
-
-<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">check_if_cracked</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
+<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">atom_straining</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 <span class="c1"># Save frames to the trajectory every `traj_interval` time steps</span>
 <span class="n">trajectory</span> <span class="o">=</span> <span class="n">AtomsWriter</span><span class="p">(</span><span class="n">traj_file</span><span class="p">)</span>
@@ -720,14 +716,14 @@
         <li class="right" >
           <a href="adaptive-qmmm-step3.html" title="Step 3: LOTF hybrid MD simulation of fracture in Si"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 99194bd+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy a5d44b3+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jul 21, 2016.
+      Last updated on Jul 22, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
