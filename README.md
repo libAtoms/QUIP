@@ -201,6 +201,6 @@ and Gromacs, but has a number of unique features:
 	not distributed with QUIP because they come with different licensing 
 	restrictions. 
 
-9.  In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP into
-        library form, and then follow the instructions in the 
-        [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). 
+10. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
+    into library form, and then follow the instructions in the 
+    [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). 
