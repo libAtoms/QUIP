@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.potential &mdash; quippy 4b8522c+ documentation</title>
+    <title>quippy.potential &mdash; quippy ebc1f8c+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '4b8522c+',
+        VERSION:     'ebc1f8c+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 4b8522c+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy ebc1f8c+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 4b8522c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy ebc1f8c+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -760,30 +760,25 @@
                            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">,</span>
                            <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">qm_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_qm_atoms</span><span class="p">(</span><span class="n">qm_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_qm_atoms</span><span class="p">(</span><span class="n">qm_list</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ForceMixingPotential.get_qm_atoms"><a class="viewcode-back" href="../../potential.html#quippy.potential.ForceMixingPotential.get_qm_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_qm_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ForceMixingPotential.get_qm_atoms"><a class="viewcode-back" href="../../potential.html#quippy.potential.ForceMixingPotential.get_qm_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_qm_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the current list of QM atom indices as a list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;No atoms assocated with this ForceMixingPotential!&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span> <span class="o">==</span> <span class="n">HYBRID_ACTIVE_MARK</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="ForceMixingPotential.set_qm_atoms"><a class="viewcode-back" href="../../potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">set_qm_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qm_list</span><span class="p">):</span>
+<div class="viewcode-block" id="ForceMixingPotential.set_qm_atoms"><a class="viewcode-back" href="../../potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">set_qm_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qm_list</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the QM atoms, given as a list of atom indices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;No atoms assocated with this ForceMixingPotential!&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;hybrid&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span> <span class="n">HYBRID_NO_MARK</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">HYBRID_NO_MARK</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[</span><span class="n">qm_list</span><span class="p">]</span> <span class="o">=</span> <span class="n">HYBRID_ACTIVE_MARK</span></div></div>
-
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;hybrid&#39;</span><span class="p">):</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span> <span class="n">HYBRID_NO_MARK</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">HYBRID_NO_MARK</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">hybrid</span><span class="p">[</span><span class="n">qm_list</span><span class="p">]</span> <span class="o">=</span> <span class="n">HYBRID_ACTIVE_MARK</span></div></div>
 
 
 <div class="viewcode-block" id="force_test"><a class="viewcode-back" href="../../potential.html#quippy.potential.force_test">[docs]</a><span class="k">def</span> <span class="nf">force_test</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">):</span>
@@ -825,7 +820,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 4b8522c+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy ebc1f8c+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
