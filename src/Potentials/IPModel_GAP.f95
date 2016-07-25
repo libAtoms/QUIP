@@ -236,7 +236,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 #ifdef HAVE_GAP
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, e_i_cutoff
-  real(dp), dimension(:), allocatable   :: local_e_in
+  real(dp), dimension(:), allocatable   :: local_e_in, energy_per_coordinate
   real(dp), dimension(:,:,:), allocatable   :: virial_in
   integer :: d, i, j, n, m, i_coordinate, i_pos0
 
@@ -248,7 +248,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   logical, dimension(:), pointer :: atom_mask_pointer
   logical, dimension(:), allocatable :: mpi_local_mask
   logical :: has_atom_mask_name
-  character(STRING_LENGTH) :: atom_mask_name, calc_local_gap_variance
+  character(STRING_LENGTH) :: atom_mask_name, calc_local_gap_variance, calc_energy_per_coordinate
   real(dp) :: r_scale, E_scale
 
   real(dp) :: gap_variance_i_cutoff
@@ -257,7 +257,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp), dimension(:,:), allocatable :: gap_variance_gradient_in
   real(dp), dimension(:,:), pointer :: gap_variance_gradient_pointer
   real(dp) :: gap_variance_regularisation
-  logical :: do_rescale_r, do_rescale_E, do_gap_variance, print_gap_variance, do_local_gap_variance
+  logical :: do_rescale_r, do_rescale_E, do_gap_variance, print_gap_variance, do_local_gap_variance, do_energy_per_coordinate
 
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: my_args_str
@@ -292,6 +292,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   allocate(local_e_in(at%N))
   local_e_in = 0.0_dp
 
+  allocate(energy_per_coordinate(this%my_gp%n_coordinate))
+  energy_per_coordinate = 0.0_dp
+
   allocate(f_in(3,at%N))
   f_in = 0.0_dp
 
@@ -322,6 +325,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call param_register(params, 'print_gap_variance', 'F', print_gap_variance, help_string="Compute variance estimate of the GAP prediction per descriptor and prints it.")
      call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
 
+     call param_register(params, 'energy_per_coordinate', '', calc_energy_per_coordinate, help_string="Compute energy per GP coordinate and return it in the Atoms object.")
+
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
      call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
      call finalise(params)
@@ -347,6 +352,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   do_local_gap_variance = len_trim(calc_local_gap_variance) > 0
   do_gap_variance = do_local_gap_variance .or. print_gap_variance
+  do_energy_per_coordinate = len_trim(calc_energy_per_coordinate) > 0
 
   ! Has to be allocated as it's in the reduction clause.
   allocate( local_gap_variance_in(at%N) )
@@ -400,8 +406,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      allocate(gap_variance(size(my_descriptor_data%x)))
 
 !$omp parallel default(none) private(i,gradPredict, grad_variance_estimate, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0,gap_variance_i_cutoff) &
-!$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_gap_variance,do_local_gap_variance,gap_variance,f) &
-!$omp reduction(+:local_e_in,f_in,virial_in,local_gap_variance_in, gap_variance_gradient_in)
+!$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_gap_variance,do_local_gap_variance,gap_variance,f,do_energy_per_coordinate) &
+!$omp reduction(+:local_e_in,f_in,virial_in,local_gap_variance_in, gap_variance_gradient_in, energy_per_coordinate)
 
 !$omp do schedule(dynamic)
      loop_over_descriptor_instances: do i = 1, size(my_descriptor_data%x)
@@ -424,6 +430,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
               local_e_in( my_descriptor_data%x(i)%ci(n) ) = local_e_in( my_descriptor_data%x(i)%ci(n) ) + e_i_cutoff
            enddo
         endif
+
+        if( do_energy_per_coordinate ) energy_per_coordinate(i_coordinate) = energy_per_coordinate(i_coordinate) + e_i * my_descriptor_data%x(i)%covariance_cutoff
 
         if( do_local_gap_variance ) then
            gap_variance_i_cutoff = gap_variance(i) * my_descriptor_data%x(i)%covariance_cutoff**2 / size(my_descriptor_data%x(i)%ci)
@@ -508,6 +516,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            call sum_in_place(mpi, local_gap_variance_in)
            if(present(f) .or. present(virial) .or. present(local_virial)) call sum_in_place(mpi, gap_variance_gradient_in)
         endif
+        if(do_energy_per_coordinate) call sum_in_place(mpi,energy_per_coordinate)
 
         call remove_property(at,'mpi_local_mask', error=error) 
         deallocate(mpi_local_mask)
@@ -526,8 +535,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      endif
   endif
 
+  if( do_energy_per_coordinate ) call set_param_value(at,trim(calc_energy_per_coordinate),energy_per_coordinate)
+
   if(allocated(local_gap_variance_in)) deallocate(local_gap_variance_in)
   if(allocated(gap_variance_gradient_in)) deallocate(gap_variance_gradient_in)
+  if(allocated(energy_per_coordinate)) deallocate(energy_per_coordinate)
 
   if(present(e)) then
      if( associated(atom_mask_pointer) ) then

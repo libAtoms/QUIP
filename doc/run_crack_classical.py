@@ -115,20 +115,16 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
 
 
 dynamics.attach(printstatus)
-dynamics.attach(strain_atoms.apply_strain, 1, atoms)
 
-
-# Check if the crack has advanced, and stop incrementing the strain if it has
-def check_if_cracked(atoms):
+def atom_straining(atoms):
     crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
+    # keep straining until the crack tip has advanced to tip_move_tol
+    if not atoms.info['is_cracked'] and (crack_pos[0] - orig_crack_pos[0]) < tip_move_tol:
+      strain_atoms.apply_strain(atoms)
+    elif not atoms.info['is_cracked']:
+      atoms.info['is_cracked'] = True
 
-    # stop straining if crack has advanced more than tip_move_tol
-    if not atoms.info['is_cracked'] and (crack_pos[0] - orig_crack_pos[0]) > tip_move_tol:
-        atoms.info['is_cracked'] = True
-        del atoms.constraints[atoms.constraints.index(strain_atoms)]
-
-
-dynamics.attach(check_if_cracked, 1, atoms)
+dynamics.attach(atom_straining, 1, atoms)
 
 # Save frames to the trajectory every `traj_interval` time steps
 trajectory = AtomsWriter(traj_file)
