@@ -48,9 +48,9 @@ export QUIP_ROOT
 export SCRIPT_PATH=${QUIP_ROOT}/bin
 export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 
--include ${BUILDDIR}/Makefile.inc   
+-include ${BUILDDIR}/Makefile.inc
 
-# create modules list 
+# create modules list
 
 MODULES=
 # add any third party packages first
@@ -73,11 +73,11 @@ MODULES += libAtoms
 
 # add GAP modules if we have them - they need to come before other modules, except for libAtoms
 ifeq (${HAVE_GAP},1)
-MODULES += GAP 
+MODULES += GAP
 GAP += GAP
 GAP_LIBS += libgap_predict.a
 else
-GAP = 
+GAP =
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
@@ -85,7 +85,7 @@ MODULES += GAP-filler
 endif
 
 # now add the rest of the modules
-MODULES += Potentials Utils Programs FilePot_drivers Structure_processors 
+MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
 
 
 # diagnostic
@@ -102,7 +102,7 @@ export FOX_INCDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/finclude
 include Makefile.config
 include Makefile.rules
 
-${BUILDDIR}/Makefile.inc: 
+${BUILDDIR}/Makefile.inc:
 	@if [ "$(MAKECMDGOALS)" != config ]; then\
 		echo ;\
 		echo "${BUILDDIR}/Makefile.inc not found. Perhaps you forgot to run \`make config'?" ;\
@@ -114,7 +114,7 @@ ${BUILDDIR}/Makefile.inc:
 ${FOX}: src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	cp Makefile.fox src/${FOX}/Makefile.QUIP
-	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP 
+	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP
 
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
 FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)
@@ -150,7 +150,7 @@ libquip.a: ${MODULES}
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBS}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
-${BUILDDIR}: 
+${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy: libquip.a
@@ -160,9 +160,10 @@ install-quippy: quippy
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
 
 clean-quippy:
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean	
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 
-clean: ${BUILDDIR} clean-quippy
+clean: ${BUILDDIR}
+	-${MAKE}clean-quippy
 	for mods in ${MODULES} ; do \
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
@@ -170,7 +171,7 @@ clean: ${BUILDDIR} clean-quippy
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/arch clean ; \
 	done
 	rm -f ${BUILDDIR}/libquip.a
-	rm -rf src/${FOX}/objs.${QUIP_ARCH} 
+	rm -rf src/${FOX}/objs.${QUIP_ARCH}
 
 deepclean: clean
 
