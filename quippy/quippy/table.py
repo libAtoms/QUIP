@@ -69,7 +69,7 @@ class Table(_table.Table):
         """
         orig_fortran_indexing = get_fortran_indexing()
         set_fortran_indexing(force_fortran_indexing)
-        
+
         try:
             if mask is None and list is None:
                 raise ValueError('Either mask or list must be present.')
@@ -94,7 +94,7 @@ class Table(_table.Table):
             else:
                 first_column = 0
             self.int[first_column,:] = list
-            
+
         finally:
             set_fortran_indexing(orig_fortran_indexing)
 
@@ -142,7 +142,7 @@ class Table(_table.Table):
             atoms = self.atoms()
             if atoms is None:
                 raise ValueError('weakref to Table.atoms has expired')
-                
+
         if get_fortran_indexing():
             first_column = 1
         else:
@@ -150,7 +150,7 @@ class Table(_table.Table):
         indices = self.int[first_column,:].copy()
         if not get_fortran_indexing():
             indices[:] -= 1
-        return list(indices)
+        return list(set(list(indices))) # remove duplicates
 
 
     def to_atom_mask(self, atoms=None):
@@ -162,7 +162,7 @@ class Table(_table.Table):
 
         If `atoms` is not present, the Atoms object passed to
         Table.from_atom_indices is used, or an exception is raised if this
-        Table was not created in that way.        
+        Table was not created in that way.
         """
 
         mask = np.zeros(len(atoms), dtype=bool)
@@ -170,7 +170,7 @@ class Table(_table.Table):
             mask = mask.view(FortranArray)
         mask[self.to_atom_list(atoms)] = True
         return mask
-        
+
 
 from quippy import FortranDerivedTypes
 FortranDerivedTypes['type(table)'] = Table

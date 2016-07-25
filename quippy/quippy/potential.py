@@ -694,30 +694,25 @@ class ForceMixingPotential(Potential):
                            atoms=atoms, fpointer=fpointer, finalise=finalise,
                            error=error)
         if qm_list is not None:
-            self.set_qm_atoms(qm_list)
+            self.set_qm_atoms(qm_list, atoms)
         self.set(**kwargs)
 
 
-    def get_qm_atoms(self):
+    def get_qm_atoms(self, atoms):
         """
         Return the current list of QM atom indices as a list
         """
-        if self.atoms is None:
-            raise RuntimeError('No atoms assocated with this ForceMixingPotential!')
         return list((self.atoms.hybrid == HYBRID_ACTIVE_MARK).nonzero()[0])
 
 
-    def set_qm_atoms(self, qm_list):
+    def set_qm_atoms(self, qm_list, atoms):
         """
         Set the QM atoms, given as a list of atom indices
         """
-        if self.atoms is None:
-            raise RuntimeError('No atoms assocated with this ForceMixingPotential!')
-        if not self.atoms.has_property('hybrid'):
-            self.atoms.add_property('hybrid', HYBRID_NO_MARK)
-        self.atoms.hybrid[:] = HYBRID_NO_MARK
-        self.atoms.hybrid[qm_list] = HYBRID_ACTIVE_MARK
-
+        if not atoms.has_property('hybrid'):
+            atoms.add_property('hybrid', HYBRID_NO_MARK)
+        atoms.hybrid[:] = HYBRID_NO_MARK
+        atoms.hybrid[qm_list] = HYBRID_ACTIVE_MARK
 
 
 def force_test(at, p, dx=1e-4):

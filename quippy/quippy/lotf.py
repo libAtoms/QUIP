@@ -115,7 +115,7 @@ class LOTFDynamics(MolecularDynamics):
 
         p = self.atoms.get_momenta()
         p += 0.5 * self.dt * f
-        
+
         # r(t+dt) = r(t) + p(t+dt/2)/m dt
         self.atoms.set_positions(self.atoms.get_positions() +
                             self.dt * p / self.atoms.get_masses()[:,np.newaxis])
@@ -157,7 +157,7 @@ class LOTFDynamics(MolecularDynamics):
         """
         Save dynamical state, including random number seeds
         """
-            
+
         saved_positions = self.atoms.get_positions()
         saved_momenta = self.atoms.get_momenta()
         saved_nsteps = self.nsteps
@@ -166,7 +166,7 @@ class LOTFDynamics(MolecularDynamics):
         saved_state = (saved_positions, saved_momenta, saved_nsteps,
                        saved_seed, saved_np_random_state)
         return saved_state
-                       
+
 
     def set_state(self, saved_state):
         """
@@ -235,7 +235,7 @@ class LOTFDynamics(MolecularDynamics):
 
             # Apply any constraints to the forces
             for constraint in self.atoms.constraints:
-                constraint.adjust_forces(self.atoms.arrays['positions'], f)            
+                constraint.adjust_forces(self.atoms.arrays['positions'], f)
 
             # Do the velocity Verlet step
             self.advance_verlet(f)
@@ -267,7 +267,7 @@ class LOTFDynamics(MolecularDynamics):
 
             # Do the velocity Verlet step
             self.advance_verlet(f)
-            self.nsteps += 1            
+            self.nsteps += 1
 
             self.call_observers()
         system_timer('lotf_interpolate')
@@ -283,7 +283,7 @@ class LOTFDynamics(MolecularDynamics):
         lotf_steps = max(1, steps/self.extrapolate_steps)
         for i in range(lotf_steps):
             self.step()
-   
+
 
     def initialise_adjustable_potential(self, atoms):
         """
@@ -315,7 +315,7 @@ class LOTFDynamics(MolecularDynamics):
 
         self.calc.set(method='lotf_adj_pot_svd',
                       lotf_do_qm=False,
-                      lotf_do_fit=False,                 
+                      lotf_do_fit=False,
                       lotf_do_interp=False)
         return self.calc.get_forces(atoms)
 
@@ -388,7 +388,7 @@ class LOTFDynamics(MolecularDynamics):
 
        self.atoms.set_array('ref_forces', ref_forces)
        self.atoms.set_array('force_error', ref_forces - f)
-       
+
        self.rms_force_error = np.sqrt((force_error**2).mean())
        self.max_force_error = abs(force_error).max()
 
@@ -428,14 +428,14 @@ def update_hysteretic_qm_region(atoms, old_qm_list, qm_centre, qm_inner_radius,
                                 centre=qm_centre, use_avgpos=use_avgpos,
                                 loop_atoms_no_connectivity=True)
     qm_list = qm_table.to_atom_list()
-    
-    print('update_qm_region: QM region with %d atoms centred on %s' %
+
+    print('update_hystereric_qm_region: QM region with %d atoms centred on %s' %
           (len(qm_list), qm_centre))
 
     if update_marks:
         calc = atoms.get_calculator()
         if isinstance(calc, ForceMixingPotential):
-            calc.set_qm_atoms(qm_list)
+            calc.set_qm_atoms(qm_list, atoms)
 
     return qm_list
 
@@ -466,7 +466,7 @@ def iter_atom_centered_clusters(at, mark_name='hybrid_mark', **cluster_args):
         indices = (getattr(at, mark_name) == HYBRID_ACTIVE_MARK).nonzero()[0]
     else:
         indices = at.indices
-    
+
     at.add_property('hybrid_mark', 0, overwrite=True)
 
     for i in indices:
