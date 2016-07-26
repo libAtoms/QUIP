@@ -49,7 +49,10 @@ class Table(_table.Table):
 
     def _get_array_shape(self, name):
         if name in ('int','real','logical'):
-            return (slice(None),slice(1,self.n))
+            if get_fortran_indexing():
+                return (slice(None), slice(1,self.n))
+            else:
+                return (slice(None), slice(0,self.n))
         elif name == 'str':
             return (slice(None),slice(None),slice(1,self.n))
         else:
