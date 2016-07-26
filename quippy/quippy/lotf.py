@@ -379,7 +379,7 @@ class LOTFDynamics(MolecularDynamics):
        Compute reference forces and compare with current forces `f`
        """
        if qm_only:
-           mask = self.calc.get_qm_atoms()
+           mask = self.calc.get_qm_atoms(self.atoms)
        else:
            mask = Ellipsis
 
