@@ -39,6 +39,8 @@ use libatoms_misc_utils_module
 implicit none
 private
 
+real(dp), parameter :: PHONON_FORCE_TOLERANCE = 1.0e-12_dp
+
 public :: Phonon_fine
 type Phonon_fine
    integer :: n_qvectors, n_modes
@@ -172,12 +174,12 @@ contains
       integer, intent(in), optional :: phonons_path_steps
       integer, intent(out), optional :: error
     
-      type(Atoms) :: at, at_fine, at_in_copy
+      type(Atoms) :: at, at_fine
       integer :: i, j, k, alpha, beta, n, n1, n2, n3, jn, j_fine
       integer, dimension(3) :: do_phonon_supercell, do_phonon_supercell_fine
-      integer, dimension(:,:,:,:), allocatable :: map_at, map_at_fine
+      integer, dimension(:,:,:,:), allocatable :: map_at_fine
     
-      real(dp) :: r_ij, dm(3)
+      real(dp) :: r_ij, dm(3), at_max_cutoff
       complex(dp) :: exp_I_k_R
       real(dp), dimension(3) :: pp, diff_ij
       integer, dimension(3) :: shift_ij, j_SI, j_SI_fine
@@ -237,6 +239,8 @@ contains
       pos0 = at%pos
     
       allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
+      fp0 = 0.0_dp
+      fm0 = 0.0_dp
     
       call system_timer("Phonon_fine_calc/force")
       call print("Starting force calculations")
@@ -275,47 +279,41 @@ contains
          fp0_fine = fp0
          fm0_fine = fm0
       else
-         if( max_cutoff(at%lattice,error) <= cutoff(pot) ) then
+         at_max_cutoff = max_cutoff(at%lattice,error)
+         if( at_max_cutoff <= cutoff(pot) ) then
             RAISE_ERROR("phonons_fine: if cutoff sphere cannot fit in supercell, it is not possible to map supercell atoms to supercell_fine atoms",error)
          endif
 
-         allocate(map_at(0:at_in%N-1,0:do_phonon_supercell(1)-1,0:do_phonon_supercell(2)-1,0:do_phonon_supercell(3)-1))
          allocate(map_at_fine(0:at_in%N-1,0:do_phonon_supercell_fine(1)-1,0:do_phonon_supercell_fine(2)-1,0:do_phonon_supercell_fine(3)-1))
-
-         do i = 1, at%N
-            map_at(mod(i,at_in%N),phonons_SI(1,i),phonons_SI(2,i),phonons_SI(3,i)) = i
-         enddo
 
          do i = 1, at_fine%N
             map_at_fine(mod(i,at_in%N),phonons_fine_SI(1,i),phonons_fine_SI(2,i),phonons_fine_SI(3,i)) = i
          enddo
 
-         at_in_copy = at_in
-         call set_cutoff(at_in_copy,cutoff(pot), cutoff_skin=0.5_dp)
-         call calc_connect(at_in_copy)
-         
-         do i = 1, at_in_copy%N
+         do i = 1, at_in%N
             fp0_fine(:,i,:,i) = fp0(:,i,:,i)
             fm0_fine(:,i,:,i) = fm0(:,i,:,i)
 
-            do n = 1, n_neighbours(at_in_copy,i)
-               jn = neighbour(at_in_copy,i,n,distance=r_ij,shift=shift_ij, diff=diff_ij)
-               if( r_ij < cutoff(pot) + dx ) then
-                  j_SI = mod(shift_ij + do_phonon_supercell,do_phonon_supercell)
-                  j_SI_fine = mod(shift_ij + do_phonon_supercell_fine,do_phonon_supercell_fine)
-
-                  j = map_at(mod(jn,at_in_copy%N),j_SI(1),j_SI(2),j_SI(3))
-                  j_fine = map_at_fine(mod(jn,at_in_copy%N),j_SI_fine(1),j_SI_fine(2),j_SI_fine(3))
-
-                  fp0_fine(:,j_fine,:,i) = fp0(:,j,:,i)
-                  fm0_fine(:,j_fine,:,i) = fm0(:,j,:,i)
-
+            do j = 1, at%N
+               r_ij = distance_min_image(at,i,j,shift=shift_ij)
+               if( r_ij >= at_max_cutoff ) then
+                  if( any(abs(fp0(:,j,:,i)) > PHONON_FORCE_TOLERANCE) .or. any(abs(fm0(:,j,:,i)) > PHONON_FORCE_TOLERANCE) ) then
+                     call print_warning( "Phonon_fine_calc: in the supercell there are non-zero forces on atoms outside of the minimum-image cutoff sphere. &
+                     Phonons computed in the fine supercell may be inaccurate. This problem may be eliminated by increasing phonon_supercell. &
+                     Atoms in supercell: "//i//" and"//j//" from "//r_ij//" A from each other, forces are: "//reshape(fp0(:,j,:,i),(/9/)) &
+                     //" "//reshape(fm0(:,j,:,i),(/9/)) )
+                  endif
                endif
+               shift_ij = phonons_SI(:,j) + shift_ij * do_phonon_supercell
+
+               j_SI_fine = mod(shift_ij + do_phonon_supercell_fine,do_phonon_supercell_fine)
+               j_fine = map_at_fine(mod(j,at_in%N),j_SI_fine(1),j_SI_fine(2),j_SI_fine(3))
+               fp0_fine(:,j_fine,:,i) = fp0(:,j,:,i)
+               fm0_fine(:,j_fine,:,i) = fm0(:,j,:,i)
             enddo
          enddo
-         deallocate(map_at)
+
          deallocate(map_at_fine)
-         call finalise(at_in_copy)
       endif
     
       call system_timer("Phonon_fine_calc/phonon")
