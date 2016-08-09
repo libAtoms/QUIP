@@ -322,7 +322,7 @@ contains
          at_in_sqrt_mass(i) = sqrt(ElementMass(at_in%Z(i)))
       enddo
 
-      !$omp parallel default(none) private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx,at_in_sqrt_mass)
+      !$omp parallel default(none) private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx,at_in_sqrt_mass,map_at_fine)
       allocate(dmft(at_in%N*3,at_in%N*3))
       allocate(evals(at_in%N*3), evecs(at_in%N*3,at_in%N*3))
       !$omp do private(k,i,j,alpha,diff_ij,n1,n2,n3,pp,jn,dm,exp_I_k_R)
