@@ -275,6 +275,11 @@ contains
       fp0_fine = 0.0_dp
       fm0_fine = 0.0_dp
 
+      allocate(map_at_fine(0:at_in%N-1,0:do_phonon_supercell_fine(1)-1,0:do_phonon_supercell_fine(2)-1,0:do_phonon_supercell_fine(3)-1))
+      do i = 1, at_fine%N
+         map_at_fine(mod(i,at_in%N),phonons_fine_SI(1,i),phonons_fine_SI(2,i),phonons_fine_SI(3,i)) = i
+      enddo
+
       if( all(do_phonon_supercell == do_phonon_supercell_fine) ) then
          fp0_fine = fp0
          fm0_fine = fm0
@@ -283,12 +288,6 @@ contains
          if( at_max_cutoff <= cutoff(pot) ) then
             RAISE_ERROR("phonons_fine: if cutoff sphere cannot fit in supercell, it is not possible to map supercell atoms to supercell_fine atoms",error)
          endif
-
-         allocate(map_at_fine(0:at_in%N-1,0:do_phonon_supercell_fine(1)-1,0:do_phonon_supercell_fine(2)-1,0:do_phonon_supercell_fine(3)-1))
-
-         do i = 1, at_fine%N
-            map_at_fine(mod(i,at_in%N),phonons_fine_SI(1,i),phonons_fine_SI(2,i),phonons_fine_SI(3,i)) = i
-         enddo
 
          do i = 1, at_in%N
             fp0_fine(:,i,:,i) = fp0(:,i,:,i)
@@ -313,7 +312,6 @@ contains
             enddo
          enddo
 
-         deallocate(map_at_fine)
       endif
     
       call system_timer("Phonon_fine_calc/phonon")
@@ -337,7 +335,8 @@ contains
                   pp = at_in%lattice .mult. (/n1,n2,n3/)
 
                   do j = 1, at_in%N
-                     jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+                     !jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+                     jn = map_at_fine(mod(j,at_in%N),n1,n2,n3)
 
                      do i = 1, at_in%N
                         diff_ij = at_in%pos(:,j) - at_in%pos(:,i) + pp
@@ -379,6 +378,7 @@ contains
       call system_timer("Phonon_fine_calc/phonon")
       
       deallocate(fp0, fp0_fine, fm0, fm0_fine, at_in_sqrt_mass)
+      deallocate(map_at_fine)
       call finalise(at,at_fine)
    endsubroutine Phonon_fine_calc
 
