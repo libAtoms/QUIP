@@ -24,7 +24,7 @@ from quippy.crack import (get_strain,
                           get_energy_release_rate,
                           ConstantStrainRate,
                           find_crack_tip_stress_field)
-
+                         
 # ******* Start of parameters ***********
 
 input_file = 'crack.xyz'         # File from which to read crack slab structure
@@ -33,10 +33,10 @@ nsteps = 10000                   # Total number of timesteps to run for
 timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
 cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                  # for neighbour calculations
-tip_move_tol = 10.0              # Distance tip has to move before crack
+tip_move_tol = 10.0              # Distance tip has to move before crack 
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
-traj_file = 'traj.xyz'           # Trajectory output file (NetCDF format)
+traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
 traj_interval = 10               # Number of time steps between
                                  # writing output frames
 param_file = 'params.xml'        # Filename of XML file containing
@@ -68,16 +68,23 @@ fixed_mask = ((abs(atoms.positions[:, 1] - top) < 1.0) |
               (abs(atoms.positions[:, 1] - bottom) < 1.0))
 fix_atoms = FixAtoms(mask=fixed_mask)
 print('Fixed %d atoms\n' % fixed_mask.sum())
-atoms.set_constraint([fix_atoms])
 
 # Increase epsilon_yy applied to all atoms at constant strain rate
+
 strain_atoms = ConstantStrainRate(orig_height, strain_rate*timestep)
+
+atoms.set_constraint([fix_atoms, strain_atoms])
+
 
 # ******* Set up potentials and calculators ********
 
 mm_pot = Potential(mm_init_args,
                    param_filename=param_file,
                    cutoff_skin=cutoff_skin)
+
+# Request Potential to compute per-atom stresses whenever we
+# compute forces, to save time when locating the crack tip
+mm_pot.set_default_quantities(['stresses'])
 
 atoms.set_calculator(mm_pot)
 
@@ -94,7 +101,7 @@ dynamics = VelocityVerlet(atoms, timestep)
 def printstatus():
     if dynamics.nsteps == 1:
         print """
-State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
+State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A 
 ---------------------------------------------------------------------------------"""
 
     log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
@@ -106,7 +113,7 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
                                  (1.5*units.kB*len(atoms)))
     atoms.info['strain'] = get_strain(atoms)
     atoms.info['G'] = get_energy_release_rate(atoms)/(units.J/units.m**2)
-
+    
     crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
     atoms.info['crack_pos_x'] = crack_pos[0]
     atoms.info['d_crack_pos_x'] = crack_pos[0] - orig_crack_pos[0]
@@ -116,15 +123,17 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
 
 dynamics.attach(printstatus)
 
-def atom_straining(atoms):
+# Check if the crack has advanced, and stop incrementing the strain if it has
+def check_if_cracked(atoms):
     crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
-    # keep straining until the crack tip has advanced to tip_move_tol
-    if not atoms.info['is_cracked'] and (crack_pos[0] - orig_crack_pos[0]) < tip_move_tol:
-      strain_atoms.apply_strain(atoms)
-    elif not atoms.info['is_cracked']:
-      atoms.info['is_cracked'] = True
 
-dynamics.attach(atom_straining, 1, atoms)
+    # stop straining if crack has advanced more than tip_move_tol
+    if not atoms.info['is_cracked'] and (crack_pos[0] - orig_crack_pos[0]) > tip_move_tol:
+        atoms.info['is_cracked'] = True
+        del atoms.constraints[atoms.constraints.index(strain_atoms)]
+
+
+dynamics.attach(check_if_cracked, 1, atoms)
 
 # Save frames to the trajectory every `traj_interval` time steps
 trajectory = AtomsWriter(traj_file)
