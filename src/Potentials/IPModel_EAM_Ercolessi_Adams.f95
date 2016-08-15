@@ -292,7 +292,9 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
       if (r_ij_mag >= this%r_cut(ti,tj)) cycle
 
       V_r = eam_spline_V(this, ti, tj, r_ij_mag)
-      rho_r = eam_spline_rho(this, tj, r_ij_mag)
+      !HL
+      !rho_r = eam_spline_rho(this, tj, r_ij_mag)
+      rho_r = eam_spline_rho_mod(this,ti, tj, r_ij_mag)
 
       V_r = V_r - 2.0_dp*this%V_F_shift(ti)*rho_r
 
@@ -305,7 +307,9 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
 #endif
 
       if (present(f) .or. present(virial) .or. present(local_virial)) then
-         spline_rho_d_val = eam_spline_rho_d(this,tj,r_ij_mag)
+         !spline_rho_d_val = eam_spline_rho_d(this,tj,r_ij_mag)
+         !HL
+         spline_rho_d_val = eam_spline_rho_d_mod(this, ti, tj,r_ij_mag)
          spline_V_d_val = eam_spline_V_d(this,ti,tj,r_ij_mag)
          spline_V_d_val = spline_V_d_val - 2.0_dp*this%V_F_shift(ti)*spline_rho_d_val
          if (present(f)) then
@@ -357,7 +361,8 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
 
 	  tj = get_type(this%type_of_atomic_num, at%Z(j))
 
-	  drho_i_drj = -eam_spline_rho_d(this, tj, r_ij_mag)*r_ij_hat
+	  !drho_i_drj = -eam_spline_rho_d(this, tj, r_ij_mag)*r_ij_hat
+	  drho_i_drj = -eam_spline_rho_d_mod(this, ti, tj, r_ij_mag)*r_ij_hat
 	  f_in(:,j) = f_in(:,j) + w_f*dF_n*drho_i_drj
 	end do
       end if
@@ -410,11 +415,35 @@ function eam_spline_V(this, ti, tj, r)
 
 end function eam_spline_V
 
+function eam_spline_rho_mod(this, ti, tj, r)
+  type(IPModel_EAM_ErcolAd), intent(in) :: this
+  integer, intent(in)   :: ti, tj
+  real(dp), intent(in)  :: r
+  real(dp)              :: eam_spline_rho_mod
+
+  if (r < min_knot(this%rho(tj)) .or. r >= max_knot(this%rho(tj))) then
+    eam_spline_rho_mod = 0.0_dp
+  else
+    if (ti == tj) then
+      eam_spline_rho_mod = spline_value(this%rho(tj),r)
+    else if (ti == 1 .and. tj ==  2) then
+!notation seems to be contribution of rho_{ij} i to j.
+      eam_spline_rho_mod = spline_value(this%rho(4),r)
+    else if (ti == 2 .and. tj ==1) then
+      eam_spline_rho_mod = spline_value(this%rho(3),r)
+    else
+      print("ti "//ti//"tj "//tj)
+      call system_abort("Unknow type combination."//ti//tj)
+    endif
+  endif
+
+end function eam_spline_rho_mod
+
 function eam_spline_rho(this, ti, r)
   type(IPModel_EAM_ErcolAd), intent(in) :: this
-  integer, intent(in) :: ti
-  real(dp), intent(in) :: r
-  real(dp) :: eam_spline_rho
+  integer, intent(in)   :: ti
+  real(dp), intent(in)  :: r
+  real(dp)              :: eam_spline_rho
 
   if (r < min_knot(this%rho(ti)) .or. r >= max_knot(this%rho(ti))) then
     eam_spline_rho = 0.0_dp
@@ -451,6 +480,31 @@ function eam_spline_V_d(this, ti, tj, r)
   endif
 
 end function eam_spline_V_d
+
+function eam_spline_rho_d_mod(this, ti, tj, r)
+  type(IPModel_EAM_ErcolAd), intent(in) :: this
+  integer, intent(in) :: ti, tj
+  real(dp), intent(in) :: r
+  real(dp) :: eam_spline_rho_d_mod
+
+  if(r < min_knot(this%rho(tj)) .or. r >= max_knot(this%rho(tj))) then
+     eam_spline_rho_d_mod = 0.0_dp
+  else
+    if (ti == tj) then
+      eam_spline_rho_d_mod = spline_deriv(this%rho(tj), r)
+    else if (ti == 1 .and. tj ==  2) then
+!Contribution of H density at Fe
+      eam_spline_rho_d_mod = spline_deriv(this%rho(4), r)
+    else if (ti == 2 .and. tj ==  1) then
+!Contribution of Fe density at Hydrogen
+      eam_spline_rho_d_mod = spline_deriv(this%rho(3), r)
+    else 
+      print("ti "//ti//"tj "//tj)
+      call system_abort("Unknow type combination.")
+    endif
+  endif
+
+end function eam_spline_rho_d_mod
 
 function eam_spline_rho_d(this, ti, r)
   type(IPModel_EAM_ErcolAd), intent(in) :: this
