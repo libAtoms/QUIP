@@ -248,7 +248,7 @@ Segmentation Faults with OpenBLAS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The threading in OpenBLAS can interfere with the OpenMP resulting in
-segfaults. Either recompile OpenBLAS with ``USE_OPENMP=1`` or disabled
-threading with `export OPENBLAS_NUM_THREADS=1`
+segfaults. Either recompile OpenBLAS with ``USE_OPENMP=1`` or disable
+threading with ``export OPENBLAS_NUM_THREADS=1`` at runtime.
 
 

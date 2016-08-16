@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of QUIP and quippy &mdash; quippy 8d967b9+ documentation</title>
+    <title>Installation of QUIP and quippy &mdash; quippy 3b85bff+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '8d967b9+',
+        VERSION:     '3b85bff+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 8d967b9+ documentation" href="index.html" />
+    <link rel="top" title="quippy 3b85bff+ documentation" href="index.html" />
     <link rel="next" title="Examples" href="Examples/index.html" />
     <link rel="prev" title="Introduction to quippy" href="intro.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 8d967b9+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 3b85bff+ documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -215,8 +215,6 @@ with Python 3.</li>
 <li>(optional) [matscipy](<a class="reference external" href="https://github.com/libAtoms/matscipy">https://github.com/libAtoms/matscipy</a>).</li>
 </ul>
 </li>
-</ol>
-<ol class="arabic" start="7">
 <li><p class="first">If you are using a Python virtual environment (virtualenv) and would like
 to install <code class="docutils literal"><span class="pre">quippy</span></code> into it, ensure the environment is activated
 (<code class="docutils literal"><span class="pre">source</span> <span class="pre">&lt;env_dir&gt;/bin/activate</span></code>, where <code class="docutils literal"><span class="pre">&lt;env_dir&gt;</span></code> is the root of
@@ -241,10 +239,13 @@ or use <code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS=--pr
 specific directory. <code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS</span></code> can also be set in the file
 <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/Makefile.inc</span></code>.</p>
 </li>
-<li><p class="first">More details on the quippy installation process and troubleshooting for
-common build problems are available in the
-[online documentation](<a class="reference external" href="http://libatoms.github.io/QUIP/">http://libatoms.github.io/QUIP/</a>).</p>
+<li><p class="first">More details on the quippy installation process and troubleshooting for</p>
 </li>
+</ol>
+<blockquote>
+<div>common build problems are available in the
+[online documentation](<a class="reference external" href="http://libatoms.github.io/QUIP/">http://libatoms.github.io/QUIP/</a>).</div></blockquote>
+<ol class="arabic" start="11">
 <li><p class="first">To run the unit and regression tests, which depend on <code class="docutils literal"><span class="pre">quippy</span></code>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
 </pre></div>
@@ -452,8 +453,8 @@ problem.</p>
 <div class="section" id="segmentation-faults-with-openblas">
 <h3>Segmentation Faults with OpenBLAS<a class="headerlink" href="#segmentation-faults-with-openblas" title="Permalink to this headline">¶</a></h3>
 <p>The threading in OpenBLAS can interfere with the OpenMP resulting in
-segfaults. Either recompile OpenBLAS with <code class="docutils literal"><span class="pre">USE_OPENMP=1</span></code> or disabled
-threading with <cite>export OPENBLAS_NUM_THREADS=1</cite></p>
+segfaults. Either recompile OpenBLAS with <code class="docutils literal"><span class="pre">USE_OPENMP=1</span></code> or disable
+threading with <code class="docutils literal"><span class="pre">export</span> <span class="pre">OPENBLAS_NUM_THREADS=1</span></code> at runtime.</p>
 </div>
 </div>
 </div>
@@ -479,7 +480,7 @@ threading with <cite>export OPENBLAS_NUM_THREADS=1</cite></p>
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 8d967b9+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 3b85bff+ documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
