@@ -194,13 +194,13 @@ and Gromacs, but has a number of unique features:
 
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
-7.  If you are using a Python virtual environment (virtualenv) and would like
+8.  If you are using a Python virtual environment (virtualenv) and would like
     to install ``quippy`` into it, ensure the environment is activated
     (``source <env_dir>/bin/activate``, where ``<env_dir>`` is the root of
     your virtual environment) _before_ building ``quippy`` (otherwise library
     versions may cause unexpected conflicts).
 
-8.  To compile the Python wrappers (``quippy``), run::
+9.  To compile the Python wrappers (``quippy``), run::
 
         make quippy
 
@@ -218,15 +218,15 @@ and Gromacs, but has a number of unique features:
     specific directory. ``QUIPPY_INSTALL_OPTS`` can also be set in the file
     ``build/${QUIP_ARCH}/Makefile.inc``.
 
-9.  More details on the quippy installation process and troubleshooting for
+10.  More details on the quippy installation process and troubleshooting for
     common build problems are available in the 
     [online documentation](http://libatoms.github.io/QUIP/).
 
-10.  To run the unit and regression tests, which depend on ``quippy``::
+11.  To run the unit and regression tests, which depend on ``quippy``::
 
         make test
 
-11. Some functionality is only available if you check out other
+12. Some functionality is only available if you check out other
     modules within the ``QUIP/src/`` directories, e.g. the ``ThirdParty``
     (DFTB parameters, TTM3f water model), ``GAP`` (Gaussian
     Approximation Potential models) and ``GAP-filler`` (Gaussian
@@ -234,7 +234,7 @@ and Gromacs, but has a number of unique features:
     not distributed with QUIP because they come with different licensing
     restrictions.
 
-12. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
+13. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html).
 
