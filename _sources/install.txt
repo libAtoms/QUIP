@@ -22,8 +22,8 @@ Installation of QUIP and quippy
 *******************************
 
 These intructions provide more details on the compilation and
-installation of `QUIP` (Fortran library and main programs) and
-`quippy` (Python interface).
+installation of ``QUIP`` (Fortran library and main programs) and
+``quippy`` (Python interface).
 
 Compilation Instructions
 ------------------------
@@ -84,8 +84,8 @@ Custom settings
    Fortran preprocessor to use. Default is system `cpp`.
 
 :makevar:`QUIPPY_INSTALL_OPTS`
-   Installation options, e.g. specify ``--home=${HOME}``
-   or ``--prefix=${PREFIX}`` to install in a non-default location.
+   Installation options, e.g. specify ``--user`` to install for the current 
+   user ``--prefix=${PREFIX}`` to install in a non-default location.
 
 :makevar:`QUIPPY_NO_TOOLS`
    If set to 1, omit compilation of extra tools such as the elasticity module.
@@ -199,7 +199,7 @@ The `GAP_predict` module is not publicly available, so the
 Warning about :mod:`quippy.castep` when importing quippy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you get the following warning message when importin quippy::
+If you get the following warning message when importing quippy::
 
    $ python
    >>> from quippy import *
@@ -244,6 +244,11 @@ libraries (.a files). Removing the static libraries with `rm
 problem.
 
 
+Segmentation Faults with OpenBLAS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The threading in OpenBLAS can interfere with the OpenMP resulting in
+segfaults. Either recompile OpenBLAS with ``USE_OPENMP=1`` or disabled
+threading with `export OPENBLAS_NUM_THREADS=1`
 
 

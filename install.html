@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of QUIP and quippy &mdash; quippy 52427b7+ documentation</title>
+    <title>Installation of QUIP and quippy &mdash; quippy 8d967b9+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '52427b7+',
+        VERSION:     '8d967b9+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 52427b7+ documentation" href="index.html" />
+    <link rel="top" title="quippy 8d967b9+ documentation" href="index.html" />
     <link rel="next" title="Examples" href="Examples/index.html" />
     <link rel="prev" title="Introduction to quippy" href="intro.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 52427b7+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 8d967b9+ documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -66,6 +66,7 @@
 <li><a class="reference internal" href="#warning-about-quippy-castep-when-importing-quippy">Warning about <code class="docutils literal"><span class="pre">quippy.castep</span></code> when importing quippy</a></li>
 <li><a class="reference internal" href="#internal-compiler-error-with-ifort">Internal compiler error with <cite>ifort</cite></a></li>
 <li><a class="reference internal" href="#linking-error-on-mac-os-x">Linking error on Mac OS X</a></li>
+<li><a class="reference internal" href="#segmentation-faults-with-openblas">Segmentation Faults with OpenBLAS</a></li>
 </ul>
 </li>
 </ul>
@@ -106,14 +107,23 @@
   <div class="section" id="installation-of-quip-and-quippy">
 <span id="installation"></span><h1>Installation of QUIP and quippy<a class="headerlink" href="#installation-of-quip-and-quippy" title="Permalink to this headline">¶</a></h1>
 <p>These intructions provide more details on the compilation and
-installation of <cite>QUIP</cite> (Fortran library and main programs) and
-<cite>quippy</cite> (Python interface).</p>
+installation of <code class="docutils literal"><span class="pre">QUIP</span></code> (Fortran library and main programs) and
+<code class="docutils literal"><span class="pre">quippy</span></code> (Python interface).</p>
 <div class="section" id="compilation-instructions">
 <h2>Compilation Instructions<a class="headerlink" href="#compilation-instructions" title="Permalink to this headline">¶</a></h2>
 <p>These instructions are excerpted from the top-level <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>, which is
 the most up-to-date source of information.</p>
 <blockquote>
-<div><ol class="arabic" start="0">
+<div><ol class="arabic">
+<li><p class="first">To compile QUIP the minimum requirements are:</p>
+<ul class="simple">
+<li>A working Fortran compiler. QUIP is tested with <code class="docutils literal"><span class="pre">gfortran</span></code> 4.4 and
+later, and <code class="docutils literal"><span class="pre">ifort</span></code> 11.1.</li>
+<li>Linear algebra libraries BLAS and LAPACK. QUIP is tested with
+reference versions <code class="docutils literal"><span class="pre">libblas-dev</span></code> and <code class="docutils literal"><span class="pre">liblapack-dev</span></code> on Ubuntu
+12.04, and <code class="docutils literal"><span class="pre">mkl</span></code> 11.1 with <code class="docutils literal"><span class="pre">ifort</span></code>.</li>
+</ul>
+</li>
 <li><p class="first">Clone the QUIP repository from GitHub. The <code class="docutils literal"><span class="pre">--recursive</span></code> option
 brings in submodules automatically (If you don&#8217;t do this, then
 you will need to run <code class="docutils literal"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span> <span class="pre">--init</span></code>
@@ -122,67 +132,54 @@ from the top-level QUIP directory after cloning)</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Decide your architecture by looking in the arch/ directory, and
-define an environmental variable QUIP_ARCH, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">QUIP_ARCH</span><span class="o">=</span><span class="n">linux_x86_64_ifort_icc</span>
+<li><p class="first">Decide your architecture by looking in the <code class="docutils literal"><span class="pre">arch/</span></code> directory, and
+define an environmental variable <code class="docutils literal"><span class="pre">QUIP_ARCH</span></code>, e.g.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">QUIP_ARCH</span><span class="o">=</span><span class="n">linux_x86_64_gfortran</span>
 </pre></div>
 </div>
-<p>You may well need to create your own
-<cite>arch/Makefile.${QUIP_ARCH}</cite> file based on an existing file.</p>
-</li>
-<li><p class="first">Ensure that you have sufficiently up-to-date compilers. If you are
-using GNU compiler suite, you need version 4.4 or later. From
-Intel, you need version &gt; 11.0.084.</p>
+<p>for standard gfortran on Linux. You may need to create your own
+<code class="docutils literal"><span class="pre">arch/Makefile.${QUIP_ARCH}</span></code> file based on an existing file for
+more exotic systems.</p>
 </li>
 <li><p class="first">Customise QUIP, set the maths libraries and provide linking options:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">config</span>
 </pre></div>
 </div>
-<p>Makefile.config will create a build directory, <cite>build/${QUIP_ARCH}</cite>,
+<p>Makefile.config will create a build directory, <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}</span></code>,
 and all the building happen there. First it will ask you some
 questions about where you keep libraries and other stuff, if you
 don&#8217;t use something it is asking for, just leave it blank. The
-answers will be stored in <cite>Makefile.inc</cite> in the <cite>build/${QUIP_ARCH}</cite>
+answers will be stored in <code class="docutils literal"><span class="pre">Makefile.inc</span></code> in the <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}</span></code>
 directory, and you can edit them later (e.g. to change optimisation
-or debug options).  Note that the default state is usually with
-rather heavy debugging on, including bounds checking, which makes
-the code quite slow.</p>
+or debug options).</p>
 <p>If you later make significant changes to the configuration such as
 enabling or disabling tight-binding support you should force a
 full rebuild by doing a <cite>make deepclean; make</cite>.</p>
 </li>
 <li><p class="first">Compile all modules, libraries and programs with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>        make
-
-From the top-level `QUIP` directory. All object files and programs
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span>
 </pre></div>
 </div>
-<p>are built under <cite>build/${QUIP_ARCH}/libquip.a</cite>.</p>
+<p>From the top-level <code class="docutils literal"><span class="pre">QUIP</span></code> directory. All object files and programs
+are built under <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/libquip.a</span></code>.</p>
 <p>Other useful make targets include:</p>
-<blockquote>
-<div><ul>
-<li><dl class="first docutils">
-<dt><cite>make install</cite></dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">copies all compiled programs it can find to</span><dd><p class="first last"><cite>QUIP_INSTALLDIR</cite>, if it&#8217;s defined and is a directory</p>
-</dd>
-</dl>
-</li>
-<li><p class="first"><cite>make libquip</cite>:   Compile QUIP as a library and link to it.
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></code> : copies all compiled programs it can find to
+<code class="docutils literal"><span class="pre">QUIP_INSTALLDIR</span></code>, if it&#8217;s defined and is a directory</li>
+<li><code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code>:   Compile QUIP as a library and link to it.
 This will make all the various libraries and combine them into one:
-<cite>build/${QUIP_ARCH}/libquip.a</cite>, which is what you need to link with
-(as well as LAPACK).</p>
-</li>
+<code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/libquip.a</span></code>, which is what you need to link with
+(as well as LAPACK).</li>
 </ul>
-</div></blockquote>
 </li>
-<li><p class="first">A good starting point is to use the <cite>quip</cite> program, which can
+<li><p class="first">A good starting point is to use the <code class="docutils literal"><span class="pre">quip</span></code> program, which can
 calculate the properties of an atomic configuration using a
 variety of models. For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">quip</span> <span class="n">at_file</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">xyz</span> <span class="n">init_args</span><span class="o">=</span><span class="s1">&#39;IP LJ&#39;</span> \
-        <span class="n">param_file</span><span class="o">=</span><span class="n">QUIP_Core</span><span class="o">/</span><span class="n">parameters</span><span class="o">/</span><span class="n">ip</span><span class="o">.</span><span class="n">parms</span><span class="o">.</span><span class="n">LJ</span><span class="o">.</span><span class="n">xml</span> <span class="n">E</span>
+    <span class="n">param_file</span><span class="o">=</span><span class="n">QUIP_Core</span><span class="o">/</span><span class="n">parameters</span><span class="o">/</span><span class="n">ip</span><span class="o">.</span><span class="n">parms</span><span class="o">.</span><span class="n">LJ</span><span class="o">.</span><span class="n">xml</span> <span class="n">E</span>
 </pre></div>
 </div>
-<p>assuming that you have a file called <cite>test.xyz</cite> with the following
+<p>assuming that you have a file called <code class="docutils literal"><span class="pre">test.xyz</span></code> with the following
 data in it representing Cu atoms in a simple cubic lattice:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span>
 <span class="n">Lattice</span><span class="o">=</span><span class="s2">&quot;4 0 0 0 4 0 0 0 4&quot;</span> <span class="n">Properties</span><span class="o">=</span><span class="n">Z</span><span class="p">:</span><span class="n">I</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">pos</span><span class="p">:</span><span class="n">R</span><span class="p">:</span><span class="mi">3</span>
@@ -190,8 +187,9 @@ data in it representing Cu atoms in a simple cubic lattice:</p>
 </pre></div>
 </div>
 <p>The Lennard-Jones parameters in the above example is defined in the
-<cite>ip.parms.LJ.xml</cite> file under share/Parameters. The format of the atomic
-configuration is given in [Extended XYZ](<a class="reference external" href="http://libatoms.github.io/QUIP/io.html#extendedxyz">http://libatoms.github.io/QUIP/io.html#extendedxyz</a>)
+<code class="docutils literal"><span class="pre">ip.parms.LJ.xml</span></code> file under <code class="docutils literal"><span class="pre">share/Parameters</span></code>. The format of the
+atomic configuration is given in
+[Extended XYZ](<a class="reference external" href="http://libatoms.github.io/QUIP/io.html#extendedxyz">http://libatoms.github.io/QUIP/io.html#extendedxyz</a>)
 format, in which the first line is the number of atoms, the second line
 is a series of key=value pairs, which must at least contain the Lattice
 key giving the periodic bounding box and the Properties key that
@@ -199,48 +197,70 @@ describes the remaining lines. The value of Properties is a sequence of
 triplets separated by a colon (:), that give the name, type and number
 of columns, with the type given by I for integers, R for reals, S for
 strings.</p>
-<p>Most string arguments can be replaced by <cite>&#8211;help</cite> and QUIP programs
+<p>Most string arguments can be replaced by <code class="docutils literal"><span class="pre">--help</span></code> and QUIP programs
 will  then print  a  list  of allowable  keywords  with brief  help
-messages as to their usage,  so e.g. <cite>init_args=&#8211;help</cite> will give a
+messages as to their usage,  so e.g. <code class="docutils literal"><span class="pre">init_args=--help</span></code> will give a
 list of potential model  types (and some combinations). The parsing
-is recursive,  so <cite>init_args=&#8221;IP &#8211;help&#8221;</cite>  will then proceed  to list
+is recursive,  so <code class="docutils literal"><span class="pre">init_args=&quot;IP</span> <span class="pre">--help&quot;</span></code>  will then proceed  to list
 the types of interatomic potentials (IP) that are available.</p>
 </li>
-<li><p class="first">To compile the Python wrappers (<cite>quippy</cite>), run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>        make quippy
-
-`quippy` depends on Python and [numpy](http://www.numpy.org), the
-[Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/)
-(ASE) and some features require [scipy](http://www.scipy.org)
-and/or [matscipy](https://github.com/libAtoms/matscipy).
+<li><p class="first">To compile the Python wrappers (<code class="docutils literal"><span class="pre">quippy</span></code>), the minimum requirements
+are:</p>
+<ul class="simple">
+<li>Python 2.6 or 2.7. <code class="docutils literal"><span class="pre">quippy</span></code> is tested with both. It does not yet work
+with Python 3.</li>
+<li>[NumPy](<a class="reference external" href="http://www.numpy.org">http://www.numpy.org</a>)</li>
+<li>[Atomic Simulation Environment](<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">https://wiki.fysik.dtu.dk/ase/</a>) (<code class="docutils literal"><span class="pre">ase</span></code>)</li>
+<li>(optional) [SciPy](<a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a>)</li>
+<li>(optional) [matscipy](<a class="reference external" href="https://github.com/libAtoms/matscipy">https://github.com/libAtoms/matscipy</a>).</li>
+</ul>
+</li>
+</ol>
+<ol class="arabic" start="7">
+<li><p class="first">If you are using a Python virtual environment (virtualenv) and would like
+to install <code class="docutils literal"><span class="pre">quippy</span></code> into it, ensure the environment is activated
+(<code class="docutils literal"><span class="pre">source</span> <span class="pre">&lt;env_dir&gt;/bin/activate</span></code>, where <code class="docutils literal"><span class="pre">&lt;env_dir&gt;</span></code> is the root of
+your virtual environment) _before_ building <code class="docutils literal"><span class="pre">quippy</span></code> (otherwise library
+versions may cause unexpected conflicts).</p>
+</li>
+<li><p class="first">To compile the Python wrappers (<code class="docutils literal"><span class="pre">quippy</span></code>), run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">quippy</span>
 </pre></div>
 </div>
-<p>If you are using a Python virtual environment (virtualenv) and would
-like to install <cite>quippy</cite> into it, ensure the environment is activated
-(<cite>source &lt;env_dir&gt;/bin/activate</cite>, where <cite>&lt;env_dir&gt;</cite> is the root of your
-virtual environment) _before_ making quippy.  Also be sure to set the
-variable <cite>QUIPPY_INSTALL_OPTS</cite> to include <cite>&#8211;prefix=&lt;env_dir&gt;</cite>; this
-can be done in the file <cite>build/${QUIP_ARCH}/Makefile.inc</cite>.</p>
-<blockquote>
-<div><p>More details on the quippy installation process are available in
-the [online documentation](<a class="reference external" href="http://libatoms.github.io/QUIP/">http://libatoms.github.io/QUIP/</a>).</p>
-</div></blockquote>
+<p>Quippy can be used by adding the <code class="docutils literal"><span class="pre">lib</span></code> directory in
+<code class="docutils literal"><span class="pre">quippy/build/${QUIP_ARCH}</span></code> to your <code class="docutils literal"><span class="pre">$PYTHONPATH</span></code>, however it can be
+more convenient to install into a specific Python distribution:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">install</span><span class="o">-</span><span class="n">quippy</span>
+</pre></div>
+</div>
+<p>will either install into the current virtualenv or attempt to install
+systemwide (usually fails without <code class="docutils literal"><span class="pre">sudo</span></code>). To install only for the
+current user (into <code class="docutils literal"><span class="pre">~\.local</span></code>), execute the command
+<code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS=--user</span> <span class="pre">make</span> <span class="pre">install-quippy</span></code>,
+or use <code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS=--prefix=&lt;directory&gt;</span></code> to install into a
+specific directory. <code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS</span></code> can also be set in the file
+<code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/Makefile.inc</span></code>.</p>
 </li>
-<li><p class="first">To run the unit and regression tests, which depend on <cite>quippy</cite>:</p>
+<li><p class="first">More details on the quippy installation process and troubleshooting for
+common build problems are available in the
+[online documentation](<a class="reference external" href="http://libatoms.github.io/QUIP/">http://libatoms.github.io/QUIP/</a>).</p>
+</li>
+<li><p class="first">To run the unit and regression tests, which depend on <code class="docutils literal"><span class="pre">quippy</span></code>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
 </pre></div>
 </div>
 </li>
-<li><dl class="first docutils">
-<dt>Some functionality is only available if you check out other</dt>
-<dd><p class="first last">modules within the <cite>QUIP/src/</cite> directories, e.g. the <cite>ThirdParty</cite>
-(DFTB parameters, TTM3f water model), <cite>GAP</cite> (Gaussian
-Approximation Potential models) and <cite>GAP-filler</cite> (Gaussian
+<li><p class="first">Some functionality is only available if you check out other
+modules within the <code class="docutils literal"><span class="pre">QUIP/src/</span></code> directories, e.g. the <code class="docutils literal"><span class="pre">ThirdParty</span></code>
+(DFTB parameters, TTM3f water model), <code class="docutils literal"><span class="pre">GAP</span></code> (Gaussian
+Approximation Potential models) and <code class="docutils literal"><span class="pre">GAP-filler</span></code> (Gaussian
 Approximation Potential model training). These packages are
 not distributed with QUIP because they come with different licensing
 restrictions.</p>
-</dd>
-</dl>
+</li>
+<li><p class="first">In order to run QUIP potentials via LAMMPS, <code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code> to get QUIP
+into library form, and then follow the instructions in the
+[LAMMPS documentation](<a class="reference external" href="http://lammps.sandia.gov/doc/pair_quip.html">http://lammps.sandia.gov/doc/pair_quip.html</a>).</p>
 </li>
 </ol>
 </div></blockquote>
@@ -286,8 +306,8 @@ This also disables optimisation.</dd>
 <dt><strong class="makevar">QUIPPY_CPP</strong></dt>
 <dd>Fortran preprocessor to use. Default is system <cite>cpp</cite>.</dd>
 <dt><strong class="makevar">QUIPPY_INSTALL_OPTS</strong></dt>
-<dd>Installation options, e.g. specify <code class="docutils literal"><span class="pre">--home=${HOME}</span></code>
-or <code class="docutils literal"><span class="pre">--prefix=${PREFIX}</span></code> to install in a non-default location.</dd>
+<dd>Installation options, e.g. specify <code class="docutils literal"><span class="pre">--user</span></code> to install for the current
+user <code class="docutils literal"><span class="pre">--prefix=${PREFIX}</span></code> to install in a non-default location.</dd>
 <dt><strong class="makevar">QUIPPY_NO_TOOLS</strong></dt>
 <dd>If set to 1, omit compilation of extra tools such as the elasticity module.</dd>
 <dt><strong class="makevar">QUIPPY_NO_CRACK</strong></dt>
@@ -389,7 +409,7 @@ If not make clean and recompile again</p>
 </div>
 <div class="section" id="warning-about-quippy-castep-when-importing-quippy">
 <h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><code class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></code></a> when importing quippy<a class="headerlink" href="#warning-about-quippy-castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
-<p>If you get the following warning message when importin quippy:</p>
+<p>If you get the following warning message when importing quippy:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ python
 &gt;&gt;&gt; from quippy import *
 WARNING:root:quippy.castep import quippy.failed.
@@ -429,6 +449,12 @@ libraries (.a files). Removing the static libraries with <cite>rm
 ../../build.${QUIP_ARCH}/*.a</cite> and recompiling should solve the
 problem.</p>
 </div>
+<div class="section" id="segmentation-faults-with-openblas">
+<h3>Segmentation Faults with OpenBLAS<a class="headerlink" href="#segmentation-faults-with-openblas" title="Permalink to this headline">¶</a></h3>
+<p>The threading in OpenBLAS can interfere with the OpenMP resulting in
+segfaults. Either recompile OpenBLAS with <code class="docutils literal"><span class="pre">USE_OPENMP=1</span></code> or disabled
+threading with <cite>export OPENBLAS_NUM_THREADS=1</cite></p>
+</div>
 </div>
 </div>
 
@@ -453,12 +479,12 @@ problem.</p>
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 52427b7+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 8d967b9+ documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Aug 15, 2016.
+      Last updated on Aug 16, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>

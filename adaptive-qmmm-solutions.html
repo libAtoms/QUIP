@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Solutions &mdash; quippy 52427b7+ documentation</title>
+    <title>Solutions &mdash; quippy 8d967b9+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '52427b7+',
+        VERSION:     '8d967b9+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 52427b7+ documentation" href="index.html" />
+    <link rel="top" title="quippy 8d967b9+ documentation" href="index.html" />
     <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html" />
     <link rel="next" title="References" href="adaptive-qmmm-references.html" />
     <link rel="prev" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="adaptive-qmmm-step3.html" title="Step 3: LOTF hybrid MD simulation of fracture in Si"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 52427b7+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 8d967b9+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" accesskey="U">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
@@ -378,7 +378,7 @@
                           <span class="n">get_energy_release_rate</span><span class="p">,</span>
                           <span class="n">ConstantStrainRate</span><span class="p">,</span>
                           <span class="n">find_crack_tip_stress_field</span><span class="p">)</span>
-                         
+
 <span class="c1"># ******* Start of parameters ***********</span>
 
 <span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;crack.xyz&#39;</span>         <span class="c1"># File from which to read crack slab structure</span>
@@ -387,10 +387,10 @@
 <span class="n">timestep</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span>          <span class="c1"># Timestep (NB: time base units are not fs!)</span>
 <span class="n">cutoff_skin</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>      <span class="c1"># Amount by which potential cutoff is increased</span>
                                  <span class="c1"># for neighbour calculations</span>
-<span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack </span>
+<span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack</span>
                                  <span class="c1"># is taken to be running</span>
 <span class="n">strain_rate</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
-<span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.nc&#39;</span>            <span class="c1"># Trajectory output file (NetCDF format)</span>
+<span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.xyz&#39;</span>           <span class="c1"># Trajectory output file (NetCDF format)</span>
 <span class="n">traj_interval</span> <span class="o">=</span> <span class="mi">10</span>               <span class="c1"># Number of time steps between</span>
                                  <span class="c1"># writing output frames</span>
 <span class="n">param_file</span> <span class="o">=</span> <span class="s1">&#39;params.xml&#39;</span>        <span class="c1"># Filename of XML file containing</span>
@@ -422,23 +422,16 @@
               <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bottom</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">))</span>
 <span class="n">fix_atoms</span> <span class="o">=</span> <span class="n">FixAtoms</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">fixed_mask</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fixed </span><span class="si">%d</span><span class="s1"> atoms</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="n">atoms</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">([</span><span class="n">fix_atoms</span><span class="p">])</span>
 
 <span class="c1"># Increase epsilon_yy applied to all atoms at constant strain rate</span>
-
 <span class="n">strain_atoms</span> <span class="o">=</span> <span class="n">ConstantStrainRate</span><span class="p">(</span><span class="n">orig_height</span><span class="p">,</span> <span class="n">strain_rate</span><span class="o">*</span><span class="n">timestep</span><span class="p">)</span>
-
-<span class="n">atoms</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">([</span><span class="n">fix_atoms</span><span class="p">,</span> <span class="n">strain_atoms</span><span class="p">])</span>
-
 
 <span class="c1"># ******* Set up potentials and calculators ********</span>
 
 <span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="n">mm_init_args</span><span class="p">,</span>
                    <span class="n">param_filename</span><span class="o">=</span><span class="n">param_file</span><span class="p">,</span>
                    <span class="n">cutoff_skin</span><span class="o">=</span><span class="n">cutoff_skin</span><span class="p">)</span>
-
-<span class="c1"># Request Potential to compute per-atom stresses whenever we</span>
-<span class="c1"># compute forces, to save time when locating the crack tip</span>
-<span class="n">mm_pot</span><span class="o">.</span><span class="n">set_default_quantities</span><span class="p">([</span><span class="s1">&#39;stresses&#39;</span><span class="p">])</span>
 
 <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">mm_pot</span><span class="p">)</span>
 
@@ -455,7 +448,7 @@
 <span class="k">def</span> <span class="nf">printstatus</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">dynamics</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="nb">print</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A </span>
+<span class="s2">State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A</span>
 <span class="s2">---------------------------------------------------------------------------------&quot;&quot;&quot;</span>
 
     <span class="n">log_format</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%(label)-4s%(time)12.1f%(temperature)12.6f</span><span class="s1">&#39;</span><span class="o">+</span>
@@ -467,7 +460,7 @@
                                  <span class="p">(</span><span class="mf">1.5</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)))</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_strain</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_energy_release_rate</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    
+
     <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;crack_pos_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;d_crack_pos_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -477,17 +470,15 @@
 
 <span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">printstatus</span><span class="p">)</span>
 
-<span class="c1"># Check if the crack has advanced, and stop incrementing the strain if it has</span>
-<span class="k">def</span> <span class="nf">check_if_cracked</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">atom_straining</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
     <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
+    <span class="c1"># keep straining until the crack tip has advanced to tip_move_tol</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">tip_move_tol</span><span class="p">:</span>
+      <span class="n">strain_atoms</span><span class="o">.</span><span class="n">apply_strain</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]:</span>
+      <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="c1"># stop straining if crack has advanced more than tip_move_tol</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tip_move_tol</span><span class="p">:</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">del</span> <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">strain_atoms</span><span class="p">)]</span>
-
-
-<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">check_if_cracked</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
+<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">atom_straining</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
 <span class="c1"># Save frames to the trajectory every `traj_interval` time steps</span>
 <span class="n">trajectory</span> <span class="o">=</span> <span class="n">AtomsWriter</span><span class="p">(</span><span class="n">traj_file</span><span class="p">)</span>
@@ -503,14 +494,11 @@
 <p>Download <a class="reference download internal" href="_downloads/run_crack_lotf.py" download=""><code class="xref download docutils literal"><span class="pre">run_crack_lotf.py</span></code></a></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">run_crack_lotf.py</span>
-
 <span class="sd">Script to run LOTF molecular dynamics for a crack slab,</span>
 <span class="sd">incrementing the load in small steps until fracture starts.</span>
-
 <span class="sd">James Kermode &lt;james.kermode@kcl.ac.uk&gt;</span>
 <span class="sd">February 2013</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="k">import</span> <span class="n">FixAtoms</span>
@@ -532,19 +520,19 @@
 <span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">ForceMixingPotential</span>
 <span class="kn">from</span> <span class="nn">quippy.lotf</span> <span class="k">import</span> <span class="n">LOTFDynamics</span><span class="p">,</span> <span class="n">update_hysteretic_qm_region</span>
 
-                        
+
 <span class="c1"># ******* Start of parameters ***********</span>
 
 <span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;crack.xyz&#39;</span>         <span class="c1"># File from which to read crack slab structure</span>
 <span class="n">sim_T</span> <span class="o">=</span> <span class="mf">300.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span>           <span class="c1"># Simulation temperature</span>
-<span class="n">nsteps</span> <span class="o">=</span> <span class="mi">10000</span>                   <span class="c1"># Total number of timesteps to run for</span>
+<span class="n">nsteps</span> <span class="o">=</span> <span class="mi">1000000</span>                   <span class="c1"># Total number of timesteps to run for</span>
 <span class="n">timestep</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span>          <span class="c1"># Timestep (NB: time base units are not fs!)</span>
 <span class="n">cutoff_skin</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>      <span class="c1"># Amount by which potential cutoff is increased</span>
                                  <span class="c1"># for neighbour calculations</span>
-<span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack </span>
+<span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack</span>
                                  <span class="c1"># is taken to be running</span>
 <span class="n">strain_rate</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
-<span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.nc&#39;</span>            <span class="c1"># Trajectory output file (NetCDF format)</span>
+<span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.xyz&#39;</span>           <span class="c1"># Trajectory output file (NetCDF or XYZ format)</span>
 <span class="n">traj_interval</span> <span class="o">=</span> <span class="mi">10</span>               <span class="c1"># Number of time steps between</span>
                                  <span class="c1"># writing output frames</span>
 <span class="n">param_file</span> <span class="o">=</span> <span class="s1">&#39;params.xml&#39;</span>        <span class="c1"># Filename of XML file containing</span>
@@ -554,8 +542,8 @@
 
 <span class="c1"># additional parameters for the QM/MM simulation:</span>
 <span class="n">qm_init_args</span> <span class="o">=</span> <span class="s1">&#39;TB DFTB&#39;</span>         <span class="c1"># Initialisation arguments for QM potential</span>
-<span class="n">qm_inner_radius</span> <span class="o">=</span> <span class="mf">8.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c1"># Inner hysteretic radius for QM region</span>
-<span class="n">qm_outer_radius</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span> <span class="c1"># Inner hysteretic radius for QM region</span>
+<span class="n">qm_inner_radius</span> <span class="o">=</span> <span class="mf">6.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c1"># Inner hysteretic radius for QM region</span>
+<span class="n">qm_outer_radius</span> <span class="o">=</span> <span class="mf">8.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Ang</span>  <span class="c1"># Inner hysteretic radius for QM region</span>
 <span class="n">extrapolate_steps</span> <span class="o">=</span> <span class="mi">10</span>           <span class="c1"># Number of steps for predictor-corrector</span>
                                  <span class="c1"># interpolation and extrapolation</span>
 
@@ -583,23 +571,16 @@
               <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bottom</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">))</span>
 <span class="n">fix_atoms</span> <span class="o">=</span> <span class="n">FixAtoms</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">fixed_mask</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fixed </span><span class="si">%d</span><span class="s1"> atoms</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">fixed_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="n">atoms</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">([</span><span class="n">fix_atoms</span><span class="p">])</span>
 
 <span class="c1"># Increase epsilon_yy applied to all atoms at constant strain rate</span>
-
 <span class="n">strain_atoms</span> <span class="o">=</span> <span class="n">ConstantStrainRate</span><span class="p">(</span><span class="n">orig_height</span><span class="p">,</span> <span class="n">strain_rate</span><span class="o">*</span><span class="n">timestep</span><span class="p">)</span>
-
-<span class="n">atoms</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">([</span><span class="n">fix_atoms</span><span class="p">,</span> <span class="n">strain_atoms</span><span class="p">])</span>
-
 
 <span class="c1"># ******* Set up potentials and calculators ********</span>
 
 <span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="n">mm_init_args</span><span class="p">,</span>
                    <span class="n">param_filename</span><span class="o">=</span><span class="n">param_file</span><span class="p">,</span>
                    <span class="n">cutoff_skin</span><span class="o">=</span><span class="n">cutoff_skin</span><span class="p">)</span>
-
-<span class="c1"># Request Potential to compute per-atom stresses whenever we</span>
-<span class="c1"># compute forces, to save time when locating the crack tip</span>
-<span class="n">mm_pot</span><span class="o">.</span><span class="n">set_default_quantities</span><span class="p">([</span><span class="s1">&#39;stresses&#39;</span><span class="p">])</span>
 
 <span class="c1"># Density functional tight binding (DFTB) potential</span>
 <span class="n">qm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="n">qm_init_args</span><span class="p">,</span>
@@ -624,13 +605,12 @@
 
 <span class="c1"># Use the force mixing potential as the Atoms&#39; calculator</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">qmmm_pot</span><span class="p">)</span>
-
+<span class="n">qmmm_pot</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span>
 
 <span class="c1"># *** Set up the initial QM region ****</span>
 
 <span class="n">qm_list</span> <span class="o">=</span> <span class="n">update_hysteretic_qm_region</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">[],</span> <span class="n">orig_crack_pos</span><span class="p">,</span>
                                       <span class="n">qm_inner_radius</span><span class="p">,</span> <span class="n">qm_outer_radius</span><span class="p">)</span>
-<span class="n">qmmm_pot</span><span class="o">.</span><span class="n">set_qm_atoms</span><span class="p">(</span><span class="n">qm_list</span><span class="p">)</span>
 
 <span class="c1"># ********* Setup and run MD ***********</span>
 
@@ -641,11 +621,14 @@
 <span class="c1"># Initialise the dynamical system</span>
 <span class="n">dynamics</span> <span class="o">=</span> <span class="n">LOTFDynamics</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">extrapolate_steps</span><span class="p">)</span>
 
+<span class="c1"># array to store time averaged stress field</span>
+<span class="n">avg_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
 <span class="c1"># Print some information every time step</span>
 <span class="k">def</span> <span class="nf">printstatus</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">dynamics</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="nb">print</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A </span>
+<span class="s2">State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A</span>
 <span class="s2">---------------------------------------------------------------------------------&quot;&quot;&quot;</span>
 
     <span class="n">log_format</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%(label)-4s%(time)12.1f%(temperature)12.6f</span><span class="s1">&#39;</span><span class="o">+</span>
@@ -657,8 +640,9 @@
                                  <span class="p">(</span><span class="mf">1.5</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)))</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_strain</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_energy_release_rate</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    
-    <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
+
+    <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">,</span>
+                                            <span class="n">avg_sigma</span><span class="o">=</span><span class="n">avg_sigma</span><span class="p">)</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;crack_pos_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;d_crack_pos_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -666,25 +650,26 @@
 
 <span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">printstatus</span><span class="p">)</span>
 
-<span class="c1"># Check if the crack has advanced, and stop incrementing the strain if it has</span>
-<span class="k">def</span> <span class="nf">check_if_cracked</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
-    <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">atom_straining</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+    <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">,</span>
+                                            <span class="n">avg_sigma</span><span class="o">=</span><span class="n">avg_sigma</span><span class="p">)</span>
+    <span class="c1"># keep straining until the crack tip has advanced to tip_move_tol</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">tip_move_tol</span><span class="p">:</span>
+      <span class="n">strain_atoms</span><span class="o">.</span><span class="n">apply_strain</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]:</span>
+      <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="c1"># stop straining if crack has advanced more than tip_move_tol</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_crack_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tip_move_tol</span><span class="p">:</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;is_cracked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">del</span> <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">strain_atoms</span><span class="p">)]</span>
+<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">atom_straining</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dynamics</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 
-<span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">check_if_cracked</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
-
-
-<span class="c1"># Function to update the QM region at the beginning of each extrapolation cycle   </span>
+<span class="c1"># Function to update the QM region at the beginning of each extrapolation cycle</span>
 <span class="k">def</span> <span class="nf">update_qm_region</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
-   <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
-   <span class="n">qm_list</span> <span class="o">=</span> <span class="n">qmmm_pot</span><span class="o">.</span><span class="n">get_qm_atoms</span><span class="p">()</span>
+   <span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">,</span>
+                                           <span class="n">avg_sigma</span><span class="o">=</span><span class="n">avg_sigma</span><span class="p">)</span>
+   <span class="n">qm_list</span> <span class="o">=</span> <span class="n">qmmm_pot</span><span class="o">.</span><span class="n">get_qm_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
    <span class="n">qm_list</span> <span class="o">=</span> <span class="n">update_hysteretic_qm_region</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">qm_list</span><span class="p">,</span> <span class="n">crack_pos</span><span class="p">,</span>
                                          <span class="n">qm_inner_radius</span><span class="p">,</span> <span class="n">qm_outer_radius</span><span class="p">)</span>
-   <span class="n">qmmm_pot</span><span class="o">.</span><span class="n">set_qm_atoms</span><span class="p">(</span><span class="n">qm_list</span><span class="p">)</span>
+   <span class="n">qmmm_pot</span><span class="o">.</span><span class="n">set_qm_atoms</span><span class="p">(</span><span class="n">qm_list</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
+   <span class="c1">#assert (atoms.hybrid == 1).sum() == len(qm_list)</span>
 
 <span class="n">dynamics</span><span class="o">.</span><span class="n">set_qm_update_func</span><span class="p">(</span><span class="n">update_qm_region</span><span class="p">)</span>
 
@@ -695,8 +680,10 @@
 
 <span class="k">def</span> <span class="nf">traj_writer</span><span class="p">(</span><span class="n">dynamics</span><span class="p">):</span>
    <span class="k">if</span> <span class="n">dynamics</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">LOTFDynamics</span><span class="o">.</span><span class="n">Interpolation</span><span class="p">:</span>
+      <span class="c1"># copy time-averaged stress into Atoms so it will be written to trajectory file</span>
+      <span class="n">dynamics</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;avg_sigma&#39;</span><span class="p">,</span> <span class="n">avg_sigma</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">9</span><span class="p">)))</span>
       <span class="n">trajectory</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dynamics</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
-   
+
 <span class="n">dynamics</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">traj_writer</span><span class="p">,</span> <span class="n">traj_interval</span><span class="p">,</span> <span class="n">dynamics</span><span class="p">)</span>
 
 <span class="c1"># Start running!</span>
@@ -727,14 +714,14 @@
         <li class="right" >
           <a href="adaptive-qmmm-step3.html" title="Step 3: LOTF hybrid MD simulation of fracture in Si"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 52427b7+ documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 8d967b9+ documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="tutorials.html" >Tutorials</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="adaptive-qmmm.html" >Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Aug 15, 2016.
+      Last updated on Aug 16, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>

@@ -26,11 +26,11 @@ As before, we import the necessary modules, classes and functions::
     from quippy.atoms import Atoms
     from quippy.potential import Potential
     from quippy.io import AtomsWriter
-    
+
     from quippy.crack import (get_strain,
                               get_energy_release_rate,
                               ConstantStrainRate,
-                              find_crack_tip_stress_field) 
+                              find_crack_tip_stress_field)
 
 Note that the molecular dynamics classes and functions come from
 `ASE`, while the :class:`~.Atoms` object, potentials and
@@ -42,7 +42,7 @@ Definition of the simulation parameters
 
 .. _parameters2:
 
-Let's define the simulation parameters. The meaning of each parameter is explained 
+Let's define the simulation parameters. The meaning of each parameter is explained
 in the comments on the right of each line::
 
     input_file = 'crack.xyz'         # File from which to read crack slab structure
@@ -51,7 +51,7 @@ in the comments on the right of each line::
     timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
     cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                      # for neighbour calculations
-    tip_move_tol = 10.0              # Distance tip has to move before crack 
+    tip_move_tol = 10.0              # Distance tip has to move before crack
                                      # is taken to be running
     strain_rate = 1e-5*(1/units.fs)  # Strain rate
     traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -76,9 +76,9 @@ It is also necessary to read in the original width and height of the slab and
 the original crack position, which were saved in ``crack.xyz`` at the end
 of :ref:`Step 1 <step1>`::
 
-    print 'Loading atoms from file %s' % input_file 
+    print 'Loading atoms from file %s' % input_file
     atoms = ...                                     # Load atoms from file
-    
+
     orig_height = atoms.info['OrigHeight']          # Initialise original height
     orig_crack_pos = atoms.info['CrackPos'].copy()  # Initialise original crack position
 
@@ -94,15 +94,13 @@ Setup of the constraints
 Now we can set constraints on the atomic structure which will be
 enforced during dynamics. In order to carry out the fracture MD
 simulation, we need to fix the positions of the top and bottom atomic
-rows (we call this constraint `fix_atoms`), and we need to apply a
-constant strain rate (the `strain_atoms` constraint). 
+rows (we call this constraint `fix_atoms`).
 
-Let's start with the `fix_atoms` constraint, which is exactly the same
-as the constraint used for :ref:`relaxing the positions of the crack
-slab <crack_fixatoms>` above. In order to do this, we need to find the `y`
-coordinate of the top, bottom atomic rows. The `x` coordinates of the
-left and right edges of the slab might also be useful later on. This
-can be easily done as before::
+The `fix_atoms` constraint, which is exactly the same as the constraint used
+for :ref:`relaxing the positions of the crack slab <crack_fixatoms>` above. In
+order to do this, we need to find the `y` coordinate of the top, bottom atomic
+rows. The `x` coordinates of the left and right edges of the slab might also
+be useful later on. This can be easily done as before::
 
     top = ...     # Maximum y coordinate
     bottom = ...  # Minimum y coordinate
@@ -115,9 +113,14 @@ exactly as before, and to initialise the `fix_atoms` constraint, in
 the same way we did it in `Step 1` (i.e., using the
 :class:`~constraints.FixAtoms` class)::
 
-    fixed_mask = ...                             # Define the list of fixed atoms 
+    fixed_mask = ...                             # Define the list of fixed atoms
     fix_atoms = ...                              # Initialise the constraint
     print('Fixed %d atoms\n' % fixed_mask.sum()) # Print the number of fixed atoms
+
+This constraint needs to be attached to our `atoms` object
+(see :meth:`~quippy.atoms.Atoms.set_constraint`)::
+
+    atoms. ...  # Attach the constraints to atoms
 
 To increase :math:`\epsilon_{yy}` of all atoms at a constant rate (see
 the `strain_rate` and `timestep` :ref:`parameters <parameters2>`), we
@@ -125,24 +128,10 @@ use the :class:`~quippy.crack.ConstantStrainRate` class::
 
     strain_atoms = ConstantStrainRate(orig_height, strain_rate*timestep)
 
-You can look at the documentation for the :mod:`ase.constraints module
-<constraints>` and the `source code
-<_modules/quippy/crack.html#ConstantStrainRate>`_ for the
-:class:`~quippy.crack.ConstantStrainRate` class to see how this
-works. The :meth:`~constraints.adjust_forces` and
-:meth:`~constraints.adjust_positions` routines are called during the
-Verlet update at each MD step. Note that in this case
-:meth:`~constraints.adjust_positions` simply increases the strain of
-all atoms, while :meth:`~constraints.adjust_forces` makes no changes
-to the forces.
-
-The two constraints just defined need to be attached to our `atoms` object
-(see :meth:`~quippy.atoms.Atoms.set_constraint` plus this `ASE` example of
-`combining constraints
-<https://wiki.fysik.dtu.dk/ase/ase/constraints.html#combining-constraints>`_)::
-
-    atoms. ...  # Attach the constraints to atoms
-
+You can look at the documentation for the
+:class:`~quippy.crack.ConstantStrainRate` class to see how this works. The
+:meth:`~constraints.adjust_positions` routine simply increases the strain of
+all atoms. We will attach this to the dynamics in step 2.2 below.
 
 Setup of the potential
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -190,7 +179,7 @@ algorithm, can be initialised with the ASE
 arguments: the atoms and the time step (which should come from the
 `timestep` :ref:`parameter <parameters2>`::
 
-    dynamics = ...   # Initialise the dynamics   
+    dynamics = ...   # Initialise the dynamics
 
 Printing status information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -213,12 +202,12 @@ strain energy release rate, respectively. ::
     def printstatus():
         if dynamics.nsteps == 1:
             print """
-    State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A 
+    State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     ---------------------------------------------------------------------------------"""
-    
+
         log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
             '%(strain)12.5f%(G)12.4f%(crack_pos_x)12.2f    (%(d_crack_pos_x)+5.2f)')
-        
+
         atoms.info['label'] = 'D'                # Label for the status line
         atoms.info['time'] = ...                 # Get simulation time
 	                                         # and convert to fs
@@ -257,6 +246,11 @@ system, requesting an interval of 1 step (i.e. every time) and passing the
 `atoms` object along to the function as an extra argument::
 
     dynamics.attach(check_if_cracked, 1, atoms)
+
+We also need to attach the `:meth:`quippy.crack.ConstrainStrainRate.apply_strain` method
+of `strain_atoms` to the dynamics::
+
+    dynamics.attach(strain_atoms.apply_strain, 1, atoms)
 
 Saving the trajectory
 ^^^^^^^^^^^^^^^^^^^^^
@@ -298,7 +292,7 @@ look something like this::
   Fixed 240 atoms
 
 
-  State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A 
+  State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
   ---------------------------------------------------------------------------------
   D            1.0  560.097755     0.08427      5.0012      -30.61    (-0.00)
   D            2.0  550.752265     0.08428      5.0024      -30.61    (-0.00)
@@ -346,13 +340,13 @@ can use the `Insert` and `Delete` keys to move forwards or backwards through the
 trajectory, or `Ctrl+Insert` and `Ctrl+Delete` to jump to the first or last
 frame -- note that the focus must be on the AtomEye viewer window when you use
 any keyboard shortcuts. The current frame number is shown in the title bar of
-the window. 
+the window.
 
 The function :func:`~qlab.gcat` (short for "get current atoms") returns a
 reference to the :class:`~.Atoms` object currently being visualised (i.e. to the
 current frame from the trajectory file). Similarly, the :func:`~qlab.gcv`
 function returns a reference to the entire trajectory currently being viewed as
-an :class:`~qlab.AtomsReaderViewer` object. 
+an :class:`~qlab.AtomsReaderViewer` object.
 
 You can change the frame increment rate by setting
 the :attr:`~atomeye.AtomEyeViewer.delta` attribute of the viewer, e.g. to
@@ -557,7 +551,7 @@ crack tip under Mode I loading, which is of the form
 
 where :math:`K_I` is the Mode I stress intensity factor, and the
 angular dependence is given by the set of universal functions
-:math:`f_{ij}(\theta)`. 
+:math:`f_{ij}(\theta)`.
 
 You can verify this by comparing the position detected by
 :func:`~quippy.crack.find_crack_tip_stress_field`,  stored in the
@@ -599,7 +593,7 @@ you could do::
 You should see that the energy release rate increases at a roughly
 constant rate before stopping at constant value when the crack starts
 to move (the increase is not linear since is is actually the `strain`
-that we increment at a constant rate). 
+that we increment at a constant rate).
 
 The following plot shows the evolution of `G` (blue) and of the
 position of the crack (red; stored as `crack_pos_x`). Note that a
@@ -648,7 +642,7 @@ velocities, given by
 .. math::
 
     f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v
- 
+
 Here's a Python function which implements this formula::
 
    def max_bolt(m,T,v):
@@ -667,11 +661,11 @@ trajectory and use the speeds data to produce a histogram::
 
    ss = linspace(0., s.max(), 100)  # Compare with Maxwell-Boltzmann distrib
    plot(ss, max_bolt(m,T,ss), lw=2)
-   
+
 .. image:: crack-max-bolt-distrib.png
    :align: center
    :width: 600
-   
+
 .. _arsf:
 
 Atom-resolved strain tensor
@@ -692,7 +686,7 @@ used to define a local set of cubic axes, and the deformations along
 each of these axes are combined into a matrix :math:`E` describing the
 local deformation:
 
-.. math:: 
+.. math::
 
   E = \left(\begin{array}{ccc}
   | & | & | \\
