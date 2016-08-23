@@ -179,11 +179,18 @@ distclean: clean
 	rm -rf build
 
 install-structures:
+ifeq (${QUIP_STRUCTS_DIR},)
+	@echo
+	@echo "QUIP_STRUCTS_DIR must be defined to install structures"
+else
 	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install
+endif
 
 install: ${MODULES} install-structures
 ifeq (${QUIP_INSTALLDIR},)
-	@echo "make install needs QUIP_INSTALLDIR defined"
+	@echo
+	@echo "'make install' needs QUIP_INSTALLDIR to be defined to install "
+	@echo "programs"
 else
 	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
 	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \

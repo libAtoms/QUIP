@@ -130,17 +130,21 @@ and Gromacs, but has a number of unique features:
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
 
-5.  Compile all modules, libraries and programs with::
+5.  Compile all programs, modules and libraries::
 
         make
 
-    From the top-level ``QUIP`` directory. All object files and programs
-    are built under ``build/${QUIP_ARCH}/libquip.a``.
+    From the top-level ``QUIP`` directory. All programs are built in
+    ``build/${QUIP_ARCH}/``. You can also find compiled object files
+    and libraries (``libquip.a``) in that directory. Programs can be
+    called directly from that directory.
 
     Other useful make targets include:
 
     - ``make install`` : copies all compiled programs it can find to
-      ``QUIP_INSTALLDIR``, if it's defined and is a directory
+      ``QUIP_INSTALLDIR``, if it's defined and is a directory (full path
+      required), and copies bundled structures to ``QUIP_STRUCTS_DIR``
+      if it is defined.
 
     - ``make libquip``:   Compile QUIP as a library and link to it.
       This will make all the various libraries and combine them into one:
@@ -152,18 +156,22 @@ and Gromacs, but has a number of unique features:
     variety of models. For example::
 
         quip at_file=test.xyz init_args='IP LJ' \
-            param_file=QUIP_Core/parameters/ip.parms.LJ.xml E
+            param_file=share/Parameters/ip.parms.LJ.xml E
 
     assuming that you have a file called ``test.xyz`` with the following
-    data in it representing Cu atoms in a simple cubic lattice::
+    data in it representing Cu atoms in a cubic fcc lattice::
 
-        1
-        Lattice="4 0 0 0 4 0 0 0 4" Properties=Z:I:1:pos:R:3
-        29 0 0 0
+        4
+        Lattice="3.61 0 0 0 3.61 0 0 0 3.61" Properties=species:S:1:pos:R:3
+        Cu     0.000 0.000 0.000
+        Cu     0.000 1.805 1.805
+        Cu     1.805 0.000 1.805
+        Cu     1.805 1.805 0.000
 
-    The Lennard-Jones parameters in the above example is defined in the
-    ``ip.parms.LJ.xml`` file under ``share/Parameters``. The format of the
-    atomic configuration is given in
+    The Lennard-Jones parameters in the above example are defined in the
+    ``ip.parms.LJ.xml`` file under ``share/Parameters`` (ensure the path
+    to this file is correct). The format of the atomic configuration is 
+    given in
     [Extended XYZ](http://libatoms.github.io/QUIP/io.html#extendedxyz)
     format, in which the first line is the number of atoms, the second line
     is a series of key=value pairs, which must at least contain the Lattice
