@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of QUIP and quippy &mdash; quippy 3b85bff+ documentation</title>
+    <title>Installation of QUIP and quippy &#8212; quippy ede5d35+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3b85bff+',
+        VERSION:     'ede5d35+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 3b85bff+ documentation" href="index.html" />
+    <link rel="top" title="quippy ede5d35+ documentation" href="index.html" />
     <link rel="next" title="Examples" href="Examples/index.html" />
     <link rel="prev" title="Introduction to quippy" href="intro.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 3b85bff+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy ede5d35+ documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -156,16 +156,20 @@ or debug options).</p>
 enabling or disabling tight-binding support you should force a
 full rebuild by doing a <cite>make deepclean; make</cite>.</p>
 </li>
-<li><p class="first">Compile all modules, libraries and programs with:</p>
+<li><p class="first">Compile all programs, modules and libraries:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span>
 </pre></div>
 </div>
-<p>From the top-level <code class="docutils literal"><span class="pre">QUIP</span></code> directory. All object files and programs
-are built under <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/libquip.a</span></code>.</p>
+<p>From the top-level <code class="docutils literal"><span class="pre">QUIP</span></code> directory. All programs are built in
+<code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/</span></code>. You can also find compiled object files
+and libraries (<code class="docutils literal"><span class="pre">libquip.a</span></code>) in that directory. Programs can be
+called directly from that directory.</p>
 <p>Other useful make targets include:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></code> : copies all compiled programs it can find to
-<code class="docutils literal"><span class="pre">QUIP_INSTALLDIR</span></code>, if it&#8217;s defined and is a directory</li>
+<code class="docutils literal"><span class="pre">QUIP_INSTALLDIR</span></code>, if it&#8217;s defined and is a directory (full path
+required), and copies bundled structures to <code class="docutils literal"><span class="pre">QUIP_STRUCTS_DIR</span></code>
+if it is defined.</li>
 <li><code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code>:   Compile QUIP as a library and link to it.
 This will make all the various libraries and combine them into one:
 <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/libquip.a</span></code>, which is what you need to link with
@@ -176,19 +180,23 @@ This will make all the various libraries and combine them into one:
 calculate the properties of an atomic configuration using a
 variety of models. For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">quip</span> <span class="n">at_file</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">xyz</span> <span class="n">init_args</span><span class="o">=</span><span class="s1">&#39;IP LJ&#39;</span> \
-    <span class="n">param_file</span><span class="o">=</span><span class="n">QUIP_Core</span><span class="o">/</span><span class="n">parameters</span><span class="o">/</span><span class="n">ip</span><span class="o">.</span><span class="n">parms</span><span class="o">.</span><span class="n">LJ</span><span class="o">.</span><span class="n">xml</span> <span class="n">E</span>
+    <span class="n">param_file</span><span class="o">=</span><span class="n">share</span><span class="o">/</span><span class="n">Parameters</span><span class="o">/</span><span class="n">ip</span><span class="o">.</span><span class="n">parms</span><span class="o">.</span><span class="n">LJ</span><span class="o">.</span><span class="n">xml</span> <span class="n">E</span>
 </pre></div>
 </div>
 <p>assuming that you have a file called <code class="docutils literal"><span class="pre">test.xyz</span></code> with the following
-data in it representing Cu atoms in a simple cubic lattice:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span>
-<span class="n">Lattice</span><span class="o">=</span><span class="s2">&quot;4 0 0 0 4 0 0 0 4&quot;</span> <span class="n">Properties</span><span class="o">=</span><span class="n">Z</span><span class="p">:</span><span class="n">I</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">pos</span><span class="p">:</span><span class="n">R</span><span class="p">:</span><span class="mi">3</span>
-<span class="mi">29</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+data in it representing Cu atoms in a cubic fcc lattice:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">4</span>
+<span class="n">Lattice</span><span class="o">=</span><span class="s2">&quot;3.61 0 0 0 3.61 0 0 0 3.61&quot;</span> <span class="n">Properties</span><span class="o">=</span><span class="n">species</span><span class="p">:</span><span class="n">S</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">pos</span><span class="p">:</span><span class="n">R</span><span class="p">:</span><span class="mi">3</span>
+<span class="n">Cu</span>     <span class="mf">0.000</span> <span class="mf">0.000</span> <span class="mf">0.000</span>
+<span class="n">Cu</span>     <span class="mf">0.000</span> <span class="mf">1.805</span> <span class="mf">1.805</span>
+<span class="n">Cu</span>     <span class="mf">1.805</span> <span class="mf">0.000</span> <span class="mf">1.805</span>
+<span class="n">Cu</span>     <span class="mf">1.805</span> <span class="mf">1.805</span> <span class="mf">0.000</span>
 </pre></div>
 </div>
-<p>The Lennard-Jones parameters in the above example is defined in the
-<code class="docutils literal"><span class="pre">ip.parms.LJ.xml</span></code> file under <code class="docutils literal"><span class="pre">share/Parameters</span></code>. The format of the
-atomic configuration is given in
+<p>The Lennard-Jones parameters in the above example are defined in the
+<code class="docutils literal"><span class="pre">ip.parms.LJ.xml</span></code> file under <code class="docutils literal"><span class="pre">share/Parameters</span></code> (ensure the path
+to this file is correct). The format of the atomic configuration is
+given in
 [Extended XYZ](<a class="reference external" href="http://libatoms.github.io/QUIP/io.html#extendedxyz">http://libatoms.github.io/QUIP/io.html#extendedxyz</a>)
 format, in which the first line is the number of atoms, the second line
 is a series of key=value pairs, which must at least contain the Lattice
@@ -480,13 +488,13 @@ threading with <code class="docutils literal"><span class="pre">export</span> <s
         <li class="right" >
           <a href="intro.html" title="Introduction to quippy"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 3b85bff+ documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">quippy ede5d35+ documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Aug 16, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
+        &#169; Copyright 2008-2015, James Kermode.
+      Last updated on Aug 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
     </div>
   </body>
 </html>
