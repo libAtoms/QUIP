@@ -163,7 +163,7 @@ clean-quippy:
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 
 clean: ${BUILDDIR}
-	-${MAKE}clean-quippy
+	-${MAKE} clean-quippy
 	for mods in ${MODULES} ; do \
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
