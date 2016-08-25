@@ -84,7 +84,7 @@ Custom settings
    Fortran preprocessor to use. Default is system `cpp`.
 
 :makevar:`QUIPPY_INSTALL_OPTS`
-   Installation options, e.g. specify ``--user`` to install for the current 
+   Installation options, e.g. specify ``--user`` to install for the current
    user ``--prefix=${PREFIX}`` to install in a non-default location.
 
 :makevar:`QUIPPY_NO_TOOLS`
@@ -185,7 +185,7 @@ Error compiling IPModel_GAP
 
 If you get the following error during compilation::
 
-   /QUIP/QUIP_Core/IPModel_GAP.f95:51.22:
+   /src/Potentials/IPModel_GAP.f95:51.22:
 
    use descriptors_module
                          1
