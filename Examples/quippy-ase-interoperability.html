@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Interoperability with Atomic Simulation Environment &mdash; quippy b9f75c6+ documentation</title>
+    <title>Interoperability with Atomic Simulation Environment &#8212; quippy d6516ba+ documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     'b9f75c6+',
+        VERSION:     'd6516ba+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="quippy b9f75c6+ documentation" href="../index.html" />
+    <link rel="top" title="quippy d6516ba+ documentation" href="../index.html" />
     <link rel="up" title="Examples" href="index.html" />
     <link rel="next" title="Tutorials" href="../tutorials.html" />
     <link rel="prev" title="Examples" href="index.html" /> 
@@ -44,8 +44,8 @@
         <li class="right" >
           <a href="index.html" title="Examples"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">quippy d6516ba+ documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Examples</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -77,14 +77,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -114,111 +111,111 @@ using ASE as <em>lingua franca</em></li>
 <li>Elastic constant fitting routine from <code class="docutils literal"><span class="pre">matscipy</span></code>, internal
 relaxations with <code class="docutils literal"><span class="pre">ASE</span></code> FIRE minimiser</li>
 </ul>
-<div class="code python highlight-python"><div class="highlight"><pre>%pylab inline
-from ase.lattice import bulk
-from ase.optimize import FIRE
-from quippy.potential import Potential
-from quippy.potential import Minim
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="k">import</span> <span class="n">bulk</span>
+<span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="k">import</span> <span class="n">FIRE</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">Potential</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">Minim</span>
 
-si = bulk(&#39;Si&#39;, a=5.44, cubic=True)
-sw_pot = Potential(&#39;IP SW&#39;) # call into Fortran code
-si.set_calculator(sw_pot)
-e_bulk_per_atom = si.get_potential_energy()/len(si)
+<span class="n">si</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">5.44</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sw_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">)</span> <span class="c1"># call into Fortran code</span>
+<span class="n">si</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">sw_pot</span><span class="p">)</span>
+<span class="n">e_bulk_per_atom</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">si</span><span class="p">)</span>
 
-# call general purpose elastic constants calculator
-#   using ASE Atoms and QUIP Potential
-from matscipy.elasticity import fit_elastic_constants
-Cij = fit_elastic_constants(si, optimizer=FIRE,
-                            symmetry=&#39;cubic&#39;, logfile=&#39;-&#39;)
-vac1 = si.copy()
-vac1 *= (3, 3, 3)
-half_cell = np.diag(vac1.cell)/2.
-vac_atom = ((vac1.positions - half_cell)**2).sum(axis=1).argmin()
-del vac1[vac_atom]
+<span class="c1"># call general purpose elastic constants calculator</span>
+<span class="c1">#   using ASE Atoms and QUIP Potential</span>
+<span class="kn">from</span> <span class="nn">matscipy.elasticity</span> <span class="k">import</span> <span class="n">fit_elastic_constants</span>
+<span class="n">Cij</span> <span class="o">=</span> <span class="n">fit_elastic_constants</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">FIRE</span><span class="p">,</span>
+                            <span class="n">symmetry</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+<span class="n">vac1</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">vac1</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">half_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vac1</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+<span class="n">vac_atom</span> <span class="o">=</span> <span class="p">((</span><span class="n">vac1</span><span class="o">.</span><span class="n">positions</span> <span class="o">-</span> <span class="n">half_cell</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">vac1</span><span class="p">[</span><span class="n">vac_atom</span><span class="p">]</span>
 
-vac1.set_calculator(sw_pot)
-vac1.rattle(0.01)
-opt = Minim(vac1, method=&#39;cg_n&#39;) # big cell, use Fortran minimiser
-opt.run(fmax=1e-6)
-e_vac = vac1.get_potential_energy() - e_bulk_per_atom*len(vac1)
-print &#39;SW vacancy formation energy&#39;, e_vac, &#39;eV&#39;
+<span class="n">vac1</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">sw_pot</span><span class="p">)</span>
+<span class="n">vac1</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">Minim</span><span class="p">(</span><span class="n">vac1</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg_n&#39;</span><span class="p">)</span> <span class="c1"># big cell, use Fortran minimiser</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">e_vac</span> <span class="o">=</span> <span class="n">vac1</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">e_bulk_per_atom</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">vac1</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s1">&#39;SW vacancy formation energy&#39;</span><span class="p">,</span> <span class="n">e_vac</span><span class="p">,</span> <span class="s1">&#39;eV&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
-FIRE:   0  16:46:29      -34.635777       0.3247
-FIRE:   1  16:46:29      -34.642625       0.2026
-FIRE:   2  16:46:29      -34.646995       0.0046
-FIRE:   0  16:46:29      -34.670667       0.1584
-FIRE:   1  16:46:29      -34.672303       0.0999
-FIRE:   2  16:46:29      -34.673382       0.0046
-FIRE:   0  16:46:29      -34.678737       0.0000
-FIRE:   0  16:46:30      -34.660845       0.1508
-FIRE:   1  16:46:30      -34.662341       0.0972
-FIRE:   2  16:46:30      -34.663394       0.0090
-FIRE:   0  16:46:30      -34.617822       0.2945
-FIRE:   1  16:46:30      -34.623549       0.1917
-FIRE:   2  16:46:30      -34.627707       0.0221
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Populating</span> <span class="n">the</span> <span class="n">interactive</span> <span class="n">namespace</span> <span class="kn">from</span> <span class="nn">numpy</span> <span class="ow">and</span> <span class="n">matplotlib</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">0</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.635777</span>       <span class="mf">0.3247</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">1</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.642625</span>       <span class="mf">0.2026</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">2</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.646995</span>       <span class="mf">0.0046</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">0</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.670667</span>       <span class="mf">0.1584</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">1</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.672303</span>       <span class="mf">0.0999</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">2</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.673382</span>       <span class="mf">0.0046</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">0</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.678737</span>       <span class="mf">0.0000</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">0</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.660845</span>       <span class="mf">0.1508</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">1</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.662341</span>       <span class="mf">0.0972</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">2</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.663394</span>       <span class="mf">0.0090</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">0</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.617822</span>       <span class="mf">0.2945</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">1</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.623549</span>       <span class="mf">0.1917</span>
+<span class="n">FIRE</span><span class="p">:</span>   <span class="mi">2</span>  <span class="mi">15</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">13</span>      <span class="o">-</span><span class="mf">34.627707</span>       <span class="mf">0.0221</span>
+<span class="n">Fitting</span> <span class="n">C_11</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.56097717</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.01273495</span><span class="p">,</span>  <span class="mf">0.5027424</span> <span class="p">,</span>  <span class="mf">1.98320536</span><span class="p">,</span>  <span class="mf">3.42678422</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">149.714630969</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">1.19249995513</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.999904848087</span>
+<span class="n">Setting</span> <span class="n">C11</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="n">to</span> <span class="mf">0.934445</span> <span class="o">+/-</span> <span class="mf">0.007443</span>
+
+
+<span class="n">Fitting</span> <span class="n">C_21</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0766539</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.26645127</span><span class="p">,</span>  <span class="mf">0.5027424</span> <span class="p">,</span>  <span class="mf">1.23340389</span><span class="p">,</span>  <span class="mf">1.92788225</span><span class="p">])</span> <span class="n">GPa</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>WARNING:quippy.potential:Minim atoms is not quippy.Atoms instance, copy forced!
+<div class="highlight-default"><div class="highlight"><pre><span></span>WARNING:quippy.potential:Minim atoms is not quippy.Atoms instance, copy forced!
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>Fitting C_11
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-2.56097831, -1.01273539,  0.50274262,  1.98320624,  3.42678574]) GPa
-Cij (gradient) / GPa    :     149.71469724
-Error in Cij / GPa      :     1.19250048299
-Correlation coefficient :     0.999904848087
-Setting C11 (1) to 0.934445 +/- 0.007443
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">75.0892745799</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">1.31766559061</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.999538422023</span>
+<span class="n">Setting</span> <span class="n">C21</span> <span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="n">to</span> <span class="mf">0.468670</span> <span class="o">+/-</span> <span class="mf">0.008224</span>
 
 
-Fitting C_21
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-1.07665437, -0.26645138,  0.50274262,  1.23340444,  1.92788311]) GPa
-Cij (gradient) / GPa    :     75.089307818
-Error in Cij / GPa      :     1.31766617387
-Correlation coefficient :     0.999538422023
-Setting C21 (7) to 0.468670 +/- 0.008224
+<span class="n">Fitting</span> <span class="n">C_31</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0766539</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.26645127</span><span class="p">,</span>  <span class="mf">0.5027424</span> <span class="p">,</span>  <span class="mf">1.23340389</span><span class="p">,</span>  <span class="mf">1.92788225</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">75.0892745799</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">1.31766559061</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.999538422023</span>
+<span class="n">Updating</span> <span class="n">C31</span> <span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="k">with</span> <span class="n">value</span> <span class="mf">0.468670</span> <span class="o">+/-</span> <span class="mf">0.008224</span>
 
 
-Fitting C_31
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-1.07665437, -0.26645138,  0.50274262,  1.23340444,  1.92788311]) GPa
-Cij (gradient) / GPa    :     75.089307818
-Error in Cij / GPa      :     1.31766617387
-Correlation coefficient :     0.999538422023
-Updating C31 (7) with value 0.468670 +/- 0.008224
+<span class="n">Fitting</span> <span class="n">C_44</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span> <span class="o">-</span><span class="mf">1.15145968e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.81643079e-01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">9.46417971e-15</span><span class="p">,</span>
+         <span class="mf">5.90131462e-01</span><span class="p">,</span>   <span class="mf">1.18570415e+00</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">58.4610219649</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">0.295085346334</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.999961785442</span>
+<span class="n">Setting</span> <span class="n">C44</span> <span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="n">to</span> <span class="mf">0.364885</span> <span class="o">+/-</span> <span class="mf">0.001842</span>
 
 
-Fitting C_44
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([ -1.15146019e+00,  -5.81643336e-01,  -9.46073107e-15,
-         5.90131723e-01,   1.18570468e+00]) GPa
-Cij (gradient) / GPa    :     58.4610478426
-Error in Cij / GPa      :     0.295085476952
-Correlation coefficient :     0.999961785442
-Setting C44 (4) to 0.364885 +/- 0.001842
+<span class="p">[[</span> <span class="n">C11</span>  <span class="n">C12</span>  <span class="n">C12</span>               <span class="p">]</span>
+ <span class="p">[</span> <span class="n">C12</span>  <span class="n">C11</span>  <span class="n">C12</span>               <span class="p">]</span>
+ <span class="p">[</span> <span class="n">C12</span>  <span class="n">C12</span>  <span class="n">C11</span>               <span class="p">]</span>
+ <span class="p">[</span>                <span class="n">C44</span>          <span class="p">]</span>
+ <span class="p">[</span>                     <span class="n">C44</span>     <span class="p">]</span>
+ <span class="p">[</span>                          <span class="n">C44</span><span class="p">]]</span>
 
+ <span class="o">=</span>
 
-[[ C11  C12  C12               ]
- [ C12  C11  C12               ]
- [ C12  C12  C11               ]
- [                C44          ]
- [                     C44     ]
- [                          C44]]
-
- =
-
-[[ 149.71   75.09   75.09    0.      0.      0.  ]
- [  75.09  149.71   75.09    0.      0.      0.  ]
- [  75.09   75.09  149.71    0.      0.      0.  ]
- [   0.      0.      0.     58.46    0.      0.  ]
- [   0.      0.      0.      0.     58.46    0.  ]
- [   0.      0.      0.      0.      0.     58.46]]
-C_11 = 149.71 +/- 1.19 GPa
-C_12 = 75.09 +/- 1.32 GPa
-C_44 = 58.46 +/- 0.30 GPa
-SW vacancy formation energy 4.30106655261 eV
+<span class="p">[[</span> <span class="mf">149.71</span>   <span class="mf">75.09</span>   <span class="mf">75.09</span>    <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">75.09</span>  <span class="mf">149.71</span>   <span class="mf">75.09</span>    <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">75.09</span>   <span class="mf">75.09</span>  <span class="mf">149.71</span>    <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>   <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>     <span class="mf">58.46</span>    <span class="mf">0.</span>      <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>   <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>     <span class="mf">58.46</span>    <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>   <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>     <span class="mf">58.46</span><span class="p">]]</span>
+<span class="n">C_11</span> <span class="o">=</span> <span class="mf">149.71</span> <span class="o">+/-</span> <span class="mf">1.19</span> <span class="n">GPa</span>
+<span class="n">C_12</span> <span class="o">=</span> <span class="mf">75.09</span> <span class="o">+/-</span> <span class="mf">1.32</span> <span class="n">GPa</span>
+<span class="n">C_44</span> <span class="o">=</span> <span class="mf">58.46</span> <span class="o">+/-</span> <span class="mf">0.30</span> <span class="n">GPa</span>
+<span class="n">SW</span> <span class="n">vacancy</span> <span class="n">formation</span> <span class="n">energy</span> <span class="mf">4.30106655261</span> <span class="n">eV</span>
 </pre></div>
 </div>
 </div>
@@ -245,14 +242,14 @@ SW vacancy formation energy 4.30106655261 eV
         <li class="right" >
           <a href="index.html" title="Examples"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">quippy b9f75c6+ documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Examples</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">quippy d6516ba+ documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Examples</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2008-2015, James Kermode.
-      Last updated on Jan 22, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2008-2015, James Kermode.
+      Last updated on Aug 25, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
     </div>
   </body>
 </html>
