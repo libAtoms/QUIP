@@ -127,6 +127,16 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$@ -I${PWD} -I${PWD}/arch
 	rm ${BUILDDIR}/Makefile
 
+# general rule to make a program in the Programs
+# src directory, makes sure everything else is
+# built first
+
+Programs/% src/Programs/% : ${MODULES}
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/src/Programs/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch $(lastword $(subst /, ,$@))
+	rm ${BUILDDIR}/Makefile
+
 # dependencies between modules
 
 ifeq (${HAVE_GAP},1)
