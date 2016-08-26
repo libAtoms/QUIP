@@ -127,6 +127,16 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$@ -I${PWD} -I${PWD}/arch
 	rm ${BUILDDIR}/Makefile
 
+# general rule to make a program in the Programs
+# src directory, makes sure everything else is
+# built first
+
+Programs/% src/Programs/% : ${MODULES}
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/src/Programs/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch $(lastword $(subst /, ,$@))
+	rm ${BUILDDIR}/Makefile
+
 # dependencies between modules
 
 ifeq (${HAVE_GAP},1)
@@ -163,7 +173,7 @@ clean-quippy:
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 
 clean: ${BUILDDIR}
-	-${MAKE}clean-quippy
+	-${MAKE} clean-quippy
 	for mods in ${MODULES} ; do \
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
@@ -179,11 +189,18 @@ distclean: clean
 	rm -rf build
 
 install-structures:
+ifeq (${QUIP_STRUCTS_DIR},)
+	@echo
+	@echo "QUIP_STRUCTS_DIR must be defined to install structures"
+else
 	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install
+endif
 
 install: ${MODULES} install-structures
 ifeq (${QUIP_INSTALLDIR},)
-	@echo "make install needs QUIP_INSTALLDIR defined"
+	@echo
+	@echo "'make install' needs QUIP_INSTALLDIR to be defined to install "
+	@echo "programs"
 else
 	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
 	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \

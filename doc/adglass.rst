@@ -71,22 +71,22 @@ by running the following commands::
 
   $ export QUIP_ARCH=linux_x86_64_gfortran # or whichever arch is relevant
   $ cd $QUIP_ROOT
-  $ make QUIP_Programs/crack
+  $ make Programs/crack
 
 Then press `enter` to accept default settings.
 
 .. Note::
-  
-  The value you should assign to the variable :envvar:`QUIP_ARCH` depends on your 
+
+  The value you should assign to the variable :envvar:`QUIP_ARCH` depends on your
   platform (see :ref:`installation` for more details). :envvar:`QUIP_ROOT`
   refers to the directory where the the QUIP source code is located.
 
 To make the command `crack` availale, copy the executable
-``${QUIP_ROOT}/build.${QUIP_ARCH}`` to a directory on your :envvar:`PATH`,
+``${QUIP_ROOT}/build/${QUIP_ARCH}`` to a directory on your :envvar:`PATH`,
 e.g. ``~/bin``.
 
 Similarly, to compile `eval` run::
-  
+
   $ make QUIP_Programs/eval
 
 It is highly recommended to change the name when copying the `eval` prgram to a
@@ -216,7 +216,7 @@ like this:
 
 You can also download :download:`quartz.xyz` for comparison.
 
-.. note:: 
+.. note::
 
   The main advantage of `AtomEye` is that it scales well to very
   larger systems, and does a pretty good job of understanding periodic
@@ -244,7 +244,7 @@ from the :math:`6 \times 6` matrix of elastic constants
 :math:`C` is defined by :math:`\bm\sigma = C\bm\epsilon` where :math:`\bm\sigma` and
 :math:`\bm\epsilon` are six component stress and strain vectors following
 the Voigt convention:
- 
+
 .. math::
   \bm\sigma  = \left( \sigma_{xx}, \sigma_{yy}, \sigma_{zz},
       \sigma_{yz}, \sigma_{xz}, \sigma_{xy} \right)
@@ -256,7 +256,7 @@ The simplest way to calculate :math:`C` with `QUIP` is to use the
 command line QUIP `eval` program. You will need the file `quartz.xyz`
 you made earlier, as well as an :download:`XML file <TS_params.xml>`
 containing the parameters of the classical potential::
- 
+
  $ eval init_args="IP TS" at_file=quartz.xyz param_file=TS_params.xml cij
 
 Here `init_args` describes the kind of potential to use, `at_file` is
@@ -286,7 +286,7 @@ are only actually 6 independent values in the :math:`C` matrix:
    C_{13} & C_{13} & C_{33} & 0 & 0 & 0 \\
    C_{14} & -C_{14} & 0 & C_{44} & 0 & 0 \\
    0 & 0 & 0 & 0 & C_{44} & C_{14} \\
-   0 & 0 & 0 & 0 & C_{14} & C_{66} 
+   0 & 0 & 0 & 0 & C_{14} & C_{66}
    \end{array}
    \right)
 
@@ -353,7 +353,7 @@ so that the :math:`(0001)` surface is aligned with the vertical (`y`)
 axis like the fracture system or `quartz_0001.xyz`, pictured
 below. Use `eval` to directly compute the elastic constant matrix
 of the rotated cell. How well does this matrix compare to `C_eff`?
-  
+
 
 Surface Energy
 ~~~~~~~~~~~~~~
@@ -417,7 +417,7 @@ where :math:`U_E` is the total strain energy and :math:`c` is the crack length.
 The well-known Griffith criteria uses an energy-balance argument to
 equate the critical value of :math:`G` at which fracture can first occur to
 the energy required to create two new surfaces.
- 
+
 According to Griffith, we should expect crack propagation to become
 favourable for :math:`G > 2\gamma`, where :math:`\gamma` is the
 surface energy density.
@@ -435,31 +435,31 @@ fracture simulations, with the top and bottom edges fixed.
 The advantage of this setup is that the energy release rate `G`
 does not depend on the crack length, and can be found analytically by
 considering the energetics of an advancing crack.
- 
+
 The horizontal edges of the strip are given a uniform normal
 displacement :math:`\delta`, so the applied strain is
 :math:`\epsilon_0 = \delta / h`.  Far ahead of the crack, the strip is
 in uniaxial tension: :math:`\epsilon_{yy} \to \epsilon_0` as :math:`x
 \to \infty`.
- 
+
 The stress far ahead of the crack is given by :math:`\sigma_{0} = E'
 \epsilon_{0}`, and therefore the elastic energy per unit length and
 per unit thickness far ahead of the crack tip is
- 
+
 .. math::
    W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}
 
 where :math:`E'` is the effective Young's modulus.
- 
+
 Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
 unit distance, a vertical strip of material with energy density
 :math:`W_\infty` is effectively replaced by a strip with energy
 density zero.
- 
+
 The energy supplied to the crack tip is therefore equal to :math:`W_\infty`,
 so the energy release rate is simply
- 
+
 .. math::
   G = W_\infty = \frac{\delta^2 E'}{h}
 
@@ -468,7 +468,7 @@ direction, so we have plane strain loading (:math:`\epsilon_{zz} = 0`),
 which means that the effective Young's modulus :math:`E'` is given by
 :math:`E/(1-\nu^2)`, where :math:`E` is the Young's modulus in the :math:`y` relevant
 direction and :math:`\nu` is the Poisson ratio, so finally we have
- 
+
 .. math::
   G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}
 
@@ -533,14 +533,14 @@ energy required to break bonds at the crack surface as the product of
 the static energy release rate :math:`G` and a universal velocity-dependent
 function which he showed can be approximated as a linear
 function of the crack speed :math:`V`
- 
+
 .. math::
   2\gamma \sim G \left( 1 - \frac{V}{c_R} \right)
 
 The Rayleigh surface wave speed :math:`c_R` sets the ultimate limit for the
 crack propagation speed. The expected velocity as a function of the
 loading :math:`G/2\gamma` is then
- 
+
 .. math::
   \frac{V}{c_R} = 1 - \frac{2 \gamma}{G}
 
@@ -554,7 +554,7 @@ directions. For our case, the value turns out to be :math:`c_R \sim
 TS classical potential.
 
 How does your measured value for the crack velocity compare to that
-predicted by the Freund equation of motion for the same `G`? 
+predicted by the Freund equation of motion for the same `G`?
 
 At the end of the session we will try to combine everybody's results
 to produce a plot of :math:`V(G)`.

@@ -418,7 +418,10 @@ if 'QUIPPY_INSTALL_OPTS' in makefile:
     install_opts = makefile['QUIPPY_INSTALL_OPTS'].split()
     default_options['install'] = {}
     for opt in install_opts:
-        n, v = opt.split('=')
+        if '=' in opt:
+            n, v = opt.split('=')
+        else:
+            n, v = opt, True
         n = n[2:] # remove --
         default_options['install'][n] = v
 

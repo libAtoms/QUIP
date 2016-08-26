@@ -575,7 +575,7 @@ forces. The :class:`~.Potential` object is created by with two string
 arguments, called `args_str` and `param_str`. The first of these
 identifies the type of potential, and the second is an XML string
 containing the parameters. QUIP contains a database of parameter files
-in the :file:`QUIP_Core/parameters`. We'll use a Stillinger-Weber
+in the :file:`share/Parameters`. We'll use a Stillinger-Weber
 interatomic potential (`args_str="IP SW"`) with the original
 parameters published in `Phys. Rev. B` **31**, 5262 (1984). Python
 triple-quoted strings can be split over multiple lines, so we can
@@ -598,7 +598,7 @@ Alternatively, you can read the XML string from a file::
    >>> pot = Potential('IP SW', param_filename='sw.xml')
 
 If no XML parameters are given, the QUIP parameter database (located
-in the directory :git:`/QUIP_Core/parameters`) is searched for
+in the directory :git:`/share/Parameters`) is searched for
 matching parameters::
 
    >>> pot = Potential('IP SW')

@@ -109,6 +109,8 @@ addons:
       - netcdf-bin
       - libnetcdf-dev
       - libhdf5-serial-dev
+      # for ipynb in docs
+      - pandoc
       # for atomeye
       - libgsl0-dev
       - libxpm-dev
