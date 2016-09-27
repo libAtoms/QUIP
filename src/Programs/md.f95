@@ -587,7 +587,8 @@ function cur_temp(params, ds_t) result(T_cur)
   if (params%T_final > 0.0_dp) then
     i_increment = ds_t/params%T_increment_time
     T_cur = params%T_initial + i_increment*params%T_increment
-    if (T_cur > params%T_final) T_cur = params%T_final
+    if ((params%T_increment > 0.0 .and. T_cur > params%T_final) .or. &
+        (params%T_increment < 0.0 .and. T_cur < params%T_final)) T_cur = params%T_final
   else
     T_cur = params%T_initial
   endif
