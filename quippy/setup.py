@@ -268,7 +268,10 @@ def find_wrap_sources(makefile, quip_root):
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
         gp_dir = os.path.join(quip_root, 'src/GAP-filler')
         source_dirs.append(gp_dir)
+        libraries = ['gap_filler'] + libraries
         targets.extend([(quip_root, 'GAP-filler')])
+        wrap_sources += [os.path.join(quip_root, 'src/GAP-filler', 'teach_sparse_module.f95')]
+        wrap_types += ['teach_sparse']
 
     quip_core_dir = os.path.join(quip_root, 'src/Potentials/')
     source_dirs.append(quip_core_dir)
@@ -415,7 +418,10 @@ if 'QUIPPY_INSTALL_OPTS' in makefile:
     install_opts = makefile['QUIPPY_INSTALL_OPTS'].split()
     default_options['install'] = {}
     for opt in install_opts:
-        n, v = opt.split('=')
+        if '=' in opt:
+            n, v = opt.split('=')
+        else:
+            n, v = opt, True
         n = n[2:] # remove --
         default_options['install'][n] = v
 

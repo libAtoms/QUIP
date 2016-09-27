@@ -22,12 +22,13 @@ James Kermode 2009
 """
 
 from quippy import *
+from atomeye import view
 
 # Set up atomic configuation
 s = supercell(diamond(5.44, 14), 3, 3, 3)
 
 # Initialise potential from XML string
-pot = Potential('IP SW', """<SW_params n_types="1">
+pot = Potential('IP SW', param_str="""<SW_params n_types="1">
 <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
 <per_type_data type="1" atomic_num="14" />
 
@@ -48,9 +49,8 @@ ds.rescale_velo(1000.0)
 ds.zero_momentum()
 
 outf = CInOutput('si-1000.xyz', OUTPUT)
-traj = AtomsList(ds.run(pot, dt=1.0, n_steps=1000, save_interval=10, out=outf))
-traj.loadall() # Run the dynamics
-traj.show() # Display in AtomEye
+traj = AtomsList(ds.run(pot, dt=1.0, n_steps=100, save_interval=10, trajectory=outf))
 outf.close()
+view(traj)
 raw_input('Press ENTER to terminate')
 

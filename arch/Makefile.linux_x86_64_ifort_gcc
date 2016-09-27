@@ -50,6 +50,7 @@ F95FLAGS += -fpp -free -warn unused -fPIC
 F77FLAGS += -fpp -fixed -fPIC
 CFLAGS += -fPIC
 CPLUSPLUSFLAGS += -fPIC
+LINKOPTS += -nofor-main
 
 AR_ADD = src
 

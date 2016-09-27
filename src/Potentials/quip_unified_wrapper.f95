@@ -178,3 +178,27 @@ subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,
 
 
 endsubroutine quip_wrapper
+
+subroutine quip_wrapper_simple(N,lattice,Z,pos,energy,force,virial)
+
+  use system_module, only : dp
+  use quip_unified_wrapper_module
+  
+  implicit none
+
+  integer, intent(in) :: N
+  real(dp), dimension(3,3), intent(inout) :: lattice
+  integer, dimension(N), intent(in)::Z
+  real(dp), dimension(3,N), intent(in) :: pos
+  real(dp), intent(out) :: energy
+  real(dp), dimension(3,N), intent(out) :: force
+  real(dp), dimension(3,3), intent(out) :: virial
+
+
+  call quip_unified_wrapper(N=N,lattice=lattice,Z=Z,pos=pos,init_args_str="xml_label=default",init_args_str_len=17, &
+                            energy=energy,force=force,virial=virial,do_energy=.true.,do_force=.true.,do_virial=.true., &
+                            quip_param_file="quip_params.xml", quip_param_file_len=15, calc_args_str="",calc_args_str_len=0)
+
+
+endsubroutine quip_wrapper_simple
+

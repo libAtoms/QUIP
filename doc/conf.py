@@ -351,8 +351,7 @@ numpydoc.docscrape.ClassDoc.properties = properties
 
 # generate .rst versions of any .ipynb notebooks under Examples/
 for notebook in glob.glob(os.path.join('Examples/*.ipynb')):
-    rst = os.path.splitext(notebook)[0]+'.rst'
-    cmd = 'ipython nbconvert --to rst {0} --output={1}'.format(notebook, rst)
+    cmd = 'jupyter nbconvert --to rst {0}'.format(notebook)
     print cmd
     os.system(cmd)
 

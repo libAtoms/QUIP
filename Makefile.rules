@@ -173,7 +173,7 @@ LINKOPTS += ${OPTIM} ${DEBUG} ${SYSLIBS} ${CUSTOM_LINKOPTS}
 	${F77}  ${F77FLAGS} -c $< -o $@
 
 .c.o:	
-	${CPLUSPLUS} ${CPLUSPLUSFLAGS} -c $<  -o $@
+	${CC} ${CFLAGS} -c $<  -o $@
 
 .cpp.o:	
 	${CPLUSPLUS} ${CPLUSPLUSFLAGS} -c $<  -o $@

@@ -31,7 +31,7 @@ from quippy.crack import (get_strain,
 from quippy.potential import ForceMixingPotential
 from quippy.lotf import LOTFDynamics, update_hysteretic_qm_region
 
-                        
+
 # ******* Start of parameters ***********
 
 input_file = 'crack.xyz'         # File from which to read crack slab structure
@@ -40,7 +40,7 @@ nsteps = 200                     # Total number of timesteps to run for (reduced
 timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
 cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                  # for neighbour calculations
-tip_move_tol = 10.0              # Distance tip has to move before crack 
+tip_move_tol = 10.0              # Distance tip has to move before crack
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
 traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -82,23 +82,16 @@ fixed_mask = ((abs(atoms.positions[:, 1] - top) < 1.0) |
               (abs(atoms.positions[:, 1] - bottom) < 1.0))
 fix_atoms = FixAtoms(mask=fixed_mask)
 print('Fixed %d atoms\n' % fixed_mask.sum())
+atoms.set_constraint([fix_atoms])
 
 # Increase epsilon_yy applied to all atoms at constant strain rate
-
 strain_atoms = ConstantStrainRate(orig_height, strain_rate*timestep)
-
-atoms.set_constraint([fix_atoms, strain_atoms])
-
 
 # ******* Set up potentials and calculators ********
 
 mm_pot = Potential(mm_init_args,
                    param_filename=param_file,
                    cutoff_skin=cutoff_skin)
-
-# Request Potential to compute per-atom stresses whenever we
-# compute forces, to save time when locating the crack tip
-mm_pot.set_default_quantities(['stresses'])
 
 # Density functional tight binding (DFTB) potential
 qm_pot = Potential(qm_init_args,
@@ -145,7 +138,7 @@ dynamics = LOTFDynamics(atoms, timestep, extrapolate_steps, check_force_error=Tr
 def printstatus():
     if dynamics.nsteps == 1:
         print """
-State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A 
+State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
 ---------------------------------------------------------------------------------"""
 
     log_format = ('%(label)-4s%(time)12.1f%(temperature)12.6f'+
@@ -157,7 +150,7 @@ State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
                                  (1.5*units.kB*len(atoms)))
     atoms.info['strain'] = get_strain(atoms)
     atoms.info['G'] = get_energy_release_rate(atoms)/(units.J/units.m**2)
-    
+
     crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
     atoms.info['crack_pos_x'] = crack_pos[0]
     atoms.info['d_crack_pos_x'] = crack_pos[0] - orig_crack_pos[0]
@@ -175,10 +168,10 @@ def check_if_cracked(atoms):
         atoms.info['is_cracked'] = True
         del atoms.constraints[atoms.constraints.index(strain_atoms)]
 
+dynamics.attach(strain_atoms.apply_strain, 1, atoms)
 dynamics.attach(check_if_cracked, 1, atoms)
 
-
-# Function to update the QM region at the beginning of each extrapolation cycle   
+# Function to update the QM region at the beginning of each extrapolation cycle
 def update_qm_region(atoms):
    crack_pos = find_crack_tip_stress_field(atoms, calc=mm_pot)
    qm_list = qmmm_pot.get_qm_atoms()
