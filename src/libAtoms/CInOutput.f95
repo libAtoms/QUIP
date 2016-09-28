@@ -978,7 +978,7 @@ contains
     quip_getcwd = ""
     do i = 1, n
        if( c(i) == C_NULL_CHAR ) exit
-       call concat(quip_getcwd,c(i))
+       call concat(quip_getcwd,c(i),no_trim=.true.)
     enddo
 
     deallocate(c)
