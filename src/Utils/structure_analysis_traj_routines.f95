@@ -9,7 +9,7 @@
 ! H0 X   Copyright 2006-2010.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
-! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+ ! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
 ! H0 X
 ! H0 X   If you would like to license the source code under different terms,
 ! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
@@ -591,8 +591,11 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
   integer :: k1_min, k1_max, k2_min, k2_max, k3_min, k3_max, n_k, k1, k2, k3
   real(dp) :: k(3), theta
   integer :: theta_i
-  integer, allocatable :: theta_i_of_k(:)
-  real(dp), allocatable :: ks(:,:), exp_2_pi_i_k_dot_r(:,:), F_k(:), sin_sq_theta_over_lambda_sq(:)
+  integer, allocatable :: theta_i_of_k(:), Z_of_type(:)
+  real(dp), allocatable :: ks(:,:), sin_sq_theta_over_lambda_sq(:), ASF(:), k_dot_r(:,:)
+  complex(dp), allocatable :: exp_2_pi_i_k_dot_r(:,:), F_k(:)
+  integer :: i_type, i_Z, n_types, i_k
+  complex(dp) :: two_pi_i
 
   ! print *, "xrd_calc for lambda ", lambda, "range_2theta ", range_2theta, "n_2theta ", n_2theta
   if (present(pos_2theta)) then
@@ -650,15 +653,45 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
   end do
 
   allocate(exp_2_pi_i_k_dot_r(n_k, at%n))
-  exp_2_pi_i_k_dot_r = exp(2.0*PI*cmplx(0.0_dp, 1.0_dp)*matmul(ks, at%pos))
-  do i_at = 1, at%n
-    exp_2_pi_i_k_dot_r(:,i_at) = exp_2_pi_i_k_dot_r(:,i_at) * atomic_structure_factor(at%Z(i_at), sin_sq_theta_over_lambda_sq(:))
+  allocate(k_dot_r(n_k, at%n))
+  call matrix_product_sub(k_dot_r, ks, at%pos)
+  two_pi_i = 2.0*PI*cmplx(0.0_dp, 1.0_dp)
+  !$omp parallel do
+  do i_at=1, at%n
+      exp_2_pi_i_k_dot_r(:,i_at) = exp(two_pi_i*k_dot_r(:,i_at))
   end do
+  !$omp end parallel do
+  deallocate(k_dot_r)
+
+  allocate(Z_of_type(at%n))
+  allocate(ASF(n_k))
+  n_types = 0
+  do i_Z=1, maxval(at%Z)
+    if (any(at%Z == i_Z)) then
+        n_types = n_types + 1
+        Z_of_type(n_types) = i_Z
+    endif
+  end do
+  do i_type=1, n_types
+      ASF = atomic_structure_factor(Z_of_type(i_type), sin_sq_theta_over_lambda_sq(:))
+      do i_at = 1, at%n
+        if (at%Z(i_at) == Z_of_type(i_type)) exp_2_pi_i_k_dot_r(:,i_at) = exp_2_pi_i_k_dot_r(:,i_at) * ASF
+      end do
+  end do
+  deallocate(ASF, Z_of_type)
+
   allocate(F_k(n_k))
-  F_k = sum(exp_2_pi_i_k_dot_r, dim=2)
+  ! F_k = sum(exp_2_pi_i_k_dot_r, dim=2)
+  !$omp parallel do
+  do i_k=1, n_k
+    F_k(i_k) = sum(exp_2_pi_i_k_dot_r(i_k,:))
+  end do
+  !$omp end parallel do
+  !$omp parallel do
   do i_2theta = 1, n_2theta
     xrd(i_2theta) = sum(abs(F_k)**2, mask=(theta_i_of_k == i_2theta)) / at%n
   end do
+  !$omp end parallel do
 
   deallocate(ks, exp_2_pi_i_k_dot_r, theta_i_of_k, F_k, sin_sq_theta_over_lambda_sq)
 
@@ -677,6 +710,7 @@ function atomic_structure_factor(Z, sin_sq_theta_over_lambda_sq) result (ASF)
         ASF(:) = ASF(:) + ASF_a(i,Z)*exp(-ASF_b(i,Z)*sin_sq_theta_over_lambda_sq(:))
     end do
 end function
+
 subroutine rdfd_calc(rdfd, at, zone_center, zone_atom_center, bin_width, n_bins, zone_width, n_zones, gaussian_smoothing, gaussian_sigma, &
                      center_mask_str, neighbour_mask_str, bin_pos, zone_pos)
   real(dp), intent(inout) :: rdfd(:,:)
