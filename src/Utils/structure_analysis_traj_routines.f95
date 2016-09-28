@@ -40,7 +40,7 @@ use libatoms_module
 implicit none
 private
 
-public :: density_sample_radial_mesh_Gaussians, rdfd_calc, propdf_radial_calc, adfd_calc, &
+public :: density_sample_radial_mesh_Gaussians, rdfd_calc, xrd_calc, propdf_radial_calc, adfd_calc, &
    density_sample_rectilinear_mesh_Gaussians, density_bin_rectilinear_mesh, &
    geometry_calc, shift_silica_to_edges, density_axial_calc, num_hbond_calc, &
    water_orientation_calc
@@ -218,6 +218,91 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   end do ! at_i
 
 end subroutine density_sample_radial_mesh_Gaussians
+
+subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
+  real(dp), intent(inout) :: xrd(:)
+  type(Atoms), intent(inout) :: at
+  real(dp), intent(in) :: lambda
+  real(dp), intent(in) :: range_2theta(2)
+  integer, intent(in) :: n_2theta
+  real(dp) , intent(inout), optional :: pos_2theta(:)
+
+  integer :: i_at, i_2theta
+  real(dp) :: min_norm_k, max_norm_k
+  integer :: k1_min, k1_max, k2_min, k2_max, k3_min, k3_max, n_k, k1, k2, k3
+  real(dp) :: k(3), theta
+  integer :: theta_i
+  integer, allocatable :: theta_i_of_k(:)
+  real(dp), allocatable :: ks(:,:), exp_2_pi_i_k_dot_r(:,:), F_k(:)
+
+  print *, "xrd_calc for lambda ", lambda, "range_2theta ", range_2theta, "n_2theta ", n_2theta
+  if (present(pos_2theta)) then
+    do i_2theta=1, n_2theta
+       pos_2theta(i_2theta) = range_2theta(1) + &
+         (i_2theta-1)*(range_2theta(2)-range_2theta(1)) / real(n_2theta-1.0_dp,dp)
+    end do
+    print *, "pos_2theta ", pos_2theta
+  end if
+
+  min_norm_k = 2.0*sin(range_2theta(1)/2.0)/lambda
+  max_norm_k = 2.0*sin(range_2theta(2)/2.0)/lambda
+  print *, "norm k range ", min_norm_k, max_norm_k
+  k1_min = min_norm_k/norm(at%g(:,1))-1
+  k1_max = max_norm_k/norm(at%g(:,1))+1
+  k2_min = min_norm_k/norm(at%g(:,2))-1
+  k2_max = max_norm_k/norm(at%g(:,2))+1
+  k3_min = min_norm_k/norm(at%g(:,3))-1
+  k3_max = max_norm_k/norm(at%g(:,3))+1
+  k1_min = max(k1_min, 0)
+  k2_min = max(k2_min, 0)
+  k3_min = max(k3_min, 0)
+  print *, "k range ", k1_min, k1_max, k2_min, k2_max, k3_min, k3_max
+  n_k = 0
+  do k1 = -k1_max, k1_max
+  do k2 = -k2_max, k2_max
+  do k3 = -k3_max, k3_max
+    k = k1*at%g(:,1) + k2*at%g(:,2) + k3*at%g(:,3)
+    if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) n_k = n_k + 1
+  end do
+  end do
+  end do
+
+  print *, "n_k ", n_k
+
+  allocate(ks(n_k,3))
+  allocate(theta_i_of_k(n_k))
+
+  n_k = 0
+  do k1 = -k1_max, k1_max
+  do k2 = -k2_max, k2_max
+  do k3 = -k3_max, k3_max
+    k = k1*at%g(:,1) + k2*at%g(:,2) + k3*at%g(:,3)
+    if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) then
+        n_k = n_k + 1
+        ks(n_k,:) = k
+        theta = asin(norm(k)*lambda/2.0)
+        theta_i = int(n_2theta*(2.0*theta - range_2theta(1))/(range_2theta(2)-range_2theta(1)))+1
+        theta_i_of_k(n_k) = theta_i
+        print *, "k ", n_k, k, theta_i
+    endif
+  end do
+  end do
+  end do
+
+  allocate(exp_2_pi_i_k_dot_r(n_k, at%n))
+  exp_2_pi_i_k_dot_r = exp(2.0*PI*cmplx(0.0_dp, 1.0_dp)*matmul(ks, at%pos))
+  do i_at = 1, at%n
+    exp_2_pi_i_k_dot_r(:,i_at) = exp_2_pi_i_k_dot_r(:,i_at) * at%Z(i_at)
+  end do
+  allocate(F_k(n_k))
+  F_k = sum(exp_2_pi_i_k_dot_r, dim=2)
+  do i_2theta = 1, n_2theta
+    xrd(i_2theta) = sum(abs(F_k)**2, mask=(theta_i_of_k == i_2theta)) / at%n
+  end do
+
+  deallocate(ks, exp_2_pi_i_k_dot_r, theta_i_of_k, F_k)
+
+end subroutine xrd_calc
 
 subroutine rdfd_calc(rdfd, at, zone_center, zone_atom_center, bin_width, n_bins, zone_width, n_zones, gaussian_smoothing, gaussian_sigma, &
                      center_mask_str, neighbour_mask_str, bin_pos, zone_pos)

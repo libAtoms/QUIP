@@ -43,7 +43,7 @@ private
 
 type analysis
   character(len=STRING_LENGTH) :: type ! type of analysis, used to fill in list of logicals
-  logical :: density_radial, density_grid, KE_density_radial, rdfd, integrated_rdfd, adfd, & !water
+  logical :: density_radial, density_grid, KE_density_radial, rdfd, integrated_rdfd, xrd, adfd, & !water
              KEdf_radial, propdf_radial, geometry, & !general
              density_axial_silica, num_hbond_silica, water_orientation_silica !silica-water interface
   character(len=STRING_LENGTH) :: outfilename
@@ -90,6 +90,13 @@ type analysis
   real(dp) :: rdfd_gaussian_sigma
   real(dp), allocatable :: rdfds(:,:,:)
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
+
+  ! xrd stuff
+  real(dp) :: xrd_lambda
+  real(dp) :: xrd_2theta_range(2)
+  integer :: xrd_n_2theta
+  real(dp), allocatable :: xrds(:,:)
+  real(dp), allocatable :: xrd_2theta_pos(:)
 
   ! adfd stuff
   real(dp) :: adfd_zone_center(3)
@@ -203,7 +210,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'max_time', '-1.0', this%max_time, help_string="Only include frames with Time <= max_time")
     call param_register(params, 'min_frame', '-1', this%min_frame, help_string="Only include frames with number (not counting skipped) >= min_frame")
     call param_register(params, 'max_frame', '-1', this%max_frame, help_string="Only include frames with number (not counting skipped) <= max_frame")
-    call param_register(params, 'type', '', this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
+    call param_register(params, 'type', '', this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | xrd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
   else
     ! general
     call param_register(params, 'outfile', trim(prev%outfilename), this%outfilename, help_string="")
@@ -212,7 +219,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'max_time', ''//prev%max_time, this%max_time, help_string="")
     call param_register(params, 'min_frame', ''//prev%min_frame, this%min_frame, help_string="")
     call param_register(params, 'max_frame', ''//prev%max_frame, this%max_frame, help_string="")
-    call param_register(params, 'type', ''//trim(prev%type), this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
+    call param_register(params, 'type', ''//trim(prev%type), this%type, help_string="[density_radial | density_grid | KE_density_radial | rdfd | xrd | adfd | KEdf_radial | propdf_radial | geometry | density_axial_silica | num_hbond_silica | water_orientation_silica ]")
   endif
 
   if (.not. present(prev)) then
@@ -291,8 +298,20 @@ subroutine analysis_read(this, prev, args_str)
   endif
 
   if (.not. present(prev)) then
+    ! xrd
+    call param_register(params, 'xrd_lambda', '1.5418', this%xrd_lambda, help_string="Wavelength of radiation")
+    call param_register(params, 'xrd_2theta_range', '1.0 179.0', this%xrd_2theta_range, help_string="range of angles for scan")
+    call param_register(params, 'xrd_n_2theta', '179', this%xrd_n_2theta, help_string="number of angle values")
+  else
+    ! xrd
+    call param_register(params, 'xrd_lambda', ''//prev%xrd_lambda, this%xrd_lambda, help_string="Wavelength of radiation")
+    call param_register(params, 'xrd_2theta_range', ''//prev%xrd_2theta_range, this%xrd_2theta_range, help_string="range of angles for scan")
+    call param_register(params, 'xrd_n_2theta', ''//prev%xrd_n_2theta, this%xrd_n_2theta, help_string="number of angle values")
+  endif
+
+  if (.not. present(prev)) then
     ! adfd
-    call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center, help_string="Cartesian position to center zones for adfd (ignored if rdfd_zone_atom_center is given)")
+    call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center, help_string="Cartesian position to center zones for adfd (ignored if adfd_zone_atom_center is given)")
     call param_register(params, 'adfd_zone_width', '-1.0', this%adfd_zone_width, help_string="Width of zones for adfd")
     call param_register(params, 'adfd_n_zones', '1', this%adfd_n_zones, help_string="Number of zones for adfd")
     call param_register(params, 'adfd_dist_bin_width', '-1', this%adfd_dist_bin_width, help_string="Width of distance bin in adfd")
@@ -442,6 +461,7 @@ subroutine analysis_read(this, prev, args_str)
   this%density_grid = .false.
   this%KE_density_radial = .false.
   this%rdfd = .false.
+  this%xrd = .false.
   this%adfd = .false.
   this%KEdf_radial = .false.
   this%propdf_radial = .false.
@@ -458,6 +478,8 @@ subroutine analysis_read(this, prev, args_str)
       this%KE_density_radial = .true.
     case("rdfd")
       this%rdfd = .true.
+    case("xrd")
+      this%xrd = .true.
     case("adfd")
       this%adfd = .true.
     case("KEdf_radial")
@@ -476,13 +498,13 @@ subroutine analysis_read(this, prev, args_str)
       call system_abort("Unknown analysis type '"//trim(this%type)//"'")
   end select
 
-  if (count ( (/ this%density_radial, this%density_grid, this%KE_density_radial, this%rdfd, this%adfd, &
+  if (count ( (/ this%density_radial, this%density_grid, this%KE_density_radial, this%rdfd, this%xrd, this%adfd, &
 		 this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
 		 this%water_orientation_silica /) ) /= 1) &
     call system_abort("Specified "//(/ this%density_radial, this%density_grid, this%KE_density_radial, &
-      this%rdfd, this%adfd, this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
+      this%rdfd, this%xrd, this%adfd, this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
       this%water_orientation_silica /)// &
-      " types of analysis.  Possibilities: density_radial, density_grid, KE_density_radial, rdfd, adfd, KEdf_radial, propdf_radial, geometry, " // &
+      " types of analysis.  Possibilities: density_radial, density_grid, KE_density_radial, rdfd, xrd, adfd, KEdf_radial, propdf_radial, geometry, " // &
       " density_axial_silica, num_hbond_silica, water_orientation_silica.")
 
 end subroutine analysis_read
@@ -506,6 +528,10 @@ subroutine check_analyses(a)
       if (a(i_a)%rdfd_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has rdfd_bin_width="//a(i_a)%rdfd_bin_width//" <= 0.0")
       if (a(i_a)%rdfd_n_bins <= 0) call system_abort("analysis " // i_a // " has rdfd_n_bins="//a(i_a)%rdfd_n_bins//" <= 0")
       if (a(i_a)%rdfd_n_zones <= 0) call system_abort("analysis " // i_a // " has rdfd_n_zones="//a(i_a)%rdfd_n_zones//" <= 0")
+    else if (a(i_a)%xrd) then !xrd
+      if (a(i_a)%xrd_2theta_range(2) < a(i_a)%xrd_2theta_range(1)) call system_abort("analysis " // i_a // " has xrd_2theta_range="//a(i_a)%xrd_2theta_range//" end >= beginning")
+      if (a(i_a)%xrd_lambda <= 0.0) call system_abort("analysis " // i_a // " has xrd_lambda="//a(i_a)%xrd_lambda//" <= 0")
+      if (a(i_a)%xrd_n_2theta <= 0) call system_abort("analysis " // i_a // " has xrd_n_2theta="//a(i_a)%xrd_n_2theta//" <= 0")
     else if (a(i_a)%adfd) then !adfd
       if (a(i_a)%adfd_dist_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has adfd_dist_bin_width="//a(i_a)%adfd_dist_bin_width//" <= 0.0")
       if (a(i_a)%adfd_n_dist_bins <= 0) call system_abort("analysis " // i_a // " has adfd_n_dist_bins="//a(i_a)%adfd_n_dist_bins//" <= 0")
@@ -629,6 +655,17 @@ subroutine do_analyses(a, time, frame, at)
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str)
         endif
+      else if (a(i_a)%xrd) then !xrd
+        call reallocate_data(a(i_a)%xrds, a(i_a)%n_configs, a(i_a)%xrd_n_2theta )
+        a(i_a)%xrd_2theta_range = a(i_a)%xrd_2theta_range * PI/180.0
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%xrd_2theta_pos(a(i_a)%xrd_n_2theta))
+          call xrd_calc(a(i_a)%xrds(:,a(i_a)%n_configs), at, a(i_a)%xrd_lambda, a(i_a)%xrd_2theta_range, a(i_a)%xrd_n_2theta, a(i_a)%xrd_2theta_pos)
+          a(i_a)%xrd_2theta_pos = a(i_a)%xrd_2theta_pos * 180.0/PI
+        else
+          call xrd_calc(a(i_a)%xrds(:,a(i_a)%n_configs), at, a(i_a)%xrd_lambda, a(i_a)%xrd_2theta_range, a(i_a)%xrd_n_2theta)
+        endif
+        a(i_a)%xrd_2theta_range = a(i_a)%xrd_2theta_range * 180.0/PI
       else if (a(i_a)%adfd) then !adfd
         call reallocate_data(a(i_a)%adfds, a(i_a)%n_configs, (/ a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_n_dist_bins, a(i_a)%adfd_n_zones /) )
         if (a(i_a)%n_configs == 1) then
@@ -896,6 +933,16 @@ subroutine print_analyses(a)
           call print(""//reshape(integrated_rdfds(:,:), (/ a(i_a)%rdfd_n_zones*a(i_a)%rdfd_n_bins /) ), file=outfile)
         end do
 	deallocate(integrated_rdfds)
+
+      else if (a(i_a)%xrd) then ! xrd
+        call print("# xrd",file=outfile)
+        call print("n_bins="//a(i_a)%xrd_n_2theta//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%xrd_n_2theta
+            call print(""//a(i_a)%xrd_2theta_pos(i), file=outfile)
+        end do
+        do i=1, a(i_a)%n_configs
+            call print(""//a(i_a)%xrds(:,i), file=outfile)
+        end do
 
       else if (a(i_a)%adfd) then !adfd
         call print("# adfd", file=outfile)
