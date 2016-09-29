@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Atoms objects &#8212; quippy 6f80951+ documentation</title>
+    <title>Atoms objects &#8212; quippy 3b91c24+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '6f80951+',
+        VERSION:     '3b91c24+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy 6f80951+ documentation" href="index.html" />
+    <link rel="top" title="quippy 3b91c24+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Quippy library reference" href="quippy.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="quippy.html" title="Quippy library reference"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 6f80951+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 3b91c24+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -206,7 +206,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <dl class="class">
 <dt id="quippy.atoms.Atoms">
 <em class="property">class </em><code class="descclassname">quippy.atoms.</code><code class="descname">Atoms</code><span class="sig-paren">(</span><span class="optional">[</span><em>symbols</em>, <em>positions</em>, <em>numbers</em>, <em>tags</em>, <em>momenta</em>, <em>masses</em>, <em>magmoms</em>, <em>charges</em>, <em>scaled_positions</em>, <em>cell</em>, <em>pbc</em>, <em>constraint</em>, <em>calculator</em>, <em>info</em>, <em>n</em>, <em>lattice</em>, <em>properties</em>, <em>params</em>, <em>fixed_size</em>, <em>**read_args</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">quippy._atoms.Atoms</span></code>, <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">quippy._atoms.Atoms</span></code>, <code class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></code></p>
 <p>Representation of an atomic configuration and its associated properties</p>
 <p>An atoms object contains atomic numbers, all dynamical variables
 and connectivity information for all the atoms in the simulation cell.
@@ -239,7 +239,7 @@ the <a class="reference internal" href="structures.html#module-quippy.structures
 </pre></div>
 </div>
 <p>The <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> class is inherited from the
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.atoms.Atoms" title="(in ASE v)"><code class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></code></a> so has all the ASE Atoms attributes and
+<code class="xref py py-class docutils literal"><span class="pre">ase.atoms.Atoms</span></code> so has all the ASE Atoms attributes and
 methods. This means that quippy and ASE Atoms objects are fully
 interoperable.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1602,6 +1602,18 @@ range 1..self.n, otherwise it should be in range 0..(self.n-1).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="quippy.atoms.Atoms.get_cell_lengths_and_angles">
+<code class="descname">get_cell_lengths_and_angles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_cell_lengths_and_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_cell_lengths_and_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get unit cell parameters. Sequence of 6 numbers.</p>
+<p>First three are unit cell vector lengths and second three
+are angles between them:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">),</span> <span class="n">angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">),</span> <span class="n">angle</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>in degrees.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="quippy.atoms.Atoms.get_celldisp">
 <code class="descname">get_celldisp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_celldisp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_celldisp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the unit cell displacement vectors.</p>
@@ -2830,11 +2842,16 @@ If <code class="docutils literal"><span class="pre">mass</span></code> is not sp
 <dd><p>Set unit cell vectors.</p>
 <p>Parameters:</p>
 <dl class="docutils">
-<dt>cell :</dt>
+<dt>cell: 3x3 matrix or length 3 or 6 vector</dt>
 <dd>Unit cell.  A 3x3 matrix (the three unit cell vectors) or
-just three numbers for an orthorhombic cell.</dd>
-<dt>scale_atoms</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>Fix atomic positions or move atoms with the unit cell?
+just three numbers for an orthorhombic cell. Another option is
+6 numbers, which describes unit cell with lengths of unit cell
+vectors and with angles between them (in degrees), in following
+order: [len(a), len(b), len(c), angle(b,c), angle(a,c),
+angle(a,b)].  First vector will lie in x-direction, second in
+xy-plane, and the third one in z-positive subspace.</dd>
+<dt>scale_atoms: bool</dt>
+<dd>Fix atomic positions or move atoms with the unit cell?
 Default behavior is to <em>not</em> move the atoms (scale_atoms=False).</dd>
 </dl>
 <p>Examples:</p>
@@ -2847,6 +2864,15 @@ Default behavior is to <em>not</em> move the atoms (scale_atoms=False).</dd>
 </div>
 <p>FCC unit cell:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>Hexagonal unit cell:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">120</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Rhombohedral unit cell:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">77</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3882,13 +3908,13 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
         <li class="right" >
           <a href="quippy.html" title="Quippy library reference"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy 6f80951+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 3b91c24+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Sep 28, 2016.
+      Last updated on Sep 29, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
     </div>
   </body>
