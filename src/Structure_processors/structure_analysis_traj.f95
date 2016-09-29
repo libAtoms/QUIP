@@ -97,6 +97,7 @@ type analysis
   integer :: xrd_n_2theta
   real(dp), allocatable :: xrds(:,:)
   real(dp), allocatable :: xrd_2theta_pos(:)
+  logical :: xrd_Lorentz_polarization
 
   ! adfd stuff
   real(dp) :: adfd_zone_center(3)
@@ -302,11 +303,13 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'xrd_lambda', '1.5418', this%xrd_lambda, help_string="Wavelength of radiation")
     call param_register(params, 'xrd_2theta_range', '1.0 179.0', this%xrd_2theta_range, help_string="range of angles for scan")
     call param_register(params, 'xrd_n_2theta', '179', this%xrd_n_2theta, help_string="number of angle values")
+    call param_register(params, 'xrd_Lorentz_polarization', 'F', this%xrd_Lorentz_polarization, help_string="apply Lorentz polarization factor")
   else
     ! xrd
     call param_register(params, 'xrd_lambda', ''//prev%xrd_lambda, this%xrd_lambda, help_string="Wavelength of radiation")
     call param_register(params, 'xrd_2theta_range', ''//prev%xrd_2theta_range, this%xrd_2theta_range, help_string="range of angles for scan")
     call param_register(params, 'xrd_n_2theta', ''//prev%xrd_n_2theta, this%xrd_n_2theta, help_string="number of angle values")
+    call param_register(params, 'xrd_Lorentz_polarization', ''//prev%xrd_Lorentz_polarization, this%xrd_Lorentz_polarization, help_string="apply Lorentz polarization factor")
   endif
 
   if (.not. present(prev)) then
@@ -660,10 +663,11 @@ subroutine do_analyses(a, time, frame, at)
         a(i_a)%xrd_2theta_range = a(i_a)%xrd_2theta_range * PI/180.0
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%xrd_2theta_pos(a(i_a)%xrd_n_2theta))
-          call xrd_calc(a(i_a)%xrds(:,a(i_a)%n_configs), at, a(i_a)%xrd_lambda, a(i_a)%xrd_2theta_range, a(i_a)%xrd_n_2theta, a(i_a)%xrd_2theta_pos)
+          call xrd_calc(a(i_a)%xrds(:,a(i_a)%n_configs), at, a(i_a)%xrd_lambda, a(i_a)%xrd_2theta_range, a(i_a)%xrd_n_2theta, a(i_a)%xrd_Lorentz_polarization, &
+                        a(i_a)%xrd_2theta_pos)
           a(i_a)%xrd_2theta_pos = a(i_a)%xrd_2theta_pos * 180.0/PI
         else
-          call xrd_calc(a(i_a)%xrds(:,a(i_a)%n_configs), at, a(i_a)%xrd_lambda, a(i_a)%xrd_2theta_range, a(i_a)%xrd_n_2theta)
+          call xrd_calc(a(i_a)%xrds(:,a(i_a)%n_configs), at, a(i_a)%xrd_lambda, a(i_a)%xrd_2theta_range, a(i_a)%xrd_n_2theta, a(i_a)%xrd_Lorentz_polarization)
         endif
         a(i_a)%xrd_2theta_range = a(i_a)%xrd_2theta_range * 180.0/PI
       else if (a(i_a)%adfd) then !adfd

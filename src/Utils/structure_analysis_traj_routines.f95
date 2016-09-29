@@ -45,7 +45,7 @@ public :: density_sample_radial_mesh_Gaussians, rdfd_calc, xrd_calc, propdf_radi
    geometry_calc, shift_silica_to_edges, density_axial_calc, num_hbond_calc, &
    water_orientation_calc
 
-real(dp), parameter, dimension(0:116) :: ASF_c = (/ &
+real(dp), dimension(0:116) :: ASF_c = (/ &
     0.0, &
     0.001305, &
     0.0064, &
@@ -164,7 +164,7 @@ real(dp), parameter, dimension(0:116) :: ASF_c = (/ &
     1.0, &
     1.0 /)
 
-real(dp), parameter, dimension(4,0:116) :: ASF_a = reshape( (/ &
+real(dp), dimension(4,0:116) :: ASF_a = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     0.489918, 0.262003, 0.196767, 0.049879, &
     0.8734, 0.6309, 0.3112, 0.178, &
@@ -283,7 +283,7 @@ real(dp), parameter, dimension(4,0:116) :: ASF_a = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     0.0, 0.0, 0.0, 0.0 /), (/ 4, 117 /) )
 
-real(dp), parameter, dimension(4,0:116) :: ASF_b = reshape( (/ &
+real(dp), dimension(4,0:116) :: ASF_b = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     20.6593, 7.74039, 49.5519, 2.20159, &
     9.1037, 3.3568, 22.9276, 0.9821, &
@@ -578,21 +578,22 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 end subroutine density_sample_radial_mesh_Gaussians
 
 ! from LAMMPS "compute xrd" documentation
-subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
+subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, do_Lorentz_polarization, pos_2theta)
   real(dp), intent(inout) :: xrd(:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: lambda
   real(dp), intent(in) :: range_2theta(2)
   integer, intent(in) :: n_2theta
+  logical, intent(in) :: do_Lorentz_polarization
   real(dp) , intent(inout), optional :: pos_2theta(:)
 
   integer :: i_at, i_2theta
   real(dp) :: min_norm_k, max_norm_k
   integer :: k1_min, k1_max, k2_min, k2_max, k3_min, k3_max, n_k, k1, k2, k3
-  real(dp) :: k(3), theta
+  real(dp) :: k(3)
   integer :: theta_i
   integer, allocatable :: theta_i_of_k(:), Z_of_type(:)
-  real(dp), allocatable :: ks(:,:), sin_sq_theta_over_lambda_sq(:), ASF(:), k_dot_r(:,:)
+  real(dp), allocatable :: ks(:,:), sin_sq_theta_over_lambda_sq(:), ASF(:), k_dot_r(:,:), theta(:)
   complex(dp), allocatable :: exp_2_pi_i_k_dot_r(:,:), F_k(:)
   integer :: i_type, i_Z, n_types, i_k
   complex(dp) :: two_pi_i
@@ -632,7 +633,7 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
   ! print *, "n_k ", n_k
 
   allocate(ks(n_k,3))
-  allocate(theta_i_of_k(n_k), sin_sq_theta_over_lambda_sq(n_k))
+  allocate(theta_i_of_k(n_k), sin_sq_theta_over_lambda_sq(n_k), theta(n_k))
 
   n_k = 0
   do k1 = -k1_max, k1_max
@@ -642,9 +643,9 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
     if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) then
         n_k = n_k + 1
         ks(n_k,:) = k
-        theta = asin(norm(k)*lambda/2.0)
+        theta(n_k) = asin(norm(k)*lambda/2.0)
         sin_sq_theta_over_lambda_sq(n_k) = (norm(k)/2.0)**2
-        theta_i = int(n_2theta*(2.0*theta - range_2theta(1))/(range_2theta(2)-range_2theta(1)))+1
+        theta_i = int(n_2theta*(2.0*theta(n_k) - range_2theta(1))/(range_2theta(2)-range_2theta(1)))+1
         theta_i_of_k(n_k) = theta_i
         ! print *, "k ", n_k, k, theta_i
     endif
@@ -687,13 +688,20 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, pos_2theta)
     F_k(i_k) = sum(exp_2_pi_i_k_dot_r(i_k,:))
   end do
   !$omp end parallel do
+  if (do_Lorentz_polarization) then
+      !$omp parallel do
+      do i_k=1, n_k
+        F_k(i_k) = F_k(i_k) * (1.0+cos(2.0*theta(i_k))**2)/(cos(theta(i_k))*sin(theta(i_k))**2)
+      end do
+      !$omp end parallel do
+  endif
   !$omp parallel do
   do i_2theta = 1, n_2theta
     xrd(i_2theta) = sum(abs(F_k)**2, mask=(theta_i_of_k == i_2theta)) / at%n
   end do
   !$omp end parallel do
 
-  deallocate(ks, exp_2_pi_i_k_dot_r, theta_i_of_k, F_k, sin_sq_theta_over_lambda_sq)
+  deallocate(ks, exp_2_pi_i_k_dot_r, theta_i_of_k, F_k, sin_sq_theta_over_lambda_sq,theta)
 
 end subroutine xrd_calc
 
