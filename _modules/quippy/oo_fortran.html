@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.oo_fortran &#8212; quippy 3b91c24+ documentation</title>
+    <title>quippy.oo_fortran &#8212; quippy aa2ab37+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '3b91c24+',
+        VERSION:     'aa2ab37+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="quippy 3b91c24+ documentation" href="../../index.html" />
+    <link rel="top" title="quippy aa2ab37+ documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 3b91c24+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy aa2ab37+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -191,7 +191,7 @@
     <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;character(&#39;</span><span class="p">):</span>
         <span class="n">t</span> <span class="o">=</span> <span class="s1">&#39;str&#39;</span>
     <span class="k">return</span> <span class="n">t</span>
-    
+
 
 <span class="k">def</span> <span class="nf">type_is_compatible</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;optional&#39;</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">arg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -428,7 +428,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
 
 <div class="viewcode-block" id="FortranDerivedType.is_same_fortran_object"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType.is_same_fortran_object">[docs]</a>    <span class="k">def</span> <span class="nf">is_same_fortran_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test if `self` and `other` point to the same Fortan object.&quot;&quot;&quot;</span>
@@ -548,7 +548,7 @@
 <span class="sd">        allow a customised response. For example this mechanism is used</span>
 <span class="sd">        in :class:`quippy.extras.Atoms` to update Atoms properties.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;updating </span><span class="si">%s</span><span class="s1"> at 0x</span><span class="si">%x</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
         <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_hooks</span><span class="p">:</span>
@@ -562,7 +562,7 @@
 
 <div class="viewcode-block" id="FortranDerivedType._get_array_shape"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType._get_array_shape">[docs]</a>    <span class="k">def</span> <span class="nf">_get_array_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This method can be used to override Fortran&#39;s idea of the shape of </span>
+<span class="sd">        This method can be used to override Fortran&#39;s idea of the shape of</span>
 <span class="sd">        arrays within derived types, for example to present only a partial</span>
 <span class="sd">        view of an array. This is used in :class:`quippy.table.Table`</span>
 <span class="sd">        to allow the sizes of arrays within the Table class to correspond to the</span>
@@ -603,7 +603,7 @@
 
 <span class="sd">            p = Potential(&#39;IP SW&#39;, xml_string)</span>
 <span class="sd">	        p.calc(at, args_str=&quot;virial energy&quot;)</span>
-<span class="sd">	</span>
+
 <span class="sd">        The return value us made up of a tuple of the arguments to the</span>
 <span class="sd">        Fortran routine which are ``intent(out)``. Pointers to Fortran</span>
 <span class="sd">        derived-type instances are replaced with new instances of the</span>
@@ -611,7 +611,7 @@
 <span class="sd">        are converted to use one-based indexing using</span>
 <span class="sd">        :class:`~quippy.farray.FortranArray`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
 
@@ -626,7 +626,7 @@
         <span class="n">inargs</span>  <span class="o">=</span> <span class="p">[</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;intent(out)&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="p">]</span>
         <span class="n">outargs</span> <span class="o">=</span> <span class="p">[</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;intent(out)&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="p">]</span>
         <span class="n">args_str_args</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;args_str&#39;</span><span class="p">]</span>
-        
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">):</span>
             <span class="c1"># Put self at beginning of args list</span>
             <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
@@ -663,11 +663,11 @@
 <div class="viewcode-block" id="FortranDerivedType._runinterface"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType._runinterface">[docs]</a>    <span class="k">def</span> <span class="nf">_runinterface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Internal method used to invoke the appropriate routine</span>
-<span class="sd">        within the Fortran interface `name`. If no routine is found </span>
+<span class="sd">        within the Fortran interface `name`. If no routine is found</span>
 <span class="sd">        matching the names and types of the arguments provided then</span>
 <span class="sd">        an :exc:`TypeError` exception is raised.</span>
 
-<span class="sd">        Arguments and results are handled in the same way as </span>
+<span class="sd">        Arguments and results are handled in the same way as</span>
 <span class="sd">        :func:`_runroutine`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -797,7 +797,7 @@
 <span class="sd">    Here&#39;s how this function is used in quippy&#39;s :file:`__init.py__` to</span>
 <span class="sd">    import the new classes, routines and params into the top-level quippy</span>
 <span class="sd">    namespace::</span>
-<span class="sd">   </span>
+
 <span class="sd">       classes, routines, params = wrap_all(_quippy, spec, spec[&#39;wrap_modules&#39;], spec[&#39;short_names&#39;])</span>
 
 <span class="sd">       for name, cls in classes:</span>
@@ -834,18 +834,18 @@
         <span class="n">pymod</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">new_module</span><span class="p">(</span><span class="n">pymodname</span><span class="p">)</span>
         <span class="n">pymod</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">process_docstring</span><span class="p">(</span><span class="n">curspec</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span>
         <span class="n">pymod</span><span class="o">.</span><span class="n">__package__</span> <span class="o">=</span> <span class="n">package</span>
-        
+
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
             <span class="n">cls</span><span class="o">.</span><span class="n">__module__</span> <span class="o">=</span> <span class="n">pymod</span><span class="o">.</span><span class="n">__name__</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">pymod</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
 
         <span class="n">pymod</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mod_params</span><span class="p">)</span>
         <span class="n">pymods</span><span class="p">[</span><span class="n">modules_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">mod</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pymod</span>
-        
+
         <span class="c1"># make classes and params symbols public</span>
         <span class="c1"># (available with &#39;from ... import *&#39;)</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="n">pymod</span><span class="p">,</span> <span class="s1">&#39;__all__&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">]</span><span class="o">+</span><span class="n">mod_params</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                
+
         <span class="n">leftover_routines</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mod</span><span class="p">,</span> <span class="n">curspec</span><span class="p">,</span> <span class="n">routines</span><span class="p">,</span> <span class="n">modfile</span><span class="p">))</span>
 
     <span class="c1"># add orphaned routines to classes and generate top-level interfaces</span>
@@ -893,7 +893,7 @@
                     <span class="nb">setattr</span><span class="p">(</span><span class="n">pymods</span><span class="p">[</span><span class="n">modules_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">mod</span><span class="p">)],</span> <span class="n">routine</span><span class="p">,</span> <span class="n">wrapped_routine</span><span class="p">)</span>
                     <span class="n">pymods</span><span class="p">[</span><span class="n">modules_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">mod</span><span class="p">)]</span><span class="o">.</span><span class="n">__all__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">routine</span><span class="p">)</span>
                     <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  added top-level routine </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">routine</span><span class="p">)</span>
-                    
+
     <span class="c1"># remap interface names which clash with keywords and skip overloaded operators</span>
     <span class="n">interfaces</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">py_keywords_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">),</span><span class="n">v</span><span class="p">)</span>
                          <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="p">])</span>
@@ -988,7 +988,7 @@
 
         <span class="k">if</span> <span class="n">constructor</span><span class="p">:</span>
             <span class="n">_routines</span><span class="p">[</span><span class="s1">&#39;__init__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">prefix</span><span class="o">+</span><span class="n">constructor_name</span><span class="p">),</span> <span class="n">moddoc</span><span class="p">[</span><span class="s1">&#39;routines&#39;</span><span class="p">][</span><span class="n">constructor_name</span><span class="p">])</span>
-            
+
         <span class="k">if</span> <span class="n">destructor</span><span class="p">:</span>
             <span class="n">_routines</span><span class="p">[</span><span class="s1">&#39;__del__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">modobj</span><span class="p">,</span> <span class="n">prefix</span><span class="o">+</span><span class="n">destructor</span><span class="p">),</span> <span class="n">moddoc</span><span class="p">[</span><span class="s1">&#39;routines&#39;</span><span class="p">][</span><span class="n">destructor</span><span class="p">])</span>
 
@@ -1045,7 +1045,7 @@
                     <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;initialise_ptr&#39;</span><span class="p">:</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;__init__&#39;</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">py_keywords_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">special_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-            
+
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">_interfaces</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1064,7 +1064,7 @@
                     <span class="n">func</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">wrapmethod</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">fobj</span><span class="p">,</span> <span class="n">rspec</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
                                    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;numpydoc&#39;</span><span class="p">,</span> <span class="n">skip_this</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
                     <span class="n">func</span><span class="o">.</span><span class="n">__module__</span> <span class="o">=</span> <span class="n">pymodname</span>
-                    <span class="n">methods</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>                    
+                    <span class="n">methods</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
 
         <span class="k">for</span> <span class="n">intf</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_interfaces</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
 
@@ -1078,7 +1078,7 @@
             <span class="n">func</span> <span class="o">=</span> <span class="n">wrapinterface</span><span class="p">(</span><span class="n">intf</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">intf</span> <span class="o">==</span> <span class="s1">&#39;__init__&#39;</span><span class="p">:</span> <span class="n">docname</span> <span class="o">=</span> <span class="s1">&#39;initialise&#39;</span>
             <span class="n">docname</span> <span class="o">=</span> <span class="n">rev_special_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">docname</span><span class="p">,</span> <span class="n">docname</span><span class="p">)</span>
-            
+
             <span class="n">doc</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">moddoc</span><span class="p">[</span><span class="s1">&#39;interfaces&#39;</span><span class="p">][</span><span class="n">docname</span><span class="p">][</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
             <span class="k">for</span> <span class="n">rname</span><span class="p">,</span><span class="n">spec</span><span class="p">,</span><span class="n">routine</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
@@ -1097,7 +1097,7 @@
                 <span class="k">if</span> <span class="n">intf</span> <span class="o">==</span> <span class="s1">&#39;__init__&#39;</span><span class="p">:</span>
                    <span class="n">signature_line</span> <span class="o">=</span> <span class="n">signature_line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">rname</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
                 <span class="c1">#signature_line = signature_line.replace(rname, intf)</span>
-                
+
                 <span class="n">doc</span> <span class="o">+=</span>        <span class="p">(</span><span class="s1">&#39;   .. function :: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">signature_line</span> <span class="o">+</span>
                     <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;      </span><span class="si">%s</span><span class="s1">&#39;</span>   <span class="o">%</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">routine_lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
@@ -1191,7 +1191,7 @@
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">wrap_derived_type_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
                                                 <span class="n">fset</span><span class="o">=</span><span class="n">wrap_derived_type_array_set</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
                                                 <span class="n">doc</span><span class="o">=</span><span class="n">process_docstring</span><span class="p">(</span><span class="n">el</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])))</span>
-                                                 
+
 
 
 
@@ -1210,8 +1210,8 @@
             <span class="n">mod_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">evaldict</span><span class="p">)</span>
             <span class="n">evaldict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mod_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
             <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  adding parameter </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
-            <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  ignorning NameError in parameter </span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">code</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">NameError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+            <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  ignorning exception in parameter </span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">code</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">routines</span><span class="p">,</span> <span class="n">mod_params</span><span class="p">)</span>
 
@@ -1271,7 +1271,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> object not initialised.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="n">cls</span><span class="p">,</span> <span class="n">getfunc</span><span class="p">,</span> <span class="n">setfunc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">setfunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span>
-        
+
     <span class="k">return</span> <span class="n">func</span>
 
 <span class="k">def</span> <span class="nf">wrap_array_get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -1301,7 +1301,7 @@
             <span class="n">arrayfunc</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">arraytype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arrays</span><span class="p">[</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">arraydata</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">,</span> <span class="n">arrayfunc</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">:</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
             <span class="n">nshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_array_shape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">reshape</span> <span class="ow">and</span> <span class="n">nshape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1329,8 +1329,8 @@
                                     <span class="n">lenfunc</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">arraytype</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
             <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-        
-    <span class="k">return</span> <span class="n">func</span>        
+
+    <span class="k">return</span> <span class="n">func</span>
 
 <span class="k">class</span> <span class="nc">FortranDerivedTypeArray</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">getfunc</span><span class="p">,</span> <span class="n">setfunc</span><span class="p">,</span> <span class="n">lenfunc</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">arraytype</span><span class="p">):</span>
@@ -1444,7 +1444,7 @@
                 <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">regexp</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">repl</span><span class="p">,</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="n">indent</span> <span class="o">+</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        
+
     <span class="k">try</span><span class="p">:</span>
        <span class="n">doc</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">cleandoc</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
@@ -1502,7 +1502,7 @@
 
 
     <span class="n">final_doc</span> <span class="o">=</span> <span class="n">signature_line</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
-    
+
     <span class="k">if</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">]:</span>
         <span class="n">final_doc</span> <span class="o">+=</span> <span class="n">process_docstring</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
@@ -1531,7 +1531,7 @@
                 <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;:class:`~.</span><span class="si">%s</span><span class="s1">` object&#39;</span> <span class="o">%</span> <span class="nb">type</span>
             <span class="k">if</span> <span class="s1">&#39;optional&#39;</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]:</span>
                 <span class="nb">type</span> <span class="o">+=</span> <span class="s1">&#39;, optional&#39;</span>
-                
+
 
             <span class="k">if</span> <span class="n">argname</span> <span class="o">==</span> <span class="n">retvar</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;numpydoc&#39;</span><span class="p">:</span>
@@ -1558,8 +1558,8 @@
     <span class="k">if</span> <span class="n">ret_lines</span><span class="p">:</span>
         <span class="n">final_doc</span> <span class="o">+=</span> <span class="n">ret_header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ret_lines</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
-    <span class="n">final_doc</span> <span class="o">+=</span> <span class="n">ref_header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Routine is wrapper around Fortran routine ``</span><span class="si">%s</span><span class="s1">`` defined in file :git:`</span><span class="si">%s</span><span class="s1">`.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fullname</span><span class="p">,</span> <span class="n">modfile</span><span class="p">)</span>        
-            
+    <span class="n">final_doc</span> <span class="o">+=</span> <span class="n">ref_header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Routine is wrapper around Fortran routine ``</span><span class="si">%s</span><span class="s1">`` defined in file :git:`</span><span class="si">%s</span><span class="s1">`.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fullname</span><span class="p">,</span> <span class="n">modfile</span><span class="p">)</span>
+
     <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">final_doc</span>
     <span class="k">return</span> <span class="n">func</span>
 
@@ -1594,15 +1594,15 @@
     <span class="n">max_name_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">)</span>
     <span class="n">max_type_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span> <span class="k">for</span> <span class="nb">type</span> <span class="ow">in</span> <span class="n">types</span><span class="p">)</span>
     <span class="n">max_default_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="k">for</span> <span class="n">default</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">)</span>
-    
+
     <span class="n">cols</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_name_len</span><span class="p">,</span> <span class="n">max_type_len</span><span class="p">,</span> <span class="n">max_default_len</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
-    
+
     <span class="n">args_str_lines</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;.. rubric:: args_str options&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
     <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%%</span><span class="s1">-</span><span class="si">%d</span><span class="s1">s </span><span class="si">%%</span><span class="s1">-</span><span class="si">%d</span><span class="s1">s </span><span class="si">%%</span><span class="s1">-</span><span class="si">%d</span><span class="s1">s </span><span class="si">%%</span><span class="s1">-</span><span class="si">%d</span><span class="s1">s&#39;</span> <span class="o">%</span> <span class="n">cols</span>
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">defaults</span><span class="p">,</span> <span class="n">docs</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">args_str_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>            
+            <span class="n">args_str_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
         <span class="n">doc_words</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
         <span class="k">while</span> <span class="n">doc_words</span><span class="p">:</span>
             <span class="n">doc_line</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
@@ -1617,10 +1617,10 @@
             <span class="n">args_str_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">doc_line</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
             <span class="n">name</span> <span class="o">=</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">default</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">args_str_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>            
+            <span class="n">args_str_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="n">cols</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
 
     <span class="n">args_str_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">])</span>
-    
+
     <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args_str_lines</span><span class="p">)</span>
 
 
@@ -1745,13 +1745,13 @@
     <span class="n">doc</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">intf_spec</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
     <span class="n">doc</span> <span class="o">+=</span> <span class="s1">&#39;Routine is wrapper around Fortran interface ``</span><span class="si">%s</span><span class="s1">`` containing multiple routines:</span><span class="se">\n\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span>
-    
+
     <span class="k">for</span> <span class="n">rname</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">routine</span><span class="p">,</span> <span class="n">modfile</span> <span class="ow">in</span> <span class="n">routines</span><span class="p">:</span>
 
         <span class="c1"># regenerate routine documentation, using sphinx format rather than numpydoc format</span>
         <span class="n">tmp_routine</span> <span class="o">=</span> <span class="n">add_doc</span><span class="p">(</span><span class="n">routine</span><span class="p">,</span> <span class="n">routine</span><span class="o">.</span><span class="n">_fobj</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sphinx&#39;</span><span class="p">,</span> <span class="n">modfile</span><span class="o">=</span><span class="n">modfile</span><span class="p">)</span>
 
-        
+
         <span class="n">routine_lines</span> <span class="o">=</span> <span class="n">tmp_routine</span><span class="o">.</span><span class="n">__doc__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="n">doc</span> <span class="o">+=</span>        <span class="p">(</span><span class="s1">&#39;  .. function :: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">routine_lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
@@ -1786,12 +1786,12 @@
        <span class="k">pass</span>
 
     <span class="n">extra</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">extra</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-    
+
     <span class="n">lines</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">signature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">signature</span>
-    
+
     <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
        <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="n">section</span> <span class="p">]</span>
        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -1820,13 +1820,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 3b91c24+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy aa2ab37+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Sep 29, 2016.
+      Last updated on Sep 30, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
     </div>
   </body>
