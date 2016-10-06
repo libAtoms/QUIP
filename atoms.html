@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Atoms objects &#8212; quippy aa2ab37+ documentation</title>
+    <title>Atoms objects &#8212; quippy b0ed522+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'aa2ab37+',
+        VERSION:     'b0ed522+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy aa2ab37+ documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="quippy b0ed522+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Quippy library reference" href="quippy.html" /> 
   </head>
@@ -40,7 +42,7 @@
         <li class="right" >
           <a href="quippy.html" title="Quippy library reference"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy aa2ab37+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy b0ed522+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -160,10 +162,10 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.cell_volume" title="quippy.atoms.cell_volume"><code class="xref py py-obj docutils literal"><span class="pre">cell_volume</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.cell_volume" title="quippy.atoms.cell_volume"><code class="xref py py-obj docutils literal"><span class="pre">cell_volume</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>calculate volume of unit cell</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal"><span class="pre">map_into_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal"><span class="pre">map_into_cell</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Map atomic positions into the unit cell so that lattice</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params_</span></code>(...)</td>
@@ -309,7 +311,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.print_atom" title="quippy.atoms.Atoms.print_atom"><code class="xref py py-obj docutils literal"><span class="pre">print_atom</span></code></a>(i)</td>
 <td>Pretty-print the properties of the atom with index <cite>i</cite></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_from" title="quippy.atoms.Atoms.read_from"><code class="xref py py-obj docutils literal"><span class="pre">read_from</span></code></a>(source,&nbsp;**readargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_from" title="quippy.atoms.Atoms.read_from"><code class="xref py py-obj docutils literal"><span class="pre">read_from</span></code></a>(source,&nbsp;\*\*readargs)</td>
 <td>Replace contents of this Atoms object with Atoms read from <cite>source</cite></td>
 </tr>
 </tbody>
@@ -832,7 +834,7 @@ usually desirable to call undo_pbc_jumps and undo_CoM_motion first</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.calc_qw">
-<code class="descname">calc_qw</code><span class="sig-paren">(</span><em>l</em><span class="optional">[</span>, <em>do_q</em>, <em>do_w</em>, <em>cutoff</em>, <em>cutoff_transition_width</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_qw" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_qw</code><span class="sig-paren">(</span><em>l</em><span class="optional">[</span>, <em>do_q</em>, <em>do_w</em>, <em>cutoff</em>, <em>cutoff_transition_width</em>, <em>mask</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_qw" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -841,7 +843,9 @@ usually desirable to call undo_pbc_jumps and undo_CoM_motion first</p>
 <p><strong>do_q</strong> :  input int, optional</p>
 <p><strong>do_w</strong> :  input int, optional</p>
 <p><strong>cutoff</strong> :  input float, optional</p>
-<p class="last"><strong>cutoff_transition_width</strong> :  input float, optional</p>
+<p><strong>cutoff_transition_width</strong> :  input float, optional</p>
+<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
 </td>
 </tr>
 </tbody>
@@ -3908,14 +3912,14 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
         <li class="right" >
           <a href="quippy.html" title="Quippy library reference"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy aa2ab37+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy b0ed522+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Sep 30, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+      Last updated on Oct 06, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>

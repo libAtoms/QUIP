@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fortran Table for dynamically extendable arrays &#8212; quippy aa2ab37+ documentation</title>
+    <title>Fortran Table for dynamically extendable arrays &#8212; quippy b0ed522+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'aa2ab37+',
+        VERSION:     'b0ed522+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="quippy aa2ab37+ documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="quippy b0ed522+ documentation" href="index.html" />
     <link rel="up" title="Quippy library reference" href="quippy.html" /> 
   </head>
   <body role="document">
@@ -36,7 +38,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy aa2ab37+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy b0ed522+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -208,19 +210,19 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.allocate" title="quippy.table.Table.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(...)</td>
 <td>Allocate a <code class="docutils literal"><span class="pre">Table</span></code>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.append" title="quippy.table.Table.append"><code class="xref py py-obj docutils literal"><span class="pre">append</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.append" title="quippy.table.Table.append"><code class="xref py py-obj docutils literal"><span class="pre">append</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Append rows to a table.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.append_column" title="quippy.table.Table.append_column"><code class="xref py py-obj docutils literal"><span class="pre">append_column</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.append_column" title="quippy.table.Table.append_column"><code class="xref py py-obj docutils literal"><span class="pre">append_column</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Append 1 or more columns to a table.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.delete" title="quippy.table.Table.delete"><code class="xref py py-obj docutils literal"><span class="pre">delete</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.delete" title="quippy.table.Table.delete"><code class="xref py py-obj docutils literal"><span class="pre">delete</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Delete a row by index or by value.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.delete_multiple" title="quippy.table.Table.delete_multiple"><code class="xref py py-obj docutils literal"><span class="pre">delete_multiple</span></code></a>(indices)</td>
 <td>Delete multiple rows from a Table.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.find" title="quippy.table.Table.find"><code class="xref py py-obj docutils literal"><span class="pre">find</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.find" title="quippy.table.Table.find"><code class="xref py py-obj docutils literal"><span class="pre">find</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Search the integer part of a table for a given element or array.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_indices" title="quippy.table.Table.from_atom_indices"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_indices</span></code></a>(atoms[,&nbsp;mask,&nbsp;list,&nbsp;...])</td>
@@ -235,7 +237,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.insert" title="quippy.table.Table.insert"><code class="xref py py-obj docutils literal"><span class="pre">insert</span></code></a>(...)</td>
 <td>insert a row at a given position</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.int_part" title="quippy.table.Table.int_part"><code class="xref py py-obj docutils literal"><span class="pre">int_part</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.int_part" title="quippy.table.Table.int_part"><code class="xref py py-obj docutils literal"><span class="pre">int_part</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Utility function to return one or more columns from the integer part of a table.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.int_subtable" title="quippy.table.Table.int_subtable"><code class="xref py py-obj docutils literal"><span class="pre">int_subtable</span></code></a>(rows,cols)</td>
@@ -252,13 +254,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.logical_part" title="quippy.table.Table.logical_part"><code class="xref py py-obj docutils literal"><span class="pre">logical_part</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.logical_part" title="quippy.table.Table.logical_part"><code class="xref py py-obj docutils literal"><span class="pre">logical_part</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">logical_part</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.print_" title="quippy.table.Table.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.print_" title="quippy.table.Table.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Print this table to the mainlog or to an inoutput object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.real_part" title="quippy.table.Table.real_part"><code class="xref py py-obj docutils literal"><span class="pre">real_part</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.real_part" title="quippy.table.Table.real_part"><code class="xref py py-obj docutils literal"><span class="pre">real_part</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Utility function to return one or more columns from the real part of a table.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.record_delete_multiple" title="quippy.table.Table.record_delete_multiple"><code class="xref py py-obj docutils literal"><span class="pre">record_delete_multiple</span></code></a>(indices)</td>
@@ -293,7 +295,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.sort" title="quippy.table.Table.sort"><code class="xref py py-obj docutils literal"><span class="pre">sort</span></code></a>([idx,int_cols])</td>
 <td>Sort a table according to its int part</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.str_part" title="quippy.table.Table.str_part"><code class="xref py py-obj docutils literal"><span class="pre">str_part</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.str_part" title="quippy.table.Table.str_part"><code class="xref py py-obj docutils literal"><span class="pre">str_part</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">str_part</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.subtable" title="quippy.table.Table.subtable"><code class="xref py py-obj docutils literal"><span class="pre">subtable</span></code></a>(...)</td>
@@ -1526,14 +1528,14 @@ Table was not created in that way.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy aa2ab37+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy b0ed522+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Sep 30, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+      Last updated on Oct 06, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>
