@@ -70,8 +70,8 @@ The following external packages can be called:
  - CP2K
  - ASAP
  - Molpro
- - ASE (required if using quippy Python interface; latest gitlab development
-   version recommended)
+ - ASE (required if using ``quippy`` Python interface; latest version 
+   recommended)
 
 ## Code philosophy and goals
 
