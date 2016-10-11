@@ -61,6 +61,7 @@ Additional tools for Potentials
    elasticity.rst
    polarization.rst
    electrostaticembed.rst
+   phonons.rst
 
 Mathematical and optimisation tools
 -----------------------------------

@@ -93,7 +93,7 @@ The following external packages can be called:
 * VASP
 * CP2K
 * ASAP
-* ASE (latest svn trunk recommended)
+* ASE (recent version, 3.11+, recommended)
 * Molpro
 
 Contents
