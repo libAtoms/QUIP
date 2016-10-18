@@ -110,8 +110,15 @@ ${BUILDDIR}/Makefile.inc:
 		exit 1 ;\
 		fi
 
+# Automatically pull the submodules if the user didn't.
+# Remove the Makefile.QUIP if it has failed previously.
+src/${FOX}/configure:
+	@echo "Attempting to automatically clone fox submodule"
+	rm -f src/${FOX}/Makefile.QUIP
+	git submodule update --init src/${FOX} || \
+	    { echo "fox clone failed. Download it manually" ; exit 1 ; }
 
-${FOX}: src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
+${FOX}: src/${FOX}/configure src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	cp Makefile.fox src/${FOX}/Makefile.QUIP
 	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP
