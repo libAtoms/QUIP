@@ -76,9 +76,8 @@ install:
   # Compile QUIP
   - make > /dev/null
   - make libquip > /dev/null
-  # Fetch and install ASE for quippy
-  - git clone https://gitlab.com/ase/ase.git
-  - cd ase; pip install .; cd ..
+  # Install ASE from PyPI. GitLab seems unreliable for pulling newest versions.
+  - pip install ase
   # Build quippy bindings
   - make quippy > /dev/null
 script:

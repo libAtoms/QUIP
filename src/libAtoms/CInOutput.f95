@@ -1013,7 +1013,7 @@ contains
     quip_basename_char = ""
     do i = 1, n
        if( c(i) == C_NULL_CHAR ) exit
-       call concat(quip_basename_char,c(i))
+       call concat(quip_basename_char,c(i),no_trim=.true.)
     enddo
 
     deallocate(c)
@@ -1042,7 +1042,7 @@ contains
     quip_dirname_char = ""
     do i = 1, n
        if( c(i) == C_NULL_CHAR ) exit
-       call concat(quip_dirname_char,c(i))
+       call concat(quip_dirname_char,c(i),no_trim=.true.)
     enddo
 
     deallocate(c)

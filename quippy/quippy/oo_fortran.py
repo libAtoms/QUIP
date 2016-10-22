@@ -125,7 +125,7 @@ def python_equivalent_type(t):
     if t.startswith('character('):
         t = 'str'
     return t
-    
+
 
 def type_is_compatible(spec, arg):
     if 'optional' in spec['attributes'] and arg is None:
@@ -362,7 +362,7 @@ class FortranDerivedType(object):
         self._update()
 
     def __len__(self):
-        return self.n        
+        return self.n
 
     def is_same_fortran_object(self, other):
         """Test if `self` and `other` point to the same Fortan object."""
@@ -482,7 +482,7 @@ class FortranDerivedType(object):
         allow a customised response. For example this mechanism is used
         in :class:`quippy.extras.Atoms` to update Atoms properties.
         """
-        
+
         wraplog.debug('updating %s at 0x%x' % (self.__class__, id(self)))
         if self._fpointer is None: return
         for hook in self._update_hooks:
@@ -496,7 +496,7 @@ class FortranDerivedType(object):
 
     def _get_array_shape(self, name):
         """
-        This method can be used to override Fortran's idea of the shape of 
+        This method can be used to override Fortran's idea of the shape of
         arrays within derived types, for example to present only a partial
         view of an array. This is used in :class:`quippy.table.Table`
         to allow the sizes of arrays within the Table class to correspond to the
@@ -537,7 +537,7 @@ class FortranDerivedType(object):
 
             p = Potential('IP SW', xml_string)
 	        p.calc(at, args_str="virial energy")
-	
+
         The return value us made up of a tuple of the arguments to the
         Fortran routine which are ``intent(out)``. Pointers to Fortran
         derived-type instances are replaced with new instances of the
@@ -545,7 +545,7 @@ class FortranDerivedType(object):
         are converted to use one-based indexing using
         :class:`~quippy.farray.FortranArray`.
         """
-        
+
         if not name.startswith('__init__') and self._fpointer is None:
             raise ValueError('%s object not initialised.' % self.__class__.__name__)
 
@@ -560,7 +560,7 @@ class FortranDerivedType(object):
         inargs  = [ x for x in doc['args'] if not 'intent(out)' in x['attributes'] ]
         outargs = [ x for x in doc['args'] if 'intent(out)' in x['attributes'] ]
         args_str_args = doc['args_str']
-        
+
         if not name.startswith('__init__'):
             # Put self at beginning of args list
             args = tuple([self] + list(args))
@@ -597,11 +597,11 @@ class FortranDerivedType(object):
     def _runinterface(self, name, *args, **kwargs):
         """
         Internal method used to invoke the appropriate routine
-        within the Fortran interface `name`. If no routine is found 
+        within the Fortran interface `name`. If no routine is found
         matching the names and types of the arguments provided then
         an :exc:`TypeError` exception is raised.
 
-        Arguments and results are handled in the same way as 
+        Arguments and results are handled in the same way as
         :func:`_runroutine`.
         """
 
@@ -731,7 +731,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
     Here's how this function is used in quippy's :file:`__init.py__` to
     import the new classes, routines and params into the top-level quippy
     namespace::
-   
+
        classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'])
 
        for name, cls in classes:
@@ -768,18 +768,18 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
         pymod = imp.new_module(pymodname)
         pymod.__doc__ = process_docstring(curspec['doc'])
         pymod.__package__ = package
-        
+
         for name, cls in classes:
             cls.__module__ = pymod.__name__
             setattr(pymod, name, cls)
 
         pymod.__dict__.update(mod_params)
         pymods[modules_name_map.get(mod,mod)] = pymod
-        
+
         # make classes and params symbols public
         # (available with 'from ... import *')
         setattr(pymod, '__all__', [c[0] for c in classes]+mod_params.keys())
-                
+
         leftover_routines.append((mod, curspec, routines, modfile))
 
     # add orphaned routines to classes and generate top-level interfaces
@@ -827,7 +827,7 @@ def wrap_all(fobj, spec, mods, merge_mods, short_names, prefix, package, modules
                     setattr(pymods[modules_name_map.get(mod,mod)], routine, wrapped_routine)
                     pymods[modules_name_map.get(mod,mod)].__all__.append(routine)
                     wraplog.debug('  added top-level routine %s' % routine)
-                    
+
     # remap interface names which clash with keywords and skip overloaded operators
     interfaces = dict([(py_keywords_map.get(k,k),v)
                          for (k,v) in interfaces.iteritems() ])
@@ -922,7 +922,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
 
         if constructor:
             _routines['__init__'] = (getattr(modobj, prefix+constructor_name), moddoc['routines'][constructor_name])
-            
+
         if destructor:
             _routines['__del__'] = (getattr(modobj, prefix+destructor), moddoc['routines'][destructor])
 
@@ -979,7 +979,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
                     name.lower() == 'initialise_ptr': name = '__init__'
             name = py_keywords_map.get(name, name)
             name = special_names.get(name, name)
-            
+
             if len(value) > 1:
                 _interfaces[name] = value
             else:
@@ -998,7 +998,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
                     func = add_doc(wrapmethod(name), fobj, rspec, rname, name, prefix,
                                    format='numpydoc', skip_this=True, modfile=modfile)
                     func.__module__ = pymodname
-                    methods[name] = func                    
+                    methods[name] = func
 
         for intf, value in _interfaces.iteritems():
 
@@ -1012,7 +1012,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
             func = wrapinterface(intf)
             if intf == '__init__': docname = 'initialise'
             docname = rev_special_names.get(docname, docname)
-            
+
             doc = '\n'.join(moddoc['interfaces'][docname]['doc']) + '\n\n'
 
             for rname,spec,routine in value:
@@ -1031,7 +1031,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
                 if intf == '__init__':
                    signature_line = signature_line.replace('.'+rname,'')
                 #signature_line = signature_line.replace(rname, intf)
-                
+
                 doc +=        ('   .. function :: %s\n' % signature_line +
                     '\n'.join(['      %s'   % line for line in routine_lines[1:]])) + '\n\n'
 
@@ -1125,7 +1125,7 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
                 setattr(new_cls, name, property(fget=wrap_derived_type_array_get(name),
                                                 fset=wrap_derived_type_array_set(name),
                                                 doc=process_docstring(el['doc'])))
-                                                 
+
 
 
 
@@ -1144,8 +1144,8 @@ def wrapmod(modobj, moddoc, modname, modfile, short_names, params, prefix, pymod
             mod_params[name] = eval(code, evaldict)
             evaldict[name] = mod_params[name]
             wraplog.debug('  adding parameter %s' % name)
-        except NameError:
-            wraplog.debug('  ignorning NameError in parameter %s = %s' % (name, code))
+        except (NameError, IndexError):
+            wraplog.debug('  ignorning exception in parameter %s = %s' % (name, code))
 
     return (classes, routines, mod_params)
 
@@ -1205,7 +1205,7 @@ def wrap_obj_set(name):
             raise ValueError('%s object not initialised.' % self.__class__.__name__)
         cls, getfunc, setfunc = self._subobjs[name]
         setfunc(self._fpointer, value._fpointer)
-        
+
     return func
 
 def wrap_array_get(name, reshape=True):
@@ -1235,7 +1235,7 @@ def wrap_array_set(name, reshape=True):
             arrayfunc, doc, arraytype = self._arrays['_'+name]
         try:
             a = arraydata.get_array(self._fpointer, arrayfunc)
-            if get_fortran_indexing: 
+            if get_fortran_indexing:
                 a = FortranArray(a, doc)
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
@@ -1263,8 +1263,8 @@ def wrap_derived_type_array_set(name):
                                     lenfunc, doc, arraytype)
         for i,v in zip(a.indices, value):
             a[i] = v
-        
-    return func        
+
+    return func
 
 class FortranDerivedTypeArray(object):
     def __init__(self, parent, getfunc, setfunc, lenfunc, doc, arraytype):
@@ -1378,7 +1378,7 @@ def process_docstring(doc):
                 lines[i] = regexp.sub(repl, lines[i])
 
         lines[i] = ' '*indent + lines[i]
-        
+
     try:
        doc = inspect.cleandoc('\n'.join(lines))
     except AttributeError:
@@ -1436,7 +1436,7 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
 
 
     final_doc = signature_line + '\n\n'
-    
+
     if doc['doc']:
         final_doc += process_docstring(doc['doc']) + '\n\n'
 
@@ -1465,7 +1465,7 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
                 type = ':class:`~.%s` object' % type
             if 'optional' in arg['attributes']:
                 type += ', optional'
-                
+
 
             if argname == retvar:
                 if format == 'numpydoc':
@@ -1492,8 +1492,8 @@ def add_doc(func, fobj, doc, fullname, name, prefix, format='numpydoc', skip_thi
     if ret_lines:
         final_doc += ret_header + '\n'.join(ret_lines) + '\n\n'
 
-    final_doc += ref_header + '\nRoutine is wrapper around Fortran routine ``%s`` defined in file :git:`%s`.' % (fullname, modfile)        
-            
+    final_doc += ref_header + '\nRoutine is wrapper around Fortran routine ``%s`` defined in file :git:`%s`.' % (fullname, modfile)
+
     func.__doc__ = final_doc
     return func
 
@@ -1528,15 +1528,15 @@ def args_str_table(spec):
     max_name_len = max(len(name) for name in names)
     max_type_len = max(len(type) for type in types)
     max_default_len = max(len(default) for default in defaults)
-    
+
     cols = (max_name_len, max_type_len, max_default_len, 40)
-    
+
     args_str_lines = ['.. rubric:: args_str options','']
     fmt = '%%-%ds %%-%ds %%-%ds %%-%ds' % cols
 
     for i, (name, type, default, doc) in enumerate(zip(names, types, defaults, docs)):
         if i == 0:
-            args_str_lines.append(fmt % ('='*cols[0], '='*cols[1], '='*cols[2], '='*cols[3]))            
+            args_str_lines.append(fmt % ('='*cols[0], '='*cols[1], '='*cols[2], '='*cols[3]))
         doc_words = doc.split()
         while doc_words:
             doc_line = ''
@@ -1551,10 +1551,10 @@ def args_str_table(spec):
             args_str_lines.append(fmt % (name, type, default, doc_line.strip()))
             name = type = default = ''
         if i == 0 or i == len(names)-1:
-            args_str_lines.append(fmt % ('='*cols[0], '='*cols[1], '='*cols[2], '='*cols[3]))            
+            args_str_lines.append(fmt % ('='*cols[0], '='*cols[1], '='*cols[2], '='*cols[3]))
 
     args_str_lines.extend(['', ''])
-    
+
     return '\n'.join(args_str_lines)
 
 
@@ -1679,13 +1679,13 @@ def wrapinterface(name, intf_spec, routines, prefix, modfile=None):
     doc = '\n'.join(intf_spec['doc']) + '\n\n'
 
     doc += 'Routine is wrapper around Fortran interface ``%s`` containing multiple routines:\n\n' % name
-    
+
     for rname, spec, routine, modfile in routines:
 
         # regenerate routine documentation, using sphinx format rather than numpydoc format
         tmp_routine = add_doc(routine, routine._fobj, spec, rname, name, prefix, format='sphinx', modfile=modfile)
 
-        
+
         routine_lines = tmp_routine.__doc__.split('\n')
 
         doc +=        ('  .. function :: %s\n' % routine_lines[0] +
@@ -1720,12 +1720,12 @@ def update_doc_string(doc, extra, sections=None, signature=None):
        pass
 
     extra = '\n' + extra + '\n'
-    
+
     lines = doc.split('\n')
 
     if signature is not None:
         lines[0] = signature
-    
+
     for section in sections:
        indices = [i for i, line in enumerate(lines) if line == section ]
        if len(indices) == 1:
