@@ -79,6 +79,7 @@ type IPModel_LJ
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
   real(dp), allocatable :: sigma(:,:), eps6(:,:), eps12(:,:), cutoff_a(:,:), energy_shift(:,:), linear_force_shift(:,:), smooth_cutoff_width(:,:) !% IP parameters.
+  logical :: only_inter_resid = .false.
 
   character(len=STRING_LENGTH) label
 
@@ -174,6 +175,8 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   real(dp), pointer :: velo(:,:)
   real(dp) :: flux(3)
 
+  integer, pointer :: resid(:)
+
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
   character(STRING_LENGTH) :: atom_mask_name
@@ -197,6 +200,12 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      local_virial = 0.0_dp
      RAISE_ERROR("IPModel_LJ_Calc: local_virial calculation requested but not supported yet.", error)
   endif
+
+  if (this%only_inter_resid) then
+     if (.not. assign_pointer(at, "resid", resid)) then
+       RAISE_ERROR("IPModel_LJ_Calc calculation with only_inter_resid=T requires resid field", error)
+     endif
+  end if
 
   if (present(args_str)) then
     if (len_trim(args_str) > 0) then
@@ -251,6 +260,10 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       if (dr_mag .feq. 0.0_dp) cycle
       !if ((i < j) .and. i_is_min_image) cycle
       if ((i < j)) cycle
+
+      if (this%only_inter_resid) then
+	 if (resid(i) == resid(j)) cycle
+      end if
 
       ti = get_type(this%type_of_atomic_num, at%Z(i))
       tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -433,6 +446,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 	read (value, *), parse_ip%n_types
       else
 	call system_abort("Can't find n_types in LJ_params")
+      endif
+
+      call QUIP_FoX_get_value(attributes, 'only_inter_resid', value, status)
+      if (status == 0) then
+	read (value, *), parse_ip%only_inter_resid
+      else
+	parse_ip%only_inter_resid = .false.
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
