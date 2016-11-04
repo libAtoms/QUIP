@@ -191,6 +191,7 @@ type TBSystem
   integer, allocatable :: first_orb_of_atom(:), first_manifold_of_atom(:), first_orb_of_manifold(:)
 
   logical :: noncollinear = .false.
+  logical :: spinpol_no_scf = .false.
   logical :: complex_matrices = .false.
 
   integer :: max_block_size = 0
@@ -452,6 +453,7 @@ subroutine TBSystem_Initialise_from_tbsys(this, from, mpi_obj)
   this%tbmodel = from%tbmodel
   this%complex_matrices = from%complex_matrices
   this%noncollinear = from%noncollinear
+  this%spinpol_no_scf = from%spinpol_no_scf
 
   this%kpoints = from%kpoints
   this%kpoints_generate_dynamically = from%kpoints_generate_dynamically
@@ -559,10 +561,10 @@ function TBSystem_n_elec(this, at, w_n)
   end do
 end function TBSystem_n_elec
 
-subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi_obj, error)
+subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, spinpol_no_scf, args_str, mpi_obj, error)
   type(TBSystem), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  logical, intent(in), optional :: noncollinear
+  logical, intent(in), optional :: noncollinear, spinpol_no_scf
   character(len=*), intent(in), optional :: args_str
   type(MPI_context), intent(in), optional :: mpi_obj
   integer, intent(out), optional :: error
@@ -575,7 +577,7 @@ subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi
     call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
     this%kpoints_generate_dynamically = this%kpoints_generate_next_dynamically
   endif
-  call setup_atoms(this, at%N, at%Z, noncollinear, error=error)
+  call setup_atoms(this, at%N, at%Z, noncollinear, spinpol_no_scf, error=error)
   PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_atoms_from_atoms
@@ -587,15 +589,15 @@ subroutine TBSystem_Setup_atoms_from_tbsys(this, from, error)
 
   INIT_ERROR(error)
 
-  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, error=error)
+  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, from%spinpol_no_scf, error=error)
   PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_Atoms_from_tbsys
 
-subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, error)
+subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, spinpol_no_scf, error)
   type(TBSystem), intent(inout) :: this
   integer, intent(in) :: at_N, at_Z(:)
-  logical, intent(in), optional :: noncollinear
+  logical, intent(in), optional :: noncollinear, spinpol_no_scf
   integer, intent(out), optional :: error
 
   integer :: i_at, i_man, man_offset, last_man_offset
@@ -606,6 +608,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, erro
   call Wipe(this)
 
   this%noncollinear = optional_default(this%noncollinear, noncollinear)
+  this%spinpol_no_scf = optional_default(this%spinpol_no_scf, spinpol_no_scf)
 
   this%N_atoms = at_N
   allocate(this%at_Z(this%N_atoms))
@@ -843,14 +846,19 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_up, block_S, i_mag=1)
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_down, block_S, i_mag=2)
 	block_H_z = 0.0_dp
-	block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up+block_H_down)
-	block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up+block_H_down)
+        if (this%spinpol_no_scf) then
+            block_H_z(1:block_nr:2,1:block_nc:2) = block_H_up(1:block_nr/2,1:block_nc/2)
+            block_H_z(2:block_nr:2,2:block_nc:2) = block_H_down(1:block_nr/2,1:block_nc/2)
+        else
+            block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
+            block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
+        endif
 	block_S_z = 0.0_dp
-	block_S_z(1:block_nr:2,1:block_nc:2) = block_S
-	block_S_z(2:block_nr:2,2:block_nc:2) = block_S
+	block_S_z(1:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+	block_S_z(2:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
 	if (u_no_S_spin) then
-	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S
-	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S
+	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
 	endif
 	if (this%SO%active .and. (i == j) .and. (dv_mag .feq. 0.0_dp)) then
 	  call get_SO_block(this%SO, this%tbmodel, at%Z(i), block_SO)
