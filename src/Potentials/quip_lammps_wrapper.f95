@@ -19,7 +19,7 @@ module QUIP_LAMMPS_wrapper_module
 
    contains
 
-   subroutine quip_lammps_wrapper(nlocal, nghost, atomic_numbers, &
+   subroutine quip_lammps_wrapper(nlocal, nghost, atomic_numbers, lmptag, &
       inum, sum_num_neigh, ilist, &
       quip_num_neigh, quip_neigh, lattice, &
       quip_potential, n_quip_potential, quip_x, &
@@ -33,6 +33,7 @@ module QUIP_LAMMPS_wrapper_module
       integer(kind=c_int), intent(in) :: sum_num_neigh                               ! number of all neighbours
 
       integer(kind=c_int), intent(in), dimension(nlocal+nghost) :: atomic_numbers    ! list of atomic numbers of all atoms
+      integer(kind=c_int), intent(in), dimension(nlocal+nghost) :: lmptag            ! list of lammps atom ids
       integer(kind=c_int), intent(in), dimension(inum) :: ilist                      ! list of local atoms
       integer(kind=c_int), intent(in), dimension(inum) :: quip_num_neigh             ! number of neighbours of each local atom
       integer(kind=c_int), intent(in), dimension(sum_num_neigh) :: quip_neigh        ! list of neighbours of local atoms, packaged
@@ -81,6 +82,9 @@ module QUIP_LAMMPS_wrapper_module
          ! Add atom mask to atoms object. Potentials will only include these atoms
          ! in the calculation.
          call add_property(at,'local',.false.,ptr = local, overwrite=.true., error=error) 
+
+         ! And the lammps atom ids, for distinguishability
+         call add_property(at, 'lmptag', lmptag, overwrite=.true., error=error)
 
          ! Zero all connections.
          do i = 1, at%N
