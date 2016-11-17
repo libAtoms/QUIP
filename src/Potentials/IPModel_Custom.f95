@@ -50,6 +50,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use topology_module
 
 use mpi_context_module
 use QUIP_Common_module
@@ -62,7 +63,8 @@ include 'IPModel_interface.h'
 public :: IPModel_Custom
 type IPModel_Custom
   real(dp) :: cutoff = 0.0_dp
-  real(dp) :: kconf = 0.0_dp
+  real(dp) :: kbond = 0.0_dp
+  real(dp) :: kangle = 0.0_dp
 end type IPModel_Custom
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -97,7 +99,9 @@ subroutine IPModel_Custom_Initialise_str(this, args_str, param_str, error)
   call Finalise(this)
 
   call initialise(params)
-  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on O atoms. potential is kconf*(rO)^2')
+  call param_register(params, 'kbond', '0.0', this%kbond, help_string='Strength of quadratic restraint on C-H bonds.  Potential is kconf*(r-r0)^2')
+  call param_register(params, 'kangle', '0.0', this%kangle, help_string='Strength of quadratic restraint on H-C-H angles.  Potential is kconf*cos(theta-theta0)^2')
+  call param_register(params, 'cutoff', '0.0', this%cutoff, help_string='Cutoff for finding methane monomers')
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_Custom_Initialise args_str')) then
      RAISE_ERROR("IPModel_Custom_Init failed to parse args_str='"//trim(args_str)//"'", error)
   end if
@@ -125,11 +129,22 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    ! Add calc() code here
 
+   ! Confining potential for methanes - first find general monomers, then place
+   ! harmonic restraints on bonds and angles.
 
+   ! NB be sure to use the neighbour list passed from lammps
+
+   integer, dimension(:,:), allocatable :: monomer_index
+   logical, dimension(:), allocatable :: is_associated
    real(dp) :: energy, force(3,at%N)
+
    real(dp) :: rO1, rO2, drO1(3), drO2(3)
 
    INIT_ERROR(error)
+
+   allocate(is_associated(at%N))
+
+   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, .true., .false., error)
 
    ! Harmonic confining potential on Os
 
