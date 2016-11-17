@@ -843,6 +843,7 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
       block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
 
       if (this%noncollinear) then
+        if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_up, block_S, i_mag=1)
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_down, block_S, i_mag=2)
 	block_H_z = 0.0_dp
@@ -1011,7 +1012,7 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   logical, intent(out), optional, target :: diag_mask(:), offdiag_mask(:)
 
   integer :: i, ji, j, ik, ii, jj
-  real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:)
+  real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:), block_dH_up(:,:,:), block_dH_down(:,:,:)
   complex(dp), allocatable :: block_dH_z(:,:,:), block_dS_z(:,:,:)
   complex(dp), allocatable :: block_dH_z_phase(:,:,:), block_dS_z_phase(:,:,:)
   real(dp) :: dv_hat(3), dv_mag
@@ -1039,6 +1040,8 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   do_S_block = do_S .or. this%scf%active
 
   allocate(block_dH(this%max_block_size, this%max_block_size, 3))
+  allocate(block_dH_up(this%max_block_size, this%max_block_size, 3))
+  allocate(block_dH_down(this%max_block_size, this%max_block_size, 3))
   allocate(block_dS(this%max_block_size, this%max_block_size, 3))
   if (this%complex_matrices) then
     allocate(block_dH_z(this%max_block_size, this%max_block_size, 3))
@@ -1070,41 +1073,53 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
     call Zero(this%dS(3), d_mask, od_mask)
   endif
 
-  if (this%noncollinear) call system_abort("no noncollinear forces yet")
-
   do i=1, at%N
     block_nr = this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
     do ji=1, n_neighbours(at, i)
-	j = neighbour(at, i, ji, dv_mag, cosines = dv_hat, shift = shift)
-	block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+      j = neighbour(at, i, ji, dv_mag, cosines = dv_hat, shift = shift)
+      block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+
 
       if ((i == j .and. .not. d_mask(i)) .or. &
 	  (i /= j .and. .not. od_mask(i) .and. .not. od_mask(j))) then
 	cycle
       endif
 
-      block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH, block_dS)
-      if (block_active .and. this%complex_matrices) then
-	block_dH_z = block_dH
-	if (do_S_block) block_dS_z = block_dS
+      if (this%noncollinear) then
+        if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
+        if (.not. this%spinpol_no_scf) call system_abort("noncollinear forces only supported for spinpol_no_scf")
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH_up, block_dS, i_mag=1)
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH_down, block_dS, i_mag=2)
+        if (block_active .and. this%complex_matrices) then
+          block_dH_z(1:block_nr:2,1:block_nc:2,:) = block_dH_up(1:block_nr/2,1:block_nc/2,:)
+          block_dH_z(2:block_nr:2,2:block_nc:2,:) = block_dH_down(1:block_nr/2,1:block_nc/2,:)
+          if (do_S_block) then
+            block_dS_z(1:block_nr:2,1:block_nc:2,:) = block_dS(1:block_nr/2,1:block_nc/2,:)
+            block_dS_z(2:block_nr:2,2:block_nc:2,:) = block_dS(1:block_nr/2,1:block_nc/2,:)
+          endif
+        endif
+      else
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH, block_dS)
+        if (block_active .and. this%complex_matrices) then
+          block_dH_z = block_dH
+          if (do_S_block) block_dS_z = block_dS
+        endif
       endif
 
-
       if (block_active .and. this%scf%active) then
-	do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
-	do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
-	  if (this%complex_matrices) then
-	    block_dH_z(ii,jj,:) = block_dH_z(ii,jj,:) + &
-	      0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-		       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS_z(ii,jj,:)
-	  else
-	    block_dH(ii,jj,:) = block_dH(ii,jj,:) + &
-	      0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-		       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS(ii,jj,:)
-	  endif
-	end do
-	end do
-	if (this%noncollinear) call system_abort("No matrix derivatives for noncollinear yet")
+        do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
+        do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+          if (this%complex_matrices) then
+            block_dH_z(ii,jj,:) = block_dH_z(ii,jj,:) + &
+              0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS_z(ii,jj,:)
+          else
+            block_dH(ii,jj,:) = block_dH(ii,jj,:) + &
+              0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS(ii,jj,:)
+          endif
+        end do
+        end do
 	! need to add noncollinear stuff here !!!
       endif
 
