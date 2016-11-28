@@ -106,7 +106,7 @@ module linearalgebra_module
   public :: frobenius_norm
   public :: heap_sort, is_orthogonal, find_in_array, is_in_array, trace, trace_mult, diag
   public :: ran_normal3, matrix_exp, matrix3x3_det, matrix3x3_inverse, operator(.outer.), operator(.cross.)
-  public :: check_size, sort_array, trapezoidintegral, print, int_array_ge, int_array_gt, int_array_lt
+  public :: check_size, sort_array, trapezoidintegral, print, print_mathematica, int_array_ge, int_array_gt, int_array_lt
   public :: angle, unit_vector, random_unit_vector, arrays_lt, is_symmetric, permutation_symbol
   public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, pseudo_inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
