@@ -65,6 +65,8 @@ type IPModel_Custom
   real(dp) :: cutoff = 0.0_dp
   real(dp) :: kbond = 0.0_dp
   real(dp) :: kangle = 0.0_dp
+  real(dp) :: bond_r0 = 0.0_dp
+  real(dp) :: angle_cos0 = 0.0_dp
 end type IPModel_Custom
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -100,7 +102,9 @@ subroutine IPModel_Custom_Initialise_str(this, args_str, param_str, error)
 
   call initialise(params)
   call param_register(params, 'kbond', '0.0', this%kbond, help_string='Strength of quadratic restraint on C-H bonds.  Potential is kconf*(r-r0)^2')
-  call param_register(params, 'kangle', '0.0', this%kangle, help_string='Strength of quadratic restraint on H-C-H angles.  Potential is kconf*cos(theta-theta0)^2')
+  call param_register(params, 'kangle', '0.0', this%kangle, help_string='Strength of quadratic restraint on H-C-H cosines.  Potential is kconf*(cos(theta)-cos(theta0))^2')
+  call param_register(params, 'bond_r0', '0.0', this%bond_r0, help_string='Equilibrium bond length for C-H bonds.')
+  call param_register(params, 'angle_cos0', '0.0', this%angle_cos0, help_string='Cosine of equilibrium bond angle for H-C-H triplets.')
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string='Cutoff for finding methane monomers')
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_Custom_Initialise args_str')) then
      RAISE_ERROR("IPModel_Custom_Init failed to parse args_str='"//trim(args_str)//"'", error)
@@ -138,50 +142,49 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
    logical, dimension(:), allocatable :: is_associated
    real(dp) :: energy, force(3,at%N)
 
-   real(dp) :: rO1, rO2, drO1(3), drO2(3)
+   type(Dictionary) :: params
+   character(STRING_LENGTH) :: atom_mask_name
+   logical :: has_atom_mask_name
+   logical, dimension(:), pointer :: atom_mask_pointer
+
+   integer :: mon_i, atom_i, rank_j, atom_j, rank_k, atom_k
+   real(dp) :: e_pair, d_epair_dr, rij(3), rik(3), rij_mag, rik_mag, rij_norm(3), rik_norm(3)
+   real(dp) :: e_trip, d_etrip_dcos, cos_ijk, fij(3), fik(3)
+   real(dp) :: virial_i(3,3), virial_j(3,3), virial_k(3,3)
+
 
    INIT_ERROR(error)
 
-   allocate(is_associated(at%N))
+   if(present(args_str)) then
+      call initialise(params)
 
-   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, .true., .false., error)
+      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, &
+      help_string="Name of a logical property in the atoms object. For monomers where this property is true the Potential is " // &
+      "calculated.")
 
-   ! Harmonic confining potential on Os
+      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='general_dimer_calc args_str')) then
+         RAISE_ERROR("general_dimer_calc failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
 
-   rO1 = distance_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))
-   rO2 = distance_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))
+      call finalise(params)
 
+      if( has_atom_mask_name ) then
+         if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
+            RAISE_ERROR("general_dimer_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+         endif
+      else
+         atom_mask_pointer => null()
+      endif
+   endif
 
-   energy = this%kConf*rO1**2 + this%kConf*rO2**2 
-
-   !Forces
-
-   force = 0.0_dp
-
-   if(rO1 .feq. 0.0_dp) then
-      drO1 = 0.0_dp
-   else
-      drO1 = diff_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO1
-   end if
-
-   if(rO2 .feq. 0.0_dp) then
-      drO2 = 0.0_dp
-   else
-      drO2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO2
-   end if
-
-   force(:,1) = 2.0_dp*this%kConf*rO1*drO1 
-   force(:,4) = 2.0_dp*this%kConf*rO2*drO2 
-
-
-   if (present(e)) e = energy
+   if (present(e)) e = 0.0_dp
    if (present(local_e)) then
       call check_size('Local_E',local_e,(/at%N/),'IPModel_Custom_Calc', error)
       local_e = 0.0_dp
    endif
    if (present(f)) then
       call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_Custom_Calc', error)
-      f = force
+      f = 0.0_dp
    end if
    if (present(virial)) virial = 0.0_dp
    if (present(local_virial)) then
@@ -189,6 +192,80 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
       local_virial = 0.0_dp
    endif
 
+   allocate(is_associated(at%N))
+   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, .true., .false., error)
+
+   ! First, loop over monomers.  These are also the centres of triplets.
+   do mon_i = 0, size(monomer_index, 2)
+      atom_i = monomer_index(1, mon_i)
+      ! Only evaluate the monomer if the central C atom is local - should check
+      ! how lammps accounts for forces on non-local atoms
+      if (associated(atom_mask_pointer)) then
+         if (.not. atom_mask_pointer(atom_i)) cycle
+      end if
+
+      do rank_j = 1, n_neighbours(at, atom_i, max_dist=this%cutoff)
+         atom_j = neighbour(at, atom_i, rank_j, distance=rij_mag, diff=rij, cosines=rij_norm, max_dist=this%cutoff)
+         if (rij_mag .feq. 0.0_dp) cycle
+         ! This really shouldn't happen in any normal cases, but account for it anyways
+         if (.not. (any(monomer_index(2:5, mon_i) .eq. atom_j))) cycle
+
+         ! Pairwise forces and energies
+         e_pair = this%kbond * (rij_mag - this%bond_r0)**2
+         d_epair_dr = 2.0_dp * this%kbond * (rij_mag - this%bond_r0)
+
+         if (present(e)) e = e + epair
+         if (present(local_e)) then
+            ! Eh, let's just concentrate all the 'local' quantities on the monomer centres.
+            local_e(atom_i) = local_e(atom_i) + epair
+         end if
+         if (present(f)) then
+            f(:, atom_j) = f(:, atom_j) + -1.0_dp * d_epair_dr * rij_norm
+            f(:, atom_i) = f(:, atom_i) + 1.0_dp * d_epair_dr * rij_norm
+         end if
+         if (present(virial) .or. present(local_virial)) then
+            virial_i = -1.0 * d_epair_dr * rij_mag * (rij_norm .outer. rij_norm)
+         end if
+         if (present(virial)) virial = virial + virial_i
+         if (present(local_virial)) then
+            local_virial(:, atom_i) = local_virial(:, atom_i) + reshape(virial_i, (/9/))
+         end if
+
+         do rank_k = 1, n_neighbours(at, atom_i, max_dist=this%cutoff)
+            atom_k = neighbour(at, atom_i, rank_k, distance=rik_mag, diff=rik, cosines=rik_norm, max_dist=this%cutoff)
+            ! Again, shouldn't happen, but better to be safe
+            if (.not. (any(monomer_index(2:5, mon_i) .eq. atom_k))) cycle
+            if (atom_k <= atom_j) cycle
+
+            cos_ijk = sum(rij_norm*rik_norm)
+            e_trip = this%kangle * (cos_ijk - this%angle_cos0)**2
+            d_etrip_dcos = 2.0_dp * this%kangle * (cos_ijk - this%angle_cos0)
+            if (present(e)) e = e + e_trip
+            if (present(local_e)) then
+               ! Hm, the triplet local quantities can be assigned to the outer atoms
+               local_e(atom_j) = local_e(atom_j) + 0.5_dp * e_trip
+               local_e(atom_k) = local_e(atom_k) + 0.5_dp * e_trip
+            end if
+            if (present(f) .or. present(viral) .or. present(local_virial)) then
+               fij = -1.0_dp * d_etrip_dcos * (rik_norm - rij_norm*cos_ijk) / rij_mag
+               fik = -1.0_dp * d_etrip_dcos * (rij_norm - rik_norm*cos_ijk) / rik_mag
+            end if
+            if (present(f)) then
+               f(:, atom_i) = f(:, atom_i) + fij + fik
+               f(:, atom_j) = f(:, atom_j) - fij
+               f(:, atom_k) = f(:, atom_k) - fik
+            end if
+            if (present(virial) .or. present(local_virial)) then
+               virial_j = -1.0_dp * d_etrip_dcos * ((rik_norm .outer. rij_norm) - (rij_norm .outer. rij_norm)*cos_ijk)
+               virial_k = -1.0_dp * d_etrip_dcos * ((rij_norm .outer. rik_norm) - (rik_norm .outer. rik_norm)*cos_ijk)
+            end if
+            if (present(virial)) virial = virial + virial_j + virial_k
+            if (present(local_virial)) then
+               local_virial(:, atom_i) = local_virial(:, atom_i) + reshape(virial_j, (/9/)) + reshape(virial_k, (/9/))
+            end if
+         end do
+      end do
+   end do
 
 end subroutine IPModel_Custom_Calc
 
@@ -200,6 +277,9 @@ subroutine IPModel_Custom_Print(this, file)
   call Print("IPModel_Custom : Custom Potential", file=file)
   call Print("IPModel_Custom : cutoff = " // this%cutoff, file=file)
   call Print("IPModel_Custom : kconf = " // this%kconf, file=file)
+  call Print("IPModel_Custom : kbond = " // this%kbond, file=file)
+  call Print("IPModel_Custom : bond_r0 = " // this%bond_r0, file=file)
+  call Print("IPModel_Custom : angle_cos0 = " // this%angle_cos0, file=file)
 
 end subroutine IPModel_Custom_Print
 
