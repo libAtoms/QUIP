@@ -134,7 +134,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval, help_string="how often to print summary line")
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
   call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval, help_string="how often to print atomic config to traj file")
-  call param_register(md_params_dict, 'flux_print_interval', '10.0', params%flux_print_interval, help_string="how often to print heat flux (fs)")
+  call param_register(md_params_dict, 'flux_print_interval', '-1', params%flux_print_interval, help_string="how often to print heat flux (fs)")
   call param_register(md_params_dict, 'print_property_list', '', print_property_list_str, help_string="list of properties to print for atoms")
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval, help_string="how often to print potential object")
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum, help_string="zero total momentum before starting")
@@ -679,7 +679,9 @@ implicit none
   call finalise(params_es)
 
   call initialise(traj_out, params%trajectory_out_file, OUTPUT, mpi=mpi_glob, netcdf4=params%netcdf4)
-  open(uflux, file=params%flux_out_file, position='append')
+  if (params%flux_print_interval > 0.0_dp) then
+    open(uflux, file=params%flux_out_file, position='append')
+  endif
 
   call initialise_md_thermostat(ds, params)
 
