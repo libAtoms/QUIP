@@ -44,7 +44,7 @@
 module IPModel_Custom_module
 
 use error_module
-use system_module, only : dp, inoutput, print, operator(//)
+use system_module, only : dp, inoutput, print, PRINT_NERD, operator(//)
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -193,10 +193,15 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
    endif
 
    allocate(is_associated(at%N))
-   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, .true., .false., error)
+   is_associated = .false.
+   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, general_ordercheck=.true., error=error)
 
-   ! First, loop over monomers.  These are also the centres of triplets.
-   do mon_i = 0, size(monomer_index, 2)
+   if(.not. all(is_associated)) then
+      call print("WARNING: IP Custom: not all atoms assigned to a methane monomer. If you have partial monomers this is OK.", PRINT_NERD)
+   end if
+
+   ! First, loop over monomers.  These are also the centres of angle triplets.
+   do mon_i = 1, size(monomer_index, 2)
       atom_i = monomer_index(1, mon_i)
       ! Only evaluate the monomer if the central C atom is local - should check
       ! how lammps accounts for forces on non-local atoms
@@ -266,6 +271,9 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
          end do
       end do
    end do
+
+   deallocate(monomer_index)
+   deallocate(is_associated)
 
 end subroutine IPModel_Custom_Calc
 
