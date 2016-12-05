@@ -303,48 +303,42 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
+  ! initialise this one since param parser doesn't set it
   atom_mask_pointer => null()
-  has_atom_mask_name = .false.
-  atom_mask_name = ""
 
-  calc_local_gap_variance = ""
-  print_gap_variance = .false.
-  do_gap_variance = .false.
-  do_local_gap_variance = .false.
+   call initialise(params)
+   
+   call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, &
+   help_string="Name of a logical property in the atoms object. For atoms where this property is true, energies, forces, virials etc. are " // &
+    "calculated")
+   call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
+   call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
 
-  if(present(args_str)) then
-     call initialise(params)
-     
-     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_value_target=has_atom_mask_name, &
-     help_string="Name of a logical property in the atoms object. For atoms where this property is true, energies, forces, virials etc. are " // &
-      "calculated")
-     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
-     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
+   call param_register(params, 'local_gap_variance', '', calc_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
+   call param_register(params, 'print_gap_variance', 'F', print_gap_variance, help_string="Compute variance estimate of the GAP prediction per descriptor and prints it.")
+   call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
 
-     call param_register(params, 'local_gap_variance', '', calc_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
-     call param_register(params, 'print_gap_variance', 'F', print_gap_variance, help_string="Compute variance estimate of the GAP prediction per descriptor and prints it.")
-     call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
+   call param_register(params, 'energy_per_coordinate', '', calc_energy_per_coordinate, help_string="Compute energy per GP coordinate and return it in the Atoms object.")
 
-     call param_register(params, 'energy_per_coordinate', '', calc_energy_per_coordinate, help_string="Compute energy per GP coordinate and return it in the Atoms object.")
-
+   if(present(args_str)) then
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
-     call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
+       call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
      call finalise(params)
-
 
      if( has_atom_mask_name ) then
         if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
-        call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
-     else
-        atom_mask_pointer => null()
+            call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
      endif
      if (do_rescale_r .or. do_rescale_E) then
         RAISE_ERROR("IPModel_GAP_Calc: rescaling of potential at the calc() stage with r_scale and E_scale not yet implemented!", error)
      end if
 
      my_args_str = trim(args_str)
-
   else
+     ! call parser to set defaults
+     if (.not. param_read_line(params,"",ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
+       call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
+     call finalise(params)
      call initialise(my_args_str)
   endif
 
