@@ -214,13 +214,13 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
          e_pair = this%kbond * (rij_mag - this%bond_r0)**2
          d_epair_dr = 2.0_dp * this%kbond * (rij_mag - this%bond_r0)
 
-         if (present(e)) e = e + epair
+         if (present(e)) e = e + e_pair
          if (present(local_e)) then
             ! Eh, let's just concentrate all the 'local' quantities on the monomer centres.
-            local_e(atom_i) = local_e(atom_i) + epair
+            local_e(atom_i) = local_e(atom_i) + e_pair
          end if
          if (present(f)) then
-            f(:, atom_j) = f(:, atom_j) + -1.0_dp * d_epair_dr * rij_norm
+            f(:, atom_j) = f(:, atom_j) - 1.0_dp * d_epair_dr * rij_norm
             f(:, atom_i) = f(:, atom_i) + 1.0_dp * d_epair_dr * rij_norm
          end if
          if (present(virial) .or. present(local_virial)) then
@@ -246,7 +246,7 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
                local_e(atom_j) = local_e(atom_j) + 0.5_dp * e_trip
                local_e(atom_k) = local_e(atom_k) + 0.5_dp * e_trip
             end if
-            if (present(f) .or. present(viral) .or. present(local_virial)) then
+            if (present(f) .or. present(virial) .or. present(local_virial)) then
                fij = -1.0_dp * d_etrip_dcos * (rik_norm - rij_norm*cos_ijk) / rij_mag
                fik = -1.0_dp * d_etrip_dcos * (rij_norm - rik_norm*cos_ijk) / rik_mag
             end if
@@ -276,8 +276,8 @@ subroutine IPModel_Custom_Print(this, file)
 
   call Print("IPModel_Custom : Custom Potential", file=file)
   call Print("IPModel_Custom : cutoff = " // this%cutoff, file=file)
-  call Print("IPModel_Custom : kconf = " // this%kconf, file=file)
   call Print("IPModel_Custom : kbond = " // this%kbond, file=file)
+  call Print("IPModel_Custom : kangle = " // this%kangle, file=file)
   call Print("IPModel_Custom : bond_r0 = " // this%bond_r0, file=file)
   call Print("IPModel_Custom : angle_cos0 = " // this%angle_cos0, file=file)
 
