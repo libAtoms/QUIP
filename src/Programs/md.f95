@@ -60,6 +60,7 @@ private
     logical :: quiet_calc, do_timing
     integer :: advance_md_substeps
     logical :: v_dep_quants_extra_calc
+    real(dp) :: extra_calc_interval
     real(dp) :: extra_heat
     logical :: continuation
     logical :: use_fortran_random
@@ -145,6 +146,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'do_timing', 'F', params%do_timing, help_string="if true, do timing")
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps, help_string="how many actual MD steps for each apparent steps, for things like hybrid MC")
   call param_register(md_params_dict, 'v_dep_quants_extra_calc', 'F', params%v_dep_quants_extra_calc, help_string="do extra call to calc for velocity dependent quantities (like heat flux)")
+  call param_register(md_params_dict, 'extra_calc_interval', '10.0', params%extra_calc_interval, help_string="how often (in fs) to do extra calcs")
   call param_register(md_params_dict, 'continuation', 'F', params%continuation, help_string="if true, this is a continuation of an old run, read initial time and i_step from input config")
   call param_register(md_params_dict, 'extra_heat', '0.0', params%extra_heat, help_string="If > 0, add extra heating of this magnitude to atoms with field extra_heat_mask /= 0, for testing thermostats")
   call param_register(md_params_dict, 'use_fortran_random', 'F', params%use_fortran_random, help_string="if true, use fortran builtin random_number() routine")
@@ -294,6 +296,7 @@ subroutine print_params(params)
   call print("md_params%do_timing=" // params%do_timing)
   call print("md_params%advance_md_substeps=" // params%advance_md_substeps)
   call print("md_params%v_dep_quants_extra_calc=" // params%v_dep_quants_extra_calc)
+  call print("md_params%extra_calc_interval=" // params%extra_calc_interval)
   call print("md_params%extra_heat=" // params%extra_heat)
   call print("md_params%continuation=" // params%continuation)
   call print("md_params%calc_local_ke=" // params%calc_local_ke)
@@ -311,7 +314,7 @@ subroutine print_usage()
   call Print('  [print_property_list=prop1:prop2:...()] [pot_print_interval=n(-1)]', PRINT_ALWAYS)
   call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)]', PRINT_ALWAYS)
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
-  call Print('  [continuation=T/F(F)]', PRINT_ALWAYS)
+  call Print('  [extra_calc_interval=t(10.0) [continuation=T/F(F)]', PRINT_ALWAYS)
 end subroutine print_usage
 
 subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step, override_intervals)
@@ -705,6 +708,7 @@ implicit none
   if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
   if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
   call calc(pot, ds%atoms, args_str=trim(params%first_pot_calc_args)//" "//trim(extra_calc_args))
+  call do_v_dep_calcs(ds, params, pot, override_interval=.true.)
   if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
   if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
   if (params%quiet_calc) call verbosity_pop()
@@ -755,6 +759,7 @@ implicit none
   end do
   call system_timer("md_loop")
 
+  call do_v_dep_calcs(ds, params, pot, override_interval=.true.)
   call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, params%N_steps, override_intervals = .true.)
 
   call system_finalise()
@@ -911,16 +916,34 @@ contains
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
-    ! call calc again if needed for v dep. forces
-    if (params%v_dep_quants_extra_calc) then
-      if (params%quiet_calc) call verbosity_push_decrement()
-      call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
-      if (params%quiet_calc) call verbosity_pop()
-
-      if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
-    end if
+    call do_v_dep_calcs(ds, params, pot)
 
   end subroutine advance_md_one
+
+  subroutine do_v_dep_calcs(ds, params, pot, override_interval)
+    type(DynamicalSystem), intent(inout) :: ds
+    type(md_params), intent(in) :: params
+    type(Potential), intent(inout) :: pot
+    logical, optional :: override_interval
+
+    logical :: use_override_interval
+    real(dp) :: tprin
+
+    use_override_interval = optional_default(.false., override_interval)
+
+    ! call calc again if needed for v dep. forces
+    if (params%v_dep_quants_extra_calc) then
+      tprin = params%extra_calc_interval
+      ! if the time is close to a 
+      if (override_interval .or. abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) then
+          if (params%quiet_calc) call verbosity_push_decrement()
+          call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+          if (params%quiet_calc) call verbosity_pop()
+
+          if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
+      endif
+    end if
+  end subroutine do_v_dep_calcs
 
   subroutine add_extra_heat(force, extra_heat_mag, extra_heat_mask)
      real(dp), intent(inout) :: force(:,:)
