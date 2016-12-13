@@ -43,7 +43,7 @@
 module TBSystem_module
 
 use error_module
-use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop
+use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop, verbosity_push, PRINT_ANAL
 use units_module, only : Hartree, Bohr, PI
 use periodictable_module, only : ElementName
 use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm, print
@@ -803,21 +803,33 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
   allocate(block_H(this%max_block_size, this%max_block_size))
   allocate(block_S(this%max_block_size, this%max_block_size))
   allocate(block_dipole(this%max_block_size, this%max_block_size,3))
+  block_H = 0.0_dp
+  block_S = 0.0_dp
+  block_dipole = 0.0_dp
   if (this%complex_matrices) then
     allocate(block_H_z(this%max_block_size, this%max_block_size))
     allocate(block_S_z(this%max_block_size, this%max_block_size))
     allocate(block_dipole_z(this%max_block_size, this%max_block_size,3))
+    block_H_z = 0.0_dp
+    block_S_z = 0.0_dp
+    block_dipole_z = 0.0_dp
     if (this%kpoints%non_gamma) then
       allocate(block_H_z_phase(this%max_block_size, this%max_block_size))
       allocate(block_S_z_phase(this%max_block_size, this%max_block_size))
       allocate(block_dipole_z_phase(this%max_block_size, this%max_block_size,3))
+      block_H_z_phase = 0.0_dp
+      block_S_z_phase = 0.0_dp
+      block_dipole_z_phase = 0.0_dp
     endif
   endif
   if (this%noncollinear) then
     allocate(block_H_up(this%max_block_size, this%max_block_size))
     allocate(block_H_down(this%max_block_size, this%max_block_size))
+    block_H_up = 0.0_dp
+    block_H_down = 0.0_dp
     if (this%SO%active) then
       allocate(block_SO(this%max_block_size, this%max_block_size))
+      block_SO = 0.0_dp
       call check_spin_orbit_coupling_consistency(this%SO, this%tbmodel, at%Z)
     endif
   else
@@ -1045,12 +1057,20 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
 
   allocate(block_dH(this%max_block_size, this%max_block_size, 3))
   allocate(block_dS(this%max_block_size, this%max_block_size, 3))
+  block_dH = 0.0_dp
+  block_dH_up = 0.0_dp
+  block_dH_down = 0.0_dp
+  block_dS = 0.0_dp
   if (this%complex_matrices) then
     allocate(block_dH_z(this%max_block_size, this%max_block_size, 3))
     allocate(block_dS_z(this%max_block_size, this%max_block_size, 3))
+    block_dH_z = 0.0_dp
+    block_dS_z = 0.0_dp
     if (this%kpoints%non_gamma) then
       allocate(block_dH_z_phase(this%max_block_size, this%max_block_size, 3))
       allocate(block_dS_z_phase(this%max_block_size, this%max_block_size, 3))
+      block_dH_z_phase = 0.0_dp
+      block_dS_z_phase = 0.0_dp
     endif
   endif
 
@@ -1169,8 +1189,8 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
 	endif ! complex_matrices
       endif ! block_active
 
-    end do
-  end do
+    end do ! i
+  end do ! j
 
   if (allocated(block_dH)) deallocate(block_dH)
   if (allocated(block_dS)) deallocate(block_dS)
