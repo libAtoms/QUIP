@@ -864,6 +864,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
         # If we're using smearing, correct energy is 'free energy'
         energy_lines.extend(filter(lambda s: s.startswith('Final free energy (E-TS)'), castep_output))
 
+        # How about the dispersion correction?
+        energy_lines.extend(filter(lambda s: s.startswith('Dispersion corrected final energy'), castep_output))
+        energy_lines.extend(filter(lambda s: s.startswith('Dispersion corrected final free energy'), castep_output))
+
         # Are we doing finite basis correction?
         energy_lines.extend(filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), castep_output))
 
@@ -882,6 +886,27 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
                     raise ValueError('No value found in energy line "%s"' % energy_lines[-1])
             else:
                 atoms.params[energy_param_name] = float(fields[fields.index('eV')-1])
+            # If we're doing a dispersion correction, report that as well
+            # Take care not to use the final basis-set-corrected figure --
+            # that correction is added last!
+            esedc_param_name = 'energy_disp_corr'
+            energy_line_base = [line for line in energy_lines
+                                     if not (line.startswith('Dispersion') or
+                                             'corrected for finite basis set' in line)][-1]
+            energy_line_disp = [line for line in energy_lines
+                                     if line.startswith('Dispersion')
+                                        and 'corrected for finite basis set' not in line][-1]
+            disp_energies = []
+            for eline in energy_line_base, energy_line_disp:
+               fields = eline.split()
+               if 'eV' in fields:
+                  disp_energies.append(float(fields[fields.index('eV') - 1]))
+               else:
+                  if abort:
+                     raise ValueError('No value found in energy line "%s"' % energy_line_base)
+            if len(disp_energies) == 2:
+               ebase, edisp = disp_energies
+               atoms.params[esedc_param_name] = edisp - ebase
 
         # If we're doing geom-opt, look for enthalpy
         enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
@@ -924,7 +949,8 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
         for name,label in [('force_ewald', 'Ewald forces'),
                            ('force_locpot', 'Local potential forces'),
                            ('force_nlpot', 'Non-local potential forces'),
-                           ('force_extpot', 'External potential forces')]:
+                           ('force_extpot', 'External potential forces')
+                           ('force_sedc', 'DFTD sedc forces')]:
             force_start_lines = [i for (i,s) in enumerate(castep_output) if s.find('****** %s ******' % label) != -1]
             if force_start_lines == []: continue
 
@@ -1003,6 +1029,26 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
             except ValueError:
                 if abort:
                     raise ValueError('No populations found in castep file')
+
+        # Also try Hirshfeld population analysis
+        if 'calculate_hirshfeld' in param and param['calculate_hirshfeld']:
+           try:
+              hirshfeld_basic_start = castep_output.index('     Hirshfeld Analysis')
+           except ValueError:
+              if abort:
+                 raise ValueError('No Hirshfeld charges in castep file')
+           hirshfeld_basic_lines = castep_output[hirshfeld_basic_start+4:hirshfeld_basic_start+4+atoms.n]
+           #TODO extract charges
+
+           # If iprint >= 2, also get additional info that is useful for dispersion corrections
+           hirshfeld_extra_start = hirshfeld_basic_start
+           for hirshfeld_extra_start in range(hirshfeld_basic_start, -1, -1):
+               if castep_output[hirshfeld_extra_start].startswith(' *************'):
+                  break
+           hirshfeld_extra_lines = castep_output[hirshfeld_extra_start+1:hirshfeld_basic_start]
+           hirshfeld_extra_lines = [line for line in hirshfeld_extra_lines if line.rstrip()]
+           #TODO continue
+
 
         mod_param = param.copy()
 
