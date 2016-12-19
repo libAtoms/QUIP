@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.atoms &#8212; quippy 6695379+ documentation</title>
+    <title>quippy.atoms &#8212; quippy a68b4fb+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '6695379+',
+        VERSION:     'a68b4fb+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6695379+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy a68b4fb+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -124,7 +124,7 @@
 <span class="k">if</span> <span class="s1">&#39;ase&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ase</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">quippy.miniase</span> <span class="k">as</span> <span class="nn">ase</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;mandatory dependency ase cannot be imported. Install using &#39;pip install ase&#39;.&quot;</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="s1">&#39;phonopy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">phonopy.structure.atoms</span> <span class="k">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">PhonopyAtoms</span>
@@ -772,7 +772,6 @@
 
         <span class="c1"># from ase.Atoms</span>
         <span class="n">other</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
-        <span class="n">other</span><span class="o">.</span><span class="n">adsorbate_info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_info</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">other</span></div>
 
 <div class="viewcode-block" id="Atoms.copy_from"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.copy_from">[docs]</a>    <span class="k">def</span> <span class="nf">copy_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
@@ -812,7 +811,6 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">quippy_name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adsorbate_info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">adsorbate_info</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;can only copy from instances of quippy.Atoms or ase.Atoms&#39;</span><span class="p">)</span>
@@ -1134,7 +1132,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6695379+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy a68b4fb+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
