@@ -4,7 +4,7 @@
 export QUIP_ROOT=`pwd`
 
 # packages for building docs
-pip install sphinx nbconvert\[execute\] numpydoc
+pip install sphinx sphinx_rtd_theme nbconvert\[execute\] numpydoc
 
 # quippy is working, install it
 make install-quippy
