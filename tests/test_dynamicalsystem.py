@@ -56,10 +56,7 @@ class TestDynamicalSystem(QuippyTestCase):
        ds = DynamicalSystem(at) # should not change masses
        self.assertArrayAlmostEqual(mass1, ds.atoms.mass)
 
-if 'ase' in available_modules:
-   import ase
-else:
-   import quippy.miniase as ase
+import ase
 
 class GenericTestDynamics(object):
    def common_init(self):

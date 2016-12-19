@@ -57,7 +57,7 @@ __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice
 if 'ase' in available_modules:
     import ase
 else:
-    import quippy.miniase as ase
+    raise ImportError("mandatory dependency ase cannot be imported. Install using 'pip install ase'.")
 
 if 'phonopy' in available_modules:
     from phonopy.structure.atoms import Atoms as PhonopyAtoms
@@ -705,7 +705,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         # from ase.Atoms
         other.constraints = copy.deepcopy(self.constraints)
-        other.adsorbate_info = copy.deepcopy(self.adsorbate_info)
         return other
 
     def copy_from(self, other):
@@ -745,7 +744,6 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                     self.add_property(quippy_name, np.transpose(value))
 
             self.constraints = copy.deepcopy(other.constraints)
-            self.adsorbate_info = copy.deepcopy(other.adsorbate_info)
 
         else:
             raise TypeError('can only copy from instances of quippy.Atoms or ase.Atoms')
