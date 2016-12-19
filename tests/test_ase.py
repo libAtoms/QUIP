@@ -21,10 +21,7 @@ import unittest, quippy
 import numpy as np
 from quippytest import *
 
-if 'ase' in available_modules:
-   import ase
-else:
-   import quippy.miniase as ase
+import ase
 
 class TestConvert_Simple(QuippyTestCase):
 
