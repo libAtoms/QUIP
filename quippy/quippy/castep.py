@@ -890,23 +890,28 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
             # Take care not to use the final basis-set-corrected figure --
             # that correction is added last!
             esedc_param_name = 'energy_disp_corr'
-            energy_line_base = [line for line in energy_lines
-                                     if not (line.startswith('Dispersion') or
-                                             'corrected for finite basis set' in line)][-1]
-            energy_line_disp = [line for line in energy_lines
-                                     if line.startswith('Dispersion')
-                                        and 'corrected for finite basis set' not in line][-1]
-            disp_energies = []
-            for eline in energy_line_base, energy_line_disp:
-               fields = eline.split()
-               if 'eV' in fields:
-                  disp_energies.append(float(fields[fields.index('eV') - 1]))
-               else:
-                  if abort:
-                     raise ValueError('No value found in energy line "%s"' % energy_line_base)
-            if len(disp_energies) == 2:
-               ebase, edisp = disp_energies
-               atoms.params[esedc_param_name] = edisp - ebase
+            energy_lines_base = [
+                line for line in energy_lines
+                if not (line.startswith('Dispersion') or
+                        'corrected for finite basis set' in line)]
+            energy_lines_disp = [
+                line for line in energy_lines
+                if line.startswith('Dispersion')
+                   and 'corrected for finite basis set' not in line]
+            def parse_eline(eline):
+                fields = eline.split()
+                if 'eV' in fields:
+                    return float(fields[fields.index('eV') - 1])
+                else:
+                    if abort:
+                        raise ValueError(
+                            'No value found in energy line "%s"' % eline)
+                    else:
+                        return None
+            if energy_lines_disp and energy_lines_base:
+                ebase = parse_eline(energy_lines_base[-1])
+                edisp = parse_eline(energy_lines_disp[-1])
+                atoms.params[esedc_param_name] = edisp - ebase
 
         # If we're doing geom-opt, look for enthalpy
         enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
@@ -1073,6 +1078,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
                parse_charge = False
                parse_vol = False
                parse_rel_vol = False
+           atom_idx = 0
            for line in hirshfeld_extra_lines:
                if parse_charge:
                    atoms.properties['hirshfeld_charge'][atom_idx] = float(line.strip())
