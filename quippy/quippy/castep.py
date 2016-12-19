@@ -949,7 +949,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
         for name,label in [('force_ewald', 'Ewald forces'),
                            ('force_locpot', 'Local potential forces'),
                            ('force_nlpot', 'Non-local potential forces'),
-                           ('force_extpot', 'External potential forces')
+                           ('force_extpot', 'External potential forces'),
                            ('force_sedc', 'DFTD sedc forces')]:
             force_start_lines = [i for (i,s) in enumerate(castep_output) if s.find('****** %s ******' % label) != -1]
             if force_start_lines == []: continue
@@ -1038,17 +1038,64 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
               if abort:
                  raise ValueError('No Hirshfeld charges in castep file')
            hirshfeld_basic_lines = castep_output[hirshfeld_basic_start+4:hirshfeld_basic_start+4+atoms.n]
-           #TODO extract charges
+           atoms.add_property('hirshfeld_charge', 0.0)
+           if spin_polarised:
+               atoms.add_property('hirshfeld_spin', 0.0)
+           for line in hirshfeld_basic_lines:
+               el, num, charge, spin = line.split()
+               try:
+                   num = int(num)
+                   charge = float(charge)
+                   spin = float(spin)
+               except ValueError:
+                   if abort:
+                       raise ValueError('Unable to parse Hirshfeld charge line "{}"'.format(line))
+               atoms.properties['hirshfeld_charge'][lookup[(el, num)]] = charge
+               if spin_polarised:
+                   atoms.properties['hirshfeld_spin'][lookup[(el, num)]] = spin
+           #TODO get the dipole moment as well?
 
-           # If iprint >= 2, also get additional info that is useful for dispersion corrections
+           # If iprint >= 2, get additional info that is useful for dispersion corrections
            hirshfeld_extra_start = hirshfeld_basic_start
            for hirshfeld_extra_start in range(hirshfeld_basic_start, -1, -1):
                if castep_output[hirshfeld_extra_start].startswith(' *************'):
                   break
            hirshfeld_extra_lines = castep_output[hirshfeld_extra_start+1:hirshfeld_basic_start]
            hirshfeld_extra_lines = [line for line in hirshfeld_extra_lines if line.rstrip()]
-           #TODO continue
-
+           if hirshfeld_extra_lines:
+               atoms.add_property('hirshfeld_volume', 0.0)
+               atoms.add_property('hirshfeld_rel_volume', 0.0)
+               hirsh_extra_blocks = []
+               # The species match in this regex might seem excessive,
+               # but you never know when you'll want to do DFT on Uuq!
+               # (wait, now its symbol is Fl - oh, whatever.)
+               species_re = re.compile(r'\s+Species\s+(\d+),\s+Atom\s+(\d+)\s+:\s+([A-Z][a-z]{0,2})')
+               parse_charge = False
+               parse_vol = False
+               parse_rel_vol = False
+           for line in hirshfeld_extra_lines:
+               if parse_charge:
+                   atoms.properties['hirshfeld_charge'][atom_idx] = float(line.strip())
+                   parse_charge = False
+                   continue
+               if parse_vol:
+                   atoms.properties['hirshfeld_volume'][atom_idx] = float(line.strip())
+                   parse_vol = False
+                   continue
+               if parse_rel_vol:
+                   atoms.properties['hirshfeld_rel_volume'][atom_idx] = float(line.strip())
+                   parse_rel_vol = False
+                   continue
+               if line.startswith(' Species'):
+                   atom_line = species_re.match(line)
+                   num, el = atom_line.group(2, 3)
+                   atom_idx = lookup[(el, int(num))]
+               if line.lstrip().startswith('Hirshfeld net atomic charge'):
+                   parse_charge = True
+               if line.lstrip().startswith('Hirshfeld atomic volume'):
+                   parse_vol = True
+               if line.lstrip().startswith('Hirshfeld / free atomic volume'):
+                   parse_rel_vol = True
 
         mod_param = param.copy()
 
