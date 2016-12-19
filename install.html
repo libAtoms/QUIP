@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation of QUIP and quippy &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="next" title="Examples" href="Examples/index.html"/>
+        <link rel="prev" title="Introduction to quippy" href="intro.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation of QUIP and quippy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#compilation-instructions">Compilation Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-settings">Custom settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-problems">Common Problems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#permission-errors-when-installing">Permission errors when installing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installating-on-mac-os-x-with-macports">Installating on Mac OS X with macports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#runtimeerror-when-importing">RuntimeError when importing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#importerror-when-importing">ImportError when importing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#possible-problems-installing-atomeye-module">Possible problems installing atomeye module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#error-compiling-ipmodel-gap">Error compiling IPModel_GAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#warning-about-quippy-castep-when-importing-quippy">Warning about <code class="docutils literal"><span class="pre">quippy.castep</span></code> when importing quippy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#internal-compiler-error-with-ifort">Internal compiler error with <cite>ifort</cite></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linking-error-on-mac-os-x">Linking error on Mac OS X</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#segmentation-faults-with-openblas">Segmentation Faults with OpenBLAS</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Installation of QUIP and quippy</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation-of-quip-and-quippy">
+<span id="installation"></span><h1>Installation of QUIP and quippy<a class="headerlink" href="#installation-of-quip-and-quippy" title="Permalink to this headline">¶</a></h1>
+<p>These intructions provide more details on the compilation and
+installation of <code class="docutils literal"><span class="pre">QUIP</span></code> (Fortran library and main programs) and
+<code class="docutils literal"><span class="pre">quippy</span></code> (Python interface).</p>
+<div class="section" id="compilation-instructions">
+<h2>Compilation Instructions<a class="headerlink" href="#compilation-instructions" title="Permalink to this headline">¶</a></h2>
+<p>These instructions are excerpted from the top-level <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>, which is
+the most up-to-date source of information.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">To compile QUIP the minimum requirements are:</p>
+<ul class="simple">
+<li>A working Fortran compiler. QUIP is tested with <code class="docutils literal"><span class="pre">gfortran</span></code> 4.4 and
+later, and <code class="docutils literal"><span class="pre">ifort</span></code> 11.1.</li>
+<li>Linear algebra libraries BLAS and LAPACK. QUIP is tested with
+reference versions <code class="docutils literal"><span class="pre">libblas-dev</span></code> and <code class="docutils literal"><span class="pre">liblapack-dev</span></code> on Ubuntu
+12.04, and <code class="docutils literal"><span class="pre">mkl</span></code> 11.1 with <code class="docutils literal"><span class="pre">ifort</span></code>.</li>
+</ul>
+</li>
+<li><p class="first">Clone the QUIP repository from GitHub. The <code class="docutils literal"><span class="pre">--recursive</span></code> option
+brings in submodules automatically (If you don&#8217;t do this, then
+you will need to run <code class="docutils literal"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span> <span class="pre">--init</span></code>
+from the top-level QUIP directory after cloning)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">libAtoms</span><span class="o">/</span><span class="n">QUIP</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Decide your architecture by looking in the <code class="docutils literal"><span class="pre">arch/</span></code> directory, and
+define an environmental variable <code class="docutils literal"><span class="pre">QUIP_ARCH</span></code>, e.g.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">QUIP_ARCH</span><span class="o">=</span><span class="n">linux_x86_64_gfortran</span>
+</pre></div>
+</div>
+<p>for standard gfortran on Linux. You may need to create your own
+<code class="docutils literal"><span class="pre">arch/Makefile.${QUIP_ARCH}</span></code> file based on an existing file for
+more exotic systems.</p>
+</li>
+<li><p class="first">Customise QUIP, set the maths libraries and provide linking options:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">config</span>
+</pre></div>
+</div>
+<p>Makefile.config will create a build directory, <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}</span></code>,
+and all the building happen there. First it will ask you some
+questions about where you keep libraries and other stuff, if you
+don&#8217;t use something it is asking for, just leave it blank. The
+answers will be stored in <code class="docutils literal"><span class="pre">Makefile.inc</span></code> in the <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}</span></code>
+directory, and you can edit them later (e.g. to change optimisation
+or debug options).</p>
+<p>If you later make significant changes to the configuration such as
+enabling or disabling tight-binding support you should force a
+full rebuild by doing a <cite>make deepclean; make</cite>.</p>
+</li>
+<li><p class="first">Compile all programs, modules and libraries:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span>
+</pre></div>
+</div>
+<p>From the top-level <code class="docutils literal"><span class="pre">QUIP</span></code> directory. All programs are built in
+<code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/</span></code>. You can also find compiled object files
+and libraries (<code class="docutils literal"><span class="pre">libquip.a</span></code>) in that directory. Programs can be
+called directly from that directory.</p>
+<p>Other useful make targets include:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></code> : copies all compiled programs it can find to
+<code class="docutils literal"><span class="pre">QUIP_INSTALLDIR</span></code>, if it&#8217;s defined and is a directory (full path
+required), and copies bundled structures to <code class="docutils literal"><span class="pre">QUIP_STRUCTS_DIR</span></code>
+if it is defined.</li>
+<li><code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code>:   Compile QUIP as a library and link to it.
+This will make all the various libraries and combine them into one:
+<code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/libquip.a</span></code>, which is what you need to link with
+(as well as LAPACK).</li>
+</ul>
+</li>
+<li><p class="first">A good starting point is to use the <code class="docutils literal"><span class="pre">quip</span></code> program, which can
+calculate the properties of an atomic configuration using a
+variety of models. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">quip</span> <span class="n">at_file</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">xyz</span> <span class="n">init_args</span><span class="o">=</span><span class="s1">&#39;IP LJ&#39;</span> \
+    <span class="n">param_file</span><span class="o">=</span><span class="n">share</span><span class="o">/</span><span class="n">Parameters</span><span class="o">/</span><span class="n">ip</span><span class="o">.</span><span class="n">parms</span><span class="o">.</span><span class="n">LJ</span><span class="o">.</span><span class="n">xml</span> <span class="n">E</span>
+</pre></div>
+</div>
+<p>assuming that you have a file called <code class="docutils literal"><span class="pre">test.xyz</span></code> with the following
+data in it representing Cu atoms in a cubic fcc lattice:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">4</span>
+<span class="n">Lattice</span><span class="o">=</span><span class="s2">&quot;3.61 0 0 0 3.61 0 0 0 3.61&quot;</span> <span class="n">Properties</span><span class="o">=</span><span class="n">species</span><span class="p">:</span><span class="n">S</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">pos</span><span class="p">:</span><span class="n">R</span><span class="p">:</span><span class="mi">3</span>
+<span class="n">Cu</span>     <span class="mf">0.000</span> <span class="mf">0.000</span> <span class="mf">0.000</span>
+<span class="n">Cu</span>     <span class="mf">0.000</span> <span class="mf">1.805</span> <span class="mf">1.805</span>
+<span class="n">Cu</span>     <span class="mf">1.805</span> <span class="mf">0.000</span> <span class="mf">1.805</span>
+<span class="n">Cu</span>     <span class="mf">1.805</span> <span class="mf">1.805</span> <span class="mf">0.000</span>
+</pre></div>
+</div>
+<p>The Lennard-Jones parameters in the above example are defined in the
+<code class="docutils literal"><span class="pre">ip.parms.LJ.xml</span></code> file under <code class="docutils literal"><span class="pre">share/Parameters</span></code> (ensure the path
+to this file is correct). The format of the atomic configuration is
+given in
+[Extended XYZ](<a class="reference external" href="http://libatoms.github.io/QUIP/io.html#extendedxyz">http://libatoms.github.io/QUIP/io.html#extendedxyz</a>)
+format, in which the first line is the number of atoms, the second line
+is a series of key=value pairs, which must at least contain the Lattice
+key giving the periodic bounding box and the Properties key that
+describes the remaining lines. The value of Properties is a sequence of
+triplets separated by a colon (:), that give the name, type and number
+of columns, with the type given by I for integers, R for reals, S for
+strings.</p>
+<p>Most string arguments can be replaced by <code class="docutils literal"><span class="pre">--help</span></code> and QUIP programs
+will  then print  a  list  of allowable  keywords  with brief  help
+messages as to their usage,  so e.g. <code class="docutils literal"><span class="pre">init_args=--help</span></code> will give a
+list of potential model  types (and some combinations). The parsing
+is recursive,  so <code class="docutils literal"><span class="pre">init_args=&quot;IP</span> <span class="pre">--help&quot;</span></code>  will then proceed  to list
+the types of interatomic potentials (IP) that are available.</p>
+</li>
+<li><p class="first">To compile the Python wrappers (<code class="docutils literal"><span class="pre">quippy</span></code>), the minimum requirements
+are:</p>
+<ul class="simple">
+<li>Python 2.6 or 2.7. <code class="docutils literal"><span class="pre">quippy</span></code> is tested with both. It does not yet work
+with Python 3.</li>
+<li>[NumPy](<a class="reference external" href="http://www.numpy.org">http://www.numpy.org</a>)</li>
+<li>[Atomic Simulation Environment](<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">https://wiki.fysik.dtu.dk/ase/</a>) (<code class="docutils literal"><span class="pre">ase</span></code>)</li>
+<li>(optional) [SciPy](<a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a>)</li>
+<li>(optional) [matscipy](<a class="reference external" href="https://github.com/libAtoms/matscipy">https://github.com/libAtoms/matscipy</a>).</li>
+</ul>
+</li>
+<li><p class="first">If you are using a Python virtual environment (virtualenv) and would like
+to install <code class="docutils literal"><span class="pre">quippy</span></code> into it, ensure the environment is activated
+(<code class="docutils literal"><span class="pre">source</span> <span class="pre">&lt;env_dir&gt;/bin/activate</span></code>, where <code class="docutils literal"><span class="pre">&lt;env_dir&gt;</span></code> is the root of
+your virtual environment) _before_ building <code class="docutils literal"><span class="pre">quippy</span></code> (otherwise library
+versions may cause unexpected conflicts).</p>
+</li>
+<li><p class="first">To compile the Python wrappers (<code class="docutils literal"><span class="pre">quippy</span></code>), run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">quippy</span>
+</pre></div>
+</div>
+<p>Quippy can be used by adding the <code class="docutils literal"><span class="pre">lib</span></code> directory in
+<code class="docutils literal"><span class="pre">quippy/build/${QUIP_ARCH}</span></code> to your <code class="docutils literal"><span class="pre">$PYTHONPATH</span></code>, however it can be
+more convenient to install into a specific Python distribution:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">install</span><span class="o">-</span><span class="n">quippy</span>
+</pre></div>
+</div>
+<p>will either install into the current virtualenv or attempt to install
+systemwide (usually fails without <code class="docutils literal"><span class="pre">sudo</span></code>). To install only for the
+current user (into <code class="docutils literal"><span class="pre">~\.local</span></code>), execute the command
+<code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS=--user</span> <span class="pre">make</span> <span class="pre">install-quippy</span></code>,
+or use <code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS=--prefix=&lt;directory&gt;</span></code> to install into a
+specific directory. <code class="docutils literal"><span class="pre">QUIPPY_INSTALL_OPTS</span></code> can also be set in the file
+<code class="docutils literal"><span class="pre">build/${QUIP_ARCH}/Makefile.inc</span></code>.</p>
+</li>
+<li><p class="first">More details on the quippy installation process and troubleshooting for</p>
+</li>
+</ol>
+<blockquote>
+<div>common build problems are available in the
+[online documentation](<a class="reference external" href="http://libatoms.github.io/QUIP/">http://libatoms.github.io/QUIP/</a>).</div></blockquote>
+<ol class="arabic" start="11">
+<li><p class="first">To run the unit and regression tests, which depend on <code class="docutils literal"><span class="pre">quippy</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Some functionality is only available if you check out other
+modules within the <code class="docutils literal"><span class="pre">QUIP/src/</span></code> directories, e.g. the <code class="docutils literal"><span class="pre">ThirdParty</span></code>
+(DFTB parameters, TTM3f water model), <code class="docutils literal"><span class="pre">GAP</span></code> (Gaussian
+Approximation Potential models) and <code class="docutils literal"><span class="pre">GAP-filler</span></code> (Gaussian
+Approximation Potential model training). These packages are
+not distributed with QUIP because they come with different licensing
+restrictions.</p>
+</li>
+<li><p class="first">In order to run QUIP potentials via LAMMPS, <code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code> to get QUIP
+into library form, and then follow the instructions in the
+[LAMMPS documentation](<a class="reference external" href="http://lammps.sandia.gov/doc/pair_quip.html">http://lammps.sandia.gov/doc/pair_quip.html</a>).</p>
+</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="custom-settings">
+<h2>Custom settings<a class="headerlink" href="#custom-settings" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><strong class="makevar">MATHS_LINKOPTS</strong></dt>
+<dd><p class="first">Library options needed to link to BLAS and LAPACK libraries. Any working
+BLAS/LAPACK installation is fine. If you are using Linux, ATLAS is
+a good option, and you should use something like the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">atlas</span> <span class="o">-</span><span class="n">llapack</span> <span class="o">-</span><span class="n">lf77blas</span> <span class="o">-</span><span class="n">lcblas</span> <span class="o">-</span><span class="n">latlas</span>
+</pre></div>
+</div>
+<p>On Mac OS X, there are build in LAPACK libraries in the Accelerate
+framework, which you can use by entering</p>
+<blockquote class="last">
+<div>-framework Accelerate</div></blockquote>
+</dd>
+<dt><strong class="makevar">FOX_LIBDIR</strong>, <strong class="makevar">FOX_INCDIR</strong> and <strong class="makevar">FOX_LIBS</strong></dt>
+<dd>Directories containing FoX libraries and header files, and required link options.
+Should be read automatically from QUIP Makefiles.</dd>
+<dt><strong class="makevar">QUIPPY_FCOMPILER</strong></dt>
+<dd><p class="first">Fortran compiler to use. The shell command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ f2py -c --help-fcompiler
+</pre></div>
+</div>
+<p class="last">will print a list of detected compilers on your system. Use <code class="docutils literal"><span class="pre">gnu95</span></code> for gfortran,
+<code class="docutils literal"><span class="pre">intel</span></code> for ifort on 32-bit platforms and <code class="docutils literal"><span class="pre">intelem</span></code> for ifort on 64-bit platforms.</p>
+</dd>
+<dt><strong class="makevar">QUIPPY_DEFINES</strong> Preprocessor macros which should be defined</dt>
+<dd>when compiling quippy. Note that since the Fortran source files are
+preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, it&#8217;s
+important to put all the <cite>-D</cite> options needed here and not in
+<strong class="makevar">QUIPPY_F90FLAGS</strong>.</dd>
+<dt><strong class="makevar">QUIPPY_F90FLAGS</strong> and <strong class="makevar">QUIPPY_F77FLAGS</strong></dt>
+<dd>Extra flags to pass to Fortran 90 and 77 compilers</dd>
+<dt><strong class="makevar">QUIPPY_OPT</strong></dt>
+<dd>Optimisation settings for Fortran compiler</dd>
+<dt><strong class="makevar">QUIPPY_DEBUG</strong></dt>
+<dd>Set this to <cite>1</cite> to include debugging information in the compiled extension code.
+This also disables optimisation.</dd>
+<dt><strong class="makevar">QUIPPY_CPP</strong></dt>
+<dd>Fortran preprocessor to use. Default is system <cite>cpp</cite>.</dd>
+<dt><strong class="makevar">QUIPPY_INSTALL_OPTS</strong></dt>
+<dd>Installation options, e.g. specify <code class="docutils literal"><span class="pre">--user</span></code> to install for the current
+user <code class="docutils literal"><span class="pre">--prefix=${PREFIX}</span></code> to install in a non-default location.</dd>
+<dt><strong class="makevar">QUIPPY_NO_TOOLS</strong></dt>
+<dd>If set to 1, omit compilation of extra tools such as the elasticity module.</dd>
+<dt><strong class="makevar">QUIPPY_NO_CRACK</strong></dt>
+<dd>If set to 1, omit compilation of crack utilities.</dd>
+<dt><strong class="makevar">HAVE_NETCDF</strong></dt>
+<dd>Should be set to 1 to enable NetCDF support. Should be read automatically from QUIP.</dd>
+<dt><strong class="makevar">NETCDF4</strong></dt>
+<dd>If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP.</dd>
+<dt><strong class="makevar">NETCDF_LIBDIR</strong>, <strong class="makevar">NETCDF_INCDIR</strong>, <strong class="makevar">NETCDF_LIBS</strong> and <strong class="makevar">NETCDF4_LIBS</strong></dt>
+<dd>Directories containing NetCDF libraries and header files, and required link options.
+Should be read automatically from QUIP.</dd>
+</dl>
+</div>
+<div class="section" id="common-problems">
+<span id="install-faq"></span><h2>Common Problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="permission-errors-when-installing">
+<h3>Permission errors when installing<a class="headerlink" href="#permission-errors-when-installing" title="Permalink to this headline">¶</a></h3>
+<p>If you are installing as root, you may need to make sure the value of
+the <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> gets through to the install script, e.g.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">QUIP_ARCH</span><span class="o">=</span><span class="n">darwin_x86_64_gfortran</span> <span class="n">make</span> <span class="n">install</span><span class="o">-</span><span class="n">quippy</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installating-on-mac-os-x-with-macports">
+<h3>Installating on Mac OS X with macports<a class="headerlink" href="#installating-on-mac-os-x-with-macports" title="Permalink to this headline">¶</a></h3>
+<p>Macports requires various packages to be installed to compile
+everything, and may require extra linking arguments. See the
+<code class="file docutils literal"><span class="pre">README.macports</span></code> for the latest details.</p>
+</div>
+<div class="section" id="runtimeerror-when-importing">
+<h3>RuntimeError when importing<a class="headerlink" href="#runtimeerror-when-importing" title="Permalink to this headline">¶</a></h3>
+<p>If, after installing quippy, you get the error shown below when you
+try to import it for the first time, then you are a victim of a bug in
+early versions of Python 2.6.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; import quippy
+Traceback (most recent call last):
+ File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+ File &quot;/home/ab686/QUIP/Tools/quippy/quippy/__init__.py&quot;, line 31, in
+&lt;module&gt;
+   _quippy.system.verbosity_push(0)
+RuntimeError: more argument specifiers than keyword list entries
+(remaining format:&#39;|:_quippy.system.verbosity_push&#39;)
+</pre></div>
+</div>
+<p>The solution is either to compile your own Python from the current svn
+snapshot, or to update numpy to workaround the fix. This can be done
+either by compiling numpy from source from an up-to-date svn snapshot,
+or by applying <a class="reference external" href="http://projects.scipy.org/numpy/changeset/6193">the patch manually</a>.</p>
+</div>
+<div class="section" id="importerror-when-importing">
+<h3>ImportError when importing<a class="headerlink" href="#importerror-when-importing" title="Permalink to this headline">¶</a></h3>
+<p>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message about unresolved
+dependancies then something went wrong with the linking process -
+check that all the libraries you&#8217;re linking against are correct. You
+can used <cite>ldd</cite> on Linux of <cite>otool -L</cite> on Mac OS X to check which
+libraries the <code class="file docutils literal"><span class="pre">_quippy.so</span></code> Python extension is linked against.</p>
+</div>
+<div class="section" id="possible-problems-installing-atomeye-module">
+<h3>Possible problems installing atomeye module<a class="headerlink" href="#possible-problems-installing-atomeye-module" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
+<span class="go">ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: _Config_load_libatoms</span>
+<span class="go">Referenced from: /Users/silvia/lib/python/_atomeye.so</span>
+<span class="go">Expected in: flat namespace</span>
+<span class="go">in /Users/silvia/lib/python/_atomeye.so</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>be sure that you have set <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ROOT</span></code> variable before starting the compilation.
+If not make clean and recompile again</p>
+<dl class="docutils">
+<dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
+<span class="go">ImportError: dlopen(/Users/silvia/lib/python/_atomeye.so, 2): Symbol not found: __gfortran_adjustl</span>
+<span class="go">Referenced from: /Users/silvia/lib/python/_atomeye.so</span>
+<span class="go">Expected in: flat namespace</span>
+<span class="go">in /Users/silvia/lib/python/_atomeye.so</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>be sure that the gfortran libraries are properly set in <strong class="makevar">ATOMEYE_LIBS</strong> in Makefile.atomeye</p>
+</div>
+<div class="section" id="error-compiling-ipmodel-gap">
+<h3>Error compiling IPModel_GAP<a class="headerlink" href="#error-compiling-ipmodel-gap" title="Permalink to this headline">¶</a></h3>
+<p>If you get the following error during compilation:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">Potentials</span><span class="o">/</span><span class="n">IPModel_GAP</span><span class="o">.</span><span class="n">f95</span><span class="p">:</span><span class="mf">51.22</span><span class="p">:</span>
+
+<span class="n">use</span> <span class="n">descriptors_module</span>
+                      <span class="mi">1</span>
+<span class="n">Fatal</span> <span class="n">Error</span><span class="p">:</span> <span class="n">Can</span><span class="s1">&#39;t open module file &#39;</span><span class="n">descriptors_module</span><span class="o">.</span><span class="n">mod</span><span class="s1">&#39; for reading at (1): No such file or directory</span>
+</pre></div>
+</div>
+<p>The <cite>GAP_predict</cite> module is not publicly available, so the
+<code class="file docutils literal"><span class="pre">Makefile.inc</span></code> must contain <strong class="makevar">HAVE_GP_PREDICT</strong> = 0, and
+<strong class="makevar">HAVE_GP_TEACH</strong> = 0.</p>
+</div>
+<div class="section" id="warning-about-quippy-castep-when-importing-quippy">
+<h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><code class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></code></a> when importing quippy<a class="headerlink" href="#warning-about-quippy-castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
+<p>If you get the following warning message when importing quippy:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python
+&gt;&gt;&gt; from quippy import *
+WARNING:root:quippy.castep import quippy.failed.
+</pre></div>
+</div>
+<p>then don&#8217;t worry, the quippy.castep module is not redistributed with
+the main code. The rest of quippy works fine without it.</p>
+</div>
+<div class="section" id="internal-compiler-error-with-ifort">
+<h3>Internal compiler error with <cite>ifort</cite><a class="headerlink" href="#internal-compiler-error-with-ifort" title="Permalink to this headline">¶</a></h3>
+<p>If you see an error like the following when using the Intel fortran compiler:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fortcom</span><span class="p">:</span> <span class="n">Severe</span><span class="p">:</span> <span class="o">**</span><span class="n">Internal</span> <span class="n">compiler</span> <span class="n">error</span><span class="p">:</span> <span class="n">internal</span> <span class="n">abort</span><span class="o">**</span> <span class="n">Please</span>
+<span class="n">report</span> <span class="n">this</span> <span class="n">error</span> <span class="n">along</span> <span class="k">with</span> <span class="n">the</span> <span class="n">circumstances</span> <span class="ow">in</span> <span class="n">which</span> <span class="n">it</span> <span class="n">occurred</span>
+<span class="ow">in</span> <span class="n">a</span> <span class="n">Software</span> <span class="n">Problem</span> <span class="n">Report</span><span class="o">.</span>
+ <span class="n">Note</span><span class="p">:</span> <span class="n">File</span> <span class="ow">and</span> <span class="n">line</span> <span class="n">given</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">explicit</span> <span class="n">cause</span> <span class="n">of</span> <span class="n">this</span> <span class="n">error</span><span class="o">.</span>
+
+<span class="n">ifort</span><span class="p">:</span> <span class="n">error</span> <span class="c1">#10014: problem during multi-file optimization compilation (code 3)</span>
+<span class="n">backend</span> <span class="n">signals</span>
+</pre></div>
+</div>
+<p>Then the problem is due to bugs in the compiler. As a workaround,
+setting <strong class="makevar">QUIPPY_NO_CRACK</strong> =1 in Makefile.inc should solve the
+problem, at the cost of excluding the fracture utilities from quippy.</p>
+</div>
+<div class="section" id="linking-error-on-mac-os-x">
+<h3>Linking error on Mac OS X<a class="headerlink" href="#linking-error-on-mac-os-x" title="Permalink to this headline">¶</a></h3>
+<p>When recompiling quippy on top of a previous compilation, you may see
+errors like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">collect2</span><span class="p">:</span> <span class="n">ld</span> <span class="n">returned</span> <span class="mi">1</span> <span class="n">exit</span> <span class="n">status</span> <span class="n">ld</span><span class="p">:</span> <span class="ow">in</span>
+<span class="o">/</span><span class="n">QUIP</span><span class="o">/</span><span class="n">build</span><span class="o">.</span><span class="n">darwin_x86_64_gfortran</span><span class="o">/</span><span class="n">libquiputils</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">malformed</span>
+<span class="n">archive</span> <span class="n">TOC</span> <span class="n">entry</span> <span class="k">for</span>  <span class="n">___elasticity_module_MOD_einstein_frequencies</span><span class="p">,</span>
+<span class="n">offset</span> <span class="mi">1769103734</span> <span class="ow">is</span> <span class="n">beyond</span> <span class="n">end</span> <span class="n">of</span> <span class="n">file</span> <span class="mi">1254096</span>
+</pre></div>
+</div>
+<p>This seems to be a Mac OS X Lion problem with rebuilding static
+libraries (.a files). Removing the static libraries with <cite>rm
+../../build.${QUIP_ARCH}/*.a</cite> and recompiling should solve the
+problem.</p>
+</div>
+<div class="section" id="segmentation-faults-with-openblas">
+<h3>Segmentation Faults with OpenBLAS<a class="headerlink" href="#segmentation-faults-with-openblas" title="Permalink to this headline">¶</a></h3>
+<p>The threading in OpenBLAS can interfere with the OpenMP resulting in
+segfaults. Either recompile OpenBLAS with <code class="docutils literal"><span class="pre">USE_OPENMP=1</span></code> or disable
+threading with <code class="docutils literal"><span class="pre">export</span> <span class="pre">OPENBLAS_NUM_THREADS=1</span></code> at runtime.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Examples/index.html" class="btn btn-neutral float-right" title="Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="intro.html" class="btn btn-neutral" title="Introduction to quippy" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

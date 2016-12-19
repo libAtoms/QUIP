@@ -1,0 +1,486 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Phonon calculation &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/>
+        <link rel="prev" title="Tools for electrostatic embedding" href="electrostaticembed.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cp2k.html">CP2K I/O and driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="elasticity.html">Elasticity calculations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="polarization.html">Tools for polarizable potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="electrostaticembed.html">Tools for electrostatic embedding</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Phonon calculation</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Phonon calculation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/phonons.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.phonons">
+<span id="phonon-calculation"></span><h1>Phonon calculation<a class="headerlink" href="#module-quippy.phonons" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.phonons" title="quippy.phonons: Evaluate phonons"><code class="xref py py-mod docutils literal"><span class="pre">quippy.phonons</span></code></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine" title="quippy.phonons.Phonon_fine"><code class="xref py py-obj docutils literal"><span class="pre">Phonon_fine</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonon_fine_calc_print" title="quippy.phonons.phonon_fine_calc_print"><code class="xref py py-obj docutils literal"><span class="pre">phonon_fine_calc_print</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.phonons.eval_frozen_phonon" title="quippy.phonons.eval_frozen_phonon"><code class="xref py py-obj docutils literal"><span class="pre">eval_frozen_phonon</span></code></a>(pot,at,dx,evec,[calc_args])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonons_all" title="quippy.phonons.phonons_all"><code class="xref py py-obj docutils literal"><span class="pre">phonons_all</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="86%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PHONON_FORCE_TOLERANCE</span></code></td>
+<td>1e-12</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.phonons.Phonon_fine">
+<em class="property">class </em><code class="descclassname">quippy.phonons.</code><code class="descname">Phonon_fine</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">Phonon_fine</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.calc" title="quippy.phonons.Phonon_fine.calc"><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.print_" title="quippy.phonons.Phonon_fine.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.phonons.Phonon_fine.calc">
+<code class="descname">calc</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine.calc" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>dx</strong> :  input float</p>
+<p><strong>phonon_supercell</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>phonon_supercell_fine</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>calc_args</strong> :  input string(len=-1), optional</p>
+<p><strong>do_parallel</strong> :  input int, optional</p>
+<p><strong>phonons_path_start</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>phonons_path_end</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>phonons_path_steps</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.phonons.Phonon_fine.print_">
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine.print_" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.phonons.phonon_fine_calc_print">
+<code class="descclassname">quippy.phonons.</code><code class="descname">phonon_fine_calc_print</code><span class="sig-paren">(</span><em>pot</em>, <em>at_in</em>, <em>dx</em><span class="optional">[</span>, <em>phonon_supercell</em>, <em>phonon_supercell_fine</em>, <em>calc_args</em>, <em>do_parallel</em>, <em>phonons_path_start</em>, <em>phonons_path_end</em>, <em>phonons_path_steps</em>, <em>file</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.phonon_fine_calc_print" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>dx</strong> :  input float</p>
+<p><strong>phonon_supercell</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>phonon_supercell_fine</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>calc_args</strong> :  input string(len=-1), optional</p>
+<p><strong>do_parallel</strong> :  input int, optional</p>
+<p><strong>phonons_path_start</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>phonons_path_end</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>phonons_path_steps</strong> :  input int, optional</p>
+<p><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">phonon_fine_calc_print</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.phonons.eval_frozen_phonon">
+<code class="descclassname">quippy.phonons.</code><code class="descname">eval_frozen_phonon</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>dx</em>, <em>evec</em><span class="optional">[</span>, <em>calc_args</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.eval_frozen_phonon" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>dx</strong> :  input float</p>
+<p><strong>evec</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<p><strong>calc_args</strong> :  input string(len=-1), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_eval_frozen_phonon</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">eval_frozen_phonon</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.phonons.phonons_all">
+<code class="descclassname">quippy.phonons.</code><code class="descname">phonons_all</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>dx</em>, <em>n0</em><span class="optional">[</span>, <em>evecs</em>, <em>effective_masses</em>, <em>calc_args</em>, <em>ir_intensities</em>, <em>do_parallel</em>, <em>zero_translation</em>, <em>zero_rotation</em>, <em>force_const_mat</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.phonons_all" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>dx</strong> :  input float</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_evals,0)</p>
+</div></blockquote>
+<p><strong>evecs</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2), optional</p>
+<p><strong>effective_masses</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n3), optional</p>
+<p><strong>calc_args</strong> :  input string(len=-1), optional</p>
+<p><strong>ir_intensities</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n4), optional</p>
+<p><strong>do_parallel</strong> :  input int, optional</p>
+<p><strong>zero_translation</strong> :  input int, optional</p>
+<p><strong>zero_rotation</strong> :  input int, optional</p>
+<p><strong>force_const_mat</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n5,qp_n6), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>evals</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">phonons_all</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="electrostaticembed.html" class="btn btn-neutral" title="Tools for electrostatic embedding" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

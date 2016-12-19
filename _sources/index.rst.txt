@@ -52,7 +52,7 @@ Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
 Winfield.
 
-Copyright 2006-2015.
+Copyright 2006-2016.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public

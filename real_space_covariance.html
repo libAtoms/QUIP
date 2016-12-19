@@ -1,0 +1,739 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Real-space covariance representation of atomic environments &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/>
+        <link rel="prev" title="Identification of atoms on surfaces" href="find_surface_atoms.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="crack.html">Tools for fracture simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="clusters.html">Cluster carving routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="find_surface_atoms.html">Identification of atoms on surfaces</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Real-space covariance representation of atomic environments</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="structures.html">Structure building routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="topology.html">Utilities for topological analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Real-space covariance representation of atomic environments</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/real_space_covariance.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.real_space_covariance">
+<span id="real-space-covariance-representation-of-atomic-environments"></span><h1>Real-space covariance representation of atomic environments<a class="headerlink" href="#module-quippy.real_space_covariance" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.real_space_covariance" title="quippy.real_space_covariance: Representation of atomic environments"><code class="xref py py-mod docutils literal"><span class="pre">quippy.real_space_covariance</span></code></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance" title="quippy.real_space_covariance.RealSpaceCovariance"><code class="xref py py-obj docutils literal"><span class="pre">RealSpaceCovariance</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>24-point quaternion grid from centers of the cells of a</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.random_quaternion" title="quippy.real_space_covariance.random_quaternion"><code class="xref py py-obj docutils literal"><span class="pre">random_quaternion</span></code></a>()</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.overlap_func" title="quippy.real_space_covariance.overlap_func"><code class="xref py py-obj docutils literal"><span class="pre">overlap_func</span></code></a>(x,[am_data])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.centre_on_atom_1" title="quippy.real_space_covariance.centre_on_atom_1"><code class="xref py py-obj docutils literal"><span class="pre">centre_on_atom_1</span></code></a>(at)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.doverlap_func" title="quippy.real_space_covariance.doverlap_func"><code class="xref py py-obj docutils literal"><span class="pre">doverlap_func</span></code></a>(x,[am_data])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.rotmat_quaternion" title="quippy.real_space_covariance.rotmat_quaternion"><code class="xref py py-obj docutils literal"><span class="pre">rotmat_quaternion</span></code></a>(q)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.drotmat_dquaternion" title="quippy.real_space_covariance.drotmat_dquaternion"><code class="xref py py-obj docutils literal"><span class="pre">drotmat_dquaternion</span></code></a>(q)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance">
+<em class="property">class </em><code class="descclassname">quippy.real_space_covariance.</code><code class="descname">RealSpaceCovariance</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
+<p>24-point quaternion grid from centers of the cells of a
+truncated-cubic tetracontaoctachoron (48-cell), coverage angle
+alpha=62.8 degrees. See <a class="reference external" href="http://charles.karney.info/orientation">http://charles.karney.info/orientation</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
+<p><strong>n_grid_minim</strong> :  input int</p>
+<p><strong>sigma_alpha</strong> :  input float</p>
+<p><strong>sigma_beta</strong> :  input float</p>
+<p><strong>sigma_covariance</strong> :  input float</p>
+<p><strong>sigma_error</strong> :  input float</p>
+<p><strong>cutoff_in</strong> :  input float</p>
+<p><strong>transition_width</strong> :  input float</p>
+<p class="last"><strong>covariance_tol</strong> :  input float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">RealSpaceCovariance</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="quippy.real_space_covariance.RealSpaceCovariance.align"><code class="xref py py-obj docutils literal"><span class="pre">align</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">align</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.covariance" title="quippy.real_space_covariance.RealSpaceCovariance.covariance"><code class="xref py py-obj docutils literal"><span class="pre">covariance</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.predict" title="quippy.real_space_covariance.RealSpaceCovariance.predict"><code class="xref py py-obj docutils literal"><span class="pre">predict</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.predict_2" title="quippy.real_space_covariance.RealSpaceCovariance.predict_2"><code class="xref py py-obj docutils literal"><span class="pre">predict_2</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.predict_3" title="quippy.real_space_covariance.RealSpaceCovariance.predict_3"><code class="xref py py-obj docutils literal"><span class="pre">predict_3</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.set_n" title="quippy.real_space_covariance.RealSpaceCovariance.set_n"><code class="xref py py-obj docutils literal"><span class="pre">set_n</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.teach" title="quippy.real_space_covariance.RealSpaceCovariance.teach"><code class="xref py py-obj docutils literal"><span class="pre">teach</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.align">
+<code class="descname">align</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">align</span></code> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<code class="descname">align</code><span class="sig-paren">(</span><em>tag1</em>, <em>tag2</em>, <em>qs</em><span class="optional">[</span>, <em>overlap</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><p>Align two sets of configurations, identified by the tags <code class="docutils literal"><span class="pre">tag1</span></code> and <code class="docutils literal"><span class="pre">tag2</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tag1</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>tag2</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">realspacecovariance_align_data_sets</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">align</code><span class="sig-paren">(</span><em>at1</em>, <em>at2</em>, <em>qs</em><span class="optional">[</span>, <em>overlap</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><p>Find the quaterion corresponding to the rotation which maximise the overlap
+between the atomic densities of at1 and at2, starting minimisations at each
+quaterion in the (4,n) array qs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>at1</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
+<li><strong>at2</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
+<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">realspacecovariance_align_pair</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">align</code><span class="sig-paren">(</span><em>at</em>, <em>tag</em>, <em>qs</em><span class="optional">[</span>, <em>overlap</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><p>Align the configuration <code class="docutils literal"><span class="pre">at</span></code> with the set of configurations in <code class="docutils literal"><span class="pre">this.data</span></code>
+which have tag equal to <code class="docutils literal"><span class="pre">tag</span></code>. Objective function is sum of overlaps.
+A single minimisation is performed, starting from quaterions in <code class="docutils literal"><span class="pre">qs</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
+<li><strong>tag</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">realspacecovariance_align_with_data_set</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.covariance">
+<code class="descname">covariance</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.covariance" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at1</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>at2</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>q</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+<p><strong>distance</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p><strong>force_covariance</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p><strong>force_difference</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p><strong>do_align</strong> :  input int, optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_covariance</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">covariance</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.predict" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>force</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p class="last"><strong>error</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">predict</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.predict_2">
+<code class="descname">predict_2</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.predict_2" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>force</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p class="last"><strong>error</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">predict_2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.predict_3">
+<code class="descname">predict_3</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.predict_3" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>crystal</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>k</strong> :  input int</p>
+<p><strong>force</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p class="last"><strong>error</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">predict_3</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.set_n">
+<code class="descname">set_n</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.set_n" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">set_n</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.real_space_covariance.RealSpaceCovariance.teach">
+<code class="descname">teach</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.teach" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>do_optimise</strong> :  input int</p>
+<p class="last"><strong>use_qr</strong> :  input int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">teach</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.real_space_covariance.random_quaternion">
+<code class="descclassname">quippy.real_space_covariance.</code><code class="descname">random_quaternion</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.random_quaternion" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_random_quaternion</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (4)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">random_quaternion</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.real_space_covariance.overlap_func">
+<code class="descclassname">quippy.real_space_covariance.</code><code class="descname">overlap_func</code><span class="sig-paren">(</span><em>x</em><span class="optional">[</span>, <em>am_data</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.overlap_func" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<p><strong>am_data</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n1,(1)), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_overlap_func</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">overlap_func</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.real_space_covariance.centre_on_atom_1">
+<code class="descclassname">quippy.real_space_covariance.</code><code class="descname">centre_on_atom_1</code><span class="sig-paren">(</span><em>at</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.centre_on_atom_1" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">centre_on_atom_1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.real_space_covariance.doverlap_func">
+<code class="descclassname">quippy.real_space_covariance.</code><code class="descname">doverlap_func</code><span class="sig-paren">(</span><em>x</em><span class="optional">[</span>, <em>am_data</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.doverlap_func" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<p><strong>am_data</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n1,(1)), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_doverlap_func</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (size(qp_x))</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">doverlap_func</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.real_space_covariance.rotmat_quaternion">
+<code class="descclassname">quippy.real_space_covariance.</code><code class="descname">rotmat_quaternion</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.rotmat_quaternion" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (4)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_rotmat_quaternion</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">rotmat_quaternion</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.real_space_covariance.drotmat_dquaternion">
+<code class="descclassname">quippy.real_space_covariance.</code><code class="descname">drotmat_dquaternion</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.drotmat_dquaternion" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (4)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_drotmat_dquaternion</strong> :  rank-3 array(&#8216;d&#8217;) with bounds (3,3,4)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">drotmat_dquaternion</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/real_space_covariance.f95">src/Utils/real_space_covariance.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="find_surface_atoms.html" class="btn btn-neutral" title="Identification of atoms on surfaces" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

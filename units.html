@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Units and physical constants &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/>
+        <link rel="next" title="Low-level system routines" href="system.html"/>
+        <link rel="prev" title="Periodic table data" href="periodictable.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="periodictable.html">Periodic table data</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Units and physical constants</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Units and physical constants</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/units.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.units">
+<span id="units-and-physical-constants"></span><h1>Units and physical constants<a class="headerlink" href="#module-quippy.units" title="Permalink to this headline">¶</a></h1>
+<p>This module holds a collection of our units and conversion factors.
+We use Angstroms (<span class="math">\mathrm{\AA}</span>), eV, and femtoseconds (fs).</p>
+<ul class="simple">
+<li>Length:   Angstroms, <code class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">BOHR</span></code></li>
+<li>Energy:   eV,        <code class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">HARTREE</span></code></li>
+<li>Time:     fs</li>
+<li>Mass:     <span class="math">E T^2/L^2</span> = <code class="docutils literal"><span class="pre">a.u.</span> <span class="pre">*</span> <span class="pre">HARTREE</span> <span class="pre">*</span> <span class="pre">AU_FS**2</span> <span class="pre">/</span> <span class="pre">BOHR**2</span></code></li>
+</ul>
+<p>Module contents for <a class="reference internal" href="#module-quippy.units" title="quippy.units: Units and physical constants"><code class="xref py py-mod docutils literal"><span class="pre">quippy.units</span></code></a>:</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="62%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_ZERO</span></code></td>
+<td>(0.0, 0.0)</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">BOLTZMANN_K</span></code></td>
+<td>8.617385e-05</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">RADIANS_PER_DEGREE</span></code></td>
+<td>0.0174532925199</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND</span></code></td>
+<td>1e+15</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">N_A</span></code></td>
+<td>6.0221479e+23</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CUBIC_BOHR</span></code></td>
+<td>0.0102908560748</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">AU_FS</span></code></td>
+<td>0.0241888434383</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_cp2k</span></code></td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">BOHR</span></code></td>
+<td>0.529177249</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">KCAL_MOL</span></code></td>
+<td>0.043383</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">have_lotf</span></code></td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">DEBYE</span></code></td>
+<td>0.208194346224</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PI</span></code></td>
+<td>3.14159265359</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_ONE</span></code></td>
+<td>(1.0, 0.0)</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND_AU</span></code></td>
+<td>4.13413730405e+16</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">MASSCONVERT</span></code></td>
+<td>103.642721759</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ELEM_CHARGE</span></code></td>
+<td>1.60217653e-19</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">EPSILON_0</span></code></td>
+<td>0.0055263497194</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">GPA</span></code></td>
+<td>160.22</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_EVSEC</span></code></td>
+<td>6.582122e-16</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR</span></code></td>
+<td>0.6582122</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_netcdf</span></code></td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_AU</span></code></td>
+<td>1.0</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">RYDBERG</span></code></td>
+<td>13.60569805</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">DEGREES_PER_RADIAN</span></code></td>
+<td>57.2957795131</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_IMAG</span></code></td>
+<td>(0.0, 1.0)</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HARTREE</span></code></td>
+<td>27.2113961</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ELECTRONMASS_GPERMOL</span></code></td>
+<td>0.000548579903</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="system.html" class="btn btn-neutral float-right" title="Low-level system routines" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="periodictable.html" class="btn btn-neutral" title="Periodic table data" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

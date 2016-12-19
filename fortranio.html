@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Fortran input/output &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/>
+        <link rel="next" title="FortranArray objects for one-based array indexing" href="farray.html"/>
+        <link rel="prev" title="Command line argument parser" href="paramreader.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="system.html">Low-level system routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="connection.html">Connection objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html">Fortran Dictionary objects for storing key/value pairs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="domaindecomposition.html">DomainDecomposition objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="table.html">Fortran <code class="docutils literal"><span class="pre">Table</span></code> for dynamically extendable arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_context.html">MPI parallel interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="paramreader.html">Command line argument parser</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Fortran input/output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="farray.html">FortranArray objects for one-based array indexing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="util.html">Utility functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Fortran input/output</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/fortranio.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.fortranio">
+<span id="fortran-input-output"></span><h1>Fortran input/output<a class="headerlink" href="#module-quippy.fortranio" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.fortranio" title="quippy.fortranio: Fortran input/output"><code class="xref py py-mod docutils literal"><span class="pre">quippy.fortranio</span></code></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.fortranio.fortran_print" title="quippy.fortranio.fortran_print"><code class="xref py py-obj docutils literal"><span class="pre">fortran_print</span></code></a>(\*args)</td>
+<td>Print <cite>args</cite> to mainlog using Fortran I/O routines.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.fortranio.fortran_print_error" title="quippy.fortranio.fortran_print_error"><code class="xref py py-obj docutils literal"><span class="pre">fortran_print_error</span></code></a>(\*args)</td>
+<td>Print <cite>args</cite> to errorlog using Fortran I/O routines.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.fortranio.fortran_print">
+<code class="descclassname">quippy.fortranio.</code><code class="descname">fortran_print</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print <cite>args</cite> to mainlog using Fortran I/O routines. Respects prefix and verbosity settings</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.fortranio.fortran_print_error">
+<code class="descclassname">quippy.fortranio.</code><code class="descname">fortran_print_error</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/fortranio.html#fortran_print_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.fortranio.fortran_print_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print <cite>args</cite> to errorlog using Fortran I/O routines. Respects prefix and verbosity settings</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="farray.html" class="btn btn-neutral float-right" title="FortranArray objects for one-based array indexing" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="paramreader.html" class="btn btn-neutral" title="Command line argument parser" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

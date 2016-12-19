@@ -1,0 +1,627 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utilities for topological analysis &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/>
+        <link rel="next" title="Molecular Dynamics" href="dynamicalsystem.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="crack.html">Tools for fracture simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="clusters.html">Cluster carving routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="find_surface_atoms.html">Identification of atoms on surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="real_space_covariance.html">Real-space covariance representation of atomic environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="structures.html">Structure building routines</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Utilities for topological analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Utilities for topological analysis</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/topology.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.topology">
+<span id="utilities-for-topological-analysis"></span><h1>Utilities for topological analysis<a class="headerlink" href="#module-quippy.topology" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.topology" title="quippy.topology: utilities for topological analysis"><code class="xref py py-mod docutils literal"><span class="pre">quippy.topology</span></code></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.topology.delete_metal_connects" title="quippy.topology.delete_metal_connects"><code class="xref py py-obj docutils literal"><span class="pre">delete_metal_connects</span></code></a>(at)</td>
+<td>Remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl Uses remove_bond in atoms_module.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.topology.find_motif_backbone" title="quippy.topology.find_motif_backbone"><code class="xref py py-obj docutils literal"><span class="pre">find_motif_backbone</span></code></a>(motif,is_proline)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.topology.write_brookhaven_pdb_file" title="quippy.topology.write_brookhaven_pdb_file"><code class="xref py py-obj docutils literal"><span class="pre">write_brookhaven_pdb_file</span></code></a>(...)</td>
+<td>Writes Brookhaven PDB format charges are printed into the PSF file, too use CHARGE_EXTENDED keyword i.e.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.topology.calc_mean_pos" title="quippy.topology.calc_mean_pos"><code class="xref py py-obj docutils literal"><span class="pre">calc_mean_pos</span></code></a>(at,indices)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.topology.find_a2_monomer" title="quippy.topology.find_a2_monomer"><code class="xref py py-obj docutils literal"><span class="pre">find_a2_monomer</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.topology.write_cp2k_pdb_file" title="quippy.topology.write_cp2k_pdb_file"><code class="xref py py-obj docutils literal"><span class="pre">write_cp2k_pdb_file</span></code></a>(...)</td>
+<td>Writes modified PDB format for accurate coordinates and charges, for CP2K Use CHARGE_EXTENDED keyword i.e.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.topology.find_ab_monomer" title="quippy.topology.find_ab_monomer"><code class="xref py py-obj docutils literal"><span class="pre">find_ab_monomer</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.topology.find_water_monomer" title="quippy.topology.find_water_monomer"><code class="xref py py-obj docutils literal"><span class="pre">find_water_monomer</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.topology.create_residue_labels_arb_pos" title="quippy.topology.create_residue_labels_arb_pos"><code class="xref py py-obj docutils literal"><span class="pre">create_residue_labels_arb_pos</span></code></a>(...)</td>
+<td>Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.topology.write_psf_file_arb_pos" title="quippy.topology.write_psf_file_arb_pos"><code class="xref py py-obj docutils literal"><span class="pre">write_psf_file_arb_pos</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.topology.write_psf_file" title="quippy.topology.write_psf_file"><code class="xref py py-obj docutils literal"><span class="pre">write_psf_file</span></code></a>(...)</td>
+<td>Writes PSF topology file, to be used with the PDB coordinate file.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="83%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">NONE_RUN</span></code></td>
+<td>-100</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">QS_RUN</span></code></td>
+<td>-1</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">MM_RUN</span></code></td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">QMMM_RUN_EXTENDED</span></code></td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">QMMM_RUN_CORE</span></code></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.topology.delete_metal_connects">
+<code class="descclassname">quippy.topology.</code><code class="descname">delete_metal_connects</code><span class="sig-paren">(</span><em>at</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.delete_metal_connects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl
+Uses remove_bond in atoms_module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">delete_metal_connects</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.find_motif_backbone">
+<code class="descclassname">quippy.topology.</code><code class="descname">find_motif_backbone</code><span class="sig-paren">(</span><em>motif</em>, <em>is_proline</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.find_motif_backbone" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>motif</strong> :  input rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>is_proline</strong> :  input int</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_backbone</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (5,3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_motif_backbone</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.write_brookhaven_pdb_file">
+<code class="descclassname">quippy.topology.</code><code class="descname">write_brookhaven_pdb_file</code><span class="sig-paren">(</span><em>at</em>, <em>pdb_file</em><span class="optional">[</span>, <em>run_type_string</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.write_brookhaven_pdb_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes Brookhaven PDB format
+charges are printed into the PSF file, too
+use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file
+Sample line:
+ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
+ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
+ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>pdb_file</strong> :  input string(len=-1)</p>
+<p class="last"><strong>run_type_string</strong> :  input string(len=-1), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">write_brookhaven_pdb_file</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.calc_mean_pos">
+<code class="descclassname">quippy.topology.</code><code class="descname">calc_mean_pos</code><span class="sig-paren">(</span><em>at</em>, <em>indices</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.calc_mean_pos" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_pos</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_mean_pos</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.find_a2_monomer">
+<code class="descclassname">quippy.topology.</code><code class="descname">find_a2_monomer</code><span class="sig-paren">(</span><em>at</em>, <em>atomic_number</em>, <em>monomer_cutoff</em>, <em>n0</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.find_a2_monomer" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>atomic_number</strong> :  input int</p>
+<p><strong>monomer_cutoff</strong> :  input float</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_A2_index,0)</p>
+</div></blockquote>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>a2_index</strong> :  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_a2_monomer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.write_cp2k_pdb_file">
+<code class="descclassname">quippy.topology.</code><code class="descname">write_cp2k_pdb_file</code><span class="sig-paren">(</span><em>at</em>, <em>pdb_file</em><span class="optional">[</span>, <em>run_type_string</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.write_cp2k_pdb_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes modified PDB format for accurate coordinates and charges, for CP2K
+Use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file
+Sample line:
+ATOM      1  CT3 ALA A   1       0.76700000   0.80100000  13.31100000  0.00  0.00     ALA   C  -0.27
+ATOM      2   HA ALA A   1       0.07400000  -0.06000000  13.18800000  0.00  0.00     ALA   H   0.09
+ATOM      3   HA ALA A   1       0.17600000   1.74100000  13.29800000  0.00  0.00     ALA   H   0.09</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>pdb_file</strong> :  input string(len=-1)</p>
+<p class="last"><strong>run_type_string</strong> :  input string(len=-1), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">write_cp2k_pdb_file</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.find_ab_monomer">
+<code class="descclassname">quippy.topology.</code><code class="descname">find_ab_monomer</code><span class="sig-paren">(</span><em>at</em>, <em>atomic_number</em>, <em>monomer_cutoff</em>, <em>n0</em>, <em>n1</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.find_ab_monomer" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>atomic_number</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2)</p>
+<p><strong>monomer_cutoff</strong> :  input float</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_AB_index,0)</p>
+</div></blockquote>
+<p><strong>n1</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_AB_index,1)</p>
+</div></blockquote>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ab_index</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_ab_monomer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.find_water_monomer">
+<code class="descclassname">quippy.topology.</code><code class="descname">find_water_monomer</code><span class="sig-paren">(</span><em>at</em>, <em>n0</em><span class="optional">[</span>, <em>ohh_ordercheck</em>, <em>monomer_cutoff</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.find_water_monomer" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>n0</strong> :  input int</p>
+<blockquote>
+<div><p>shape(qp_water_index,0)</p>
+</div></blockquote>
+<p><strong>ohh_ordercheck</strong> :  input int, optional</p>
+<p><strong>monomer_cutoff</strong> :  input float, optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>water_index</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (3,qp_n0)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">find_water_monomer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.create_residue_labels_arb_pos">
+<code class="descclassname">quippy.topology.</code><code class="descname">create_residue_labels_arb_pos</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>do_charmm</em>, <em>intrares_impropers</em>, <em>find_silica_residue</em>, <em>pos_field_for_connectivity</em>, <em>form_bond</em>, <em>break_bond</em>, <em>silica_pos_dep_charges</em>, <em>silica_charge_transfer</em>, <em>have_titania_potential</em>, <em>find_molecules</em>, <em>evb_nneighb_only</em>, <em>remove_si_h_silica_bonds</em>, <em>remove_ti_h_titania_bonds</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.create_residue_labels_arb_pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
+if EVB is being used, must pass exact connectivity object and set evb_nneighb_only to false</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>do_charmm</strong> :  input int, optional</p>
+<p><strong>intrares_impropers</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
+<p><strong>find_silica_residue</strong> :  input int, optional</p>
+<p><strong>pos_field_for_connectivity</strong> :  input string(len=-1), optional</p>
+<p><strong>form_bond</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2), optional</p>
+<p><strong>break_bond</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2), optional</p>
+<p><strong>silica_pos_dep_charges</strong> :  input int, optional</p>
+<p><strong>silica_charge_transfer</strong> :  input float, optional</p>
+<p><strong>have_titania_potential</strong> :  input int, optional</p>
+<p><strong>find_molecules</strong> :  input int, optional</p>
+<p><strong>evb_nneighb_only</strong> :  input int, optional</p>
+<p><strong>remove_si_h_silica_bonds</strong> :  input int, optional</p>
+<p><strong>remove_ti_h_titania_bonds</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_residue_labels_arb_pos</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.write_psf_file_arb_pos">
+<code class="descclassname">quippy.topology.</code><code class="descname">write_psf_file_arb_pos</code><span class="sig-paren">(</span><em>at</em>, <em>psf_file</em><span class="optional">[</span>, <em>run_type_string</em>, <em>intrares_impropers</em>, <em>imp_filename</em>, <em>add_silica_23body</em>, <em>pos_field_for_connectivity</em>, <em>form_bond</em>, <em>break_bond</em>, <em>remove_qmmm_link_bonds</em>, <em>run_suffix</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.write_psf_file_arb_pos" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>psf_file</strong> :  input string(len=-1)</p>
+<p><strong>run_type_string</strong> :  input string(len=-1), optional</p>
+<p><strong>intrares_impropers</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
+<p><strong>imp_filename</strong> :  input string(len=80), optional</p>
+<p><strong>add_silica_23body</strong> :  input int, optional</p>
+<p><strong>pos_field_for_connectivity</strong> :  input string(len=-1), optional</p>
+<p><strong>form_bond</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2), optional</p>
+<p><strong>break_bond</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2), optional</p>
+<p><strong>remove_qmmm_link_bonds</strong> :  input int, optional</p>
+<p><strong>run_suffix</strong> :  input string(len=-1), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">write_psf_file_arb_pos</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.topology.write_psf_file">
+<code class="descclassname">quippy.topology.</code><code class="descname">write_psf_file</code><span class="sig-paren">(</span><em>at</em>, <em>psf_file</em><span class="optional">[</span>, <em>run_type_string</em>, <em>intrares_impropers</em>, <em>imp_filename</em>, <em>add_silica_23body</em>, <em>heuristics_nneighb_only</em>, <em>alt_connect</em>, <em>remove_qmmm_link_bonds</em>, <em>run_suffix</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.topology.write_psf_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes PSF topology file, to be used with the PDB coordinate file.
+PSF contains the list of atoms, bonds, angles, impropers, dihedrals.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>psf_file</strong> :  input string(len=-1)</p>
+<p><strong>run_type_string</strong> :  input string(len=-1), optional</p>
+<p><strong>intrares_impropers</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
+<p><strong>imp_filename</strong> :  input string(len=80), optional</p>
+<p><strong>add_silica_23body</strong> :  input int, optional</p>
+<p><strong>heuristics_nneighb_only</strong> :  input int, optional</p>
+<p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
+<p><strong>remove_qmmm_link_bonds</strong> :  input int, optional</p>
+<p><strong>run_suffix</strong> :  input string(len=-1), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">write_psf_file</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Topology.f95">src/libAtoms/Topology.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dynamicalsystem.html" class="btn btn-neutral float-right" title="Molecular Dynamics" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

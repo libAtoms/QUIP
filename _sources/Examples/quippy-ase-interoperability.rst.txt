@@ -1,0 +1,135 @@
+
+Interoperability with Atomic Simulation Environment
+===================================================
+
+[`View with IPython
+nbviewer <http://nbviewer.ipython.org/github/libAtoms/QUIP/blob/public/doc/Examples/quippy-ase-interoperability.ipynb>`_]
+
+-  quippy ``Potential`` objects can be used as ASE calculators, and
+   vice-versa
+-  quippy ``Atoms`` object is interoperable with ASE ``Atoms``
+-  Can use standard ASE tools, plus communicate with other packages
+   using ASE as *lingua franca*
+
+Example: vacancy formation energy
+---------------------------------
+
+-  Generate structure with ``ASE`` lattice tools
+-  Stillinger-Weber potential implementation from ``QUIP``
+-  Elastic constant fitting routine from ``matscipy``, internal
+   relaxations with ``ASE`` FIRE minimiser
+
+.. code:: ipython2
+
+    %pylab inline
+    from ase.build import bulk
+    from ase.optimize import FIRE
+    from quippy.potential import Potential
+    from quippy.potential import Minim
+    
+    si = bulk('Si', a=5.44, cubic=True)
+    sw_pot = Potential('IP SW') # call into Fortran code
+    si.set_calculator(sw_pot)
+    e_bulk_per_atom = si.get_potential_energy()/len(si)
+    
+    # call general purpose elastic constants calculator 
+    #   using ASE Atoms and QUIP Potential
+    from matscipy.elasticity import fit_elastic_constants
+    Cij = fit_elastic_constants(si, optimizer=FIRE, 
+                                symmetry='cubic', logfile='-')
+    vac1 = si.copy()
+    vac1 *= (3, 3, 3)
+    half_cell = np.diag(vac1.cell)/2.
+    vac_atom = ((vac1.positions - half_cell)**2).sum(axis=1).argmin()
+    del vac1[vac_atom]
+    
+    vac1.set_calculator(sw_pot)
+    vac1.rattle(0.01)
+    opt = Minim(vac1, method='cg_n') # big cell, use Fortran minimiser
+    opt.run(fmax=1e-6)
+    e_vac = vac1.get_potential_energy() - e_bulk_per_atom*len(vac1)
+    print 'SW vacancy formation energy', e_vac, 'eV'
+
+
+.. parsed-literal::
+
+    Populating the interactive namespace from numpy and matplotlib
+    FIRE:   0  15:12:13      -34.635777       0.3247
+    FIRE:   1  15:12:13      -34.642625       0.2026
+    FIRE:   2  15:12:13      -34.646995       0.0046
+    FIRE:   0  15:12:13      -34.670667       0.1584
+    FIRE:   1  15:12:13      -34.672303       0.0999
+    FIRE:   2  15:12:13      -34.673382       0.0046
+    FIRE:   0  15:12:13      -34.678737       0.0000
+    FIRE:   0  15:12:13      -34.660845       0.1508
+    FIRE:   1  15:12:13      -34.662341       0.0972
+    FIRE:   2  15:12:13      -34.663394       0.0090
+    FIRE:   0  15:12:13      -34.617822       0.2945
+    FIRE:   1  15:12:13      -34.623549       0.1917
+    FIRE:   2  15:12:13      -34.627707       0.0221
+    Fitting C_11
+    Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
+    Stress array([-2.56097717, -1.01273495,  0.5027424 ,  1.98320536,  3.42678422]) GPa
+    Cij (gradient) / GPa    :     149.714630969
+    Error in Cij / GPa      :     1.19249995513
+    Correlation coefficient :     0.999904848087
+    Setting C11 (1) to 0.934445 +/- 0.007443
+    
+    
+    Fitting C_21
+    Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
+    Stress array([-1.0766539 , -0.26645127,  0.5027424 ,  1.23340389,  1.92788225]) GPa
+
+
+.. parsed-literal::
+
+    WARNING:quippy.potential:Minim atoms is not quippy.Atoms instance, copy forced!
+
+
+.. parsed-literal::
+
+    Cij (gradient) / GPa    :     75.0892745799
+    Error in Cij / GPa      :     1.31766559061
+    Correlation coefficient :     0.999538422023
+    Setting C21 (7) to 0.468670 +/- 0.008224
+    
+    
+    Fitting C_31
+    Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
+    Stress array([-1.0766539 , -0.26645127,  0.5027424 ,  1.23340389,  1.92788225]) GPa
+    Cij (gradient) / GPa    :     75.0892745799
+    Error in Cij / GPa      :     1.31766559061
+    Correlation coefficient :     0.999538422023
+    Updating C31 (7) with value 0.468670 +/- 0.008224
+    
+    
+    Fitting C_44
+    Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
+    Stress array([ -1.15145968e+00,  -5.81643079e-01,  -9.46417971e-15,
+             5.90131462e-01,   1.18570415e+00]) GPa
+    Cij (gradient) / GPa    :     58.4610219649
+    Error in Cij / GPa      :     0.295085346334
+    Correlation coefficient :     0.999961785442
+    Setting C44 (4) to 0.364885 +/- 0.001842
+    
+    
+    [[ C11  C12  C12               ]
+     [ C12  C11  C12               ]
+     [ C12  C12  C11               ]
+     [                C44          ]
+     [                     C44     ]
+     [                          C44]]
+    
+     = 
+    
+    [[ 149.71   75.09   75.09    0.      0.      0.  ]
+     [  75.09  149.71   75.09    0.      0.      0.  ]
+     [  75.09   75.09  149.71    0.      0.      0.  ]
+     [   0.      0.      0.     58.46    0.      0.  ]
+     [   0.      0.      0.      0.     58.46    0.  ]
+     [   0.      0.      0.      0.      0.     58.46]]
+    C_11 = 149.71 +/- 1.19 GPa
+    C_12 = 75.09 +/- 1.32 GPa
+    C_44 = 58.46 +/- 0.30 GPa
+    SW vacancy formation energy 4.30106655261 eV
+

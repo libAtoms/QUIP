@@ -1,0 +1,1146 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Connection objects &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="system.html">Low-level system routines</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Connection objects</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html">Fortran Dictionary objects for storing key/value pairs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="domaindecomposition.html">DomainDecomposition objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="table.html">Fortran <code class="docutils literal"><span class="pre">Table</span></code> for dynamically extendable arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpi_context.html">MPI parallel interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="paramreader.html">Command line argument parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fortranio.html">Fortran input/output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="farray.html">FortranArray objects for one-based array indexing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="util.html">Utility functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Connection objects</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/connection.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="connection-objects">
+<h1>Connection objects<a class="headerlink" href="#connection-objects" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="quippy.atoms.Connection">
+<em class="property">class </em><code class="descclassname">quippy.atoms.</code><code class="descname">Connection</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">quippy._atoms.Connection</span></code></p>
+<p>The Connection type stores the topology of a set of Atoms</p>
+<p>We do not use a minimum image convention, rather, collect all the images of a neigbouring atoms
+that fall within the neighbour cutoff. The different images are made distinct in the connection list
+by having different <code class="docutils literal"><span class="pre">shift</span></code> vectors associated with them.</p>
+<p>To save storage, the <code class="docutils literal"><span class="pre">neighbour1</span></code> table contains all information about the connection
+but is only filled in for <span class="math">i &lt;= j</span>. <code class="docutils literal"><span class="pre">neighbour2</span></code> is just a list of those of <span class="math">i</span>&#8216;s neighbours
+with <span class="math">i &gt; j</span> together with an index into the <code class="docutils literal"><span class="pre">neighbour1</span></code> table of atom <span class="math">j</span>.</p>
+<p>In normal use (i.e. outside this module) you don&#8217;t need direct access to the tables
+so you should use the interface functions <code class="docutils literal"><span class="pre">atoms_n_neighbours</span></code> and <code class="docutils literal"><span class="pre">atoms_neighbour</span></code> which
+hide the distiction between the cases <span class="math">i &lt;= j</span> and <span class="math">i &gt; j</span>.</p>
+<p><code class="xref py py-class docutils literal"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal"><span class="pre">neighbour1</span></code> (i): <span class="math">i \le j</span> for all <span class="math">j</span> in table, <code class="docutils literal"><span class="pre">intsize=4</span></code>, <code class="docutils literal"><span class="pre">realsize=1</span></code></p>
+<p><code class="docutils literal"><span class="pre">connect.neighbour1(i)%int</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">+----------+----------+----------+----------+</span>
+<span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>    <span class="mi">2</span>     <span class="o">|</span>    <span class="mi">3</span>     <span class="o">|</span>    <span class="mi">4</span>     <span class="o">|</span>
+<span class="o">+----------+----------+----------+----------+</span>
+<span class="o">|</span>    <span class="n">j</span>     <span class="o">|</span> <span class="n">shift_a</span>  <span class="o">|</span> <span class="n">shift_b</span>  <span class="o">|</span> <span class="n">shift_c</span>  <span class="o">|</span>
+<span class="o">+----------+----------+----------+----------+</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">connect.neighbour1(i)%real</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">+----------+</span>
+<span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>
+<span class="o">+----------+</span>
+<span class="o">|</span>  <span class="n">r_ij</span>    <span class="o">|</span>
+<span class="o">+----------+</span>
+</pre></div>
+</div>
+<p><code class="xref py py-class docutils literal"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal"><span class="pre">neighbour2</span></code> (i): <span class="math">i &gt; j</span> for all <span class="math">j</span> in table, <code class="docutils literal"><span class="pre">intsize</span> <span class="pre">=2</span></code>, <code class="docutils literal"><span class="pre">realsize=0</span></code></p>
+<p><code class="docutils literal"><span class="pre">connect.neighbour2(i)%int</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">+----------+----------+</span>
+<span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>    <span class="mi">2</span>     <span class="o">|</span>
+<span class="o">+----------+----------+</span>
+<span class="o">|</span>    <span class="n">j</span>     <span class="o">|</span>    <span class="n">n</span>     <span class="o">|</span>
+<span class="o">+----------+----------+</span>
+</pre></div>
+</div>
+<p><code class="xref py py-class docutils literal"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal"><span class="pre">cell</span></code> (i,j,k) with <code class="docutils literal"><span class="pre">intsize</span> <span class="pre">=</span> <span class="pre">1</span></code>, <code class="docutils literal"><span class="pre">realsize</span> <span class="pre">=</span> <span class="pre">0</span></code></p>
+<p><code class="docutils literal"><span class="pre">connect.cell(i,j,k)2.int</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">+----------+</span>
+<span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>
+<span class="o">+----------+</span>
+<span class="o">|</span>  <span class="n">atom</span>    <span class="o">|</span>
+<span class="o">+----------+</span>
+</pre></div>
+</div>
+<p>N.B. If <span class="math">i</span> and <span class="math">j</span> are neighbours with shift <code class="docutils literal"><span class="pre">shift</span></code>, then
+<code class="docutils literal"><span class="pre">norm(atoms.pos(j)</span> <span class="pre">-</span> <span class="pre">atoms.pos(i)</span> <span class="pre">+</span> <span class="pre">shift)</span></code> is a minimum.
+Mnemonic: <code class="docutils literal"><span class="pre">shift</span></code> is added to <span class="math">j</span> to get closer to <span class="math">i</span>.</p>
+<p>Initialise a Connection object for a given number of atoms <code class="docutils literal"><span class="pre">N</span></code>.
+If the optional Atoms argument is present then we calculate
+the atomic density to initialise the default lengths of the neighbour
+list for efficient memory usage.</p>
+<p>The <a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> is a subclass of <code class="xref py py-class docutils literal"><span class="pre">_atoms.Connection</span></code>
+which adds supports for iteration over all atoms, and indexing
+e.g. <code class="docutils literal"><span class="pre">at.connect.neighbours[1]</span></code> returns a list of the neighbours of
+the atom with index 1.</p>
+<p>When indexed with an integer from 1 to <cite>at.n</cite>, returns an array
+of <code class="xref py py-class docutils literal"><span class="pre">NeighbourInfo</span></code> objects, each of which corresponds to
+a particular pair <cite>(i,j)</cite> and has attributes <cite>j</cite>, <cite>distance</cite>,
+<cite>diff</cite>, <cite>cosines</cite> and <cite>shift</cite>.</p>
+<p>If <code class="docutils literal"><span class="pre">fortran_indexing</span></code> is True, atom and neighbour indices
+start from 1; otherwise they are numbered from zero.</p>
+<p>If connectivity information has not already been calculated
+<a class="reference internal" href="#quippy.atoms.Connection.calc_connect" title="quippy.atoms.Connection.calc_connect"><code class="xref py py-meth docutils literal"><span class="pre">calc_connect()</span></code></a> will be called automatically. The code to
+loop over the neighbours of all atoms is quite idiomatic:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
+   <span class="k">for</span> <span class="n">neighb</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">connect</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+       <span class="nb">print</span> <span class="p">(</span><span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="n">neighb</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="n">neighb</span><span class="o">.</span><span class="n">diff</span><span class="p">,</span>
+              <span class="n">neighb</span><span class="o">.</span><span class="n">cosines</span><span class="p">,</span> <span class="n">neighb</span><span class="o">.</span><span class="n">shift</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that this provides a more Pythonic interface to the atomic
+connectivity information than the wrapped Fortran functions
+<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.n_neighbours" title="quippy.atoms.Atoms.n_neighbours"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.n_neighbours()</span></code></a> and <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.neighbour" title="quippy.atoms.Atoms.neighbour"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.neighbour()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
+<p><strong>nbuffer</strong> :  input int</p>
+<p><strong>pos</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1), optional</p>
+<p><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>g</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>extent</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>nn_guess</strong> :  input int, optional</p>
+<p><strong>store_rij</strong> :  input int, optional</p>
+<p class="last"><strong>fill</strong> :  input int, optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">Connection</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.cell_heads" title="quippy.atoms.Connection.cell_heads"><code class="xref py py-obj docutils literal"><span class="pre">cell_heads</span></code></a></td>
+<td>First entry in cell atoms structure</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.cellsna" title="quippy.atoms.Connection.cellsna"><code class="xref py py-obj docutils literal"><span class="pre">cellsna</span></code></a></td>
+<td>no. of cells in the lattice directions</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.is_min_image" title="quippy.atoms.Connection.is_min_image"><code class="xref py py-obj docutils literal"><span class="pre">is_min_image</span></code></a></td>
+<td>True if i is a minimum image</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.last_connect_cutoff" title="quippy.atoms.Connection.last_connect_cutoff"><code class="xref py py-obj docutils literal"><span class="pre">last_connect_cutoff</span></code></a></td>
+<td>Value of cutoff used last time connectivity was updated</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.last_connect_lattice" title="quippy.atoms.Connection.last_connect_lattice"><code class="xref py py-obj docutils literal"><span class="pre">last_connect_lattice</span></code></a></td>
+<td>Lattice last time connectivity was updated</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.last_connect_pos" title="quippy.atoms.Connection.last_connect_pos"><code class="xref py py-obj docutils literal"><span class="pre">last_connect_pos</span></code></a></td>
+<td>Positions of atoms last time connnectivity was updated</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.n" title="quippy.atoms.Connection.n"><code class="xref py py-obj docutils literal"><span class="pre">n</span></code></a></td>
+<td>no. of atoms at last calc_connect</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.next_atom_in_cell" title="quippy.atoms.Connection.next_atom_in_cell"><code class="xref py py-obj docutils literal"><span class="pre">next_atom_in_cell</span></code></a></td>
+<td>List of atoms, terminated by zero</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.add_bond" title="quippy.atoms.Connection.add_bond"><code class="xref py py-obj docutils literal"><span class="pre">add_bond</span></code></a>(pos,lattice,i,j,shift,d,[dv,error])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.assignment" title="quippy.atoms.Connection.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Overloaded assigment operators for Atoms objects.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_connect" title="quippy.atoms.Connection.calc_connect"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Fast <span class="math">O(N)</span> connectivity calculation routine.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_connect_hysteretic" title="quippy.atoms.Connection.calc_connect_hysteretic"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect_hysteretic</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>As for <code class="docutils literal"><span class="pre">calc_connect</span></code>, but perform the connectivity update hystertically: atoms must come within <code class="docutils literal"><span class="pre">cutoff</span></code> to be considered neighbours, and then will remain connect until them move apart further than <code class="docutils literal"><span class="pre">cutoff_break</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_dists" title="quippy.atoms.Connection.calc_dists"><code class="xref py py-obj docutils literal"><span class="pre">calc_dists</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>The subroutine <code class="docutils literal"><span class="pre">calc_dists</span></code> updates the stored distance tables using the stored connectivity and shifts.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.cell_n" title="quippy.atoms.Connection.cell_n"><code class="xref py py-obj docutils literal"><span class="pre">cell_n</span></code></a>(i,j,k,[error])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.cell_of_pos" title="quippy.atoms.Connection.cell_of_pos"><code class="xref py py-obj docutils literal"><span class="pre">cell_of_pos</span></code></a>(lat_pos)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.cells_initialise" title="quippy.atoms.Connection.cells_initialise"><code class="xref py py-obj docutils literal"><span class="pre">cells_initialise</span></code></a>(...)</td>
+<td>OMIT</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.distances" title="quippy.atoms.Connection.distances"><code class="xref py py-obj docutils literal"><span class="pre">distances</span></code></a>([Z1,&nbsp;Z2])</td>
+<td>Distances between pairs of neighbours, optionally</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.fill" title="quippy.atoms.Connection.fill"><code class="xref py py-obj docutils literal"><span class="pre">fill</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.get_neighbors" title="quippy.atoms.Connection.get_neighbors"><code class="xref py py-obj docutils literal"><span class="pre">get_neighbors</span></code></a>(i)</td>
+<td>Variant spelling of <a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-meth docutils literal"><span class="pre">get_neighbours()</span></code></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-obj docutils literal"><span class="pre">get_neighbours</span></code></a>(i)</td>
+<td>Return neighbours of atom i</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.iterneighbours" title="quippy.atoms.Connection.iterneighbours"><code class="xref py py-obj docutils literal"><span class="pre">iterneighbours</span></code></a>()</td>
+<td>Iterate over the neighbours of all atoms</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.n_neighbours" title="quippy.atoms.Connection.n_neighbours"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Neighbour list stuff</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.n_neighbours_total" title="quippy.atoms.Connection.n_neighbours_total"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours_total</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Return the total number of neighbour, i.e.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.neighbour" title="quippy.atoms.Connection.neighbour"><code class="xref py py-obj docutils literal"><span class="pre">neighbour</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">neighbour</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.pairs" title="quippy.atoms.Connection.pairs"><code class="xref py py-obj docutils literal"><span class="pre">pairs</span></code></a>()</td>
+<td>Yield pairs of atoms (i,j) with i &lt; j which are neighbours</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.partition_atoms" title="quippy.atoms.Connection.partition_atoms"><code class="xref py py-obj docutils literal"><span class="pre">partition_atoms</span></code></a>(at,[dont_wipe,error])</td>
+<td>Spatially partition the atoms into cells.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.print_" title="quippy.atoms.Connection.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Print a verbose textual description of an Atoms object to the default logger or to a specificied Inoutput object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.remove_bond" title="quippy.atoms.Connection.remove_bond"><code class="xref py py-obj docutils literal"><span class="pre">remove_bond</span></code></a>(i,j,[shift,error])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.remove_bonds" title="quippy.atoms.Connection.remove_bonds"><code class="xref py py-obj docutils literal"><span class="pre">remove_bonds</span></code></a>(at,bonds,[error])</td>
+<td>Remove all bonds listed in the Table <cite>bonds</cite> from connectivity</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.wipe" title="quippy.atoms.Connection.wipe"><code class="xref py py-obj docutils literal"><span class="pre">wipe</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>connection_wipe</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.atoms.Connection.add_bond">
+<code class="descname">add_bond</code><span class="sig-paren">(</span><em>pos</em>, <em>lattice</em>, <em>i</em>, <em>j</em>, <em>shift</em>, <em>d</em><span class="optional">[</span>, <em>dv</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.add_bond" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pos</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>i</strong> :  input int</p>
+<p><strong>j</strong> :  input int</p>
+<p><strong>shift</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+<p><strong>d</strong> :  input float</p>
+<p><strong>dv</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">add_bond</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.assignment">
+<code class="descname">assignment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.assignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded assigment operators for Atoms objects.
+Overloaded assigment operators for Connection objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</p>
+<p class="last"><strong>from</strong> : <a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">assignment</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.calc_connect">
+<code class="descname">calc_connect</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.calc_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fast <span class="math">O(N)</span> connectivity calculation routine. It divides the unit
+cell into similarly shaped subcells, of sufficient size that
+sphere of radius <code class="docutils literal"><span class="pre">cutoff</span></code> is contained in a subcell, at least in
+the directions in which the unit cell is big enough. For very
+small unit cells, there is only one subcell, so the routine is
+equivalent to the standard <span class="math">O(N^2)</span> method.  If <code class="docutils literal"><span class="pre">cutoff_skin</span></code> is
+present, effective cutoff is increased by this amount, and full
+recalculation of connectivity is only done when any atom has
+moved more than 0.5*cutoff_skin.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>own_neighbour</strong> :  input int, optional</p>
+<p><strong>store_is_min_image</strong> :  input int, optional</p>
+<p><strong>skip_zero_zero_bonds</strong> :  input int, optional</p>
+<p><strong>store_n_neighb</strong> :  input int, optional</p>
+<p><strong>cutoff_skin</strong> :  input float, optional</p>
+<p><strong>max_pos_change</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p><strong>did_rebuild</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_connect</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.calc_connect_hysteretic">
+<code class="descname">calc_connect_hysteretic</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.calc_connect_hysteretic" title="Permalink to this definition">¶</a></dt>
+<dd><p>As for <code class="docutils literal"><span class="pre">calc_connect</span></code>, but perform the connectivity update
+hystertically: atoms must come within <code class="docutils literal"><span class="pre">cutoff</span></code> to be considered
+neighbours, and then will remain connect until them move apart
+further than <code class="docutils literal"><span class="pre">cutoff_break</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>cutoff_factor</strong> :  input float</p>
+<p><strong>cutoff_break_factor</strong> :  input float</p>
+<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>extent</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>own_neighbour</strong> :  input int, optional</p>
+<p><strong>store_is_min_image</strong> :  input int, optional</p>
+<p><strong>store_n_neighb</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_connect_hysteretic</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.calc_dists">
+<code class="descname">calc_dists</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.calc_dists" title="Permalink to this definition">¶</a></dt>
+<dd><p>The subroutine <code class="docutils literal"><span class="pre">calc_dists</span></code> updates the stored distance tables using
+the stored connectivity and shifts. This should be called every time
+any atoms are moved (e.g. it is called by <code class="docutils literal"><span class="pre">DynamicalSystem.advance_verlet</span></code>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>parallel</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_dists</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.cell_n">
+<code class="descname">cell_n</code><span class="sig-paren">(</span><em>i</em>, <em>j</em>, <em>k</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.cell_n" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
+<p><strong>j</strong> :  input int</p>
+<p><strong>k</strong> :  input int</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_cell_n</strong> :  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cell_n</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.cell_of_pos">
+<code class="descname">cell_of_pos</code><span class="sig-paren">(</span><em>lat_pos</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.cell_of_pos" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lat_pos</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>i</strong> :  int</p>
+<p><strong>j</strong> :  int</p>
+<p class="last"><strong>k</strong> :  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cell_of_pos</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.cells_initialise">
+<code class="descname">cells_initialise</code><span class="sig-paren">(</span><em>cellsna</em>, <em>cellsnb</em>, <em>cellsnc</em><span class="optional">[</span>, <em>natoms</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.cells_initialise" title="Permalink to this definition">¶</a></dt>
+<dd><p>OMIT</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cellsna</strong> :  input int</p>
+<p><strong>cellsnb</strong> :  input int</p>
+<p><strong>cellsnc</strong> :  input int</p>
+<p class="last"><strong>natoms</strong> :  input int, optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">connection_cells_initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.distances">
+<code class="descname">distances</code><span class="sig-paren">(</span><em>Z1=None</em>, <em>Z2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distances between pairs of neighbours, optionally
+filtered by species (Z1,Z2)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.fill">
+<code class="descname">fill</code><span class="sig-paren">(</span><em>n</em>, <em>nbuffer</em><span class="optional">[</span>, <em>pos</em>, <em>lattice</em>, <em>g</em>, <em>origin</em>, <em>extent</em>, <em>nn_guess</em>, <em>store_rij</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.fill" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
+<p><strong>nbuffer</strong> :  input int</p>
+<p><strong>pos</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1), optional</p>
+<p><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>g</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>extent</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>nn_guess</strong> :  input int, optional</p>
+<p><strong>store_rij</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">connection_fill</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.get_neighbors">
+<code class="descname">get_neighbors</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.get_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.get_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant spelling of <a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-meth docutils literal"><span class="pre">get_neighbours()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.get_neighbours">
+<code class="descname">get_neighbours</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.get_neighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.get_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return neighbours of atom i</p>
+<p>Return arrays of indices and offsets to neighbouring
+atoms. The positions of the neighbor atoms can be calculated like
+this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">connect</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span><span class="p">):</span>
+   <span class="nb">print</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Compatible with ase.calculators.neighborlist.NeighborList.get_neighbors(),
+providing that NeighborList is constructed with bothways=True and
+self_interaction=False.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.iterneighbours">
+<code class="descname">iterneighbours</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.iterneighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.iterneighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the neighbours of all atoms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.n_neighbours">
+<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.n_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neighbour list stuff</p>
+<p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">n_neighbours</span></code> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>i</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><p>Return the total number of neighbour that atom <span class="math">i</span> has.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_n</strong> &#8211;  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">connection_n_neighbours</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>at</em>, <em>i</em><span class="optional">[</span>, <em>max_dist</em>, <em>max_factor</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><p>Return the number of neighbour that atom <span class="math">i</span> has.
+If the optional arguments max_dist or max_factor are present
+then only neighbours closer than this cutoff are included.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>max_dist</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>max_factor</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_n</strong> &#8211;  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">connection_n_neighbours_with_dist</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.n_neighbours_total">
+<code class="descname">n_neighbours_total</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.n_neighbours_total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the total number of neighbour, i.e. the number of bonds in the system</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_n</strong> :  int</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">n_neighbours_total</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.neighbour">
+<code class="descname">neighbour</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.neighbour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">neighbour</span></code> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<code class="descname">neighbour</code><span class="sig-paren">(</span><em>at</em>, <em>i</em>, <em>n</em><span class="optional">[</span>, <em>distance</em>, <em>diff</em>, <em>cosines</em>, <em>shift</em>, <em>index</em>, <em>max_dist</em>, <em>jn</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><p>Return the index of the <span class="math">n^{\mbox{\small{th}}}</span> neighbour of atom <span class="math">i</span>. Together with the
+previous function, this facilites a loop over the neighbours of atom <span class="math">i</span>. Optionally, we
+return other geometric information, such as distance, direction cosines and difference vector,
+and also an direct index into the neighbour tables. If <span class="math">i &lt;= j</span>, this is an index into <code class="docutils literal"><span class="pre">neighbour1(i)</span></code>,
+if <span class="math">i &gt; j</span>, it is an index into <code class="docutils literal"><span class="pre">neighbour1(j)</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">do</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">atoms_n_neighbours</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+   <span class="n">j</span> <span class="o">=</span> <span class="n">atoms_neighbour</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">cosines</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+   <span class="o">...</span>
+<span class="n">end</span> <span class="n">do</span>
+</pre></div>
+</div>
+<p>if distance <span class="math">&gt;</span> max_dist, return 0, and do not waste time calculating other quantities</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>distance</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>diff</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>cosines</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>index</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>max_dist</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>jn</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_j</strong> &#8211;  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">connection_neighbour</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>n</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>shift</strong> (<em>rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>index</strong> (<a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a>) &#8211; </li>
+<li><strong>ret_j</strong> (<a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">connection_neighbour_minimal</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.pairs">
+<code class="descname">pairs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield pairs of atoms (i,j) with i &lt; j which are neighbours</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.partition_atoms">
+<code class="descname">partition_atoms</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>dont_wipe</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.partition_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatially partition the atoms into cells. The number of cells in each dimension must already be
+set (cellsNa,b,c). Pre-wiping of the cells can be skipped (e.g. if they are already empty).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>dont_wipe</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">partition_atoms</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.print_">
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.print_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a verbose textual description of an Atoms object to the default logger or to
+a specificied Inoutput object.
+Print a verbose textual description of a Connection object to the default
+logger or to a specificied Inoutput object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.remove_bond">
+<code class="descname">remove_bond</code><span class="sig-paren">(</span><em>i</em>, <em>j</em><span class="optional">[</span>, <em>shift</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.remove_bond" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
+<p><strong>j</strong> :  input int</p>
+<p><strong>shift</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">remove_bond</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.remove_bonds">
+<code class="descname">remove_bonds</code><span class="sig-paren">(</span><em>at</em>, <em>bonds</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.remove_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all bonds listed in the Table <cite>bonds</cite> from connectivity</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>bonds</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">remove_bonds</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.atoms.Connection.wipe">
+<code class="descname">wipe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.wipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>connection_wipe</p>
+<p>Wipe the contents of the connection tables, but keep the allocation</p>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">wipe</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.cell_heads">
+<code class="descname">cell_heads</code><a class="headerlink" href="#quippy.atoms.Connection.cell_heads" title="Permalink to this definition">¶</a></dt>
+<dd><p>First entry in cell atoms structure</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.cellsna">
+<code class="descname">cellsna</code><a class="headerlink" href="#quippy.atoms.Connection.cellsna" title="Permalink to this definition">¶</a></dt>
+<dd><p>no. of cells in the lattice directions</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.is_min_image">
+<code class="descname">is_min_image</code><a class="headerlink" href="#quippy.atoms.Connection.is_min_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if i is a minimum image</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.last_connect_cutoff">
+<code class="descname">last_connect_cutoff</code><a class="headerlink" href="#quippy.atoms.Connection.last_connect_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of cutoff used last time connectivity was updated</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.last_connect_lattice">
+<code class="descname">last_connect_lattice</code><a class="headerlink" href="#quippy.atoms.Connection.last_connect_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lattice last time connectivity was updated</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.last_connect_pos">
+<code class="descname">last_connect_pos</code><a class="headerlink" href="#quippy.atoms.Connection.last_connect_pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Positions of atoms last time connnectivity was updated</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.n">
+<code class="descname">n</code><a class="headerlink" href="#quippy.atoms.Connection.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>no. of atoms at last calc_connect</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.atoms.Connection.next_atom_in_cell">
+<code class="descname">next_atom_in_cell</code><a class="headerlink" href="#quippy.atoms.Connection.next_atom_in_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of atoms, terminated by zero</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.atoms.fit_box_in_cell">
+<code class="descclassname">quippy.atoms.</code><code class="descname">fit_box_in_cell</code><span class="sig-paren">(</span><em>rx</em>, <em>ry</em>, <em>rz</em>, <em>lattice</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.fit_box_in_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an orthogonal box, oriented along the cartesian axes with lengths <code class="docutils literal"><span class="pre">2*rx</span></code>, <code class="docutils literal"><span class="pre">2*ry</span></code> and <code class="docutils literal"><span class="pre">2*rz</span></code>
+and centred on the origin, what parameters must we pass to supercell to make a system big
+enough from our original cell defined by lattice for the box to fit inside?</p>
+<p>The required supercell parameters are returned in <code class="docutils literal"><span class="pre">Na</span></code>, <code class="docutils literal"><span class="pre">Nb</span></code>, <code class="docutils literal"><span class="pre">Nc</span></code> respectively. If, e.g. <code class="docutils literal"><span class="pre">Na</span> <span class="pre">=</span> <span class="pre">1</span></code>
+then we don``t need to supercell in the a direction. <code class="docutils literal"><span class="pre">Na</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> means we must supercell by <a href="#id1"><span class="problematic" id="id2">``</span></a>Na&#8217; times
+in the <span class="math">x</span> direction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rx</strong> :  input float</p>
+<p><strong>ry</strong> :  input float</p>
+<p><strong>rz</strong> :  input float</p>
+<p><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>na</strong> :  int</p>
+<p><strong>nb</strong> :  int</p>
+<p class="last"><strong>nc</strong> :  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">fit_box_in_cell</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.atoms.divide_cell">
+<code class="descclassname">quippy.atoms.</code><code class="descname">divide_cell</code><span class="sig-paren">(</span><em>lattice</em>, <em>cutoff</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.divide_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a simulation cell defined by lattice vectors, how many
+times can the cell be divided along the lattice vectors into
+subcells such that a sphere of radius <code class="docutils literal"><span class="pre">cutoff</span></code> with centre in
+one subcell does not spill out of the surrounding <span class="math">3 \times 3</span> subcell block?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<blockquote>
+<div><p>Box defined by lattice vectors</p>
+</div></blockquote>
+<p><strong>cutoff</strong> :  input float</p>
+<blockquote>
+<div><p>Radius of sphere</p>
+</div></blockquote>
+<p><strong>na</strong> :  int</p>
+<blockquote>
+<div><p>Number of supercells required along <span class="math">x</span>, <span class="math">y</span> and <span class="math">z</span></p>
+</div></blockquote>
+<p><strong>nb</strong> :  int</p>
+<blockquote>
+<div><p>Number of supercells required along <span class="math">x</span>, <span class="math">y</span> and <span class="math">z</span></p>
+</div></blockquote>
+<p><strong>nc</strong> :  int</p>
+<blockquote class="last">
+<div><p>Number of supercells required along <span class="math">x</span>, <span class="math">y</span> and <span class="math">z</span></p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">divide_cell</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.atoms.get_min_max_images">
+<code class="descclassname">quippy.atoms.</code><code class="descname">get_min_max_images</code><span class="sig-paren">(</span><em>is_periodic</em>, <em>cellsna</em>, <em>cellsnb</em>, <em>cellsnc</em>, <em>cell_image_na</em>, <em>cell_image_nb</em>, <em>cell_image_nc</em>, <em>i</em>, <em>j</em>, <em>k</em>, <em>do_i</em>, <em>do_j</em>, <em>do_k</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.get_min_max_images" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>is_periodic</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+<p><strong>cellsna</strong> :  input int</p>
+<p><strong>cellsnb</strong> :  input int</p>
+<p><strong>cellsnc</strong> :  input int</p>
+<p><strong>cell_image_na</strong> :  input int</p>
+<p><strong>cell_image_nb</strong> :  input int</p>
+<p><strong>cell_image_nc</strong> :  input int</p>
+<p><strong>i</strong> :  input int</p>
+<p><strong>j</strong> :  input int</p>
+<p><strong>k</strong> :  input int</p>
+<p><strong>do_i</strong> :  input int</p>
+<p><strong>do_j</strong> :  input int</p>
+<p><strong>do_k</strong> :  input int</p>
+<p><strong>min_cell_image_na</strong> :  int</p>
+<p><strong>max_cell_image_na</strong> :  int</p>
+<p><strong>min_cell_image_nb</strong> :  int</p>
+<p><strong>max_cell_image_nb</strong> :  int</p>
+<p><strong>min_cell_image_nc</strong> :  int</p>
+<p class="last"><strong>max_cell_image_nc</strong> :  int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">get_min_max_images</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.atoms.max_cutoff">
+<code class="descclassname">quippy.atoms.</code><code class="descname">max_cutoff</code><span class="sig-paren">(</span><em>lattice</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.max_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum cutoff radius for <code class="docutils literal"><span class="pre">calc_connect</span></code>, given the lattice if we want to avoid image neghbours</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_max_cutoff</strong> :  float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">max_cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

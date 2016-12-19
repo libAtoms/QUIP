@@ -1,0 +1,1071 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Cluster carving routines &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/>
+        <link rel="next" title="Identification of atoms on surfaces" href="find_surface_atoms.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="crack.html">Tools for fracture simulations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Cluster carving routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="find_surface_atoms.html">Identification of atoms on surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="real_space_covariance.html">Real-space covariance representation of atomic environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="structures.html">Structure building routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="topology.html">Utilities for topological analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Cluster carving routines</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/clusters.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.clusters">
+<span id="cluster-carving-routines"></span><h1>Cluster carving routines<a class="headerlink" href="#module-quippy.clusters" title="Permalink to this headline">¶</a></h1>
+<p>Module contents for <a class="reference internal" href="#module-quippy.clusters" title="quippy.clusters: Cluster carving routines"><code class="xref py py-mod docutils literal"><span class="pre">quippy.clusters</span></code></a>:</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.estimate_origin_extent" title="quippy.clusters.estimate_origin_extent"><code class="xref py py-obj docutils literal"><span class="pre">estimate_origin_extent</span></code></a>(at,active,cluster_radius)</td>
+<td>Return estimated <cite>(origin, extent)</cite> for hysteretic connectivity calculator to include all atoms within a distance <cite>cluster_radius</cite> of an atom in the <cite>active</cite> array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_pos_or_list_centred_hybrid_region" title="quippy.clusters.create_pos_or_list_centred_hybrid_region"><code class="xref py py-obj docutils literal"><span class="pre">create_pos_or_list_centred_hybrid_region</span></code></a>(...)</td>
+<td>Use hysteretic connectivity calculator so we can work with relative cutoffs Updates the core QM flags saved in <code class="docutils literal"><span class="pre">hybrid</span></code> and <code class="docutils literal"><span class="pre">hybrid_mark</span></code> properties.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_embed_and_fit_lists" title="quippy.clusters.create_embed_and_fit_lists"><code class="xref py py-obj docutils literal"><span class="pre">create_embed_and_fit_lists</span></code></a>(...)</td>
+<td>Given an Atoms structure with an active region marked in the mark_name (default <code class="docutils literal"><span class="pre">hybrid_mark</span></code>) property using <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code>, grow the embed region by <code class="docutils literal"><span class="pre">fit_hops</span></code> bond hops to form a fit region.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.discard_non_min_images" title="quippy.clusters.discard_non_min_images"><code class="xref py py-obj docutils literal"><span class="pre">discard_non_min_images</span></code></a>(list)</td>
+<td>Given an input list with 4 integer columns for atomic indices</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.get_hybrid_list" title="quippy.clusters.get_hybrid_list"><code class="xref py py-obj docutils literal"><span class="pre">get_hybrid_list</span></code></a>(...)</td>
+<td>return list of atoms that have various subsets of hybrid marks set</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.construct_hysteretic_region" title="quippy.clusters.construct_hysteretic_region"><code class="xref py py-obj docutils literal"><span class="pre">construct_hysteretic_region</span></code></a>(...)</td>
+<td>Given an atoms object, and a point <code class="docutils literal"><span class="pre">centre</span></code> or a list of atoms <code class="docutils literal"><span class="pre">core</span></code>, fill the <code class="docutils literal"><span class="pre">region</span></code> table with all atoms hysteretically within <code class="docutils literal"><span class="pre">inner_radius</span> <span class="pre">--</span> <span class="pre">outer_radius</span></code> of the <code class="docutils literal"><span class="pre">centre</span></code> or any <code class="docutils literal"><span class="pre">core</span></code> atom, which can be reached by connectivity hopping.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_hybrid_weights" title="quippy.clusters.create_hybrid_weights"><code class="xref py py-obj docutils literal"><span class="pre">create_hybrid_weights</span></code></a>(at,args_str,[error])</td>
+<td>Given an atoms structure with a <code class="docutils literal"><span class="pre">hybrid_mark</span></code> property, set to <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code> for some atoms, this routine adds transition and buffer regions, and creates a <code class="docutils literal"><span class="pre">weight_region1</span></code> property, whose values are between 0 and 1.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.carve_cluster" title="quippy.clusters.carve_cluster"><code class="xref py py-obj docutils literal"><span class="pre">carve_cluster</span></code></a>(...)</td>
+<td>Create cluster from atoms and cluster information table (which which should be generated by a call to <code class="xref py py-func docutils literal"><span class="pre">create_cluster_info_from_hybrid_mark()</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.multiple_images" title="quippy.clusters.multiple_images"><code class="xref py py-obj docutils literal"><span class="pre">multiple_images</span></code></a>(list)</td>
+<td>Check if the list of indices and shifts <code class="docutils literal"><span class="pre">list</span></code> contains any repeated atomic indices.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_cluster_info_from_mark" title="quippy.clusters.create_cluster_info_from_mark"><code class="xref py py-obj docutils literal"><span class="pre">create_cluster_info_from_mark</span></code></a>(...)</td>
+<td>Create a cluster using the mark_name (optional arg, default <code class="docutils literal"><span class="pre">hybrid_mark</span></code>) property and options in <code class="docutils literal"><span class="pre">args_str</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_cluster_simple" title="quippy.clusters.create_cluster_simple"><code class="xref py py-obj docutils literal"><span class="pre">create_cluster_simple</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_embed_and_fit_lists_from_cluster_mark" title="quippy.clusters.create_embed_and_fit_lists_from_cluster_mark"><code class="xref py py-obj docutils literal"><span class="pre">create_embed_and_fit_lists_from_cluster_mark</span></code></a>(...)</td>
+<td>Given an Atoms structure with an active region marked in the mark_name (default <code class="docutils literal"><span class="pre">cluster_mark</span></code>) property using <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code>, and buffer region marked using <code class="docutils literal"><span class="pre">HYBRID_BUFFER_MARK</span></code>, <code class="docutils literal"><span class="pre">HYBRID_TRANS_MARK</span></code> or <code class="docutils literal"><span class="pre">HYBRID_BUFFER_OUTER_LAYER_MARK</span></code>, simply returns the embedlist and fitlist according to <code class="docutils literal"><span class="pre">cluster_mark</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">MAX_CUT_BONDS</span></code></td>
+<td>6</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_BUFFER_OUTER_LAYER_MARK</span></code></td>
+<td>5</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_ELECTROSTATIC_MARK</span></code></td>
+<td>6</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code></td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">hybrid_mark_name</span></code></td>
+<td>[&#8216;h_none    &#8216; &#8216;h_active  &#8216; &#8216;h_buffer  &#8216; &#8216;h_trans   &#8216; &#8216;h_term    &#8216;</td>
+</tr>
+<tr class="row-odd"><td>&#8216;h_outer_l &#8216; &#8216;h_fit     &#8216;]</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_TERM_MARK</span></code></td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_TRANS_MARK</span></code></td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_BUFFER_MARK</span></code></td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_NO_MARK</span></code></td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="quippy.clusters.estimate_origin_extent">
+<code class="descclassname">quippy.clusters.</code><code class="descname">estimate_origin_extent</code><span class="sig-paren">(</span><em>at</em>, <em>active</em>, <em>cluster_radius</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.estimate_origin_extent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return estimated <cite>(origin, extent)</cite> for hysteretic connectivity
+calculator to include all atoms within a distance <cite>cluster_radius</cite>
+of an atom in the <cite>active</cite> array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>active</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>cluster_radius</strong> :  input float</p>
+<p><strong>origin</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p class="last"><strong>extent</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">estimate_origin_extent</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.create_pos_or_list_centred_hybrid_region">
+<code class="descclassname">quippy.clusters.</code><code class="descname">create_pos_or_list_centred_hybrid_region</code><span class="sig-paren">(</span><em>my_atoms</em>, <em>r_inner</em>, <em>r_outer</em><span class="optional">[</span>, <em>origin</em>, <em>atomlist</em>, <em>use_avgpos</em>, <em>add_only_heavy_atoms</em>, <em>cluster_hopping_nneighb_only</em>, <em>cluster_heuristics_nneighb_only</em>, <em>min_images_only</em>, <em>use_create_cluster_info</em>, <em>create_cluster_info_args</em>, <em>list_changed</em>, <em>mark_postfix</em>, <em>ignore_silica_residue</em>, <em>res_num_silica</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.create_pos_or_list_centred_hybrid_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use hysteretic connectivity calculator so we can work with relative cutoffs
+Updates the core QM flags saved in <code class="docutils literal"><span class="pre">hybrid</span></code> and <code class="docutils literal"><span class="pre">hybrid_mark</span></code>
+properties.  Do this hysteretically, from <code class="docutils literal"><span class="pre">R_inner</span></code> to <code class="docutils literal"><span class="pre">R_outer</span></code>
+around <code class="docutils literal"><span class="pre">origin</span></code> or <code class="docutils literal"><span class="pre">atomlist</span></code>, that is the centre of the QM
+region (a position in space or a list of atoms).  Also saves the
+old <code class="docutils literal"><span class="pre">hybrid_mark</span></code> property in <code class="docutils literal"><span class="pre">old_hybrid_mark</span></code> property.
+optionally correct selected region with heuristics (as coded in
+:func:<a href="#id1"><span class="problematic" id="id2">`</span></a>create_cluster_info_from_mark`())</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>my_atoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>r_inner</strong> :  input float</p>
+<p><strong>r_outer</strong> :  input float</p>
+<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>atomlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
+<p><strong>use_avgpos</strong> :  input int, optional</p>
+<p><strong>add_only_heavy_atoms</strong> :  input int, optional</p>
+<p><strong>cluster_hopping_nneighb_only</strong> :  input int, optional</p>
+<p><strong>cluster_heuristics_nneighb_only</strong> :  input int, optional</p>
+<p><strong>min_images_only</strong> :  input int, optional</p>
+<p><strong>use_create_cluster_info</strong> :  input int, optional</p>
+<p><strong>create_cluster_info_args</strong> :  input string(len=-1), optional</p>
+<p><strong>list_changed</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mark_postfix</strong> :  input string(len=-1), optional</p>
+<p><strong>ignore_silica_residue</strong> :  input int, optional</p>
+<p><strong>res_num_silica</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_pos_or_list_centred_hybrid_region</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.create_embed_and_fit_lists">
+<code class="descclassname">quippy.clusters.</code><code class="descname">create_embed_and_fit_lists</code><span class="sig-paren">(</span><em>at</em>, <em>fit_hops</em><span class="optional">[</span>, <em>cluster_hopping_nneighb_only</em>, <em>min_images_only</em>, <em>mark_name</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.create_embed_and_fit_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an Atoms structure with an active region marked in the mark_name (default <code class="docutils literal"><span class="pre">hybrid_mark</span></code>)
+property using <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code>, grow the embed region by <code class="docutils literal"><span class="pre">fit_hops</span></code>
+bond hops to form a fit region. Returns the embedlist and fitlist with correct
+periodic shifts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>fit_hops</strong> :  input int</p>
+<p><strong>embedlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p><strong>fitlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p><strong>cluster_hopping_nneighb_only</strong> :  input int, optional</p>
+<p><strong>min_images_only</strong> :  input int, optional</p>
+<p><strong>mark_name</strong> :  input string(len=-1), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_embed_and_fit_lists</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.discard_non_min_images">
+<code class="descclassname">quippy.clusters.</code><code class="descname">discard_non_min_images</code><span class="sig-paren">(</span><em>list</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.discard_non_min_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an input list with 4 integer columns for atomic indices
+and shifts, keep only the minimum images of each atom</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">discard_non_min_images</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.get_hybrid_list">
+<code class="descclassname">quippy.clusters.</code><code class="descname">get_hybrid_list</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>all_but_term</em>, <em>active_trans_only</em>, <em>int_property</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.get_hybrid_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of atoms that have various subsets of hybrid marks set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<blockquote>
+<div><p>object to scan for marked atoms</p>
+</div></blockquote>
+<p><strong>all_but_term</strong> :  input int, optional</p>
+<blockquote>
+<div><p>if present and true, select all marked atoms that aren&#8217;t TERM</p>
+</div></blockquote>
+<p><strong>active_trans_only</strong> :  input int, optional</p>
+<blockquote>
+<div><p>if present and true, select all atoms marked ACTIVE or TRANS
+exactly one of all_but_term and active_trans_only must be present and true</p>
+</div></blockquote>
+<p><strong>int_property</strong> :  input string(len=-1), optional</p>
+<blockquote>
+<div><p>if present, property to check, default cluster_mark</p>
+</div></blockquote>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>hybrid_list</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<blockquote class="last">
+<div><p>on return, list of marked atoms</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">get_hybrid_list</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.construct_hysteretic_region">
+<code class="descclassname">quippy.clusters.</code><code class="descname">construct_hysteretic_region</code><span class="sig-paren">(</span><em>region</em>, <em>at</em>, <em>inner_radius</em>, <em>outer_radius</em><span class="optional">[</span>, <em>core</em>, <em>centre</em>, <em>loop_atoms_no_connectivity</em>, <em>use_avgpos</em>, <em>add_only_heavy_atoms</em>, <em>cluster_hopping_nneighb_only</em>, <em>force_hopping_nneighb_only</em>, <em>min_images_only</em>, <em>alt_connect</em>, <em>debugfile</em>, <em>ignore_silica_residue</em>, <em>res_num_silica</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.construct_hysteretic_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an atoms object, and a point <code class="docutils literal"><span class="pre">centre</span></code> or a list of atoms <code class="docutils literal"><span class="pre">core</span></code>,
+fill the <code class="docutils literal"><span class="pre">region</span></code> table with all atoms hysteretically within <code class="docutils literal"><span class="pre">inner_radius</span> <span class="pre">--</span> <span class="pre">outer_radius</span></code>
+of the <code class="docutils literal"><span class="pre">centre</span></code> or any <code class="docutils literal"><span class="pre">core</span></code> atom, which can be reached by connectivity hopping.
+In the case of building the <code class="docutils literal"><span class="pre">region</span></code> around <code class="docutils literal"><span class="pre">centre</span></code>, simply_loop_over_atoms loops instead of
+bond hopping.
+Optionally use the time averaged positions.
+Optionally use only heavy atom selection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>region</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>core</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
+<p><strong>centre</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>loop_atoms_no_connectivity</strong> :  input int, optional</p>
+<p><strong>inner_radius</strong> :  input float</p>
+<p><strong>outer_radius</strong> :  input float</p>
+<p><strong>use_avgpos</strong> :  input int, optional</p>
+<p><strong>add_only_heavy_atoms</strong> :  input int, optional</p>
+<p><strong>cluster_hopping_nneighb_only</strong> :  input int, optional</p>
+<p><strong>force_hopping_nneighb_only</strong> :  input int, optional</p>
+<p><strong>min_images_only</strong> :  input int, optional</p>
+<p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
+<p><strong>debugfile</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
+<p><strong>ignore_silica_residue</strong> :  input int, optional</p>
+<p><strong>res_num_silica</strong> :  input int, optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">construct_hysteretic_region</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.create_hybrid_weights">
+<code class="descclassname">quippy.clusters.</code><code class="descname">create_hybrid_weights</code><span class="sig-paren">(</span><em>at</em>, <em>args_str</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.create_hybrid_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an atoms structure with a <code class="docutils literal"><span class="pre">hybrid_mark</span></code> property, set to
+<code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code> for some atoms, this routine adds transition
+and buffer regions, and creates a <code class="docutils literal"><span class="pre">weight_region1</span></code> property,
+whose values are between 0 and 1.</p>
+<p>Atoms marked with <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code> in <code class="docutils literal"><span class="pre">hybrid_mark</span></code> get weight
+1.  Neighbour hopping is done up to transition_hops times, over
+which the weight linearly decreases to zero with hop count if
+<code class="docutils literal"><span class="pre">weight_interpolation=hop_ramp</span></code>.  If
+<code class="docutils literal"><span class="pre">weight_interpolation=distance_ramp</span></code>, weight is 1 up to
+<code class="docutils literal"><span class="pre">distance_ramp_inner_radius</span></code>, and goes linearly to 0 by
+<code class="docutils literal"><span class="pre">distance_ramp_outer_radius</span></code>, where distance is calculated from
+<code class="docutils literal"><span class="pre">distance_ramp_center(1:3)</span></code>.  <code class="docutils literal"><span class="pre">distance_ramp</span></code> makes the most sense if
+the <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code> is set on a sphere with radius
+distance_ramp_inner_radius from distance_ramp_center, no
+hysteresis, and with <code class="docutils literal"><span class="pre">transition_hops</span></code> &lt; 0 so hops continue until
+no more atoms are added.  Transition atoms are marked with
+<code class="docutils literal"><span class="pre">HYBRID_TRANS_MARK</span></code>. If <code class="docutils literal"><span class="pre">hysteretic_buffer=F</span></code> (default), buffer
+atoms are selected by hopping <code class="docutils literal"><span class="pre">buffer_hops</span></code> times, otherwise
+hysteretically with radii <code class="docutils literal"><span class="pre">hysteretic_buffer_inner_radius</span></code> and
+<code class="docutils literal"><span class="pre">hysteretic_buffer_outer_radius</span></code>.  Buffer atoms are marked with
+<code class="docutils literal"><span class="pre">HYBRID_BUFFER_MARK</span></code> and given weight 0.  If <code class="docutils literal"><span class="pre">hysteretic_connect</span></code> is
+set, all hops are done on bonds in the hysteretic_connect
+structure.</p>
+<p class="rubric">args_str options</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="6%" />
+<col width="9%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>buffer_hops</td>
+<td>int</td>
+<td>3</td>
+<td>Number of hops for buffer region</td>
+</tr>
+<tr class="row-odd"><td>cluster_hopping_nneighb_only</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, only hop to atom pairs that
+are is_nearest_neighbor().</td>
+</tr>
+<tr class="row-even"><td>cluster_hopping_skip_unreachable</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, remove buffer atoms no longer
+reachable by bond hopping</td>
+</tr>
+<tr class="row-odd"><td>construct_buffer_use_only_heavy_atoms</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, use only non-H atoms for
+constructing buffer</td>
+</tr>
+<tr class="row-even"><td>distance_ramp_center</td>
+<td>float</td>
+<td>0 0 0</td>
+<td>If present, origin for distances of
+distance ramp (otherwise cluster center
+of mass)</td>
+</tr>
+<tr class="row-odd"><td>distance_ramp_inner_radius</td>
+<td>float</td>
+<td>0</td>
+<td>If distance_ramp, inner radius to start
+reducing weight from 1</td>
+</tr>
+<tr class="row-even"><td>distance_ramp_outer_radius</td>
+<td>float</td>
+<td>0</td>
+<td>If distance_ramp, outer radius by which
+to reach weight of 0</td>
+</tr>
+<tr class="row-odd"><td>hysteretic_buffer</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, do hysteretic buffer</td>
+</tr>
+<tr class="row-even"><td>hysteretic_buffer_inner_radius</td>
+<td>float</td>
+<td>5.0</td>
+<td>Inner radius for hysteretic buffer</td>
+</tr>
+<tr class="row-odd"><td>hysteretic_buffer_nneighb_only</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, only hop to nearest neighbour
+pairs when constructing hysteretic
+buffer</td>
+</tr>
+<tr class="row-even"><td>hysteretic_buffer_outer_radius</td>
+<td>float</td>
+<td>7.0</td>
+<td>Outer radius for hysteretic buffer</td>
+</tr>
+<tr class="row-odd"><td>hysteretic_connect</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, use hysteretic connect object</td>
+</tr>
+<tr class="row-even"><td>hysteretic_connect_cluster_radius</td>
+<td>float</td>
+<td>1.2</td>
+<td>If using hysteretic connect, use as
+cluster radius for origin and extent
+estimates</td>
+</tr>
+<tr class="row-odd"><td>hysteretic_connect_inner_factor</td>
+<td>float</td>
+<td>1.2</td>
+<td>Inner factor (multiplier for covalent
+bond distance) for hysteretic connect</td>
+</tr>
+<tr class="row-even"><td>hysteretic_connect_outer_factor</td>
+<td>float</td>
+<td>1.5</td>
+<td>Outer factor (multiplier for covalent
+bond distance) for hysteretic connect</td>
+</tr>
+<tr class="row-odd"><td>ignore_silica_residue</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, do special things for silica</td>
+</tr>
+<tr class="row-even"><td>mark_buffer_outer_layer</td>
+<td>bool</td>
+<td>True</td>
+<td>If true, mark outermost buffer layer</td>
+</tr>
+<tr class="row-odd"><td>min_images_only</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, consider only minimum images,
+not multiple periodic images</td>
+</tr>
+<tr class="row-even"><td>res_num_silica</td>
+<td>int</td>
+<td>1</td>
+<td>Residue number for silica</td>
+</tr>
+<tr class="row-odd"><td>run_suffix</td>
+<td>str</td>
+<td>None</td>
+<td>String to append to hyrbid_mark for
+proper mark property name</td>
+</tr>
+<tr class="row-even"><td>transition_hops</td>
+<td>int</td>
+<td>0</td>
+<td>Number of hops to do transition region
+over</td>
+</tr>
+<tr class="row-odd"><td>weight_interpolation</td>
+<td>str</td>
+<td>hop_ramp</td>
+<td>How to ramp down weights for transition
+region: hop_ramp or distance_ramp</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>args_str</strong> :  input string(len=-1)</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_hybrid_weights</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.carve_cluster">
+<code class="descclassname">quippy.clusters.</code><code class="descname">carve_cluster</code><span class="sig-paren">(</span><em>at</em>, <em>args_str</em>, <em>cluster_info</em><span class="optional">[</span>, <em>mark_name</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.carve_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create cluster from atoms and cluster information table (which
+which should be generated by a call to <code class="xref py py-func docutils literal"><span class="pre">create_cluster_info_from_hybrid_mark()</span></code>.</p>
+<p>The output cluster contains all properties of the initial atoms object, and
+some additional columns, which are:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">index</span></code></dt>
+<dd>index of the cluster atoms into the initial atoms object.</dd>
+<dt><code class="docutils literal"><span class="pre">termindex</span></code></dt>
+<dd>nonzero for termination atoms, and is an index into
+the cluster atoms specifiying which atom is being terminated,
+it is used in collecting the forces.</dd>
+<dt><code class="docutils literal"><span class="pre">rescale</span></code></dt>
+<dd>a real number which for nontermination atoms is 1.0,
+for termination atoms records the scaling applied to
+termination bond lengths</dd>
+<dt><code class="docutils literal"><span class="pre">shift</span></code></dt>
+<dd>the shift of each atom</dd>
+</dl>
+</div></blockquote>
+<p class="rubric">args_str options</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="7%" />
+<col width="11%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cluster_calc_connect</td>
+<td>bool</td>
+<td>False</td>
+<td>Run calc_connect before doing stuff
+(passivation, etc)</td>
+</tr>
+<tr class="row-odd"><td>cluster_fix_lattice</td>
+<td>float</td>
+<td><ol class="first last arabic simple" start="0">
+<li><ol class="first arabic" start="0">
+<li><ol class="first arabic" start="0">
+<li></li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</td>
+<td>Fix the cluster lattice to be cubic
+with given 3 lengths. useful with DFT
+codes where one doesn&#8217;t pay for vacuum.</td>
+</tr>
+<tr class="row-even"><td>cluster_round_lattice</td>
+<td>float</td>
+<td>3.0</td>
+<td>Distance to which to round cluster
+lattice (default is 3.0 A)</td>
+</tr>
+<tr class="row-odd"><td>cluster_same_lattice</td>
+<td>bool</td>
+<td>False</td>
+<td>Don&#8217;t modify cluster cell vectors from
+incoming cell vectors</td>
+</tr>
+<tr class="row-even"><td>cluster_vacuum</td>
+<td>float</td>
+<td>10.0</td>
+<td>Amount of vacuum to add around cluster
+(minimum - lattice vectors are rounded
+up to integers)</td>
+</tr>
+<tr class="row-odd"><td>do_rescale_r</td>
+<td>bool</td>
+<td>False</td>
+<td>Do rescale cluster lattice positions
+and lattice (for matching lattice
+constants of different models</td>
+</tr>
+<tr class="row-even"><td>hysteretic_connect</td>
+<td>bool</td>
+<td>False</td>
+<td>Use hysteretic connection object for
+identifying bonds</td>
+</tr>
+<tr class="row-odd"><td>map_into_cell</td>
+<td>bool</td>
+<td>True</td>
+<td>Call map_into_cell (lattice
+coordinates=[-0.5,0.5)) on cluster</td>
+</tr>
+<tr class="row-even"><td>print_clusters</td>
+<td>bool</td>
+<td>False</td>
+<td>Print out clusters into clusters.xyz
+file (clusters.MPI_RANK.xyz if in MPI)</td>
+</tr>
+<tr class="row-odd"><td>r_scale</td>
+<td>float</td>
+<td>1.0</td>
+<td>Cluster position/lattice rescaling
+factor</td>
+</tr>
+<tr class="row-even"><td>randomise_buffer</td>
+<td>bool</td>
+<td>True</td>
+<td>Randomly perturb positions of buffer
+atoms</td>
+</tr>
+<tr class="row-odd"><td>run_suffix</td>
+<td>str</td>
+<td>None</td>
+<td>String to append to names of extra
+properties added to cluster. NOTE: does
+not override mark_name argument</td>
+</tr>
+<tr class="row-even"><td>terminate</td>
+<td>bool</td>
+<td>True</td>
+<td>Do hydrogen termination</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>args_str</strong> :  input string(len=-1)</p>
+<p><strong>cluster_info</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p><strong>mark_name</strong> :  input string(len=-1), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>cluster</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">carve_cluster</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.multiple_images">
+<code class="descclassname">quippy.clusters.</code><code class="descname">multiple_images</code><span class="sig-paren">(</span><em>list</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.multiple_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the list of indices and shifts <code class="docutils literal"><span class="pre">list</span></code> contains
+any repeated atomic indices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_multiple_images</strong> :  int</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">multiple_images</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.create_cluster_info_from_mark">
+<code class="descclassname">quippy.clusters.</code><code class="descname">create_cluster_info_from_mark</code><span class="sig-paren">(</span><em>at</em>, <em>args_str</em><span class="optional">[</span>, <em>cut_bonds</em>, <em>mark_name</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.create_cluster_info_from_mark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a cluster using the mark_name (optional arg, default <code class="docutils literal"><span class="pre">hybrid_mark</span></code>)
+property and options in <code class="docutils literal"><span class="pre">args_str</span></code>.
+All atoms that are marked with anything other than <code class="docutils literal"><span class="pre">HYBRID_NO_MARK</span></code> will
+be included in the cluster; this includes active, transition and buffer
+atoms.   Atoms added (to satisfy heuristics) will be marked in new property
+modified_//trim(mark_name) as <code class="docutils literal"><span class="pre">HYBRID_BUFFER_MARK</span></code>.
+Returns a Table object (cluster_info) which contains info on atoms whose
+indices are given in atomlist, possibly with some extras for consistency,
+and optionally terminated with Hydrogens, that can be used by carve_cluster().</p>
+<p class="rubric">args_str options</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="6%" />
+<col width="8%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cluster_allow_modification</td>
+<td>bool</td>
+<td>True</td>
+<td>Allow cluster to be modified using
+various heuristics</td>
+</tr>
+<tr class="row-odd"><td>cluster_heuristics_nneighb_only</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply is_nearest_neighbor test to bonds
+when deciding what&#8217;s bonded for
+heuristics. If false, uses connectivity
+object as is</td>
+</tr>
+<tr class="row-even"><td>cluster_hopping</td>
+<td>bool</td>
+<td>True</td>
+<td>Identify cluster region by hopping from
+a seed atom. Needed so that shifts will
+be correct.</td>
+</tr>
+<tr class="row-odd"><td>cluster_hopping_nneighb_only</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply is_nearest_neighbor test to bonds
+when doing bond hops to find cluster.
+If false, uses connectivity object as
+is</td>
+</tr>
+<tr class="row-even"><td>cluster_periodic_x</td>
+<td>bool</td>
+<td>False</td>
+<td>Do not add vaccum along x, so as to
+make cluster&#8217;s cell vectors periodic</td>
+</tr>
+<tr class="row-odd"><td>cluster_periodic_y</td>
+<td>bool</td>
+<td>False</td>
+<td>Do not add vaccum along y, so as to
+make cluster&#8217;s cell vectors periodic</td>
+</tr>
+<tr class="row-even"><td>cluster_periodic_z</td>
+<td>bool</td>
+<td>False</td>
+<td>Do not add vaccum along z, so as to
+make cluster&#8217;s cell vectors periodic</td>
+</tr>
+<tr class="row-odd"><td>cluster_same_lattice</td>
+<td>bool</td>
+<td>False</td>
+<td>Don&#8217;t modify cluster cell vectors from
+incoming cell vectors</td>
+</tr>
+<tr class="row-even"><td>even_electrons</td>
+<td>bool</td>
+<td>False</td>
+<td>Remove passivation hydrogen to keep
+total number of electrons even</td>
+</tr>
+<tr class="row-odd"><td>hysteretic_connect</td>
+<td>bool</td>
+<td>False</td>
+<td>Use hysteretic connect object to decide
+what&#8217;s bonded. Usually goes with
+cluster_*_nneighb_only=F.</td>
+</tr>
+<tr class="row-even"><td>in_out_in</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristic than adds atoms to
+avoid IN-OUT-IN configurations. Usually
+equivalent to reduce_n_cut_bonds.</td>
+</tr>
+<tr class="row-odd"><td>in_out_in_mode</td>
+<td>str</td>
+<td>all</td>
+<td>Mode to use for in_out_in heuristic -
+can be either &#8216;all&#8217; or &#8216;any&#8217;. Default
+is &#8216;all&#8217;.</td>
+</tr>
+<tr class="row-even"><td>terminate</td>
+<td>bool</td>
+<td>True</td>
+<td>Do hydrogen termination for dangling
+bonds</td>
+</tr>
+<tr class="row-odd"><td>termination_clash_factor</td>
+<td>float</td>
+<td>1.2</td>
+<td>Factor to multiply H-H bond-length by
+when deciding if two Hs are too close.
+Default 1.2</td>
+</tr>
+<tr class="row-even"><td>termination_rescale</td>
+<td>float</td>
+<td>0.0</td>
+<td>Rescale factor for X-H passivation
+bonds</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>args_str</strong> :  input string(len=-1)</p>
+<p><strong>cut_bonds</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
+<blockquote>
+<div><p>Return a list of the bonds cut when making
+the cluster.  See create_cluster() documentation.</p>
+</div></blockquote>
+<p><strong>mark_name</strong> :  input string(len=-1), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_cluster_info</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_cluster_info_from_mark</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.create_cluster_simple">
+<code class="descclassname">quippy.clusters.</code><code class="descname">create_cluster_simple</code><span class="sig-paren">(</span><em>at</em>, <em>args_str</em><span class="optional">[</span>, <em>mark_name</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.create_cluster_simple" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>args_str</strong> :  input string(len=-1)</p>
+<p><strong>mark_name</strong> :  input string(len=-1), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>cluster</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_cluster_simple</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.clusters.create_embed_and_fit_lists_from_cluster_mark">
+<code class="descclassname">quippy.clusters.</code><code class="descname">create_embed_and_fit_lists_from_cluster_mark</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>mark_name</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.clusters.create_embed_and_fit_lists_from_cluster_mark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an Atoms structure with an active region marked in the mark_name (default <code class="docutils literal"><span class="pre">cluster_mark</span></code>)
+property using <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code>, and buffer region marked using <code class="docutils literal"><span class="pre">HYBRID_BUFFER_MARK</span></code>,
+<code class="docutils literal"><span class="pre">HYBRID_TRANS_MARK</span></code> or <code class="docutils literal"><span class="pre">HYBRID_BUFFER_OUTER_LAYER_MARK</span></code>, simply returns the embedlist and fitlist
+according to <code class="docutils literal"><span class="pre">cluster_mark</span></code>. It does not take into account periodic shifts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<p><strong>embedlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p><strong>fitlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
+<p><strong>mark_name</strong> :  input string(len=-1), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">create_embed_and_fit_lists_from_cluster_mark</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/clusters.f95">src/libAtoms/clusters.f95</a>.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="find_surface_atoms.html" class="btn btn-neutral float-right" title="Identification of atoms on surfaces" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

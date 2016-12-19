@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Nelder and Mead minimisation algorithm &mdash; quippy c7c7ff2+ documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="quippy c7c7ff2+ documentation" href="index.html"/>
+        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                c7c7ff2+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="linearalgebra.html">Linear algebra routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quaternions.html">Quaternions and rotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline.html">Cubic spline interpolation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Nelder and Mead minimisation algorithm</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">quippy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+      
+    <li>Nelder and Mead minimisation algorithm</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/simplex.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-quippy.simplex">
+<span id="nelder-and-mead-minimisation-algorithm"></span><h1>Nelder and Mead minimisation algorithm<a class="headerlink" href="#module-quippy.simplex" title="Permalink to this headline">¶</a></h1>
+<p>Direct mimimisation and simulated annealing using the downhill simplex
+method of Nelder and Mead.</p>
+<p>Code adapted from chapter 10 of Numerical Recipes (3rd edition).</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.simplex" title="quippy.simplex: Nelder and Mead minimisation algorithm"><code class="xref py py-mod docutils literal"><span class="pre">quippy.simplex</span></code></a>:</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex" title="quippy.simplex.DownhillSimplex"><code class="xref py py-obj docutils literal"><span class="pre">DownhillSimplex</span></code></a>(func[,&nbsp;x0,&nbsp;deltas,&nbsp;p,&nbsp;args,&nbsp;...])</td>
+<td>Multidimensional minimisation using the downhill simplex method of Nelder and Mead.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="quippy.simplex.DownhillSimplex">
+<em class="property">class </em><code class="descclassname">quippy.simplex.</code><code class="descname">DownhillSimplex</code><span class="sig-paren">(</span><em>func</em>, <em>x0=None</em>, <em>deltas=None</em>, <em>p=None</em>, <em>args=None</em>, <em>ftol=1e-06</em>, <em>nmax=5000</em>, <em>tiny=1e-10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multidimensional minimisation using the downhill simplex method of
+Nelder and Mead.</p>
+<p>From Numerical Recipes, 3rd edition, section 10.5.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex.anneal_step" title="quippy.simplex.DownhillSimplex.anneal_step"><code class="xref py py-obj docutils literal"><span class="pre">anneal_step</span></code></a>(iter,&nbsp;temperature)</td>
+<td>Anneal for <em>iter</em> steps at temperature <em>temperature</em>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex.extrapolate" title="quippy.simplex.DownhillSimplex.extrapolate"><code class="xref py py-obj docutils literal"><span class="pre">extrapolate</span></code></a>(ihi,&nbsp;yhi,&nbsp;fac[,&nbsp;temperature])</td>
+<td>Extrapolate by a factor <em>fac</em> through the face of the simplex across from the high point <em>ihi</em>, try it, and replace the high point if the new point is better.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.simplex.DownhillSimplex.minimise" title="quippy.simplex.DownhillSimplex.minimise"><code class="xref py py-obj docutils literal"><span class="pre">minimise</span></code></a>()</td>
+<td>Run the downhill simplex minimiser.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="quippy.simplex.DownhillSimplex.anneal_step">
+<code class="descname">anneal_step</code><span class="sig-paren">(</span><em>iter</em>, <em>temperature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex.anneal_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex.anneal_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Anneal for <em>iter</em> steps at temperature <em>temperature</em>.</p>
+<p>Returns True if converged to global minimum, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.simplex.DownhillSimplex.extrapolate">
+<code class="descname">extrapolate</code><span class="sig-paren">(</span><em>ihi</em>, <em>yhi</em>, <em>fac</em>, <em>temperature=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex.extrapolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex.extrapolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extrapolate by a factor <em>fac</em> through the face of the simplex
+across from the high point <em>ihi</em>, try it, and replace the
+high point if the new point is better. Returns result of
+evaluating function at new point.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.simplex.DownhillSimplex.minimise">
+<code class="descname">minimise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/simplex.html#DownhillSimplex.minimise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.simplex.DownhillSimplex.minimise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the downhill simplex minimiser.</p>
+<p>Returns coordinates at minimum as vector <em>x</em>. After minimisation,
+function value at minimum is available as <em>fmin</em> attribute,
+simplex as <em>p</em> attribute, and number of function evaluations as
+<em>nfunc</em> attribute.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'c7c7ff2+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
