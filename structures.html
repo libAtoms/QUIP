@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Structure building routines &#8212; quippy e7c87c4+ documentation</title>
+    <title>Structure building routines &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,19 +14,18 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="index.html" />
-    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -50,7 +49,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/structures.txt"
+      <li><a href="_sources/structures.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -1699,18 +1698,18 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axes</strong> (<em>input rank-2 array('d') with bounds (3,3)</em>) &#8211; </li>
+<li><strong>axes</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>nx</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>ny</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>nz</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>atnum</strong> (<em>input rank-1 array('i') with bounds (qp_n0), optional</em>) &#8211; </li>
-<li><strong>lat_type</strong> (<em>in/output rank-0 array(string(len=-1),'c'), optional</em>) &#8211; </li>
-<li><strong>c</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>u</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>x</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>y</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>z</strong> (<em>input float, optional</em>) &#8211; </li>
+<li><strong>atnum</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>lat_type</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em></em><em>,</em><em>'c'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>c</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>u</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>x</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>y</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>z</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1730,20 +1729,20 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axes</strong> (<em>input rank-2 array('d') with bounds (3,3)</em>) &#8211; </li>
+<li><strong>axes</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>width</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>height</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>nz</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>atnum</strong> (<em>input rank-1 array('i') with bounds (qp_n0), optional</em>) &#8211; </li>
-<li><strong>lat_type</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
-<li><strong>c</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>u</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>x</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>y</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>z</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>even_nx</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>even_ny</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>atnum</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>lat_type</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>c</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>u</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>x</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>y</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>z</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>even_nx</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>even_ny</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1829,14 +1828,14 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

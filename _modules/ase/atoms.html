@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ase.atoms &#8212; quippy e7c87c4+ documentation</title>
+    <title>ase.atoms &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,19 +14,18 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -86,7 +85,8 @@
 <span class="kn">from</span> <span class="nn">ase.atom</span> <span class="k">import</span> <span class="n">Atom</span>
 <span class="kn">from</span> <span class="nn">ase.data</span> <span class="k">import</span> <span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">chemical_symbols</span><span class="p">,</span> <span class="n">atomic_masses</span>
 <span class="kn">from</span> <span class="nn">ase.utils</span> <span class="k">import</span> <span class="n">basestring</span>
-<span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="k">import</span> <span class="n">wrap_positions</span><span class="p">,</span> <span class="n">find_mic</span>
+<span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="k">import</span> <span class="p">(</span><span class="n">wrap_positions</span><span class="p">,</span> <span class="n">find_mic</span><span class="p">,</span> <span class="n">cellpar_to_cell</span><span class="p">,</span>
+                          <span class="n">cell_to_cellpar</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Atoms</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -96,7 +96,6 @@
 <span class="sd">    periodically repeated structure.  It has a unit cell and</span>
 <span class="sd">    there may be periodic boundary conditions along any of the three</span>
 <span class="sd">    unit cell axes.</span>
-
 <span class="sd">    Information about the atoms (atomic numbers and position) is</span>
 <span class="sd">    stored in ndarrays.  Optionally, there can be information about</span>
 <span class="sd">    tags, momenta, masses, magnetic moments and charges.</span>
@@ -131,9 +130,15 @@
 <span class="sd">        non-collinear calculations.</span>
 <span class="sd">    charges: list of float</span>
 <span class="sd">        Atomic charges.</span>
-<span class="sd">    cell: 3x3 matrix</span>
+<span class="sd">    cell: 3x3 matrix or length 3 or 6 vector</span>
 <span class="sd">        Unit cell vectors.  Can also be given as just three</span>
-<span class="sd">        numbers for orthorhombic cells.  Default value: [1, 1, 1].</span>
+<span class="sd">        numbers for orthorhombic cells, or 6 numbers, where</span>
+<span class="sd">        first three are lengths of unit cell vectors, and the</span>
+<span class="sd">        other three are angles between them (in degrees), in following order:</span>
+<span class="sd">        [len(a), len(b), len(c), angle(b,c), angle(a,c), angle(a,b)].</span>
+<span class="sd">        First vector will lie in x-direction, second in xy-plane,</span>
+<span class="sd">        and the third one in z-positive subspace.</span>
+<span class="sd">        Default value: [1, 1, 1].</span>
 <span class="sd">    celldisp: Vector</span>
 <span class="sd">        Unit cell displacement vector. To visualize a displaced cell</span>
 <span class="sd">        around the center of mass of a Systems of atoms. Default value</span>
@@ -157,8 +162,8 @@
 <span class="sd">          - adsorbate_info:</span>
 
 <span class="sd">        Items in the info attribute survives copy and slicing and can</span>
-<span class="sd">        be store to and retrieved from trajectory files given that the</span>
-<span class="sd">        key is a string, the value is picklable and, if the value is a</span>
+<span class="sd">        be stored in and retrieved from trajectory files given that the</span>
+<span class="sd">        key is a string, the value is JSON-compatible and, if the value is a</span>
 <span class="sd">        user-defined object, its base class is importable.  One should</span>
 <span class="sd">        not make any assumptions about the existence of keys.</span>
 
@@ -302,12 +307,9 @@
 
 <div class="viewcode-block" id="Atoms.set_calculator"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_calculator">[docs]</a>    <span class="k">def</span> <span class="nf">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Attach calculator object.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="s1">&#39;_SetListOfAtoms&#39;</span><span class="p">):</span>
-            <span class="kn">from</span> <span class="nn">ase.old</span> <span class="k">import</span> <span class="n">OldASECalculatorWrapper</span>
-            <span class="n">calc</span> <span class="o">=</span> <span class="n">OldASECalculatorWrapper</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="o">=</span> <span class="n">calc</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="s1">&#39;set_atoms&#39;</span><span class="p">):</span>
-            <span class="n">calc</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="o">=</span> <span class="n">calc</span></div>
+            <span class="n">calc</span><span class="o">.</span><span class="n">set_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atoms.get_calculator"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_calculator">[docs]</a>    <span class="k">def</span> <span class="nf">get_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get currently attached calculator object.&quot;&quot;&quot;</span>
@@ -346,10 +348,15 @@
 
 <span class="sd">        Parameters:</span>
 
-<span class="sd">        cell :</span>
+<span class="sd">        cell: 3x3 matrix or length 3 or 6 vector</span>
 <span class="sd">            Unit cell.  A 3x3 matrix (the three unit cell vectors) or</span>
-<span class="sd">            just three numbers for an orthorhombic cell.</span>
-<span class="sd">        scale_atoms : bool</span>
+<span class="sd">            just three numbers for an orthorhombic cell. Another option is</span>
+<span class="sd">            6 numbers, which describes unit cell with lengths of unit cell</span>
+<span class="sd">            vectors and with angles between them (in degrees), in following</span>
+<span class="sd">            order: [len(a), len(b), len(c), angle(b,c), angle(a,c),</span>
+<span class="sd">            angle(a,b)].  First vector will lie in x-direction, second in</span>
+<span class="sd">            xy-plane, and the third one in z-positive subspace.</span>
+<span class="sd">        scale_atoms: bool</span>
 <span class="sd">            Fix atomic positions or move atoms with the unit cell?</span>
 <span class="sd">            Default behavior is to *not* move the atoms (scale_atoms=False).</span>
 
@@ -365,17 +372,30 @@
 <span class="sd">        FCC unit cell:</span>
 
 <span class="sd">        &gt;&gt;&gt; atoms.set_cell([(0, b, b), (b, 0, b), (b, b, 0)])</span>
+
+<span class="sd">        Hexagonal unit cell:</span>
+
+<span class="sd">        &gt;&gt;&gt; atoms.set_cell([a, a, c, 90, 90, 120])</span>
+
+<span class="sd">        Rhombohedral unit cell:</span>
+
+<span class="sd">        &gt;&gt;&gt; alpha = 77</span>
+<span class="sd">        &gt;&gt;&gt; atoms.set_cell([a, a, a, alpha, alpha, alpha])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">fix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Please use scale_atoms=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="ow">not</span> <span class="n">fix</span><span class="p">))</span>
 
         <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cell</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="n">cellpar_to_cell</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">cell</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cell must be length 3 sequence or &#39;</span>
-                             <span class="s1">&#39;3x3 matrix!&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cell must be length 3 sequence, length 6 &#39;</span>
+                             <span class="s1">&#39;sequence or 3x3 matrix!&#39;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">scale_atoms</span><span class="p">:</span>
             <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">],</span> <span class="n">M</span><span class="p">)</span>
@@ -393,6 +413,18 @@
 <div class="viewcode-block" id="Atoms.get_cell"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_cell">[docs]</a>    <span class="k">def</span> <span class="nf">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the three unit cell vectors as a 3x3 ndarray.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Atoms.get_cell_lengths_and_angles"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_cell_lengths_and_angles">[docs]</a>    <span class="k">def</span> <span class="nf">get_cell_lengths_and_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get unit cell parameters. Sequence of 6 numbers.</span>
+
+<span class="sd">        First three are unit cell vector lengths and second three</span>
+<span class="sd">        are angles between them::</span>
+
+<span class="sd">            [len(a), len(b), len(c), angle(a,b), angle(a,c), angle(b,c)]</span>
+
+<span class="sd">        in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cell_to_cellpar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atoms.get_reciprocal_cell"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_reciprocal_cell">[docs]</a>    <span class="k">def</span> <span class="nf">get_reciprocal_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the three reciprocal lattice vectors as a 3x3 ndarray.</span>
@@ -752,14 +784,14 @@
 <span class="sd">        Ask the attached calculator to calculate the forces and apply</span>
 <span class="sd">        constraints.  Use *apply_constraint=False* to get the raw</span>
 <span class="sd">        forces.</span>
-<span class="sd">        </span>
+
 <span class="sd">        For molecular dynamics (md=True) we don&#39;t apply the constraint</span>
 <span class="sd">        to the forces but to the momenta.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Atoms object has no calculator.&#39;</span><span class="p">)</span>
         <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span><span class="o">.</span><span class="n">get_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">apply_constraint</span><span class="p">:</span>
             <span class="c1"># We need a special md flag here because for MD we want</span>
             <span class="c1"># to skip real constraints but include special &quot;constraints&quot;</span>
@@ -837,44 +869,55 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Atoms.get_number_of_atoms"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_number_of_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_number_of_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns the global number of atoms in a distributed-atoms parallel simulation.</span>
+        <span class="sd">&quot;&quot;&quot;Returns the global number of atoms in a distributed-atoms parallel</span>
+<span class="sd">        simulation.</span>
 
 <span class="sd">        DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!</span>
-<span class="sd">        </span>
-<span class="sd">        Equivalent to len(atoms) in the standard ASE Atoms class.  You should normally</span>
-<span class="sd">        use len(atoms) instead.  This function&#39;s only purpose is to make compatibility</span>
-<span class="sd">        between ASE and Asap easier to maintain by having a few places in ASE use this</span>
-<span class="sd">        function instead.  It is typically only when counting the global number of</span>
-<span class="sd">        degrees of freedom or in similar situations.</span>
+
+<span class="sd">        Equivalent to len(atoms) in the standard ASE Atoms class.  You should</span>
+<span class="sd">        normally use len(atoms) instead.  This function&#39;s only purpose is to</span>
+<span class="sd">        make compatibility between ASE and Asap easier to maintain by having a</span>
+<span class="sd">        few places in ASE use this function instead.  It is typically only</span>
+<span class="sd">        when counting the global number of degrees of freedom or in similar</span>
+<span class="sd">        situations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
-        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">symbols</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="k">elif</span> <span class="n">N</span> <span class="o">&lt;=</span> <span class="mi">60</span><span class="p">:</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">&lt;=</span> <span class="mi">60</span><span class="p">:</span>
             <span class="n">symbols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_chemical_formula</span><span class="p">(</span><span class="s1">&#39;reduce&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">symbols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_chemical_formula</span><span class="p">(</span><span class="s1">&#39;hill&#39;</span><span class="p">)</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(symbols=&#39;</span><span class="si">%s</span><span class="s2">&#39;, &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">symbols</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;symbols=&#39;</span><span class="si">{0}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">symbols</span><span class="p">))</span>
+
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pbc=</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()))</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;cell=</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cell</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;numbers&#39;</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=..., &#39;</span> <span class="o">%</span> <span class="n">name</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()))</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;cell=</span><span class="si">%s</span><span class="s1">, &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;cell=</span><span class="si">%s</span><span class="s1">, &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;pbc=</span><span class="si">%s</span><span class="s1">, &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;constraint=</span><span class="si">%s</span><span class="s1">, &#39;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;constraint=</span><span class="si">%s</span><span class="s1">, &#39;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">constraint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;constraint=</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">constraint</span><span class="p">)))</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;calculator=</span><span class="si">%s</span><span class="s1">(...), &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
-        <span class="k">return</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;calculator=</span><span class="si">{0}</span><span class="s1">(...)&#39;</span>
+                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">(</span><span class="si">{1}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tokens</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -941,7 +984,7 @@
             <span class="k">return</span> <span class="n">Atom</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
 
         <span class="kn">import</span> <span class="nn">copy</span>
-        <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="k">import</span> <span class="n">FixConstraint</span>
+        <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="k">import</span> <span class="n">FixConstraint</span><span class="p">,</span> <span class="n">FixBondLengths</span>
 
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
         <span class="c1"># TODO: Do we need to shuffle indices in adsorbate_info too?</span>
@@ -956,7 +999,7 @@
         <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
         <span class="n">condel</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">FixConstraint</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="p">(</span><span class="n">FixConstraint</span><span class="p">,</span> <span class="n">FixBondLengths</span><span class="p">)):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">con</span><span class="o">.</span><span class="n">index_shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
@@ -967,19 +1010,27 @@
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="k">import</span> <span class="n">FixAtoms</span>
-        <span class="n">check_constraint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">FixAtoms</span><span class="p">)</span>
-                                     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">])</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">check_constraint</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span>
-                                            <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">list</span><span class="p">))):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Remove constraint using set_constraint() &#39;</span>
-                               <span class="s1">&#39;before deleting atoms.&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">FixAtoms</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Remove constraint using set_constraint() &#39;</span>
+                                   <span class="s1">&#39;before deleting atoms.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">delete_atoms</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints</span>
+
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">)):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">delete_atom</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">))[</span><span class="n">i</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Atoms.pop"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove and return atom at index *i* (default last).&quot;&quot;&quot;</span>
@@ -1575,8 +1626,11 @@
 
 <div class="viewcode-block" id="Atoms.get_temperature"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_temperature">[docs]</a>    <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the temperature in Kelvin.&quot;&quot;&quot;</span>
-        <span class="n">ekin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ekin</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="p">)</span></div>
+        <span class="n">dof</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
+            <span class="n">dof</span> <span class="o">-=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">removed_dof</span>
+        <span class="n">ekin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ekin</span> <span class="o">/</span> <span class="p">(</span><span class="n">dof</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check for identity of two atoms objects.</span>
@@ -1793,14 +1847,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

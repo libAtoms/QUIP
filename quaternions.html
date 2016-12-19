@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Quaternions and rotation &#8212; quippy e7c87c4+ documentation</title>
+    <title>Quaternions and rotation &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,8 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="index.html" />
-    <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Linear algebra routines" href="linearalgebra.html" /> 
   </head>
   <body role="document">
@@ -42,7 +41,7 @@
         <li class="right" >
           <a href="linearalgebra.html" title="Linear algebra routines"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -57,7 +56,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/quaternions.txt"
+      <li><a href="_sources/quaternions.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -96,7 +95,7 @@ i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-obj docutils literal"><span class="pre">Quaternion</span></code></a>([a,b,c,d])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-obj docutils literal"><span class="pre">Quaternion</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -129,7 +128,7 @@ i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 </table>
 <dl class="class">
 <dt id="quippy.quaternions.Quaternion">
-<em class="property">class </em><code class="descclassname">quippy.quaternions.</code><code class="descname">Quaternion</code><span class="sig-paren">(</span><span class="optional">[</span><em>a</em>, <em>b</em>, <em>c</em>, <em>d</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.quaternions.</code><code class="descname">Quaternion</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>quaternion_initialise([a,b,c,d])</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -160,7 +159,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.print_" title="quippy.quaternions.Quaternion.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.print_" title="quippy.quaternions.Quaternion.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -219,7 +218,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -231,7 +230,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.quaternions.Quaternion.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion.print_" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -388,7 +387,7 @@ rotate using <img class="math" src="_images/math/9cf62725bc004d5d7246bd73f9af42a
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array('d') with bounds (3)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>qr</strong> (<a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -409,10 +408,10 @@ rotation on <cite>origin</cite></p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>field</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>axis</strong> (<em>input rank-1 array('d') with bounds (3)</em>) &#8211; </li>
+<li><strong>field</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>axis</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>angle</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>origin</strong> (<em>input rank-1 array('d') with bounds (3), optional</em>) &#8211; </li>
+<li><strong>origin</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -444,14 +443,14 @@ rotation on <cite>origin</cite></p>
         <li class="right" >
           <a href="linearalgebra.html" title="Linear algebra routines"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Low-level system routines &#8212; quippy e7c87c4+ documentation</title>
+    <title>Low-level system routines &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,8 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="index.html" />
-    <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="prev" title="Units and physical constants" href="units.html" /> 
   </head>
   <body role="document">
@@ -42,7 +41,7 @@
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -57,7 +56,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/system.txt"
+      <li><a href="_sources/system.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -92,7 +91,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Open a file for reading or writing.</td>
 </tr>
 </tbody>
@@ -643,7 +642,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 <dl class="class">
 <dt id="quippy.system.InOutput">
-<em class="property">class </em><code class="descclassname">quippy.system.</code><code class="descname">InOutput</code><span class="sig-paren">(</span><span class="optional">[</span><em>filename</em>, <em>action</em>, <em>isformatted</em>, <em>append</em>, <em>verbosity</em>, <em>verbosity_cascade</em>, <em>master_only</em>, <em>unit</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.system.</code><code class="descname">InOutput</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>Open a file for reading or writing. The action optional parameter can
 be one of <code class="docutils literal"><span class="pre">INPUT</span></code> (default), <code class="docutils literal"><span class="pre">OUTPUT</span></code> or <code class="docutils literal"><span class="pre">INOUT</span></code>.
@@ -715,7 +714,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>([value])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -726,7 +725,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(delimiters,fields,[status])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Call parse_string on the next line from a file</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.print_mem_info" title="quippy.system.InOutput.print_mem_info"><code class="xref py py-obj docutils literal"><span class="pre">print_mem_info</span></code></a>([file])</td>
@@ -740,7 +739,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>([value])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -754,7 +753,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal"><span class="pre">read_ascii</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">read_ascii</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>([status])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Read a line of text from a file (up to a line break, or 1024 characters).</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal"><span class="pre">rewind</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
@@ -828,7 +827,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.mpi_all_inoutput">
-<code class="descname">mpi_all_inoutput</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mpi_all_inoutput</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -843,7 +842,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.parse_line">
-<code class="descname">parse_line</code><span class="sig-paren">(</span><em>delimiters</em>, <em>fields</em><span class="optional">[</span>, <em>status</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_line</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call parse_string on the next line from a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -880,7 +879,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.print_mpi_id">
-<code class="descname">print_mpi_id</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_mpi_id</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -910,7 +909,7 @@ derived types.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_da,0)</li>
-<li><strong>status</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>status</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -931,7 +930,7 @@ derived types.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ia,0)</li>
-<li><strong>status</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>status</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -948,7 +947,7 @@ derived types.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.read_line">
-<code class="descname">read_line</code><span class="sig-paren">(</span><span class="optional">[</span><em>status</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_line</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a line of text from a file (up to a line break, or 1024 characters).
 This can then be parsed by the calling routine (using <code class="docutils literal"><span class="pre">parse_line</span></code> for example)</p>
 <p>Optionally, a status is returned which is:</p>
@@ -2373,7 +2372,7 @@ the default value</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>def</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input float, optional</em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2394,7 +2393,7 @@ the default value</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>def</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2415,7 +2414,7 @@ the default value</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>def</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2435,8 +2434,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>def</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
+<li><strong>def</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2456,8 +2455,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>def</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input rank-1 array('i') with bounds (size(qp_def)), optional</em>) &#8211; </li>
+<li><strong>def</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>size</em><em>(</em><em>qp_def</em><em>)</em><em></em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2477,8 +2476,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>def</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input rank-1 array('d') with bounds (size(qp_def)), optional</em>) &#8211; </li>
+<li><strong>def</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>size</em><em>(</em><em>qp_def</em><em>)</em><em></em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2498,8 +2497,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>def</strong> (<em>input rank-2 array('S') with bounds (qp_n0,(*))</em>) &#8211; </li>
-<li><strong>opt_val</strong> (<em>input rank-2 array('S') with bounds (qp_n1,(*)), optional</em>) &#8211; </li>
+<li><strong>def</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em></em><em>(</em><em>*</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
+<li><strong>opt_val</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>,</em><em></em><em>(</em><em>*</em><em>)</em><em></em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2527,9 +2526,9 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_real1d,0)</li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2549,8 +2548,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2570,8 +2569,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2591,9 +2590,9 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_integer1d,0)</li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2613,9 +2612,9 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_logical1d,0)</li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2635,8 +2634,8 @@ the default value</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2672,7 +2671,7 @@ Other user-defined types define the Print interface in the same way.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>int</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional) &#8211; </li>
 </ul>
 </td>
@@ -2690,11 +2689,11 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>string</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional) &#8211; </li>
-<li><strong>nocr</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>do_flush</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>nocr</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>do_flush</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2711,8 +2710,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>char_a</strong> (<em>input rank-2 array('S') with bounds (qp_n0,(*))</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>char_a</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em></em><em>(</em><em>*</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional) &#8211; </li>
 </ul>
 </td>
@@ -2731,7 +2730,7 @@ Other user-defined types define the Print interface in the same way.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>log</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional) &#8211; </li>
 </ul>
 </td>
@@ -2750,10 +2749,10 @@ Other user-defined types define the Print interface in the same way.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>real</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional) &#8211; </li>
-<li><strong>precision</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>format</strong> (<em>input string(len=-1), optional</em>) &#8211; </li>
+<li><strong>precision</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2770,8 +2769,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2788,8 +2787,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2806,8 +2805,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -2825,8 +2824,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2843,8 +2842,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -2862,8 +2861,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -2881,8 +2880,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2899,8 +2898,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -2918,8 +2917,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -2937,8 +2936,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2955,8 +2954,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2973,8 +2972,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -2992,8 +2991,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3010,8 +3009,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -3029,8 +3028,8 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3047,10 +3046,10 @@ Other user-defined types define the Print interface in the same way.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>verbosity</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>file</strong> (<a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
-<li><strong>always</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>always</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3082,14 +3081,14 @@ Other user-defined types define the Print interface in the same way.</p>
         <li class="right" >
           <a href="units.html" title="Units and physical constants"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

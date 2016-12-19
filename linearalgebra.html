@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Linear algebra routines &#8212; quippy e7c87c4+ documentation</title>
+    <title>Linear algebra routines &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,8 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="index.html" />
-    <link rel="up" title="Quippy library reference" href="quippy.html" />
     <link rel="next" title="Quaternions and rotation" href="quaternions.html" /> 
   </head>
   <body role="document">
@@ -42,7 +41,7 @@
         <li class="right" >
           <a href="quaternions.html" title="Quaternions and rotation"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -57,7 +56,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/linearalgebra.txt"
+      <li><a href="_sources/linearalgebra.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -1406,12 +1405,12 @@ If the array subscripts don``t start at 1, then pass the actual index of the fir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>array</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>array</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>first</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>low</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>high</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>first</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>low</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>high</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1435,12 +1434,12 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>array</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>array</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>first</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>low</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>high</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>first</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>low</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>high</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1469,7 +1468,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>average</strong> (<em>in/output rank-0 array(float,'d')</em>) &#8211; </li>
+<li><strong>average</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>decay</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>x</strong> (<em>input float</em>) &#8211; </li>
 </ul>
@@ -1488,9 +1487,9 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>average</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>average</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>decay</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>x</strong> (<em>input rank-1 array('d') with bounds (size(qp_average))</em>) &#8211; </li>
+<li><strong>x</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>size</em><em>(</em><em>qp_average</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1507,9 +1506,9 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>average</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>average</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>decay</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>x</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
+<li><strong>x</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1534,7 +1533,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_sq</strong> &#8211;  int</td>
 </tr>
@@ -1550,7 +1549,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_sq</strong> &#8211;  int</td>
 </tr>
@@ -1566,7 +1565,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix_z</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix_z</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_sq</strong> &#8211;  int</td>
 </tr>
@@ -1582,7 +1581,7 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_sq</strong> &#8211;  int</td>
 </tr>
@@ -1701,8 +1700,8 @@ the first element as <code class="docutils literal"><span class="pre">first</spa
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>unique</strong> (<em>in/output rank-1 array('i') with bounds (qp_n2), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>unique</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1729,7 +1728,7 @@ can be used to index other arrays, e.g. array(find(mask))</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mask</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_find_indices,0)</li>
 </ul>
 </td>
@@ -1762,8 +1761,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>vectl</strong> (<em>input rank-1 array('d') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+<li><strong>vectl</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1785,8 +1784,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('D') with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1808,8 +1807,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>vectl</strong> (<em>input rank-1 array('D') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+<li><strong>vectl</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1831,8 +1830,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('D') with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1854,8 +1853,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1877,8 +1876,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>vectl</strong> (<em>input rank-1 array('d') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+<li><strong>vectl</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1900,8 +1899,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1923,8 +1922,8 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>vectl</strong> (<em>input rank-1 array('D') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n3,qp_n4)</em>) &#8211; </li>
+<li><strong>vectl</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1953,7 +1952,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vector</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vector</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_normsq</strong> &#8211;  float</td>
 </tr>
@@ -1970,7 +1969,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>dir</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n2</strong> (<em>input int</em>) &#8211; shape(qp_ret_array_normsq,0)</li>
 </ul>
@@ -2001,9 +2000,9 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>inverse</strong> (<em>in/output rank-2 array('D') with bounds (qp_n2,qp_n3), optional</em>) &#8211; </li>
-<li><strong>positive_in</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>inverse</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>positive_in</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2020,9 +2019,9 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>inverse</strong> (<em>in/output rank-2 array('d') with bounds (qp_n2,qp_n3), optional</em>) &#8211; </li>
-<li><strong>positive_in</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>inverse</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>positive_in</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2047,7 +2046,7 @@ to &#8216;x .dot. x&#8217; for a single vector &#8216;x&#8217;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_tr</strong> &#8211;  float</td>
 </tr>
@@ -2074,7 +2073,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>m</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>m</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 </ul>
 </td>
@@ -2092,7 +2091,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>m</strong> (<em>in/output rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>m</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 </ul>
 </td>
@@ -2110,8 +2109,8 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>m</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>a</strong> (<em>input rank-1 array('d') with bounds (qp_n2)</em>) &#8211; </li>
+<li><strong>m</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>a</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2128,7 +2127,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 </ul>
 </td>
@@ -2146,7 +2145,7 @@ $(-frac{a}{2},frac{a}{2})$ are added to each element of the vector or matrix.</p
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>a</strong> (<em>input float</em>) &#8211; </li>
 </ul>
 </td>
@@ -2174,7 +2173,7 @@ of a matrix and return them as a vector.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n2</strong> (<em>input int</em>) &#8211; shape(qp_ret_vect,0)</li>
 </ul>
 </td>
@@ -2195,7 +2194,7 @@ of a matrix and return them as a vector.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n2</strong> (<em>input int</em>) &#8211; shape(qp_ret_vect,0)</li>
 </ul>
 </td>
@@ -2215,7 +2214,7 @@ of a matrix and return them as a vector.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_matrix</strong> &#8211;  rank-2 array(&#8216;D&#8217;) with bounds (size(qp_vect),size(qp_vect))</td>
 </tr>
@@ -2231,7 +2230,7 @@ of a matrix and return them as a vector.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_matrix</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (size(qp_vect),size(qp_vect))</td>
 </tr>
@@ -2260,12 +2259,12 @@ with no return value allocated on the stack</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix1</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>matrix2</strong> (<em>input rank-2 array('d') with bounds (qp_n4,qp_n5)</em>) &#8211; </li>
-<li><strong>m1_transpose</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>m2_transpose</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>lhs_factor</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>rhs_factor</strong> (<em>input float, optional</em>) &#8211; </li>
+<li><strong>matrix1</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>matrix2</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>,</em><em>qp_n5</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>m1_transpose</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>m2_transpose</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>lhs_factor</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>rhs_factor</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2286,11 +2285,11 @@ with no return value allocated on the stack</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n1,qp_n2)</em>) &#8211; </li>
-<li><strong>vector</strong> (<em>input rank-1 array('d') with bounds (qp_n3)</em>) &#8211; </li>
-<li><strong>m_transpose</strong> (<em>input int, optional</em>) &#8211; </li>
-<li><strong>lhs_factor</strong> (<em>input float, optional</em>) &#8211; </li>
-<li><strong>rhs_factor</strong> (<em>input float, optional</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>,</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vector</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>m_transpose</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>lhs_factor</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>rhs_factor</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2318,7 +2317,7 @@ with no return value allocated on the stack</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>a</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>a</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n2</strong> (<em>input int</em>) &#8211; shape(qp_ret_matrix_exp_d,0)</li>
 <li><strong>n3</strong> (<em>input int</em>) &#8211; shape(qp_ret_matrix_exp_d,1)</li>
 </ul>
@@ -2350,8 +2349,8 @@ with no return value allocated on the stack</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n2)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n3</strong> (<em>input int</em>) &#8211; shape(qp_ret_prodmatrix,0)</li>
 <li><strong>n4</strong> (<em>input int</em>) &#8211; shape(qp_ret_prodmatrix,1)</li>
 </ul>
@@ -2411,7 +2410,7 @@ with no return value allocated on the stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>in/output rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -2425,7 +2424,7 @@ with no return value allocated on the stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -2448,7 +2447,7 @@ with no return value allocated on the stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_symm</strong> &#8211;  int</td>
 </tr>
@@ -2464,7 +2463,7 @@ with no return value allocated on the stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_symm</strong> &#8211;  int</td>
 </tr>
@@ -2480,7 +2479,7 @@ with no return value allocated on the stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_symm</strong> &#8211;  int</td>
 </tr>
@@ -2506,13 +2505,13 @@ with no return value allocated on the stack</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vector</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>vector</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>min_x</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>max_x</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>nbin</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_vector_histogram,0)</li>
-<li><strong>weight_vector</strong> (<em>input rank-1 array('d') with bounds (qp_n2), optional</em>) &#8211; </li>
-<li><strong>drop_outside</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>weight_vector</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>drop_outside</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2540,7 +2539,7 @@ with no return value allocated on the stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -2563,11 +2562,11 @@ with no return value allocated on the stack</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n2</strong> (<em>input int</em>) &#8211; shape(qp_eval,0)</li>
-<li><strong>l_evects</strong> (<em>in/output rank-2 array('D') with bounds (qp_n3,qp_n4), optional</em>) &#8211; </li>
-<li><strong>r_evects</strong> (<em>in/output rank-2 array('D') with bounds (qp_n5,qp_n6), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>l_evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>r_evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n5</em><em>,</em><em>qp_n6</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2599,8 +2598,8 @@ have been.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>in/output rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>idx</strong> (<em>in/output rank-1 array('i') with bounds (size(qp_this)), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>idx</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>size</em><em>(</em><em>qp_this</em><em>)</em><em></em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2617,8 +2616,8 @@ have been.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>idx</strong> (<em>in/output rank-1 array('i') with bounds (size(qp_this)), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>idx</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>size</em><em>(</em><em>qp_this</em><em>)</em><em></em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2644,9 +2643,9 @@ have been.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>this</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>val</strong> (<em>input rank-1 array('i') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>mask</strong> (<em>input rank-1 array('i') with bounds (qp_n3), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>val</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2666,8 +2665,8 @@ have been.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>this</strong> (<em>input rank-2 array('S') with bounds (qp_n0,(*))</em>) &#8211; </li>
-<li><strong>val</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em></em><em>(</em><em>*</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
+<li><strong>val</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2687,7 +2686,7 @@ have been.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>this</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>val</strong> (<em>input int</em>) &#8211; </li>
 </ul>
 </td>
@@ -2772,8 +2771,8 @@ have been.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('D') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2795,8 +2794,8 @@ have been.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_lhs,0)</li>
 <li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_lhs,1)</li>
-<li><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>vect</strong> (<em>input rank-1 array('d') with bounds (qp_n4)</em>) &#8211; </li>
+<li><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2826,9 +2825,9 @@ i_data is an accompanying array of integers on which the same reordering is perf
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>i_data</strong> (<em>in/output rank-1 array('i') with bounds (qp_n1), optional</em>) &#8211; </li>
-<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n2), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>i_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2847,8 +2846,8 @@ r_data is an accompanying array of reals on which the same reordering is perform
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>in/output rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n1), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2879,11 +2878,11 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>other</strong> (<em>input rank-2 array('D') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>evals</strong> (<em>in/output rank-1 array('d') with bounds (qp_n4)</em>) &#8211; </li>
-<li><strong>evects</strong> (<em>in/output rank-2 array('D') with bounds (qp_n5,qp_n6)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>other</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evals</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n5</em><em>,</em><em>qp_n6</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2900,10 +2899,10 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>evals</strong> (<em>in/output rank-1 array('d') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>evects</strong> (<em>in/output rank-2 array('D') with bounds (qp_n3,qp_n4), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evals</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2920,11 +2919,11 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>other</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
-<li><strong>evals</strong> (<em>in/output rank-1 array('d') with bounds (qp_n4)</em>) &#8211; </li>
-<li><strong>evects</strong> (<em>in/output rank-2 array('d') with bounds (qp_n5,qp_n6)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>other</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evals</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n5</em><em>,</em><em>qp_n6</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2941,10 +2940,10 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>evals</strong> (<em>in/output rank-1 array('d') with bounds (qp_n2)</em>) &#8211; </li>
-<li><strong>evects</strong> (<em>in/output rank-2 array('d') with bounds (qp_n3,qp_n4), optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evals</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2973,8 +2972,8 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>array1</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>array2</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
+<li><strong>array1</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>array2</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2997,8 +2996,8 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vector1</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>vector2</strong> (<em>input rank-1 array('d') with bounds (qp_n1)</em>) &#8211; </li>
+<li><strong>vector1</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>vector2</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3026,8 +3025,8 @@ complex hermitian postive definite matrices.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrixa</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>matrixb</strong> (<em>input rank-2 array('d') with bounds (qp_n2,qp_n3)</em>) &#8211; </li>
+<li><strong>matrixa</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>matrixb</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>qp_n3</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3060,7 +3059,7 @@ The result is then a one-dimensional array of the norms of each vector.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>this</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>dir</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n2</strong> (<em>input int</em>) &#8211; shape(qp_ret_sqvalue,0)</li>
 </ul>
@@ -3081,7 +3080,7 @@ The result is then a one-dimensional array of the norms of each vector.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vector</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vector</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_norm</strong> &#8211;  float</td>
 </tr>
@@ -3111,8 +3110,8 @@ performed
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>in/output rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n1), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3129,9 +3128,9 @@ performed
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>in/output rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>i_data</strong> (<em>in/output rank-1 array('i') with bounds (qp_n2), optional</em>) &#8211; </li>
-<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n3), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>i_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3153,9 +3152,9 @@ on which the same reordering is performed
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>in/output rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>i_data</strong> (<em>in/output rank-1 array('i') with bounds (qp_n1), optional</em>) &#8211; </li>
-<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n2), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>i_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3172,9 +3171,9 @@ on which the same reordering is performed
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>array</strong> (<em>in/output rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>i_data</strong> (<em>in/output rank-1 array('i') with bounds (qp_n2), optional</em>) &#8211; </li>
-<li><strong>r_data</strong> (<em>in/output rank-1 array('d') with bounds (qp_n3), optional</em>) &#8211; </li>
+<li><strong>array</strong> (<em>in/output rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>i_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>r_data</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3229,7 +3228,7 @@ on which the same reordering is performed
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_matrix_is_orthogonal</strong> &#8211;  int</td>
 </tr>
@@ -3257,11 +3256,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>realarray</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>realarray</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3278,11 +3277,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>intarray</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n1)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>intarray</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3299,11 +3298,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>intarray</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n2)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>intarray</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3320,11 +3319,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>logarray</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>logarray</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3341,11 +3340,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>realarray</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n1)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>realarray</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3362,11 +3361,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>realarray</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n2)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>realarray</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3383,11 +3382,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>intarray</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>intarray</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3404,11 +3403,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>realarray</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n1)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>realarray</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3425,11 +3424,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>realarray</strong> (<em>input rank-2 array('D') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n2)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>realarray</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3446,11 +3445,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>realarray</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>realarray</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3467,11 +3466,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>logarray</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n2)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>logarray</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3488,11 +3487,11 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arrayname</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>logarray</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
-<li><strong>n</strong> (<em>input rank-1 array('i') with bounds (n1)</em>) &#8211; </li>
-<li><strong>caller</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>arrayname</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>logarray</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>caller</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -3524,14 +3523,14 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
         <li class="right" >
           <a href="quaternions.html" title="Quaternions and rotation"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

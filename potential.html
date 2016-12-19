@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Potential objects &#8212; quippy e7c87c4+ documentation</title>
+    <title>Potential objects &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,19 +14,18 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="index.html" />
-    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -50,7 +49,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/potential.txt"
+      <li><a href="_sources/potential.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -441,13 +440,13 @@ do_rescale_r=T Unit is A^3.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>args_str</strong> (<em>input string(len=-1), optional</em>) &#8211; Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
+<li><strong>args_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
 <li><strong>pot1</strong> (<a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object, optional) &#8211; Optional first Potential upon which this Potential is based</li>
 <li><strong>pot2</strong> (<a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object, optional) &#8211; Optional second potential</li>
-<li><strong>param_str</strong> (<em>input string(len=-1), optional</em>) &#8211; contents of xml parameter file for potential initializers, if needed</li>
+<li><strong>param_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; contents of xml parameter file for potential initializers, if needed</li>
 <li><strong>bulk_scale</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) &#8211; optional bulk structure for calculating space and E rescaling</li>
 <li><strong>mpi_obj</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -464,11 +463,11 @@ do_rescale_r=T Unit is A^3.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>args_str</strong> (<em>input string(len=-1)</em>) &#8211; Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
+<li><strong>args_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
 <li><strong>io_obj</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; name of xml parameter inoutput for potential initializers</li>
 <li><strong>bulk_scale</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) &#8211; optional bulk structure for calculating space and E rescaling</li>
 <li><strong>mpi_obj</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -533,20 +532,74 @@ array in <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.array
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get" title="quippy.potential.Potential.get"><code class="xref py py-obj docutils literal"><span class="pre">get</span></code></a>(param[,&nbsp;default])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.band_structure" title="quippy.potential.Potential.band_structure"><code class="xref py py-obj docutils literal"><span class="pre">band_structure</span></code></a>()</td>
+<td>Create band-structure object for plotting.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.bulk_modulus" title="quippy.potential.Potential.bulk_modulus"><code class="xref py py-obj docutils literal"><span class="pre">bulk_modulus</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></a>(at[,&nbsp;energy,&nbsp;force,&nbsp;virial,&nbsp;...])</td>
+<td>Apply this Potential to the Atoms object <code class="docutils literal"><span class="pre">at</span></code>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.calc_elastic_constants" title="quippy.potential.Potential.calc_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">calc_elastic_constants</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.calc_electrostatic_potential" title="quippy.potential.Potential.calc_electrostatic_potential"><code class="xref py py-obj docutils literal"><span class="pre">calc_electrostatic_potential</span></code></a>(...)</td>
+<td>Evaluate electrostatic potential on a grid by adding test atoms at grid points</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.calculate_numerical_forces" title="quippy.potential.Potential.calculate_numerical_forces"><code class="xref py py-obj docutils literal"><span class="pre">calculate_numerical_forces</span></code></a>(atoms[,&nbsp;d])</td>
+<td>Calculate numerical forces using finite difference.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.calculate_numerical_stress" title="quippy.potential.Potential.calculate_numerical_stress"><code class="xref py py-obj docutils literal"><span class="pre">calculate_numerical_stress</span></code></a>(atoms[,&nbsp;d,&nbsp;voigt])</td>
+<td>Calculate numerical stress using finite difference.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.cutoff" title="quippy.potential.Potential.cutoff"><code class="xref py py-obj docutils literal"><span class="pre">cutoff</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Return the cutoff of this <code class="docutils literal"><span class="pre">Potential</span></code>, in Angstrom.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.filename_initialise" title="quippy.potential.Potential.filename_initialise"><code class="xref py py-obj docutils literal"><span class="pre">filename_initialise</span></code></a>(...)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.get" title="quippy.potential.Potential.get"><code class="xref py py-obj docutils literal"><span class="pre">get</span></code></a>(param[,&nbsp;default])</td>
 <td>Get the value of a <code class="docutils literal"><span class="pre">calc_args</span></code> parameter for this <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.get_calc_args" title="quippy.potential.Potential.get_calc_args"><code class="xref py py-obj docutils literal"><span class="pre">get_calc_args</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get_calc_args" title="quippy.potential.Potential.get_calc_args"><code class="xref py py-obj docutils literal"><span class="pre">get_calc_args</span></code></a>()</td>
 <td>Get the current <code class="docutils literal"><span class="pre">calc_args</span></code></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get_calc_args_str" title="quippy.potential.Potential.get_calc_args_str"><code class="xref py py-obj docutils literal"><span class="pre">get_calc_args_str</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.get_calc_args_str" title="quippy.potential.Potential.get_calc_args_str"><code class="xref py py-obj docutils literal"><span class="pre">get_calc_args_str</span></code></a>()</td>
 <td>Get the <code class="docutils literal"><span class="pre">calc_args</span></code> to be passed to <a class="reference internal" href="#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code></a> as a string</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.get_default_properties" title="quippy.potential.Potential.get_default_properties"><code class="xref py py-obj docutils literal"><span class="pre">get_default_properties</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get_default_properties" title="quippy.potential.Potential.get_default_properties"><code class="xref py py-obj docutils literal"><span class="pre">get_default_properties</span></code></a>()</td>
 <td>Get the list of properties to be calculated by default</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">get_elastic_constants</span></code></a>(atoms)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">get_elastic_constants</span></code></a>(atoms)</td>
 <td>Calculate elastic constants of <cite>atoms</cite> using this Potential.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get_magnetic_moments" title="quippy.potential.Potential.get_magnetic_moments"><code class="xref py py-obj docutils literal"><span class="pre">get_magnetic_moments</span></code></a>([atoms])</td>
+<td>Calculate magnetic moments projected onto atoms.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.get_numeric_forces" title="quippy.potential.Potential.get_numeric_forces"><code class="xref py py-obj docutils literal"><span class="pre">get_numeric_forces</span></code></a>(atoms)</td>
 <td>Return forces on <cite>atoms</cite> computed with finite differences of the energy</td>
@@ -560,17 +613,105 @@ array in <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.array
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.get_unrelaxed_elastic_constants" title="quippy.potential.Potential.get_unrelaxed_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">get_unrelaxed_elastic_constants</span></code></a>(atoms)</td>
 <td>Calculate unrelaxed elastic constants of <cite>atoms</cite> using this Potential</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.set_calc_args" title="quippy.potential.Potential.set_calc_args"><code class="xref py py-obj docutils literal"><span class="pre">set_calc_args</span></code></a>(calc_args)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.minim" title="quippy.potential.Potential.minim"><code class="xref py py-obj docutils literal"><span class="pre">minim</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td>Minimise the configuration <code class="docutils literal"><span class="pre">at</span></code> under the action of this Potential.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.n_test_gradient" title="quippy.potential.Potential.n_test_gradient"><code class="xref py py-obj docutils literal"><span class="pre">n_test_gradient</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.print_" title="quippy.potential.Potential.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.read" title="quippy.potential.Potential.read"><code class="xref py py-obj docutils literal"><span class="pre">read</span></code></a>(label)</td>
+<td>Read atoms, parameters and calculated properties from output file.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.reset" title="quippy.potential.Potential.reset"><code class="xref py py-obj docutils literal"><span class="pre">reset</span></code></a>()</td>
+<td>Clear all information from old calculation.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.set" title="quippy.potential.Potential.set"><code class="xref py py-obj docutils literal"><span class="pre">set</span></code></a>(\*\*kwargs)</td>
+<td>Set one or more calc_args parameters for this Potential</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.set_calc_args" title="quippy.potential.Potential.set_calc_args"><code class="xref py py-obj docutils literal"><span class="pre">set_calc_args</span></code></a>(calc_args)</td>
 <td>Set the <code class="docutils literal"><span class="pre">calc_args</span></code> to be used subsequent <a class="reference internal" href="#quippy.potential.Potential.calc" title="quippy.potential.Potential.calc"><code class="xref py py-meth docutils literal"><span class="pre">calc()</span></code></a> calls</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.set_callback" title="quippy.potential.Potential.set_callback"><code class="xref py py-obj docutils literal"><span class="pre">set_callback</span></code></a>(callback)</td>
+<td>For a <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> of type <cite>CallbackPot</cite>, this method is used to set the callback function.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.set_default_properties" title="quippy.potential.Potential.set_default_properties"><code class="xref py py-obj docutils literal"><span class="pre">set_default_properties</span></code></a>(properties)</td>
 <td>Set the list of properties to be calculated by default</td>
 </tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.set_label" title="quippy.potential.Potential.set_label"><code class="xref py py-obj docutils literal"><span class="pre">set_label</span></code></a>(label)</td>
+<td>Set label and convert label to directory and prefix.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.setup_parallel" title="quippy.potential.Potential.setup_parallel"><code class="xref py py-obj docutils literal"><span class="pre">setup_parallel</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
+<td>Return a shallow copy of <cite>self</cite>.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Potential.test_gradient" title="quippy.potential.Potential.test_gradient"><code class="xref py py-obj docutils literal"><span class="pre">test_gradient</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential.test_local_virial" title="quippy.potential.Potential.test_local_virial"><code class="xref py py-obj docutils literal"><span class="pre">test_local_virial</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
 </tbody>
 </table>
 <dl class="method">
+<dt id="quippy.potential.Potential.band_structure">
+<code class="descname">band_structure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.band_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create band-structure object for plotting.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="quippy.potential.Potential.bulk_modulus">
-<code class="descname">bulk_modulus</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em><span class="optional">[</span>, <em>minimise_bulk</em>, <em>eps</em>, <em>args_str</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.bulk_modulus" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bulk_modulus</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.bulk_modulus" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -592,7 +733,7 @@ array in <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.array
 
 <dl class="method">
 <dt id="quippy.potential.Potential.calc">
-<code class="descname">calc</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>energy</em>, <em>force</em>, <em>virial</em>, <em>local_energy</em>, <em>local_virial</em>, <em>args_str</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.calc" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc</code><span class="sig-paren">(</span><em>at</em>, <em>energy=None</em>, <em>force=None</em>, <em>virial=None</em>, <em>local_energy=None</em>, <em>local_virial=None</em>, <em>args_str=None</em>, <em>error=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.calc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply this Potential to the Atoms object
 <code class="docutils literal"><span class="pre">at</span></code>. Atoms.calc_connect is automatically called to update the
 connecticvity information &#8211; if efficiency is important to you,
@@ -845,7 +986,7 @@ default arguments.</p>
 
 <dl class="method">
 <dt id="quippy.potential.Potential.cutoff">
-<code class="descname">cutoff</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.cutoff" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cutoff</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.cutoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the cutoff of this <code class="docutils literal"><span class="pre">Potential</span></code>, in Angstrom. This is the
 minimum neighbour connectivity cutoff that should be used: if
 you``re doing MD you``ll want to use a slightly larger cutoff so
@@ -933,6 +1074,12 @@ negative strains of magnitude the <cite>cij_dx</cite> entry in
 </dd></dl>
 
 <dl class="method">
+<dt id="quippy.potential.Potential.get_magnetic_moments">
+<code class="descname">get_magnetic_moments</code><span class="sig-paren">(</span><em>atoms=None</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.get_magnetic_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate magnetic moments projected onto atoms.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="quippy.potential.Potential.get_numeric_forces">
 <code class="descname">get_numeric_forces</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_numeric_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.get_numeric_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return forces on <cite>atoms</cite> computed with finite differences of the energy</p>
@@ -963,7 +1110,7 @@ negative strains of magnitude the <cite>cij_dx</cite> entry in
 
 <dl class="method">
 <dt id="quippy.potential.Potential.minim">
-<code class="descname">minim</code><span class="sig-paren">(</span><em>at</em>, <em>method</em>, <em>convergence_tol</em>, <em>max_steps</em><span class="optional">[</span>, <em>linminroutine</em>, <em>do_print</em>, <em>print_inoutput</em>, <em>print_cinoutput</em>, <em>do_pos</em>, <em>do_lat</em>, <em>args_str</em>, <em>eps_guess</em>, <em>fire_minim_dt0</em>, <em>fire_minim_dt_max</em>, <em>external_pressure</em>, <em>use_precond</em>, <em>hook_print_interval</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.minim" title="Permalink to this definition">¶</a></dt>
+<code class="descname">minim</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.minim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimise the configuration <code class="docutils literal"><span class="pre">at</span></code> under the action of this
 Potential.  Returns number of minimisation steps taken. If
 an error occurs or convergence is not reached within <code class="docutils literal"><span class="pre">max_steps</span></code>
@@ -1069,7 +1216,7 @@ explanation):</p>
 
 <dl class="method">
 <dt id="quippy.potential.Potential.n_test_gradient">
-<code class="descname">n_test_gradient</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em><span class="optional">[</span>, <em>do_pos</em>, <em>do_lat</em>, <em>args_str</em>, <em>dir_field</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.n_test_gradient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_test_gradient</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.n_test_gradient" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1090,7 +1237,7 @@ explanation):</p>
 
 <dl class="method">
 <dt id="quippy.potential.Potential.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.print_" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1201,7 +1348,7 @@ of label.</p>
 
 <dl class="method">
 <dt id="quippy.potential.Potential.setup_parallel">
-<code class="descname">setup_parallel</code><span class="sig-paren">(</span><em>at</em>, <em>args_str</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.setup_parallel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setup_parallel</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.setup_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1222,7 +1369,7 @@ of label.</p>
 
 <dl class="method">
 <dt id="quippy.potential.Potential.test_gradient">
-<code class="descname">test_gradient</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em><span class="optional">[</span>, <em>do_pos</em>, <em>do_lat</em>, <em>args_str</em>, <em>dir_field</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.test_gradient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">test_gradient</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.test_gradient" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1246,7 +1393,7 @@ of label.</p>
 
 <dl class="method">
 <dt id="quippy.potential.Potential.test_local_virial">
-<code class="descname">test_local_virial</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>args_str</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.test_local_virial" title="Permalink to this definition">¶</a></dt>
+<code class="descname">test_local_virial</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.test_local_virial" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1378,14 +1525,14 @@ tolerance exactly, pass a value for the <cite>convergence_tol</cite> argument.</
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

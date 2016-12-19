@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fortran Dictionary objects for storing key/value pairs &#8212; quippy e7c87c4+ documentation</title>
+    <title>Fortran Dictionary objects for storing key/value pairs &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,19 +14,18 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="index.html" />
-    <link rel="up" title="Quippy library reference" href="quippy.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" accesskey="U">Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
@@ -50,7 +49,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/dictionary.txt"
+      <li><a href="_sources/dictionary.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -280,16 +279,16 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.add_array" title="quippy.dictionary.Dictionary.add_array"><code class="xref py py-obj docutils literal"><span class="pre">add_array</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">add_array</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(from)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy" title="quippy.dictionary.Dictionary.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(from,[error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy" title="quippy.dictionary.Dictionary.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy_no_error" title="quippy.dictionary.Dictionary.deepcopy_no_error"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy_no_error</span></code></a>(from)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal"><span class="pre">expand_string</span></code></a>(in,[error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal"><span class="pre">expand_string</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Copy extendable string from <code class="docutils literal"><span class="pre">in</span></code> to <code class="docutils literal"><span class="pre">out</span></code>, expanding variables formatted as <code class="docutils literal"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_array" title="quippy.dictionary.Dictionary.get_array"><code class="xref py py-obj docutils literal"><span class="pre">get_array</span></code></a>(key)</td>
@@ -332,10 +331,10 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.lookup_entry_i" title="quippy.dictionary.Dictionary.lookup_entry_i"><code class="xref py py-obj docutils literal"><span class="pre">lookup_entry_i</span></code></a>(key,[case_sensitive])</td>
 <td>OMIT</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_" title="quippy.dictionary.Dictionary.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([verbosity,file])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_" title="quippy.dictionary.Dictionary.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Print a DictEntry or a Dictionary</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_keys" title="quippy.dictionary.Dictionary.print_keys"><code class="xref py py-obj docutils literal"><span class="pre">print_keys</span></code></a>([verbosity,file])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_keys" title="quippy.dictionary.Dictionary.print_keys"><code class="xref py py-obj docutils literal"><span class="pre">print_keys</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -346,10 +345,10 @@ files:</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.read_string" title="quippy.dictionary.Dictionary.read_string"><code class="xref py py-obj docutils literal"><span class="pre">read_string</span></code></a>(str,[append,error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.read_string" title="quippy.dictionary.Dictionary.read_string"><code class="xref py py-obj docutils literal"><span class="pre">read_string</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Read into this dictionary from a string</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal"><span class="pre">remove_value</span></code></a>(key)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal"><span class="pre">remove_value</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Remove an entry from a Dictionary</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value" title="quippy.dictionary.Dictionary.set_value"><code class="xref py py-obj docutils literal"><span class="pre">set_value</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
@@ -364,10 +363,10 @@ files:</p>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(key1,key2,[case_sensitive,error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Swap the positions of two entries in the dictionary.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Write a string representation of this dictionary</td>
 </tr>
 </tbody>
@@ -385,10 +384,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-3 array('S') with bounds (qp_n0,qp_n1,(1))</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array('i') with bounds (2)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em></em><em>(</em><em>1</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -405,10 +404,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -425,10 +424,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -445,10 +444,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -465,10 +464,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -485,10 +484,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array('i') with bounds (2)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -505,10 +504,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -525,10 +524,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array('i') with bounds (2)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -545,10 +544,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array('i') with bounds (2)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -565,10 +564,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -585,10 +584,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array('i') with bounds (2)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -605,10 +604,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string(len=1)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array('i') with bounds (2)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -625,10 +624,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input float</em>) &#8211; </li>
 <li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int, optional</em>) &#8211; </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -642,7 +641,7 @@ files:</p>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.assignment">
-<code class="descname">assignment</code><span class="sig-paren">(</span><em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.assignment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">assignment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.assignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -658,7 +657,7 @@ files:</p>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.deepcopy">
-<code class="descname">deepcopy</code><span class="sig-paren">(</span><em>from</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.deepcopy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">deepcopy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.deepcopy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -692,7 +691,7 @@ files:</p>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.expand_string">
-<code class="descname">expand_string</code><span class="sig-paren">(</span><em>in</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.expand_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">expand_string</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.expand_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy extendable string from <code class="docutils literal"><span class="pre">in</span></code> to <code class="docutils literal"><span class="pre">out</span></code>, expanding variables formatted
 as <code class="docutils literal"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary. An error
 is raised if a key is not found, or if the string ends with a dollar sign or braces aren&#8217;t matched</p>
@@ -794,7 +793,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a DictEntry or a Dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -812,7 +811,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.print_keys">
-<code class="descname">print_keys</code><span class="sig-paren">(</span><span class="optional">[</span><em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_keys" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_keys</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.print_keys" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -829,7 +828,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.read_string">
-<code class="descname">read_string</code><span class="sig-paren">(</span><em>str</em><span class="optional">[</span>, <em>append</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.read_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_string</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.read_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read into this dictionary from a string</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -851,7 +850,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.remove_value">
-<code class="descname">remove_value</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.remove_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_value</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.remove_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove an entry from a Dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -879,8 +878,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -897,7 +896,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) &#8211; </li>
 </ul>
 </td>
@@ -915,8 +914,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-3 array('S') with bounds (qp_n0,qp_n1,(1))</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em></em><em>(</em><em>1</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -933,8 +932,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -951,8 +950,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -969,8 +968,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -986,7 +985,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -1001,8 +1000,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1019,8 +1018,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1037,8 +1036,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array('S') with bounds (qp_n0,(*))</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em></em><em>(</em><em>*</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1055,7 +1054,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input int</em>) &#8211; </li>
 </ul>
 </td>
@@ -1073,8 +1072,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1091,7 +1090,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
 </ul>
 </td>
@@ -1109,7 +1108,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input int</em>) &#8211; </li>
 </ul>
 </td>
@@ -1127,7 +1126,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
 <li><strong>value</strong> (<em>input float</em>) &#8211; </li>
 </ul>
 </td>
@@ -1153,8 +1152,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1171,8 +1170,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array('i') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1189,8 +1188,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array('D') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1207,8 +1206,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array('d') with bounds (qp_n0)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1225,8 +1224,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-2 array('i') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1243,8 +1242,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-2 array('d') with bounds (qp_n0,qp_n1)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1261,8 +1260,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string(len=-1)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-3 array('S') with bounds (qp_n0,qp_n1,(1))</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>ptr</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em></em><em>(</em><em>1</em><em>)</em><em></em><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1276,7 +1275,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.swap">
-<code class="descname">swap</code><span class="sig-paren">(</span><em>key1</em>, <em>key2</em><span class="optional">[</span>, <em>case_sensitive</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.swap" title="Permalink to this definition">¶</a></dt>
+<code class="descname">swap</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.swap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Swap the positions of two entries in the dictionary. Arrays are not moved in memory.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1296,7 +1295,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.write_string">
-<code class="descname">write_string</code><span class="sig-paren">(</span><span class="optional">[</span><em>real_format</em>, <em>entry_sep</em>, <em>char_a_sep</em>, <em>quote_char</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.write_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_string</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.write_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a string representation of this dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1365,7 +1364,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>mpi</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object) &#8211; </li>
 <li><strong>dict</strong> (<a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1385,7 +1384,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <li><strong>mpi</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object) &#8211; </li>
 <li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
 <li><strong>test_out</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array(int,'i'), optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1414,14 +1413,14 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="quippy.html" >Quippy library reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

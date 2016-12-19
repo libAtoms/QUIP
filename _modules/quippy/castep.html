@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>quippy.castep &#8212; quippy e7c87c4+ documentation</title>
+    <title>quippy.castep &#8212; quippy 6695379+ documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,19 +14,18 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     'e7c87c4+',
+        VERSION:     '6695379+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="top" title="quippy e7c87c4+ documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
@@ -932,6 +931,10 @@
         <span class="c1"># If we&#39;re using smearing, correct energy is &#39;free energy&#39;</span>
         <span class="n">energy_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Final free energy (E-TS)&#39;</span><span class="p">),</span> <span class="n">castep_output</span><span class="p">))</span>
 
+        <span class="c1"># How about the dispersion correction?</span>
+        <span class="n">energy_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Dispersion corrected final energy&#39;</span><span class="p">),</span> <span class="n">castep_output</span><span class="p">))</span>
+        <span class="n">energy_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Dispersion corrected final free energy&#39;</span><span class="p">),</span> <span class="n">castep_output</span><span class="p">))</span>
+
         <span class="c1"># Are we doing finite basis correction?</span>
         <span class="n">energy_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39; Total energy corrected for finite basis set&#39;</span><span class="p">),</span> <span class="n">castep_output</span><span class="p">))</span>
 
@@ -950,6 +953,32 @@
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No value found in energy line &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">energy_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">energy_param_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="c1"># If we&#39;re doing a dispersion correction, report that as well</span>
+            <span class="c1"># Take care not to use the final basis-set-corrected figure --</span>
+            <span class="c1"># that correction is added last!</span>
+            <span class="n">esedc_param_name</span> <span class="o">=</span> <span class="s1">&#39;energy_disp_corr&#39;</span>
+            <span class="n">energy_lines_base</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">energy_lines</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Dispersion&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                        <span class="s1">&#39;corrected for finite basis set&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)]</span>
+            <span class="n">energy_lines_disp</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">energy_lines</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Dispersion&#39;</span><span class="p">)</span>
+                   <span class="ow">and</span> <span class="s1">&#39;corrected for finite basis set&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]</span>
+            <span class="k">def</span> <span class="nf">parse_eline</span><span class="p">(</span><span class="n">eline</span><span class="p">):</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="n">eline</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s1">&#39;eV&#39;</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;eV&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="s1">&#39;No value found in energy line &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">eline</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">energy_lines_disp</span> <span class="ow">and</span> <span class="n">energy_lines_base</span><span class="p">:</span>
+                <span class="n">ebase</span> <span class="o">=</span> <span class="n">parse_eline</span><span class="p">(</span><span class="n">energy_lines_base</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">edisp</span> <span class="o">=</span> <span class="n">parse_eline</span><span class="p">(</span><span class="n">energy_lines_disp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">esedc_param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">edisp</span> <span class="o">-</span> <span class="n">ebase</span>
 
         <span class="c1"># If we&#39;re doing geom-opt, look for enthalpy</span>
         <span class="n">enthalpy_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">castep_output</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39; BFGS: finished iteration &#39;</span><span class="p">)</span> <span class="ow">or</span>
@@ -992,7 +1021,8 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">label</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;force_ewald&#39;</span><span class="p">,</span> <span class="s1">&#39;Ewald forces&#39;</span><span class="p">),</span>
                            <span class="p">(</span><span class="s1">&#39;force_locpot&#39;</span><span class="p">,</span> <span class="s1">&#39;Local potential forces&#39;</span><span class="p">),</span>
                            <span class="p">(</span><span class="s1">&#39;force_nlpot&#39;</span><span class="p">,</span> <span class="s1">&#39;Non-local potential forces&#39;</span><span class="p">),</span>
-                           <span class="p">(</span><span class="s1">&#39;force_extpot&#39;</span><span class="p">,</span> <span class="s1">&#39;External potential forces&#39;</span><span class="p">)]:</span>
+                           <span class="p">(</span><span class="s1">&#39;force_extpot&#39;</span><span class="p">,</span> <span class="s1">&#39;External potential forces&#39;</span><span class="p">),</span>
+                           <span class="p">(</span><span class="s1">&#39;force_sedc&#39;</span><span class="p">,</span> <span class="s1">&#39;DFTD sedc forces&#39;</span><span class="p">)]:</span>
             <span class="n">force_start_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">s</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">castep_output</span><span class="p">)</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;****** </span><span class="si">%s</span><span class="s1"> ******&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">force_start_lines</span> <span class="o">==</span> <span class="p">[]:</span> <span class="k">continue</span>
 
@@ -1071,6 +1101,74 @@
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No populations found in castep file&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Also try Hirshfeld population analysis</span>
+        <span class="k">if</span> <span class="s1">&#39;calculate_hirshfeld&#39;</span> <span class="ow">in</span> <span class="n">param</span> <span class="ow">and</span> <span class="n">param</span><span class="p">[</span><span class="s1">&#39;calculate_hirshfeld&#39;</span><span class="p">]:</span>
+           <span class="k">try</span><span class="p">:</span>
+              <span class="n">hirshfeld_basic_start</span> <span class="o">=</span> <span class="n">castep_output</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;     Hirshfeld Analysis&#39;</span><span class="p">)</span>
+           <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+              <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
+                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No Hirshfeld charges in castep file&#39;</span><span class="p">)</span>
+           <span class="n">hirshfeld_basic_lines</span> <span class="o">=</span> <span class="n">castep_output</span><span class="p">[</span><span class="n">hirshfeld_basic_start</span><span class="o">+</span><span class="mi">4</span><span class="p">:</span><span class="n">hirshfeld_basic_start</span><span class="o">+</span><span class="mi">4</span><span class="o">+</span><span class="n">atoms</span><span class="o">.</span><span class="n">n</span><span class="p">]</span>
+           <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hirshfeld_charge&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">spin_polarised</span><span class="p">:</span>
+               <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hirshfeld_spin&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+           <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hirshfeld_basic_lines</span><span class="p">:</span>
+               <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">spin</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+               <span class="k">try</span><span class="p">:</span>
+                   <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+                   <span class="n">charge</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span>
+                   <span class="n">spin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spin</span><span class="p">)</span>
+               <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                   <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
+                       <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unable to parse Hirshfeld charge line &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+               <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;hirshfeld_charge&#39;</span><span class="p">][</span><span class="n">lookup</span><span class="p">[(</span><span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">charge</span>
+               <span class="k">if</span> <span class="n">spin_polarised</span><span class="p">:</span>
+                   <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;hirshfeld_spin&#39;</span><span class="p">][</span><span class="n">lookup</span><span class="p">[(</span><span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">spin</span>
+           <span class="c1">#TODO get the dipole moment as well?</span>
+
+           <span class="c1"># If iprint &gt;= 2, get additional info that is useful for dispersion corrections</span>
+           <span class="n">hirshfeld_extra_start</span> <span class="o">=</span> <span class="n">hirshfeld_basic_start</span>
+           <span class="k">for</span> <span class="n">hirshfeld_extra_start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hirshfeld_basic_start</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+               <span class="k">if</span> <span class="n">castep_output</span><span class="p">[</span><span class="n">hirshfeld_extra_start</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39; *************&#39;</span><span class="p">):</span>
+                  <span class="k">break</span>
+           <span class="n">hirshfeld_extra_lines</span> <span class="o">=</span> <span class="n">castep_output</span><span class="p">[</span><span class="n">hirshfeld_extra_start</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">hirshfeld_basic_start</span><span class="p">]</span>
+           <span class="n">hirshfeld_extra_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hirshfeld_extra_lines</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()]</span>
+           <span class="k">if</span> <span class="n">hirshfeld_extra_lines</span><span class="p">:</span>
+               <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hirshfeld_volume&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+               <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hirshfeld_rel_volume&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+               <span class="n">hirsh_extra_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+               <span class="c1"># The species match in this regex might seem excessive,</span>
+               <span class="c1"># but you never know when you&#39;ll want to do DFT on Uuq!</span>
+               <span class="c1"># (wait, now its symbol is Fl - oh, whatever.)</span>
+               <span class="n">species_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;\s+Species\s+(\d+),\s+Atom\s+(\d+)\s+:\s+([A-Z][a-z]{0,2})&#39;</span><span class="p">)</span>
+               <span class="n">parse_charge</span> <span class="o">=</span> <span class="kc">False</span>
+               <span class="n">parse_vol</span> <span class="o">=</span> <span class="kc">False</span>
+               <span class="n">parse_rel_vol</span> <span class="o">=</span> <span class="kc">False</span>
+           <span class="n">atom_idx</span> <span class="o">=</span> <span class="mi">0</span>
+           <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hirshfeld_extra_lines</span><span class="p">:</span>
+               <span class="k">if</span> <span class="n">parse_charge</span><span class="p">:</span>
+                   <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;hirshfeld_charge&#39;</span><span class="p">][</span><span class="n">atom_idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                   <span class="n">parse_charge</span> <span class="o">=</span> <span class="kc">False</span>
+                   <span class="k">continue</span>
+               <span class="k">if</span> <span class="n">parse_vol</span><span class="p">:</span>
+                   <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;hirshfeld_volume&#39;</span><span class="p">][</span><span class="n">atom_idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                   <span class="n">parse_vol</span> <span class="o">=</span> <span class="kc">False</span>
+                   <span class="k">continue</span>
+               <span class="k">if</span> <span class="n">parse_rel_vol</span><span class="p">:</span>
+                   <span class="n">atoms</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;hirshfeld_rel_volume&#39;</span><span class="p">][</span><span class="n">atom_idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                   <span class="n">parse_rel_vol</span> <span class="o">=</span> <span class="kc">False</span>
+                   <span class="k">continue</span>
+               <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39; Species&#39;</span><span class="p">):</span>
+                   <span class="n">atom_line</span> <span class="o">=</span> <span class="n">species_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                   <span class="n">num</span><span class="p">,</span> <span class="n">el</span> <span class="o">=</span> <span class="n">atom_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+                   <span class="n">atom_idx</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[(</span><span class="n">el</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">))]</span>
+               <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Hirshfeld net atomic charge&#39;</span><span class="p">):</span>
+                   <span class="n">parse_charge</span> <span class="o">=</span> <span class="kc">True</span>
+               <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Hirshfeld atomic volume&#39;</span><span class="p">):</span>
+                   <span class="n">parse_vol</span> <span class="o">=</span> <span class="kc">True</span>
+               <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Hirshfeld / free atomic volume&#39;</span><span class="p">):</span>
+                   <span class="n">parse_rel_vol</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="n">mod_param</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -1540,14 +1638,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">quippy e7c87c4+ documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">quippy 6695379+ documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2008-2015, James Kermode.
-      Last updated on Oct 19, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Last updated on Dec 19, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>
