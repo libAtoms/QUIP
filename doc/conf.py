@@ -54,10 +54,11 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.imgmath',
-    'modcontents',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+    'modcontents',
     'numpydoc',
     'video']
 
@@ -186,9 +187,9 @@ texinfo_documents = [
 ]
 
 
-intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/2.7', None),
                        'ase': ('https://wiki.fysik.dtu.dk/ase/', None),
-                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
                        'matplotlib': ('http://matplotlib.org/', None)}
 
 ###

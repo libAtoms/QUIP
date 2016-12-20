@@ -1,10 +1,19 @@
 #! /bin/bash
 
+# EXIT if anything oes wrong so
+# we don't end up pushing empty
+# repositories
+
+set -e
+
 # builds expect this
 export QUIP_ROOT=`pwd`
 
 # packages for building docs
-pip install sphinx sphinx_rtd_theme nbconvert\[execute\] numpydoc
+pip install sphinx sphinx_rtd_theme numpydoc
+
+# needed to nbconvert ipynb files and to process the rst files
+pip install nbconvert\[execute\] ipython
 
 # quippy is working, install it
 make install-quippy
@@ -28,11 +37,12 @@ git clone -b gh-pages ${PAGES_URL} ${PAGES_DIR} > /dev/null 2>&1 || echo "Failed
 # Clean out previous builds; should keep .git and .nojekll but get rid
 # of cruft
 cd ${PAGES_DIR}
-rm -f *
+rm -rf *
 
 # html version goes into _build
 cd ${DOCS_DIR}
-make html
+# Force complete rebuild
+O=-Ea make html
 
 # set up git so it can push
 git config --global user.name "Travis-CI"
@@ -43,4 +53,5 @@ git config --global user.email "build@travis.org"
 cd ${PAGES_DIR}
 git add -A
 git commit -m docpush
-git push origin gh-pages
+git push origin gh-pages --quiet
+
