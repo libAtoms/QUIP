@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Molecular Dynamics &mdash; quippy f02bb86+ documentation</title>
+  <title>Molecular Dynamics &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Utilities for topological analysis" href="topology.html"/> 
 
@@ -66,7 +68,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -85,6 +87,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -115,6 +118,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -440,7 +451,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Replace a constraint involving some atoms with a different constraint involving</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.angular_momentum" title="quippy.dynamicalsystem.DynamicalSystem.angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">angular_momentum</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
-<td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <span class="math">\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}</span>.</td>
+<td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <span class="math">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.constrain_atom_plane" title="quippy.dynamicalsystem.DynamicalSystem.constrain_atom_plane"><code class="xref py py-obj docutils literal"><span class="pre">constrain_atom_plane</span></code></a>(...)</td>
 <td>Constrain an atom to lie in a particluar plane</td>
@@ -505,13 +516,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_energy" title="quippy.dynamicalsystem.DynamicalSystem.kinetic_energy"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_energy</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
-<td>Return the total kinetic energy <span class="math">E_k = \sum_{i} \frac{1}{2} m v^2</span></td>
+<td>Return the total kinetic energy <span class="math">\(E_k = \sum_{i} \frac{1}{2} m v^2\)</span></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_virial" title="quippy.dynamicalsystem.DynamicalSystem.kinetic_virial"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_virial</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
-<td>Return the total kinetic virial <span class="math">w_ij = \sum_{k} \frac{1}{2} m v_i v_j</span></td>
+<td>Return the total kinetic virial <span class="math">\(w_ij = \sum_{k} \frac{1}{2} m v_i v_j\)</span></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.momentum" title="quippy.dynamicalsystem.DynamicalSystem.momentum"><code class="xref py py-obj docutils literal"><span class="pre">momentum</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
-<td>Return the total momentum <span class="math">\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}</span>.</td>
+<td>Return the total momentum <span class="math">\(\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}\)</span>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.n_thermostat" title="quippy.dynamicalsystem.DynamicalSystem.n_thermostat"><code class="xref py py-obj docutils literal"><span class="pre">n_thermostat</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -577,7 +588,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.temperature" title="quippy.dynamicalsystem.DynamicalSystem.temperature"><code class="xref py py-obj docutils literal"><span class="pre">temperature</span></code></a>(...)</td>
-<td>Return the temperature, assuming each degree of freedom contributes <span class="math">\frac{1}{2}kT</span>.</td>
+<td>Return the temperature, assuming each degree of freedom contributes <span class="math">\(\frac{1}{2}kT\)</span>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.thermostat_temperatures" title="quippy.dynamicalsystem.DynamicalSystem.thermostat_temperatures"><code class="xref py py-obj docutils literal"><span class="pre">thermostat_temperatures</span></code></a>(n0)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -875,7 +886,7 @@ the same atoms</p>
 <dt id="quippy.dynamicalsystem.DynamicalSystem.angular_momentum">
 <code class="descname">angular_momentum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.angular_momentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the angular momentum of all the atoms in this DynamicalSystem, defined by
-<span class="math">\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}</span>.</p>
+<span class="math">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1190,7 +1201,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.kinetic_energy">
 <code class="descname">kinetic_energy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total kinetic energy <span class="math">E_k = \sum_{i} \frac{1}{2} m v^2</span></p>
+<dd><p>Return the total kinetic energy <span class="math">\(E_k = \sum_{i} \frac{1}{2} m v^2\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1212,7 +1223,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.kinetic_virial">
 <code class="descname">kinetic_virial</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.kinetic_virial" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total kinetic virial <span class="math">w_ij = \sum_{k} \frac{1}{2} m v_i v_j</span></p>
+<dd><p>Return the total kinetic virial <span class="math">\(w_ij = \sum_{k} \frac{1}{2} m v_i v_j\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1233,7 +1244,7 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.momentum">
 <code class="descname">momentum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.momentum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total momentum <span class="math">\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}</span>.
+<dd><p>Return the total momentum <span class="math">\(\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}\)</span>.
 Optionally only include the contribution of a subset of atoms.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1381,7 +1392,7 @@ but also amends the number of degrees of freedom correctly.</p>
 <dd><p>Rescale the atomic velocities to temperature <code class="docutils literal"><span class="pre">temp</span></code>. If the
 current temperature is zero, we first randomise the velocites.
 If <code class="docutils literal"><span class="pre">mass_weighted</span></code> is true, then the velocites are weighted by
-<span class="math">1/sqrt{m}</span>. Linear momentum is zeroed automatically.  If
+<span class="math">\(1/sqrt{m}\)</span>. Linear momentum is zeroed automatically.  If
 <code class="docutils literal"><span class="pre">zero_l</span></code> is true then the angular momentum is also zeroed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1505,7 +1516,7 @@ state of the random number generator is also saved.</p>
 <dt id="quippy.dynamicalsystem.DynamicalSystem.temperature">
 <code class="descname">temperature</code><span class="sig-paren">(</span><span class="optional">[</span><em>property</em>, <em>value</em>, <em>include_all</em>, <em>instantaneous</em>, <em>mpi_obj</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.temperature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the temperature, assuming each degree of freedom contributes
-<span class="math">\frac{1}{2}kT</span>. By default only moving and thermostatted atoms are
+<span class="math">\(\frac{1}{2}kT\)</span>. By default only moving and thermostatted atoms are
 included &#8212; this can be overriden by setting <code class="docutils literal"><span class="pre">include_all</span></code> to true.
 <code class="docutils literal"><span class="pre">region</span></code> can be used to restrict
 the calculation to a particular thermostat
@@ -2129,7 +2140,7 @@ This is useful for time dependent constraints.</p>
 <dt>
 <code class="descclassname">quippy.dynamicalsystem.</code><code class="descname">angular_momentum</code><span class="sig-paren">(</span><em>mass</em>, <em>pos</em>, <em>velo</em><span class="optional">[</span>, <em>origin</em>, <em>indices</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><p>Return the angular momentum of all the atoms in this DynamicalSystem, defined by
-<span class="math">\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}</span>.</p>
+<span class="math">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2214,7 +2225,7 @@ This is useful for time dependent constraints.</p>
 <div><dl class="function">
 <dt>
 <code class="descclassname">quippy.dynamicalsystem.</code><code class="descname">momentum</code><span class="sig-paren">(</span><em>mass</em>, <em>velo</em><span class="optional">[</span>, <em>indices</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
-<dd><p>Return the total momentum <span class="math">\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}</span>.
+<dd><p>Return the total momentum <span class="math">\(\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}\)</span>.
 Optionally only include the contribution of a subset of atoms.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2332,7 +2343,7 @@ Optionally only include the contribution of a subset of atoms.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -2341,6 +2352,7 @@ Optionally only include the contribution of a subset of atoms.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

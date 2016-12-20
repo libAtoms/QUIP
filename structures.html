@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Structure building routines &mdash; quippy f02bb86+ documentation</title>
+  <title>Structure building routines &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -65,7 +67,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -84,6 +86,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -118,6 +121,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -328,7 +339,7 @@
 <td>Transform cell and lattice coordinates by the 3 x 3 matrix <cite>t</cite></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphene_tube" title="quippy.structures.graphene_tube"><code class="xref py py-obj docutils literal"><span class="pre">graphene_tube</span></code></a>(a,n,m,nz)</td>
-<td>Construct a <span class="math">(n,m)</span> nanotube with lattice parameter <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">nz</span></code> unit cells along the tube length.</td>
+<td>Construct a <span class="math">\((n,m)\)</span> nanotube with lattice parameter <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">nz</span></code> unit cells along the tube length.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.fcc_z111" title="quippy.structures.fcc_z111"><code class="xref py py-obj docutils literal"><span class="pre">fcc_z111</span></code></a>(a0)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -348,7 +359,7 @@
 <td>Creates a 2-atom hcp lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.graphene_sheet" title="quippy.structures.graphene_sheet"><code class="xref py py-obj docutils literal"><span class="pre">graphene_sheet</span></code></a>(a,n,m,rep_x,rep_y)</td>
-<td>Construct a graphene sheet of index <span class="math">(n,m)</span> with lattice constant <code class="docutils literal"><span class="pre">a</span></code> with <code class="docutils literal"><span class="pre">rep_x</span></code> repeat units in the <span class="math">x</span> direction and <code class="docutils literal"><span class="pre">rep_y</span></code> in the <span class="math">y</span> direction.</td>
+<td>Construct a graphene sheet of index <span class="math">\((n,m)\)</span> with lattice constant <code class="docutils literal"><span class="pre">a</span></code> with <code class="docutils literal"><span class="pre">rep_x</span></code> repeat units in the <span class="math">\(x\)</span> direction and <code class="docutils literal"><span class="pre">rep_y</span></code> in the <span class="math">\(y\)</span> direction.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.beta_tin" title="quippy.structures.beta_tin"><code class="xref py py-obj docutils literal"><span class="pre">beta_tin</span></code></a>(a,c,[z])</td>
 <td>Creates a 2-atom beta-tin structure with lattice constants of a and c</td>
@@ -547,7 +558,7 @@
 <dd><ol class="first last arabic simple">
 <li>leading minus sign, e.g. <code class="docutils literal"><span class="pre">[11-2]</span></code></li>
 <li>trailing <code class="docutils literal"><span class="pre">b</span></code> (for &#8216;bar&#8217;), e.g. <code class="docutils literal"><span class="pre">112b</span></code></li>
-<li>LaTeX <code class="docutils literal"><span class="pre">\bar{}</span></code>, e.g. <code class="docutils literal"><span class="pre">[11\bar{2}]</span></code> (which renders as <span class="math">[11\bar{2}]</span> in LaTeX)</li>
+<li>LaTeX <code class="docutils literal"><span class="pre">\bar{}</span></code>, e.g. <code class="docutils literal"><span class="pre">[11\bar{2}]</span></code> (which renders as <span class="math">\([11\bar{2}]\)</span> in LaTeX)</li>
 </ol>
 </dd>
 </dl>
@@ -1246,7 +1257,7 @@ surface are aligned with the cell boundaries</p>
 <dl class="function">
 <dt id="quippy.structures.graphene_tube">
 <code class="descclassname">quippy.structures.</code><code class="descname">graphene_tube</code><span class="sig-paren">(</span><em>a</em>, <em>n</em>, <em>m</em>, <em>nz</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.structures.graphene_tube" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a <span class="math">(n,m)</span> nanotube with lattice parameter <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">nz</span></code>
+<dd><p>Construct a <span class="math">\((n,m)\)</span> nanotube with lattice parameter <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">nz</span></code>
 unit cells along the tube length. Also returns the radius of the tube.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1325,8 +1336,8 @@ unit cells along the tube length. Also returns the radius of the tube.</p>
 <dl class="function">
 <dt id="quippy.structures.graphene_sheet">
 <code class="descclassname">quippy.structures.</code><code class="descname">graphene_sheet</code><span class="sig-paren">(</span><em>a</em>, <em>n</em>, <em>m</em>, <em>rep_x</em>, <em>rep_y</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.structures.graphene_sheet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a graphene sheet of index <span class="math">(n,m)</span> with lattice constant <code class="docutils literal"><span class="pre">a</span></code> with <code class="docutils literal"><span class="pre">rep_x</span></code>
-repeat units in the <span class="math">x</span> direction and <code class="docutils literal"><span class="pre">rep_y</span></code> in the <span class="math">y</span> direction.</p>
+<dd><p>Construct a graphene sheet of index <span class="math">\((n,m)\)</span> with lattice constant <code class="docutils literal"><span class="pre">a</span></code> with <code class="docutils literal"><span class="pre">rep_x</span></code>
+repeat units in the <span class="math">\(x\)</span> direction and <code class="docutils literal"><span class="pre">rep_y</span></code> in the <span class="math">\(y\)</span> direction.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1934,7 +1945,7 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -1943,6 +1954,7 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

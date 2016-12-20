@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy f02bb86+ documentation</title>
+  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Visualisation Tools" href="visualisation.html"/>
         <link rel="prev" title="Visualisation Tools" href="visualisation.html"/> 
 
@@ -66,7 +68,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -85,6 +87,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -113,6 +116,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -192,7 +203,7 @@ display, just repeat the <a class="reference internal" href="#qlab.view" title="
 <span id="qlab-atom-coloring"></span><h2>Custom Atom Colouring<a class="headerlink" href="#custom-atom-colouring" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="atomeye.html#atomeye.AtomEyeViewer.aux_property_coloring" title="atomeye.AtomEyeViewer.aux_property_coloring"><code class="xref py py-meth docutils literal"><span class="pre">aux_property_coloring()</span></code></a> method is
 overloaded to allow custom arrays to be visualised, e.g. to highlight
-the atoms where <span class="math">x \ge a/2</span>:</p>
+the atoms where <span class="math">\(x \ge a/2\)</span>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">&gt;=</span> <span class="n">d</span><span class="o">.</span><span class="n">lattice</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1180,7 +1191,7 @@ into the parent stack frame.</p>
 <code class="descclassname">qlab.</code><code class="descname">xtal_origin_goto</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#xtal_origin_goto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.xtal_origin_goto" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move the crystal origin to fractional coordinates <cite>s</cite></p>
 <p>For example, use <code class="docutils literal"><span class="pre">s=[0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5]</span></code> to shift by half the cell along
-the <span class="math">\mathbf{a}</span>, <span class="math">\mathbf{b}</span> and <span class="math">\mathbf{c}</span>
+the <span class="math">\(\mathbf{a}\)</span>, <span class="math">\(\mathbf{b}\)</span> and <span class="math">\(\mathbf{c}\)</span>
 lattice vectors.</p>
 </dd></dl>
 
@@ -1226,7 +1237,7 @@ lattice vectors.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -1235,6 +1246,7 @@ lattice vectors.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

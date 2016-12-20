@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy f02bb86+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
         <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/>
         <link rel="prev" title="Tutorials" href="tutorials.html"/> 
@@ -67,7 +69,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -86,6 +88,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -114,6 +117,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -413,7 +424,7 @@ alpha-quartz Atoms object:</p>
 <span class="go">90.0 90.0 120.0</span>
 </pre></div>
 </div>
-<p>So we have <span class="math">a = b \ne c</span>, and <span class="math">\alpha = \beta \ne \gamma</span>,
+<p>So we have <span class="math">\(a = b \ne c\)</span>, and <span class="math">\(\alpha = \beta \ne \gamma\)</span>,
 i.e. trigonal symmetry.</p>
 <p>Let&#8217;s try out some of the more advanced indexing operations. Firstly,
 logical operations on arrays return arrays, which can be used for
@@ -599,8 +610,8 @@ compare the distribution of atomic speeds in the second half of this
 simulation (to allow some time for equilibriation) with what we&#8217;d
 expect from the Maxwell-Boltzmann distribution of speeds, given by</p>
 <div class="math">
-<p><span class="math">f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v</span></p>
-</div><p>The following function implements this distribution:</p>
+\[f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v\]</div>
+<p>The following function implements this distribution:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
    <span class="s2">&quot;Maxwell-Boltmann distribution of speeds at temperature T for particles of mass m&quot;</span>
    <span class="k">return</span> <span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">BOLTZMANN_K</span><span class="o">*</span><span class="n">T</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">BOLTZMANN_K</span><span class="o">*</span><span class="n">T</span><span class="p">))</span>
@@ -784,9 +795,9 @@ construct a DynamicalSystem, and randomise the initial velocities to 1000K:</p>
 </pre></div>
 </div>
 <p><a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet1" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet1"><code class="xref py py-meth docutils literal"><span class="pre">advance_verlet1()</span></code></a> advances the velocities by
-half the time-step <span class="math">\delta t</span> and the positions by the full
+half the time-step <span class="math">\(\delta t\)</span> and the positions by the full
 time-step.  We then calculate at new forces from our potential at
-<span class="math">\mathbf{r}(t+\delta t)</span>.  Finally
+<span class="math">\(\mathbf{r}(t+\delta t)\)</span>.  Finally
 <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet2" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet2"><code class="xref py py-meth docutils literal"><span class="pre">advance_verlet2()</span></code></a> advances the velocities by
 the second half time-step. <a class="reference internal" href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.print_status" title="quippy.dynamicalsystem.DynamicalSystem.print_status"><code class="xref py py-meth docutils literal"><span class="pre">print_status()</span></code></a>
 prints a status line with the current time, temperature, total energy,
@@ -824,7 +835,7 @@ configuration, you&#8217;ll need to use either the
 <p>In this tutorial we&#8217;ll consider the Stillinger-Weber potential we
 defined above.  Let&#8217;s use this to relax the positions and lattice of a
 cubic Si cell using conjugate-gradients (<code class="docutils literal"><span class="pre">cg</span></code>), to a tolerance of
-<span class="math">|\mathbf{f}|^2 &lt; 10^{-7}</span>, using a maximum of 100 steps.</p>
+<span class="math">\(|\mathbf{f}|^2 &lt; 10^{-7}\)</span>, using a maximum of 100 steps.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span> <span class="o">+</span> <span class="mf">2.0</span><span class="p">)</span>   <span class="c1">#crust of 2.0 Angstrom</span>
@@ -880,15 +891,15 @@ the Stillinger-Weber potential. We&#8217;ll do this by fitting the
 <a class="reference external" href="http://en.wikipedia.org/wiki/Birch-Murnaghan_equation_of_state">Birch-Murnaghan equation of state</a>,
 which assumes the bulk modulus is of the form</p>
 <div class="math">
-<p><span class="math">B = B_0 + B'_0 P</span></p>
-</div><p>The energy as a function of volume is</p>
+\[B = B_0 + B'_0 P\]</div>
+<p>The energy as a function of volume is</p>
 <div class="math">
-<p><span class="math">E(V) = E_0 + \frac{9V_0B_0}{16}
+\[E(V) = E_0 + \frac{9V_0B_0}{16}
 \left\{
 \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^3B_0^\prime +
 \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^2
-\left[6-4\left(\frac{V_0}{V}\right)^\frac{2}{3}\right]\right\}.</span></p>
-</div><p>Here is a Python function which implements this relation:</p>
+\left[6-4\left(\frac{V_0}{V}\right)^\frac{2}{3}\right]\right\}.\]</div>
+<p>Here is a Python function which implements this relation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">birch_energy</span><span class="p">(</span><span class="n">vo</span><span class="p">,</span><span class="n">eo</span><span class="p">,</span><span class="n">bo</span><span class="p">,</span><span class="n">bop</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">vo</span><span class="o">/</span><span class="n">v</span><span class="p">)</span><span class="o">**.</span><span class="mi">6666666666666667</span> <span class="o">-</span> <span class="mf">1.0</span>
    <span class="n">e</span> <span class="o">=</span> <span class="n">eo</span> <span class="o">+</span> <span class="mf">1.125</span><span class="o">*</span><span class="n">bo</span><span class="o">*</span><span class="n">vo</span><span class="o">*</span><span class="n">t</span><span class="o">*</span><span class="n">t</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">bop</span><span class="o">-</span><span class="mf">4.0</span><span class="p">)</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
@@ -1015,7 +1026,7 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -1024,6 +1035,7 @@ sequence <cite>params</cite> for the first four arguments to
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quaternions and rotation &mdash; quippy f02bb86+ documentation</title>
+  <title>Quaternions and rotation &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Linear algebra routines" href="linearalgebra.html"/> 
 
@@ -66,7 +68,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -85,6 +87,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -117,6 +120,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -165,10 +176,10 @@
 rigid body dynamics, although the <code class="docutils literal"><span class="pre">Orientation</span></code>, <code class="docutils literal"><span class="pre">Rotation</span></code>
 and <code class="docutils literal"><span class="pre">Rotate</span></code> routines can be useful in many other situations.</p>
 <div class="math">
-<p><span class="math">\begin{array}{c}
+\[\begin{split}\begin{array}{c}
 i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
-\end{array}</span></p>
-</div><p>Module contents for <a class="reference internal" href="#module-quippy.quaternions" title="quippy.quaternions: Quaternions and rotation"><code class="xref py py-mod docutils literal"><span class="pre">quippy.quaternions</span></code></a>:</p>
+\end{array}\end{split}\]</div>
+<p>Module contents for <a class="reference internal" href="#module-quippy.quaternions" title="quippy.quaternions: Quaternions and rotation"><code class="xref py py-mod docutils literal"><span class="pre">quippy.quaternions</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -434,8 +445,8 @@ unless <code class="docutils literal"><span class="pre">correct_angle</span></co
 <dt id="quippy.quaternions.rotation">
 <code class="descclassname">quippy.quaternions.</code><code class="descname">rotation</code><span class="sig-paren">(</span><em>axis</em>, <em>angle</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.rotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Many rotations can be collapsed into one, e.g.
-to rotate using <span class="math">q_1</span> then <span class="math">q_2</span> :
-rotate using <span class="math">q_3 = q_2 \times q_1</span></p>
+to rotate using <span class="math">\(q_1\)</span> then <span class="math">\(q_2\)</span> :
+rotate using <span class="math">\(q_3 = q_2 \times q_1\)</span></p>
 <p>Construct a rotation quaternion from axis and angle (in a righthanded sense)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -545,7 +556,7 @@ rotation on <cite>origin</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -554,6 +565,7 @@ rotation on <cite>origin</cite></p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

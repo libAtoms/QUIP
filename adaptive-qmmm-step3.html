@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 3: LOTF hybrid MD simulation of fracture in Si &mdash; quippy f02bb86+ documentation</title>
+  <title>Step 3: LOTF hybrid MD simulation of fracture in Si &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Solutions" href="adaptive-qmmm-solutions.html"/>
         <link rel="prev" title="Step 2: Classical MD simulation of fracture in Si" href="adaptive-qmmm-step2.html"/> 
@@ -67,7 +69,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -86,6 +88,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -122,6 +125,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -461,9 +472,9 @@ larger, but the fit is still very good:</p>
 </div>
 <p>We next return to the initial dynamical state and re-run the dynamics,
 interpolating between the optimised parameters at the two ends of the cycle.
-Note that the strain is also returned to the initial value at <span class="math">t = 0</span>, and
+Note that the strain is also returned to the initial value at <span class="math">\(t = 0\)</span>, and
 that the temperature after one step exactly matches the interpolation phase
-(since the forces and velocities at <span class="math">t = 0</span> are identical for
+(since the forces and velocities at <span class="math">\(t = 0\)</span> are identical for
 extrapolation and interpolation):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">State</span>      <span class="n">Time</span><span class="o">/</span><span class="n">fs</span>    <span class="n">Temp</span><span class="o">/</span><span class="n">K</span>     <span class="n">Strain</span>      <span class="n">G</span><span class="o">/</span><span class="p">(</span><span class="n">J</span><span class="o">/</span><span class="n">m</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span>  <span class="n">CrackPos</span><span class="o">/</span><span class="n">A</span> <span class="n">D</span><span class="p">(</span><span class="n">CrackPos</span><span class="p">)</span><span class="o">/</span><span class="n">A</span>
 <span class="o">---------------------------------------------------------------------------------</span>
@@ -527,7 +538,7 @@ the <a class="reference internal" href="adaptive-qmmm-step2.html#time-avg-stress
 on the sharp crack tip. It is this stress field which is used
 by <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a> to follow the crack tip,
 and hence to update the set of atoms in the QM region.</p>
-<p>Here is a movie of a typical LOTF simulation on the <span class="math">(111)</span> cleavage
+<p>Here is a movie of a typical LOTF simulation on the <span class="math">\((111)\)</span> cleavage
 plane. To colour the QM atoms dark blue, we passed
 the <a class="reference internal" href="qlab.html#qlab.highlight_qm_region" title="qlab.highlight_qm_region"><code class="xref py py-func docutils literal"><span class="pre">highlight_qm_region()</span></code></a> function as the <cite>hook</cite> argument
 to <a class="reference internal" href="qlab.html#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-func docutils literal"><span class="pre">render_movie()</span></code></a>:</p>
@@ -542,7 +553,7 @@ to <a class="reference internal" href="qlab.html#qlab.render_movie" title="qlab.
 </video>
 </center><p>During the LOTF dynamics, the time-averaged stress field smoothly tracks the
 crack tip, as can be seen in this movie, where atoms are coloured by
-their <span class="math">\sigma_{yy}</span> component:</p>
+their <span class="math">\(\sigma_{yy}\)</span> component:</p>
 <center>
 <video width="640" height="360" controls="controls" poster="http://www.jrkermode.co.uk/_movies/elastic-poster.jpg">
   <source src="http://www.jrkermode.co.uk/_movies/elastic.mp4"  type='video/mp4' />
@@ -585,7 +596,7 @@ know that using an overall larger system, bigger QM region and lower strain rate
 as well as changing the Hamiltonian from DFTB to DFT-GGA, removes all of these
 defects, recovering perfectly brittle fracture propagation. The DFT model also
 gives an improved description of the fracture surfaces, which reconstruct to
-form a Pandey <span class="math">\pi</span>-bonded chain, with it&#8217;s characteristic alternating
+form a Pandey <span class="math">\(\pi\)</span>-bonded chain, with it&#8217;s characteristic alternating
 pentagons and heptagons:</p>
 <center>
 <video width="640" height="360" controls="controls" poster="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400-poster.jpg">
@@ -700,7 +711,7 @@ affect the speed of the crack?</p>
 <div class="section" id="other-crack-orientations">
 <span id="other-orientations"></span><h3>Other crack orientations<a class="headerlink" href="#other-crack-orientations" title="Permalink to this headline">¶</a></h3>
 <p>Return to the beginning of <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a> and try classical and/or LOTF dynamics
-(which will actually probably be faster!) on the <span class="math">(110)</span> surface. Do you
+(which will actually probably be faster!) on the <span class="math">\((110)\)</span> surface. Do you
 see any major differences? Can you find any dynamic fracture instabilities?</p>
 </div>
 <div class="section" id="system-size-and-strain-rate-effects">
@@ -760,7 +771,7 @@ artificially high strain rate we have been forced to impose here.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -769,6 +780,7 @@ artificially high strain rate we have been forced to impose here.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

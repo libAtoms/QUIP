@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 1: Setup of the Silicon model system &mdash; quippy f02bb86+ documentation</title>
+  <title>Step 1: Setup of the Silicon model system &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 2: Classical MD simulation of fracture in Si" href="adaptive-qmmm-step2.html"/>
         <link rel="prev" title="Theoretical background" href="adaptive-qmmm-theory.html"/> 
@@ -67,7 +69,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -86,6 +88,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -120,6 +123,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -207,10 +218,10 @@ to look them up in the online documentation.</p>
 <span id="parameters"></span><h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this headline">¶</a></h3>
 <p>Let&#8217;s first define the parameters needed to construct our model
 system. There are three possible crack systems. For now, we will use
-the first (uncommented) one, <span class="math">(111)[01\bar{1}]</span>, which
-means a crack propagating on the <span class="math">(111)</span> cleavage plane (the
+the first (uncommented) one, <span class="math">\((111)[01\bar{1}]\)</span>, which
+means a crack propagating on the <span class="math">\((111)\)</span> cleavage plane (the
 lowest surface energy of all silicon surfaces) with the crack front
-along the <span class="math">[01\bar{1}]</span> direction:</p>
+along the <span class="math">\([01\bar{1}]\)</span> direction:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># System 1. (111)[0-11]</span>
 <span class="n">crack_direction</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>      <span class="c1"># Miller index of x-axis</span>
 <span class="n">cleavage_plane</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>        <span class="c1"># Miller index of y-axis</span>
@@ -319,7 +330,7 @@ method</p>
 </div>
 <p>The lattice constant <cite>a0</cite> can be easily obtained from the relaxed
 lattice vectors using the <code class="xref py py-meth docutils literal"><span class="pre">cell()</span></code> attribute of
-the <cite>si_bulk</cite> object, which returns a <span class="math">3 \times 3</span> matrix
+the <cite>si_bulk</cite> object, which returns a <span class="math">\(3 \times 3\)</span> matrix
 containing the lattice vectors as rows in Cartesian coordinates,
 i.e. <code class="docutils literal"><span class="pre">si_bulk.cell[0,0]</span></code> is the <cite>x</cite> coordinate of the first lattice
 vector.</p>
@@ -348,8 +359,8 @@ off-diagonal components of the lattice are exactly zero:</p>
 <p>Following the discussion <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span class="std std-ref">above</span></a> section, we need to
 calculate some elastic properties of our model silicon. To calculate the Young&#8217;s
 modulus <cite>E</cite> along the direction perpendicular to the cleavage plane, and the
-Poisson ratio <span class="math">\nu</span> in the <span class="math">xy</span> plane, we need the <span class="math">6 \times
-6</span> matrix of the elastic constants <span class="math">C_{ij}</span>. This matrix <cite>c</cite> can be
+Poisson ratio <span class="math">\(\nu\)</span> in the <span class="math">\(xy\)</span> plane, we need the <span class="math">\(6 \times
+6\)</span> matrix of the elastic constants <span class="math">\(C_{ij}\)</span>. This matrix <cite>c</cite> can be
 calculated using the <a class="reference internal" href="potential.html#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><code class="xref py py-meth docutils literal"><span class="pre">get_elastic_constants()</span></code></a>
 method of the <cite>mm_pot</cite> Potential object.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">mm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c1"># Get the 6x6 C_ij matrix</span>
@@ -372,7 +383,7 @@ given <cite>c</cite>, the <cite>cleavage_plane</cite> and the <cite>crack_direct
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Poisson ratio </span><span class="si">% .3f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">nu</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As a check, for the <span class="math">(111)[01\bar{1}]</span> crack system, you
+<p>As a check, for the <span class="math">\((111)[01\bar{1}]\)</span> crack system, you
 should get a Young&#8217;s modulus of 142.8 GPa and a Poisson ratio of
 0.265.</p>
 </div>
@@ -405,7 +416,7 @@ the <cite>ipython</cite> prompt after running the script as it is so far, don&#8
 add it to the script file):</p>
 <a class="reference internal image-reference" href="_images/unit_slab.png"><img alt="_images/unit_slab.png" class="align-center" src="_images/unit_slab.png" style="width: 400px;" /></a>
 <p>We now shift the <cite>unit_slab</cite> vertically so that we will open up a
-surface along a <span class="math">(111)</span> glide plane, cutting vertically aligned
+surface along a <span class="math">\((111)\)</span> glide plane, cutting vertically aligned
 bonds (see e.g. <a class="reference external" href="http://ej.iop.org/images/0295-5075/72/3/410/Full/img11.gif">this image</a>). This
 choice gives the lowest energy surface. We then map the positions back
 into the unit cell:</p>
@@ -422,7 +433,7 @@ all the atoms are mapped back inside the unit cell before we open
 up a surface. This is the result of applying the shift (do another
 <code class="docutils literal"><span class="pre">view(unit_slab)</span></code> to update your AtomEye viewer).</p>
 <a class="reference internal image-reference" href="_images/unit_slab_shifted.png"><img alt="_images/unit_slab_shifted.png" class="align-center" src="_images/unit_slab_shifted.png" style="width: 400px;" /></a>
-<p>Note how the top and bottom layers now correspond to <span class="math">(111)</span>
+<p>Note how the top and bottom layers now correspond to <span class="math">\((111)\)</span>
 glide planes, so that the cell boundary now corresponds to a shuffle
 plane as required.</p>
 <p>We now make a copy of the <cite>unit_slab</cite> and create a <cite>surface</cite> unit cell
@@ -460,7 +471,7 @@ list-method <cite>len</cite> (e.g. <cite>len(si_bulk)</cite> gives the number of
       <span class="p">(</span><span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">m</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>As a check, you should obtain <span class="math">\gamma_{(111)}</span> = 1.36 J/m<sup>2</sup>. You may want to verify that this result is converged
+<p>As a check, you should obtain <span class="math">\(\gamma_{(111)}\)</span> = 1.36 J/m<sup>2</sup>. You may want to verify that this result is converged
 with respect to the number of layers in the system (note the cutoff
 distance of the SW potential, which you can obtain with
 <code class="docutils literal"><span class="pre">mm_pot.cutoff()</span></code>, is about 3.93 A, just beyond the second neighbour
@@ -493,7 +504,7 @@ the number of units cell in this direction, <cite>ny</cite>,  must be even:</p>
 </pre></div>
 </div>
 <p>The crack supercell is now simply obtained by replicating <cite>unit_slab</cite>
-<span class="math">nx \times ny \times 1</span> times along the three axes:</p>
+<span class="math">\(nx \times ny \times 1\)</span> times along the three axes:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">crack_slab</span> <span class="o">=</span> <span class="n">unit_slab</span> <span class="o">*</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -583,7 +594,7 @@ region in between.</p>
       <span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">initial_G</span> <span class="o">/</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>This is the resulting crack slab, for the <span class="math">(111)</span> case:</p>
+<p>This is the resulting crack slab, for the <span class="math">\((111)\)</span> case:</p>
 <a class="reference internal image-reference" href="_images/crack_slab_2.png"><img alt="_images/crack_slab_2.png" class="align-center" src="_images/crack_slab_2.png" style="width: 600px;" /></a>
 </div>
 <div class="section" id="relaxation-of-the-crack-slab">
@@ -702,7 +713,7 @@ defined in the <a class="reference internal" href="#parameters"><span class="std
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -711,6 +722,7 @@ defined in the <a class="reference internal" href="#parameters"><span class="std
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

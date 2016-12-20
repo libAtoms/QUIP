@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Atoms objects &mdash; quippy f02bb86+ documentation</title>
+  <title>Atoms objects &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Quippy library reference" href="quippy.html"/> 
 
@@ -66,7 +68,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -85,6 +87,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -116,6 +119,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -295,7 +306,7 @@ It is initialised like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">call</span> <span class="n">initialise</span><span class="p">(</span><span class="n">MyAtoms</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">lattice</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">N</span></code> is the number of atoms to allocate space for and <code class="docutils literal"><span class="pre">lattice</span></code> is a <span class="math">3\times3</span>
+<p>where <code class="docutils literal"><span class="pre">N</span></code> is the number of atoms to allocate space for and <code class="docutils literal"><span class="pre">lattice</span></code> is a <span class="math">\(3\times3\)</span>
 matrix of lattice vectors given as column vectors, so that <code class="docutils literal"><span class="pre">lattice(:,i)</span></code> is the i-th lattice vector.</p>
 <p>Atoms also contains a Connection object, which stores distance information about
 the atom neghbours after <code class="docutils literal"><span class="pre">calc_connect</span></code> has been called. Rather than using a minimum
@@ -445,7 +456,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Add a per-atom property to this atoms object, but point to existing space rather than allocating new space for it (as add_property does).</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.angular_momentum" title="quippy.atoms.Atoms.angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">angular_momentum</span></code></a>([origin,indices])</td>
-<td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <span class="math">\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}</span>.</td>
+<td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <span class="math">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.append" title="quippy.atoms.Atoms.append"><code class="xref py py-obj docutils literal"><span class="pre">append</span></code></a>(atom)</td>
 <td>Append atom to end.</td>
@@ -463,7 +474,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Execute one Breadth-First-Search move on the atomic connectivity graph.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_connect" title="quippy.atoms.Atoms.calc_connect"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
-<td>Fast <span class="math">O(N)</span> connectivity calculation routine.</td>
+<td>Fast <span class="math">\(O(N)\)</span> connectivity calculation routine.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_connect_hysteretic" title="quippy.atoms.Atoms.calc_connect_hysteretic"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect_hysteretic</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>As for <code class="docutils literal"><span class="pre">calc_connect</span></code>, but perform the connectivity update  hystertically: atoms must come within a relative distance of <code class="docutils literal"><span class="pre">cutoff_factor</span></code> to be considered neighbours, and then will remain  connected until them move apart further than a relative distance  of <code class="docutils literal"><span class="pre">cutoff_break_factor</span></code> (all cutoff factors are relative  to covalent radii).</td>
@@ -541,22 +552,22 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Cosine of the angle j&#8211;i&#8211;k</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.cosine_neighbour" title="quippy.atoms.Atoms.cosine_neighbour"><code class="xref py py-obj docutils literal"><span class="pre">cosine_neighbour</span></code></a>(i,n,m)</td>
-<td>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">n,m</span>} are the {:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>n`th, :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>m`th} neighbours of i</td>
+<td>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>n`th, :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>m`th} neighbours of i</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.density" title="quippy.atoms.Atoms.density"><code class="xref py py-obj docutils literal"><span class="pre">density</span></code></a>()</td>
-<td>Density in units of <span class="math">g/m^3</span>.</td>
+<td>Density in units of <span class="math">\(g/m^3\)</span>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.diff" title="quippy.atoms.Atoms.diff"><code class="xref py py-obj docutils literal"><span class="pre">diff</span></code></a>(i,j,shift)</td>
-<td>Difference vector between atoms <span class="math">i</span> and <span class="math">j</span> if they are separated by a shift of <code class="docutils literal"><span class="pre">shift</span></code></td>
+<td>Difference vector between atoms <span class="math">\(i\)</span> and <span class="math">\(j\)</span> if they are separated by a shift of <code class="docutils literal"><span class="pre">shift</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.diff_min_image" title="quippy.atoms.Atoms.diff_min_image"><code class="xref py py-obj docutils literal"><span class="pre">diff_min_image</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Return the minimum image difference vector between two atoms or  positions.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.direction_cosines" title="quippy.atoms.Atoms.direction_cosines"><code class="xref py py-obj docutils literal"><span class="pre">direction_cosines</span></code></a>(i,j,shift)</td>
-<td>Given two atoms <span class="math">i</span> and <span class="math">j</span> and a shift returns the direction cosines of the differnece vector from <span class="math">i</span> to <span class="math">j</span>.</td>
+<td>Given two atoms <span class="math">\(i\)</span> and <span class="math">\(j\)</span> and a shift returns the direction cosines of the differnece vector from <span class="math">\(i\)</span> to <span class="math">\(j\)</span>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.direction_cosines_min_image" title="quippy.atoms.Atoms.direction_cosines_min_image"><code class="xref py py-obj docutils literal"><span class="pre">direction_cosines_min_image</span></code></a>(i,j,[error])</td>
-<td>Direction cosines of the difference vector from <span class="math">i</span> to <span class="math">j</span></td>
+<td>Direction cosines of the difference vector from <span class="math">\(i\)</span> to <span class="math">\(j\)</span></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.directionality" title="quippy.atoms.Atoms.directionality"><code class="xref py py-obj docutils literal"><span class="pre">directionality</span></code></a>(origin,list,[method,error])</td>
 <td>Given an origin atom and a list of other atoms, give information as to whether the other atoms are distributed roughly linearly, planar or spherically around the origin atom.</td>
@@ -752,10 +763,10 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Iterate over atoms, calling get_atom() for each one</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.kinetic_energy" title="quippy.atoms.Atoms.kinetic_energy"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_energy</span></code></a>([mpi_obj,local_ke,error])</td>
-<td>Return the total kinetic energy <span class="math">E_k = \sum_{i} \frac{1}{2} m v^2</span></td>
+<td>Return the total kinetic energy <span class="math">\(E_k = \sum_{i} \frac{1}{2} m v^2\)</span></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.kinetic_virial" title="quippy.atoms.Atoms.kinetic_virial"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_virial</span></code></a>([mpi_obj,error])</td>
-<td>Return the total kinetic virial <span class="math">w_ij = \sum_{k} \frac{1}{2} m v_i v_j</span></td>
+<td>Return the total kinetic virial <span class="math">\(w_ij = \sum_{k} \frac{1}{2} m v_i v_j\)</span></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.list_matching_prop" title="quippy.atoms.Atoms.list_matching_prop"><code class="xref py py-obj docutils literal"><span class="pre">list_matching_prop</span></code></a>(at,list,name,value,[error])</td>
 <td>Find atoms which have integer property <code class="docutils literal"><span class="pre">prop</span></code> with value <code class="docutils literal"><span class="pre">value</span></code> and return them in a table <code class="docutils literal"><span class="pre">list</span></code>.</td>
@@ -790,13 +801,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.momentum" title="quippy.atoms.Atoms.momentum"><code class="xref py py-obj docutils literal"><span class="pre">momentum</span></code></a>([indices])</td>
-<td>Return the total momentum <span class="math">\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}</span>.</td>
+<td>Return the total momentum <span class="math">\(\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}\)</span>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.n_neighbours" title="quippy.atoms.Atoms.n_neighbours"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Neighbour list stuff Return the number of neighbour that atom <code class="docutils literal"><span class="pre">i</span></code> has.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.neighbour" title="quippy.atoms.Atoms.neighbour"><code class="xref py py-obj docutils literal"><span class="pre">neighbour</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
-<td>Return the index of the <span class="math">n^{\mbox{\small{th}}}</span> neighbour of atom <span class="math">i</span>.</td>
+<td>Return the index of the <span class="math">\(n^{\mbox{\small{th}}}\)</span> neighbour of atom <span class="math">\(i\)</span>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.pop" title="quippy.atoms.Atoms.pop"><code class="xref py py-obj docutils literal"><span class="pre">pop</span></code></a>([i])</td>
 <td>Remove and return atom at index <em>i</em> (default last).</td>
@@ -1275,7 +1286,7 @@ rather than allocating new space for it (as add_property does).</p>
 <dt id="quippy.atoms.Atoms.angular_momentum">
 <code class="descname">angular_momentum</code><span class="sig-paren">(</span><span class="optional">[</span><em>origin</em>, <em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.angular_momentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the angular momentum of all the atoms in this DynamicalSystem, defined by
-<span class="math">\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}</span>.</p>
+<span class="math">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1415,12 +1426,12 @@ indices and shifts.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.calc_connect">
 <code class="descname">calc_connect</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fast <span class="math">O(N)</span> connectivity calculation routine. It divides the unit
+<dd><p>Fast <span class="math">\(O(N)\)</span> connectivity calculation routine. It divides the unit
 cell into similarly shaped subcells, of sufficient size that
 sphere of radius <code class="docutils literal"><span class="pre">cutoff</span></code> is contained in a subcell, at least in
 the directions in which the unit cell is big enough. For very
 small unit cells, there is only one subcell, so the routine is
-equivalent to the standard <span class="math">O(N^2)</span> method.&gt;
+equivalent to the standard <span class="math">\(O(N^2)\)</span> method.&gt;
 If <code class="docutils literal"><span class="pre">own_neighbour</span></code> is true, atoms can be neighbours with their
 own periodic images.
 If <code class="docutils literal"><span class="pre">cutoff_skin</span></code> is present, effective cutoff is increased by this
@@ -1815,7 +1826,7 @@ cost.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.cosine_neighbour">
 <code class="descname">cosine_neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em>, <em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.cosine_neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">n,m</span>} are the {:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>n`th, :math:<a href="#id11"><span class="problematic" id="id12">`</span></a>m`th} neighbours of i</p>
+<dd><p>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>n`th, :math:<a href="#id11"><span class="problematic" id="id12">`</span></a>m`th} neighbours of i</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1837,17 +1848,17 @@ cost.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.density">
 <code class="descname">density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>Density in units of <span class="math">g/m^3</span>. If <cite>mass</cite> property exists,
+<dd><p>Density in units of <span class="math">\(g/m^3\)</span>. If <cite>mass</cite> property exists,
 use that, otherwise we use <cite>z</cite> and ElementMass table.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.diff">
 <code class="descname">diff</code><span class="sig-paren">(</span><em>i</em>, <em>j</em>, <em>shift</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.diff" title="Permalink to this definition">¶</a></dt>
-<dd><p>Difference vector between atoms <span class="math">i</span> and <span class="math">j</span> if they are separated by a shift of <code class="docutils literal"><span class="pre">shift</span></code></p>
+<dd><p>Difference vector between atoms <span class="math">\(i\)</span> and <span class="math">\(j\)</span> if they are separated by a shift of <code class="docutils literal"><span class="pre">shift</span></code></p>
 <div class="math">
-<p><span class="math">\mathbf{u}_{ij} = \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s}</span></p>
-</div><p>where <span class="math">\mathbf{R}</span> is the <code class="docutils literal"><span class="pre">lattice</span></code> matrix and <span class="math">\mathbf{s}</span> the shift</p>
+\[\mathbf{u}_{ij} = \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s}\]</div>
+<p>where <span class="math">\(\mathbf{R}\)</span> is the <code class="docutils literal"><span class="pre">lattice</span></code> matrix and <span class="math">\(\mathbf{s}\)</span> the shift</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1968,8 +1979,8 @@ atoms indices &#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#821
 <dl class="method">
 <dt id="quippy.atoms.Atoms.direction_cosines">
 <code class="descname">direction_cosines</code><span class="sig-paren">(</span><em>i</em>, <em>j</em>, <em>shift</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.direction_cosines" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given two atoms <span class="math">i</span> and <span class="math">j</span> and a shift returns the direction
-cosines of the differnece vector from <span class="math">i</span> to <span class="math">j</span>.</p>
+<dd><p>Given two atoms <span class="math">\(i\)</span> and <span class="math">\(j\)</span> and a shift returns the direction
+cosines of the differnece vector from <span class="math">\(i\)</span> to <span class="math">\(j\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1991,7 +2002,7 @@ cosines of the differnece vector from <span class="math">i</span> to <span class
 <dl class="method">
 <dt id="quippy.atoms.Atoms.direction_cosines_min_image">
 <code class="descname">direction_cosines_min_image</code><span class="sig-paren">(</span><em>i</em>, <em>j</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.direction_cosines_min_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Direction cosines of the difference vector from <span class="math">i</span> to <span class="math">j</span></p>
+<dd><p>Direction cosines of the difference vector from <span class="math">\(i\)</span> to <span class="math">\(j\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2068,8 +2079,8 @@ eigenvalue 1 and the other eigenvectors have eigenvalue 0.</p>
 <dd><p>Return distance between atoms <code class="docutils literal"><span class="pre">i</span></code> and <code class="docutils literal"><span class="pre">j</span></code> if they are separated by a shift
 of <code class="docutils literal"><span class="pre">shift</span></code>.</p>
 <div class="math">
-<p><span class="math">r_{ij} = \left| \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s} \right|</span></p>
-</div><p>where <span class="math">\mathbf{R}</span> is the <code class="docutils literal"><span class="pre">lattice</span></code> matrix and <span class="math">\mathbf{s}</span> the shift.</p>
+\[r_{ij} = \left| \mathbf{r}_j - \mathbf{r}_i + \mathbf{R} \cdot  \mathbf{s} \right|\]</div>
+<p>where <span class="math">\(\mathbf{R}\)</span> is the <code class="docutils literal"><span class="pre">lattice</span></code> matrix and <span class="math">\(\mathbf{s}\)</span> the shift.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2900,7 +2911,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.kinetic_energy">
 <code class="descname">kinetic_energy</code><span class="sig-paren">(</span><span class="optional">[</span><em>mpi_obj</em>, <em>local_ke</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.kinetic_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total kinetic energy <span class="math">E_k = \sum_{i} \frac{1}{2} m v^2</span></p>
+<dd><p>Return the total kinetic energy <span class="math">\(E_k = \sum_{i} \frac{1}{2} m v^2\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2922,7 +2933,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.kinetic_virial">
 <code class="descname">kinetic_virial</code><span class="sig-paren">(</span><span class="optional">[</span><em>mpi_obj</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.kinetic_virial" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total kinetic virial <span class="math">w_ij = \sum_{k} \frac{1}{2} m v_i v_j</span></p>
+<dd><p>Return the total kinetic virial <span class="math">\(w_ij = \sum_{k} \frac{1}{2} m v_i v_j\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2965,8 +2976,8 @@ and return them in a table <code class="docutils literal"><span class="pre">list
 <dl class="method">
 <dt id="quippy.atoms.Atoms.make_convex">
 <code class="descname">make_convex</code><span class="sig-paren">(</span><em>list</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.make_convex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add atoms to <code class="docutils literal"><span class="pre">list</span></code> to make the selection region convex, i.e. if <span class="math">i</span> and
-<span class="math">j</span> are nearest neighbours, with <span class="math">i</span> in the list and not <span class="math">j</span> then <span class="math">j</span> will be added
+<dd><p>Add atoms to <code class="docutils literal"><span class="pre">list</span></code> to make the selection region convex, i.e. if <span class="math">\(i\)</span> and
+<span class="math">\(j\)</span> are nearest neighbours, with <span class="math">\(i\)</span> in the list and not <span class="math">\(j\)</span> then <span class="math">\(j\)</span> will be added
 if more than half its nearest neighbours are in the list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2986,10 +2997,10 @@ if more than half its nearest neighbours are in the list.</p>
 <dd><p>atoms_map_into_cell</p>
 <dl class="docutils">
 <dt>Map atomic positions into the unit cell so that lattice</dt>
-<dd>coordinates satisfy <span class="math">-0.5 \le t_x,t_y,t_z &lt; 0.5</span></dd>
+<dd>coordinates satisfy <span class="math">\(-0.5 \le t_x,t_y,t_z &lt; 0.5\)</span></dd>
 </dl>
 <p>Map atomic fractional positions back into the unit cell
-<span class="math">-0.5 \le t_x,t_y,t_z &lt; 0.5</span></p>
+<span class="math">\(-0.5 \le t_x,t_y,t_z &lt; 0.5\)</span></p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">map_into_cell</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
 </dd></dl>
@@ -3073,7 +3084,7 @@ fed to MD5 to form the hash.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.momentum">
 <code class="descname">momentum</code><span class="sig-paren">(</span><span class="optional">[</span><em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.momentum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total momentum <span class="math">\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}</span>.
+<dd><p>Return the total momentum <span class="math">\(\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}\)</span>.
 Optionally only include the contribution of a subset of atoms.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3121,11 +3132,11 @@ connectivity information, for example <code class="docutils literal"><span class
 <dl class="method">
 <dt id="quippy.atoms.Atoms.neighbour">
 <code class="descname">neighbour</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the index of the <span class="math">n^{\mbox{\small{th}}}</span> neighbour of atom <span class="math">i</span>. Together with the
-previous function, this facilites a loop over the neighbours of atom <span class="math">i</span>. Optionally, we
+<dd><p>Return the index of the <span class="math">\(n^{\mbox{\small{th}}}\)</span> neighbour of atom <span class="math">\(i\)</span>. Together with the
+previous function, this facilites a loop over the neighbours of atom <span class="math">\(i\)</span>. Optionally, we
 return other geometric information, such as distance, direction cosines and difference vector,
-and also a direct index into the neighbour tables. If <span class="math">i &lt;= j</span>, this is an index into <code class="docutils literal"><span class="pre">neighbour1(i)</span></code>;
-if <span class="math">i &gt; j</span>, it is an index into <code class="docutils literal"><span class="pre">neighbour1(j)</span></code>.</p>
+and also a direct index into the neighbour tables. If <span class="math">\(i &lt;= j\)</span>, this is an index into <code class="docutils literal"><span class="pre">neighbour1(i)</span></code>;
+if <span class="math">\(i &gt; j\)</span>, it is an index into <code class="docutils literal"><span class="pre">neighbour1(j)</span></code>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">do</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">atoms_n_neighbours</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
    <span class="n">j</span> <span class="o">=</span> <span class="n">atoms_neighbour</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">cosines</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
 
@@ -3133,7 +3144,7 @@ if <span class="math">i &gt; j</span>, it is an index into <code class="docutils
 <span class="n">end</span> <span class="n">do</span>
 </pre></div>
 </div>
-<p>If distance <span class="math">&gt;</span> max_dist, return 0, and do not waste time calculating other quantities.
+<p>If distance <span class="math">\(&gt;\)</span> max_dist, return 0, and do not waste time calculating other quantities.
 <code class="docutils literal"><span class="pre">alt_connect</span></code> has the same meaning as <code class="docutils literal"><span class="pre">n_neighbours</span></code>.</p>
 <p>Here&#8217;s a typical loop construct in Python. Note how <cite>r</cite> and <cite>u</cite>
 are created before the loop: arguments which are both optional
@@ -4066,10 +4077,10 @@ interspersed will not work</p>
 <code class="descname">unskew_cell</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.unskew_cell" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Unskew lattice so the cosines of the lattice angles fall between</dt>
-<dd><span class="math">-0.5</span> and <span class="math">0.5</span></dd>
+<dd><span class="math">\(-0.5\)</span> and <span class="math">\(0.5\)</span></dd>
 </dl>
 <p>Unskew lattice so the cosines of the lattice angles fall between
-<span class="math">-0.5</span> and <span class="math">0.5</span></p>
+<span class="math">\(-0.5\)</span> and <span class="math">\(0.5\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -4289,16 +4300,16 @@ containing numbers in range 0..(self.n-1).</p>
 <code class="descname">lattice</code><a class="headerlink" href="#quippy.atoms.Atoms.lattice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lattice vectors, as columns:</p>
 <div class="math">
-<p><span class="math">\left(
+\[\begin{split}\left(
 \begin{array}{ccc}
 | &amp; | &amp; | \\ \mathbf{a} &amp; \mathbf{b} &amp; \mathbf{c} \\ | &amp; | &amp; | \\ \end{array}
 \right)
 = \left(
 \begin{array}{ccc}
 R_{11} &amp; R_{12} &amp; R_{13} \\ R_{21} &amp; R_{22} &amp; R_{23} \\  R_{31} &amp; R_{32} &amp; R_{33} \\ \end{array}
-\right)</span></p>
-</div><p>i.e. <span class="math">\mathbf{a}</span> = <code class="docutils literal"><span class="pre">lattice(:,1)</span></code>, <span class="math">\mathbf{b}</span> = <code class="docutils literal"><span class="pre">lattice(:,2)</span></code> and
-<span class="math">\mathbf{c}</span> <code class="docutils literal"><span class="pre">lattice(:,3)</span></code>.</p>
+\right)\end{split}\]</div>
+<p>i.e. <span class="math">\(\mathbf{a}\)</span> = <code class="docutils literal"><span class="pre">lattice(:,1)</span></code>, <span class="math">\(\mathbf{b}\)</span> = <code class="docutils literal"><span class="pre">lattice(:,2)</span></code> and
+<span class="math">\(\mathbf{c}\)</span> <code class="docutils literal"><span class="pre">lattice(:,3)</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4373,18 +4384,18 @@ characters.</p>
 arrays within the Atoms type:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">Z</span></code> - Atomic numbers, dimension is actually <span class="math">(N)</span></li>
+<li><code class="docutils literal"><span class="pre">Z</span></code> - Atomic numbers, dimension is actually <span class="math">\((N)\)</span></li>
 <li><code class="docutils literal"><span class="pre">species</span></code> Names of elements</li>
 <li><code class="docutils literal"><span class="pre">move_mask</span></code> Atoms with <code class="docutils literal"><span class="pre">move_mask</span></code> set to zero are fixed</li>
 <li><code class="docutils literal"><span class="pre">damp_mask</span></code> Damping is only applied to those atoms with <code class="docutils literal"><span class="pre">damp_mask</span></code> set to 1. By default this is set to 1 for all atoms.</li>
 <li><code class="docutils literal"><span class="pre">thermostat_region</span></code> Which thermostat is applied to each atoms. By default this is set to 1 for all atoms.</li>
-<li><code class="docutils literal"><span class="pre">travel</span></code> Travel across periodic conditions. <span class="math">(3,N)</span> integer array. See meth:<cite>map_into_cell</cite> below.</li>
-<li><code class="docutils literal"><span class="pre">pos</span></code> <span class="math">(3,N)</span> array of atomic positions, in <span class="math">\mathrm{\AA}</span>. Position of atom <span class="math">i</span> is <code class="docutils literal"><span class="pre">pos(:,i)</span></code></li>
-<li><code class="docutils literal"><span class="pre">mass</span></code> Atomic masses, dimension is <span class="math">(N)</span></li>
-<li><code class="docutils literal"><span class="pre">velo</span></code> <span class="math">(3,N)</span> array  of atomic velocities, in <span class="math">\mathrm{AA}</span>/fs.</li>
-<li><code class="docutils literal"><span class="pre">acc</span></code> <span class="math">(3,N)</span> array  of accelerations in <span class="math">\mathrm{AA}</span>/fs:math:<cite>^2</cite></li>
-<li><code class="docutils literal"><span class="pre">avgpos</span></code> <span class="math">(3,N)</span> array  of time-averaged atomic positions.</li>
-<li><code class="docutils literal"><span class="pre">oldpos</span></code> <span class="math">(3,N)</span> array  of positions of atoms at previous time step.</li>
+<li><code class="docutils literal"><span class="pre">travel</span></code> Travel across periodic conditions. <span class="math">\((3,N)\)</span> integer array. See meth:<cite>map_into_cell</cite> below.</li>
+<li><code class="docutils literal"><span class="pre">pos</span></code> <span class="math">\((3,N)\)</span> array of atomic positions, in <span class="math">\(\mathrm{\AA}\)</span>. Position of atom <span class="math">\(i\)</span> is <code class="docutils literal"><span class="pre">pos(:,i)</span></code></li>
+<li><code class="docutils literal"><span class="pre">mass</span></code> Atomic masses, dimension is <span class="math">\((N)\)</span></li>
+<li><code class="docutils literal"><span class="pre">velo</span></code> <span class="math">\((3,N)\)</span> array  of atomic velocities, in <span class="math">\(\mathrm{AA}\)</span>/fs.</li>
+<li><code class="docutils literal"><span class="pre">acc</span></code> <span class="math">\((3,N)\)</span> array  of accelerations in <span class="math">\(\mathrm{AA}\)</span>/fs:math:<cite>^2</cite></li>
+<li><code class="docutils literal"><span class="pre">avgpos</span></code> <span class="math">\((3,N)\)</span> array  of time-averaged atomic positions.</li>
+<li><code class="docutils literal"><span class="pre">oldpos</span></code> <span class="math">\((3,N)\)</span> array  of positions of atoms at previous time step.</li>
 <li><code class="docutils literal"><span class="pre">avg_ke</span></code> Time-averaged atomic kinetic energy</li>
 </ul>
 </div></blockquote>
@@ -4629,7 +4640,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -4638,6 +4649,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

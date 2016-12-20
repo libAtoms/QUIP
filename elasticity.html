@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Elasticity calculations &mdash; quippy f02bb86+ documentation</title>
+  <title>Elasticity calculations &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="CP2K I/O and driver" href="cp2k.html"/> 
 
@@ -66,7 +68,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -85,6 +87,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -118,6 +121,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -200,10 +211,10 @@
 <td>Calculate in-plane elastic constants of a graphene sheet with lattice parameter <code class="docutils literal"><span class="pre">a</span></code> using the Potential <code class="docutils literal"><span class="pre">pot</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.poisson_ratio" title="quippy.elasticity.poisson_ratio"><code class="xref py py-obj docutils literal"><span class="pre">poisson_ratio</span></code></a>(cc,l,m)</td>
-<td>Calculate Poisson ratio <span class="math">\nu_{lm}</span> from <span class="math">6\times6</span> elastic constant matrix <span class="math">C_{ij}</span>.</td>
+<td>Calculate Poisson ratio <span class="math">\(\nu_{lm}\)</span> from <span class="math">\(6\times6\)</span> elastic constant matrix <span class="math">\(C_{ij}\)</span>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.youngs_modulus" title="quippy.elasticity.youngs_modulus"><code class="xref py py-obj docutils literal"><span class="pre">youngs_modulus</span></code></a>(c,l)</td>
-<td>Calculate Youngs modulus <span class="math">E_l</span> from <span class="math">6\times6</span> elastic constants matrix <span class="math">C_{ij}</span> This is the modulus for loading in the <span class="math">l</span> direction.</td>
+<td>Calculate Youngs modulus <span class="math">\(E_l\)</span> from <span class="math">\(6\times6\)</span> elastic constants matrix <span class="math">\(C_{ij}\)</span> This is the modulus for loading in the <span class="math">\(l\)</span> direction.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.strain_matrix" title="quippy.elasticity.strain_matrix"><code class="xref py py-obj docutils literal"><span class="pre">strain_matrix</span></code></a>(strain_vector)</td>
 <td>Form a 3x3 strain matrix from a 6 component vector in Voigt notation</td>
@@ -270,7 +281,7 @@
 </div></blockquote>
 <p><strong>cij</strong> : array_like, optional</p>
 <blockquote>
-<div><p>6 x 6 matrix of elastic constants <span class="math">C_{ij}</span>.
+<div><p>6 x 6 matrix of elastic constants <span class="math">\(C_{ij}\)</span>.
 Can be obtained with :meth:<a href="#id1"><span class="problematic" id="id2">`</span></a>.Potential.get_elastic_constants&#8217;.</p>
 </div></blockquote>
 <p><strong>method</strong> : str</p>
@@ -366,7 +377,7 @@ for non-cubic cells.</p>
 <p>Four-fold coordinate atoms within <cite>at</cite> are used to define
 tetrahedra. The deformation of each tetrahedra is determined
 relative to the ideal structure, using <cite>a</cite> as the cubic lattice
-constant (related to bond length by a factor <span class="math">sqrt{3}/4</span>).
+constant (related to bond length by a factor <span class="math">\(sqrt{3}/4\)</span>).
 This deformation is then split into a strain and a rotation
 using a Polar decomposition.</p>
 <p>If <cite>save_reference</cite> or <cite>use_reference</cite> are True then <cite>at</cite> must have
@@ -420,9 +431,9 @@ in plane Young&#8217;s modulus (GPa).</p>
 <dl class="function">
 <dt id="quippy.elasticity.poisson_ratio">
 <code class="descclassname">quippy.elasticity.</code><code class="descname">poisson_ratio</code><span class="sig-paren">(</span><em>cc</em>, <em>l</em>, <em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.poisson_ratio" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate Poisson ratio <span class="math">\nu_{lm}</span> from <span class="math">6\times6</span> elastic
-constant matrix <span class="math">C_{ij}</span>. This is the response in <span class="math">m</span> direction
-to pulling in <span class="math">l</span> direction. Result is dimensionless.
+<dd><p>Calculate Poisson ratio <span class="math">\(\nu_{lm}\)</span> from <span class="math">\(6\times6\)</span> elastic
+constant matrix <span class="math">\(C_{ij}\)</span>. This is the response in <span class="math">\(m\)</span> direction
+to pulling in <span class="math">\(l\)</span> direction. Result is dimensionless.
 Formula is from W. Brantley, Calculated elastic constants for stress problems associated
 with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -446,8 +457,8 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <dl class="function">
 <dt id="quippy.elasticity.youngs_modulus">
 <code class="descclassname">quippy.elasticity.</code><code class="descname">youngs_modulus</code><span class="sig-paren">(</span><em>c</em>, <em>l</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.elasticity.youngs_modulus" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate Youngs modulus <span class="math">E_l</span> from <span class="math">6\times6</span> elastic constants matrix <span class="math">C_{ij}</span>
-This is the modulus for loading in the <span class="math">l</span> direction.
+<dd><p>Calculate Youngs modulus <span class="math">\(E_l\)</span> from <span class="math">\(6\times6\)</span> elastic constants matrix <span class="math">\(C_{ij}\)</span>
+This is the modulus for loading in the <span class="math">\(l\)</span> direction.
 Formula is from W. Brantley, Calculated elastic constants for stress problems associated
 with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -550,7 +561,7 @@ Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford Un
 <p>Four-fold coordinate atoms within <cite>at</cite> are used to define
 tetrahedra. The deformation of each tetrahedra is determined
 relative to the ideal structure, using <cite>a</cite> as the cubic lattice
-constant (related to bond length by a factor <span class="math">sqrt{3}/4</span>).
+constant (related to bond length by a factor <span class="math">\(sqrt{3}/4\)</span>).
 This deformation is then split into a strain and a rotation
 using a Polar decomposition.</p>
 <p>If <cite>save_reference</cite> or <cite>use_reference</cite> are True then <cite>at</cite> must have
@@ -641,7 +652,7 @@ Rayleight speed returned is along the first (x) axis.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -650,6 +661,7 @@ Rayleight speed returned is along the first (x) axis.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

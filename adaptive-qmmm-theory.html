@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Theoretical background &mdash; quippy f02bb86+ documentation</title>
+  <title>Theoretical background &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html"/>
         <link rel="prev" title="Introduction" href="adaptive-qmmm-step0.html"/> 
@@ -67,7 +69,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -86,6 +88,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -120,6 +123,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -189,7 +200,7 @@ driven by the formation and coalescence of microscopic voids.</p>
 Image credits: C. Marlière and A. Weck.</span></p>
 </div>
 <p>Silicon is known to be an ideally brittle material, as shown by the image below.
-Below the brittle to ductile transition, at around <span class="math">500^\circ~\mathrm{C}</span>, silicon
+Below the brittle to ductile transition, at around <span class="math">\(500^\circ~\mathrm{C}\)</span>, silicon
 cleaves atomically smooth fracture surfaces (left and centre panel; sample in
 central panel is tilted to show the crack front). At higher temperatures,
 fracture is ductile, with the emission of multiple dislocations from the tip
@@ -209,8 +220,8 @@ by the observation that materials break at much lower loads than the
 theoretical stress needed to break their chemical bonds For example,
 in glass, the theoretical strength is given by</p>
 <div class="math">
-<p><span class="math">\sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}</span></p>
-</div><p>where <span class="math">E</span>, <span class="math">\gamma</span> and <span class="math">a</span> are the Young&#8217;s modulus, surface
+\[\sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}\]</div>
+<p>where <span class="math">\(E\)</span>, <span class="math">\(\gamma\)</span> and <span class="math">\(a\)</span> are the Young&#8217;s modulus, surface
 energy and bond length, respectively.</p>
 <p>For a slowly-moving crack of length <cite>c</cite> in an infinite plane, the
 well-known Griffith criterion for fracture propagation is based on thermodynamic
@@ -220,28 +231,28 @@ which is proportional to <cite>c</cite>, as illustrated below.</p>
 <a class="reference internal image-reference" href="_images/griffith-criterion.png"><img alt="_images/griffith-criterion.png" class="align-center" src="_images/griffith-criterion.png" style="width: 600px;" /></a>
 <p>This leads to a Griffith fracture strength for glass of</p>
 <div class="math">
-<p><span class="math">\sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}</span></p>
-</div><p>which is much lower than the theoretical strength. Here the additional
-parameters are <span class="math">\rho</span>, the radius of curvature and the crack
+\[\sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}\]</div>
+<p>which is much lower than the theoretical strength. Here the additional
+parameters are <span class="math">\(\rho\)</span>, the radius of curvature and the crack
 length <cite>c</cite>. The effect of stress concentration increases for sharper and
 longer cracks.</p>
-<p>The Griffith criterion leads to a critical length <span class="math">c_0</span> below which it is
+<p>The Griffith criterion leads to a critical length <span class="math">\(c_0\)</span> below which it is
 not energetically favourable for cracks to grow, since the elastic energy
-released does not exceed the surface energy cost. Below <span class="math">c_0</span>, cracks
+released does not exceed the surface energy cost. Below <span class="math">\(c_0\)</span>, cracks
 prefer to close up, meaning that not all flaws are unstable. This explains why
 it makes sense to measure the length of cracks e.g. on aeroplanes, so that small
 flaws can be identified and treated before they become critical.</p>
-<p>In fracture mechanics it is common to use the energy release rate <span class="math">G</span> to
-describe the flow of energy to a crack tip. <span class="math">G</span> is the driving force for
+<p>In fracture mechanics it is common to use the energy release rate <span class="math">\(G\)</span> to
+describe the flow of energy to a crack tip. <span class="math">\(G\)</span> is the driving force for
 crack propagation. It is defined by</p>
 <div class="math">
-<p><span class="math">G = - \frac{\partial U_E}{\partial c}</span></p>
-</div><p>where <span class="math">U_E</span> is the total strain energy and <cite>c</cite> is the crack length.
-The Griffith criterion can be reformulated in terms of <span class="math">G</span> to show that
+\[G = - \frac{\partial U_E}{\partial c}\]</div>
+<p>where <span class="math">\(U_E\)</span> is the total strain energy and <cite>c</cite> is the crack length.
+The Griffith criterion can be reformulated in terms of <span class="math">\(G\)</span> to show that
 crack propagation becomes favourable when</p>
 <div class="math">
-<p><span class="math">G &gt; 2\gamma</span></p>
-</div><p>where <span class="math">\gamma</span> is the surface energy density, i.e. when the energy flow to
+\[G &gt; 2\gamma\]</div>
+<p>where <span class="math">\(\gamma\)</span> is the surface energy density, i.e. when the energy flow to
 the crack tip exceeds the cost of creating two new surfaces.</p>
 </div>
 <div class="section" id="atomic-scale-modelling-of-fracture">
@@ -254,12 +265,12 @@ to use classical interatomic potentials to carry out molecular
 dynamics (MD). However, as we will see in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span class="std std-ref">Step 2: Classical MD simulation of fracture in Si</span></a>, most classical
 potentials fail to accurately reproduce brittle fracture. This is due
 to stress concentration which has been shown to diverge as
-<span class="math">\sigma \sim 1/\sqrt{r}</span> near a crack tip <a class="reference internal" href="adaptive-qmmm-references.html#irwin1948" id="id5">[Irwin1948]</a>, leading
+<span class="math">\(\sigma \sim 1/\sqrt{r}\)</span> near a crack tip <a class="reference internal" href="adaptive-qmmm-references.html#irwin1948" id="id5">[Irwin1948]</a>, leading
 to anharmonic stretching and rupture of bonds, which is typically not
 well captured by simple interatomic potentials.</p>
 <div class="figure align-center" id="id30">
 <span id="irwin-sig-yy"></span><a class="reference internal image-reference" href="_images/irwin-sig-yy.png"><img alt="_images/irwin-sig-yy.png" src="_images/irwin-sig-yy.png" style="width: 300px;" /></a>
-<p class="caption"><span class="caption-text">Irwin near-field solution for <span class="math">\sigma_{yy}</span> for a singular crack.
+<p class="caption"><span class="caption-text">Irwin near-field solution for <span class="math">\(\sigma_{yy}\)</span> for a singular crack.
 Black is zero stress and yellow very high stress; note the divergence at the
 crack tip.</span></p>
 </div>
@@ -318,36 +329,36 @@ surfaces.</p>
 on the crack length, and can be found analytically by considering the energetics
 of an advancing crack.</p>
 <p>The horizontal edges of the strip are given a uniform normal
-displacement <span class="math">\delta</span>, so the applied strain is
-<span class="math">\epsilon_0 = \delta / h</span>.  Far ahead of the crack, the strip is
-in uniaxial tension: <span class="math">\epsilon_{yy} \to \epsilon_0</span> as <span class="math">x
-\to \infty</span>.</p>
-<p>The stress far ahead of the crack is given by <span class="math">\sigma_{0} = E'
-\epsilon_{0}</span>, and therefore the elastic energy per unit length and
+displacement <span class="math">\(\delta\)</span>, so the applied strain is
+<span class="math">\(\epsilon_0 = \delta / h\)</span>.  Far ahead of the crack, the strip is
+in uniaxial tension: <span class="math">\(\epsilon_{yy} \to \epsilon_0\)</span> as <span class="math">\(x
+\to \infty\)</span>.</p>
+<p>The stress far ahead of the crack is given by <span class="math">\(\sigma_{0} = E'
+\epsilon_{0}\)</span>, and therefore the elastic energy per unit length and
 per unit thickness far ahead of the crack tip is</p>
 <div class="math">
-<p><span class="math">W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}</span></p>
-</div><p>where <span class="math">E'</span> is the effective Young&#8217;s modulus.</p>
+\[W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}\]</div>
+<p>where <span class="math">\(E'\)</span> is the effective Young&#8217;s modulus.</p>
 <p>Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
 unit distance, a vertical strip of material with energy density
-<span class="math">W_\infty</span> is effectively replaced by a strip with energy
+<span class="math">\(W_\infty\)</span> is effectively replaced by a strip with energy
 density zero.</p>
-<p>The energy supplied to the crack tip is therefore equal to <span class="math">W_\infty</span>,
+<p>The energy supplied to the crack tip is therefore equal to <span class="math">\(W_\infty\)</span>,
 so the energy release rate is simply</p>
 <div class="math">
-<p><span class="math">G = W_\infty = \frac{\delta^2 E'}{h}</span></p>
-</div><p>In our simulations we will use periodic boundary conditions in the <span class="math">z</span>
-direction, so we have plane strain loading (<span class="math">\epsilon_{zz} = 0</span>), which
-means that the effective Young&#8217;s modulus <span class="math">E'</span> is given by
-<span class="math">E/(1-\nu^2)</span>, where <span class="math">E</span> is the Young&#8217;s modulus in the <span class="math">y</span> relevant
-direction and <span class="math">\nu</span> is the Poisson ratio, so finally we have</p>
+\[G = W_\infty = \frac{\delta^2 E'}{h}\]</div>
+<p>In our simulations we will use periodic boundary conditions in the <span class="math">\(z\)</span>
+direction, so we have plane strain loading (<span class="math">\(\epsilon_{zz} = 0\)</span>), which
+means that the effective Young&#8217;s modulus <span class="math">\(E'\)</span> is given by
+<span class="math">\(E/(1-\nu^2)\)</span>, where <span class="math">\(E\)</span> is the Young&#8217;s modulus in the <span class="math">\(y\)</span> relevant
+direction and <span class="math">\(\nu\)</span> is the Poisson ratio, so finally we have</p>
 <div class="math" id="thin-strip-equation">
-<p><span class="math">G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}</span></p>
-</div><p>We can see that, in order to relate the strain we apply to the system
+\[G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}\]</div>
+<p>We can see that, in order to relate the strain we apply to the system
 with the energy release rate, we will need to calculate the Young&#8217;s
 modulus and Poisson ratio for our model material. We will see how to
-do this from the elastic constant matrix <span class="math">C_{ij}</span> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span class="std std-ref">below</span></a>.</p>
+do this from the elastic constant matrix <span class="math">\(C_{ij}\)</span> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span class="std std-ref">below</span></a>.</p>
 </div>
 </div>
 <div class="section" id="classical-interatomic-potentials-for-silicon">
@@ -357,14 +368,14 @@ description of many properties of crystalline and amorphous silicon. Its
 functional form is a two- and three-body expansion suitable for the
 representation of highly directional covalent bonds between Si atoms:</p>
 <div class="math">
-<p><span class="math">V = \sum_{ij} V_2(r_{ij}) + \sum_{ijk} V_3(r_{ij}, r_{ik},
+\[\begin{split}V = \sum_{ij} V_2(r_{ij}) + \sum_{ijk} V_3(r_{ij}, r_{ik},
 \theta_{jik}) \\
 V_2(r_{ij}) = A\left(\frac{B}{r_{ij}^4} - 1\right) \exp
 \frac{1}{r-a}, \; r &lt; a \\
 V_3(r_{ij},r_{jk},\theta_{jik}) = \lambda \exp \left[
 \frac{\gamma}{r_{ij} - a} + \frac{\gamma}{r_{jk} - a} \right] \left(\cos
-\theta_{jik} + \frac{1}{3}\right)</span></p>
-</div><p>In particular, the three-body term stabilises the ideal tetrahedral
+\theta_{jik} + \frac{1}{3}\right)\end{split}\]</div>
+<p>In particular, the three-body term stabilises the ideal tetrahedral
 structure with respect to all the other possible structures. The
 parameters of the SW potential were determined by fitting experimental
 data with the constraint that the diamond-like structure must be the
@@ -479,11 +490,11 @@ fluctuations due to oscillation.</p>
 <p>A robust way to minimise fluctuations is to employ a &#8220;hysteretic&#8221; algorithm for
 the QM selection process <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id24">[Bernstein2009]</a>. In the context of a fracture
 simulation, atoms have to come within a certain <em>inner
-radius</em> <span class="math">r_\mathrm{-}</span> from the crack tip to become selected as QM active
+radius</em> <span class="math">\(r_\mathrm{-}\)</span> from the crack tip to become selected as QM active
 atoms (see the picture below). In our case, atoms have to come within 8 A from
 the crack tip to become part of the QM region. However, using the hysteretic
 algorithm, these atoms will remain QM until they move further than the
-<em>outer radius</em> <span class="math">r_\mathrm{+}</span> (where <span class="math">r_\mathrm{+} &gt; r_\mathrm{-}</span>)
+<em>outer radius</em> <span class="math">\(r_\mathrm{+}\)</span> (where <span class="math">\(r_\mathrm{+} &gt; r_\mathrm{-}\)</span>)
 away from the crack tip. In our simulation, this outer radius will be 10 A. We
 refer to the current set of QM atoms in as the <em>QM active region</em>.</p>
 <div class="figure align-center" id="id34">
@@ -517,24 +528,24 @@ SW potential here) and of a so called <em>adjustable potential</em>. This potent
 a general analytical expression and a set of parameters that can be adjusted. In
 this case, we will use a simple two-body linear &#8216;spring&#8217; potential with the form</p>
 <div class="math">
-<p><span class="math">V_\mathrm{adj} = \sum_{\mathrm{pairs}\; ij} \alpha_{ij} r_{ij}</span></p>
-</div><p>where <span class="math">i</span> and <span class="math">j</span> indicate a pair of atoms which are closer than an
+\[V_\mathrm{adj} = \sum_{\mathrm{pairs}\; ij} \alpha_{ij} r_{ij}\]</div>
+<p>where <span class="math">\(i\)</span> and <span class="math">\(j\)</span> indicate a pair of atoms which are closer than an
 arbitrary spring length (typically around 3 neighbour hops),
-and <span class="math">\{\alpha_{ij}\}</span> are the set of adjustable parameters. We then define
+and <span class="math">\(\{\alpha_{ij}\}\)</span> are the set of adjustable parameters. We then define
 a <em>fitting region</em>, typically slightly larger than the buffered QM region.</p>
 <p>Our adjustable potential is then used to fit the difference between the QM and
 the MM forces for each atom in this fitting region. (The functional form above is
 particularly suitable as it can be optimised using linear algebra). Of course,
 this difference will be zero for atoms in the fitting region that do not belong
 to the QM region. In this way, after a successful force matching, the gradient
-of our sum potential <span class="math">-\nabla (V_{SW}(\mathbf{r})+
-V_{adj}(\mathbf{r},\{\alpha\}))</span> gives us the MM forces on the MM atoms and the QM
+of our sum potential <span class="math">\(-\nabla (V_{SW}(\mathbf{r})+
+V_{adj}(\mathbf{r},\{\alpha\}))\)</span> gives us the MM forces on the MM atoms and the QM
 forces on the QM atoms. Of course a very small error on these forces
-(typically <span class="math">\sim 10^{-3}</span> eV/A) is caused by requiring our forces to be
+(typically <span class="math">\(\sim 10^{-3}\)</span> eV/A) is caused by requiring our forces to be
 the gradient of a single Hamiltonian. This is however of the same order as the
 error introduced by forcing the total sum of the forces to zero, and less than
 the error associated with computing QM forces using clusters with a finite
-buffer radius (which can be as much as <span class="math">\sim 0.1</span> eV/A compared to a
+buffer radius (which can be as much as <span class="math">\(\sim 0.1\)</span> eV/A compared to a
 reference QM calculation in the full system with PBC). The figure below
 illustrates the force fitting process.</p>
 <a class="reference internal image-reference" href="_images/lotf-overview.png"><img alt="_images/lotf-overview.png" class="align-center" src="_images/lotf-overview.png" style="width: 500px;" /></a>
@@ -542,9 +553,9 @@ illustrates the force fitting process.</p>
 our simulation because it allows us to employ a predictor-corrector
 algorithm that, as mentioned before, significantly speeds up our
 simulation. This scheme is based on the possibility of varying the
-values of the adjustable potential parameters <span class="math">\{\alpha_{ij}\}</span>
+values of the adjustable potential parameters <span class="math">\(\{\alpha_{ij}\}\)</span>
 in both time and in space (i.e. each two-body term of the potential
-has an independent parameter <span class="math">\alpha_{ij}</span>). Once these
+has an independent parameter <span class="math">\(\alpha_{ij}\)</span>). Once these
 parameters are adjusted to match the QM/MM forces in the fitting
 region, we do not necessarily need to perform this fitting procedure
 at the next time step. In many cases, in fact, the parameters would
@@ -559,20 +570,20 @@ philosophy behind the &#8216;Learn on the Fly&#8217; approach.</p>
 calculated and the parameters of the adjustable potential are adjusted to
 reproduce the difference between QM and MM forces in the fitting region.</p>
 <p>2. <strong>MD predictor: Extrapolation.</strong> The
-classical <span class="math">V_\mathrm{SW}+V_\mathrm{adj}</span> is used
-with the fixed set of adjusted parameters <span class="math">\alpha_0</span> to evolve the
-dynamics of the whole system starting from the positions <span class="math">R_0</span> for a small
-number <span class="math">N</span> of steps of size <span class="math">\Delta t</span> for a total time
-of <span class="math">\Delta T = N\Delta t</span>.</p>
+classical <span class="math">\(V_\mathrm{SW}+V_\mathrm{adj}\)</span> is used
+with the fixed set of adjusted parameters <span class="math">\(\alpha_0\)</span> to evolve the
+dynamics of the whole system starting from the positions <span class="math">\(R_0\)</span> for a small
+number <span class="math">\(N\)</span> of steps of size <span class="math">\(\Delta t\)</span> for a total time
+of <span class="math">\(\Delta T = N\Delta t\)</span>.</p>
 <p>3. <strong>QM/MM forces.</strong> The buffered QM region method is used to compute the QM/MM
-forces on the new configuration <span class="math">R_1'</span>.</p>
+forces on the new configuration <span class="math">\(R_1'\)</span>.</p>
 <p>4. <strong>Force matching.</strong> The parameters of the adjustable potential are tuned to
 reproduce the difference between the new QM forces and the new MM forces to give a
-new set of adjustable potential parameters <span class="math">\alpha_1</span>.</p>
+new set of adjustable potential parameters <span class="math">\(\alpha_1\)</span>.</p>
 <p>5. <strong>MD corrector: Interpolation.</strong> The formerly predicted MD steps are now
-corrected by returning the system to <span class="math">R_0</span>, and
+corrected by returning the system to <span class="math">\(R_0\)</span>, and
 re-running the dynamics with the adjustable potential
-parameters linear interpolated between <span class="math">\alpha_0</span> and <span class="math">\alpha_1</span>.</p>
+parameters linear interpolated between <span class="math">\(\alpha_0\)</span> and <span class="math">\(\alpha_1\)</span>.</p>
 </div></blockquote>
 <p>We then return to step 2. and iterate.</p>
 <a class="reference internal image-reference" href="_images/lotf-pred-corr.png"><img alt="_images/lotf-pred-corr.png" class="align-center" src="_images/lotf-pred-corr.png" style="width: 500px;" /></a>
@@ -626,7 +637,7 @@ this tutorial to do exactly that.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -635,6 +646,7 @@ this tutorial to do exactly that.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

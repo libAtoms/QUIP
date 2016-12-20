@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy f02bb86+ documentation</title>
+  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html"/>
         <link rel="prev" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html"/> 
@@ -67,7 +69,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -86,6 +88,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -120,6 +123,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -225,8 +236,8 @@ in the comments on the right of each line:</p>
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object by loading the atomic structure created
 in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a> from the <cite>input_file</cite> <code class="docutils literal"><span class="pre">crack.xyz</span></code>. Note that the global
 <cite>fortran_indexing</cite> setting should be set to <cite>False</cite>. Otherwise <cite>quippy</cite> uses
-atom indices in the range <span class="math">1 \ldots N</span>, which would not be consistent with
-the python indexing used in ASE (<span class="math">0\ldots N-1</span>).</p>
+atom indices in the range <span class="math">\(1 \ldots N\)</span>, which would not be consistent with
+the python indexing used in ASE (<span class="math">\(0\ldots N-1\)</span>).</p>
 <p>It is also necessary to read in the original width and height of the slab and
 the original crack position, which were saved in <code class="docutils literal"><span class="pre">crack.xyz</span></code> at the end
 of <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1</span></a>:</p>
@@ -274,7 +285,7 @@ the same way we did it in <cite>Step 1</cite> (i.e., using the
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span> <span class="o">...</span>  <span class="c1"># Attach the constraints to atoms</span>
 </pre></div>
 </div>
-<p>To increase <span class="math">\epsilon_{yy}</span> of all atoms at a constant rate (see
+<p>To increase <span class="math">\(\epsilon_{yy}\)</span> of all atoms at a constant rate (see
 the <cite>strain_rate</cite> and <cite>timestep</cite> <a class="reference internal" href="#parameters2"><span class="std std-ref">parameters</span></a>), we
 use the <a class="reference internal" href="crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal"><span class="pre">ConstantStrainRate</span></code></a> class:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">strain_atoms</span> <span class="o">=</span> <span class="n">ConstantStrainRate</span><span class="p">(</span><span class="n">orig_height</span><span class="p">,</span> <span class="n">strain_rate</span><span class="o">*</span><span class="n">timestep</span><span class="p">)</span>
@@ -339,7 +350,7 @@ inside the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.inf
 also gets saved to the trajectory file <cite>traj_file</cite>.</p>
 <p>The elapsed simulation time can be obtained with
 <code class="docutils literal"><span class="pre">dynamics.get_time()</span></code> (note that the time unit in ASE is
-<span class="math">\mathrm{\AA}\sqrt{\mathrm{amu}/\mathrm{eV}}</span>, not <cite>fs</cite>). You
+<span class="math">\(\mathrm{\AA}\sqrt{\mathrm{amu}/\mathrm{eV}}\)</span>, not <cite>fs</cite>). You
 should use the <code class="xref py py-meth docutils literal"><span class="pre">get_kinetic_energy()</span></code> method to
 calculate the temperature (<em>Note</em>: you will need the <code class="xref py py-attr docutils literal"><span class="pre">units.kB</span></code>
 constant, which gives the value of the Boltzmann constant in eV/K),
@@ -504,7 +515,7 @@ typing).</p>
 <div class="section" id="stress-field-analysis">
 <span id="stress-analysis"></span><h3>Stress field analysis<a class="headerlink" href="#stress-field-analysis" title="Permalink to this headline">¶</a></h3>
 <p>To compute and display the instantaneous principal per-atom stress
-<span class="math">\sigma_{yy}</span> as computed by the SW potential for a
+<span class="math">\(\sigma_{yy}\)</span> as computed by the SW potential for a
 configuration near the beginning of your dynamical simulation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;params.xml&#39;</span><span class="p">)</span>
 <span class="n">at</span> <span class="o">=</span> <span class="n">gcat</span><span class="p">()</span>
@@ -515,13 +526,13 @@ configuration near the beginning of your dynamical simulation:</p>
 </pre></div>
 </div>
 <p>The <cite>mm_sigma</cite> array has shape <cite>(len(atoms), 3, 3)</cite>, i.e. it is
-made up of a <span class="math">3 \times 3</span> stress tensor <span class="math">\sigma_{ij}</span> for
+made up of a <span class="math">\(3 \times 3\)</span> stress tensor <span class="math">\(\sigma_{ij}\)</span> for
 each atom. The <cite>sigma_yy</cite> array is the <code class="docutils literal"><span class="pre">[1,</span> <span class="pre">1]</span></code> component of each of
-these arrays, i.e. <span class="math">\sigma_{yy}</span>. To read off the value of the
+these arrays, i.e. <span class="math">\(\sigma_{yy}\)</span>. To read off the value of the
 stress on a particular atom, just <cite>right click</cite> on it. As before, this
 prints various information in the <cite>ipython</cite> console. The <cite>_show</cite>
 property corresponds to the values currently being used to colour the
-atoms. You will see that <span class="math">\sigma_{yy}</span> is very strongly peaked
+atoms. You will see that <span class="math">\(\sigma_{yy}\)</span> is very strongly peaked
 near the crack tip. If you prefer to see the values in GPa, you could
 do</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">sigma_yy</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">)</span>
@@ -532,16 +543,16 @@ do</p>
 are plotting here were obtained from partitioning the total virial
 stress tensor, which is given by</p>
 <div class="math">
-<p><span class="math">\tau_{ij} = \frac{1}{\Omega} \sum_{k \in \Omega} (-m^{(k)} (u_i^{(k)}-
+\[\begin{split}\tau_{ij} = \frac{1}{\Omega} \sum_{k \in \Omega} (-m^{(k)} (u_i^{(k)}-
 \bar{u}_i) (u_j^{(k)}- \bar{u}_j) %\\
  +  \frac{1}{2} \sum_{\ell \in \Omega} ( x_i^{(\ell)} - x_i^{(k)}) f_j^{(k\ell)}
-)</span></p>
-</div><p>where <span class="math">k</span> and <span class="math">l</span> are atom indices, <span class="math">ijk</span> are Cartesian
-indicies, <span class="math">\Omega</span> is the cell volume, <span class="math">m^{(k)}</span>,
-<span class="math">u^{(k)}</span>, <span class="math">x^{(k)}</span> and <span class="math">f^{(k)}</span> are respectively the
-mass, velocity, position of atom <span class="math">k</span> and <span class="math">f^{kl}_j</span> is
-the <span class="math">j</span>th component of the force between atoms <span class="math">k</span> and
-<span class="math">l</span>. The first term is a kinetic contribution which vanishes at
+)\end{split}\]</div>
+<p>where <span class="math">\(k\)</span> and <span class="math">\(l\)</span> are atom indices, <span class="math">\(ijk\)</span> are Cartesian
+indicies, <span class="math">\(\Omega\)</span> is the cell volume, <span class="math">\(m^{(k)}\)</span>,
+<span class="math">\(u^{(k)}\)</span>, <span class="math">\(x^{(k)}\)</span> and <span class="math">\(f^{(k)}\)</span> are respectively the
+mass, velocity, position of atom <span class="math">\(k\)</span> and <span class="math">\(f^{kl}_j\)</span> is
+the <span class="math">\(j\)</span>th component of the force between atoms <span class="math">\(k\)</span> and
+<span class="math">\(l\)</span>. The first term is a kinetic contribution which vanishes at
 near zero temperature, and it is common to use the second term to
 define a per-atom stress tensor.</p>
 <p>Note, however, that this requires a definition of the atomic volume. By default
@@ -565,9 +576,9 @@ volume as they would in the equilibrium bulk structure:</p>
 <p>gives a value of around 25 GPa. As this is only a simple rescaling,
 the unscaled virial stress values are perfectly adequate for locating
 the crack tip.</p>
-<p>Use values from the <cite>sigma_yy</cite> array to plot the <span class="math">\sigma_{yy}</span> virial
-stress along the line <span class="math">y=0</span> ahead of the crack tip, and verify the stress
-obeys the expected <span class="math">1/\sqrt{r}</span> divergence near the crack tip, and tends
+<p>Use values from the <cite>sigma_yy</cite> array to plot the <span class="math">\(\sigma_{yy}\)</span> virial
+stress along the line <span class="math">\(y=0\)</span> ahead of the crack tip, and verify the stress
+obeys the expected <span class="math">\(1/\sqrt{r}\)</span> divergence near the crack tip, and tends
 to a constant value ahead of the crack, due to the thin strip loading. <em>Hint:</em>
 use a mask to select the relevant atoms, as we did when fixing the edge atoms
 above. You can use the matplotlib <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function to
@@ -578,7 +589,7 @@ produce a plot.</p>
 <p>By now, you should have a few picoseconds of dynamics in your trajectory file.
 Reload with <code class="docutils literal"><span class="pre">view(&quot;traj.nc&quot;)</span></code> to see what is happening. You can jump to the
 end with <cite>Ctrl+Delete</cite>, or by typing <cite>last()</cite> into the <cite>ipython</cite> console. Here
-is what the instantaneous <span class="math">\sigma_{yy}</span> looks like after 5 ps of dynamics:</p>
+is what the instantaneous <span class="math">\(\sigma_{yy}\)</span> looks like after 5 ps of dynamics:</p>
 <a class="reference internal image-reference" href="_images/classical-crack-sigma-yy.png"><img alt="_images/classical-crack-sigma-yy.png" class="align-center" src="_images/classical-crack-sigma-yy.png" style="width: 600px;" /></a>
 <p>As you can see, the stress field is rather noisy because of
 contributions made by the random thermal motion of atoms. The
@@ -587,7 +598,7 @@ moving average of the stress field when finding the tip. This average
 is stored in the <code class="docutils literal"><span class="pre">avg_sigma</span></code> <code class="xref py py-attr docutils literal"><span class="pre">array</span> <span class="pre">entry</span></code> inside the Atoms object, which is saved
 with each frame in the trajectory. For techical reasons this is stored
 as a reshaped array of shape <code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">9)</span></code> rather than
-<code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array, so you can find the <span class="math">sigma_{yy}</span>
+<code class="docutils literal"><span class="pre">(len(atoms),</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array, so you can find the <span class="math">\(sigma_{yy}\)</span>
 components in the 5th column (counting from zero as usual in Python),
 i.e.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">gcat</span><span class="p">()</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;avg_sigma&#39;</span><span class="p">][:,</span> <span class="mi">4</span><span class="p">])</span>
@@ -653,10 +664,10 @@ concept of per-atom stresses will be discussed in more detail below)
 in the region near the crack tip to the Irwin solution for a singular
 crack tip under Mode I loading, which is of the form</p>
 <div class="math">
-<p><span class="math">\sigma_{ij}(r, \theta) = \frac{K_I}{2\pi r} f_{ij}(\theta)</span></p>
-</div><p>where <span class="math">K_I</span> is the Mode I stress intensity factor, and the
+\[\sigma_{ij}(r, \theta) = \frac{K_I}{2\pi r} f_{ij}(\theta)\]</div>
+<p>where <span class="math">\(K_I\)</span> is the Mode I stress intensity factor, and the
 angular dependence is given by the set of universal functions
-<span class="math">f_{ij}(\theta)</span>.</p>
+<span class="math">\(f_{ij}(\theta)\)</span>.</p>
 <p>You can verify this by comparing the position detected by
 <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a>,  stored in the
 <cite>crack_pos</cite> attribute, with the positions of atoms that visually look
@@ -698,12 +709,12 @@ position of the crack (red; stored as <cite>crack_pos_x</cite>). Note that a
 second vertical axis can be produced with the
 <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.twinx" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">twinx()</span></code></a> function.</p>
 <a class="reference internal image-reference" href="_images/energy-release-rate-crack-position.png"><img alt="_images/energy-release-rate-crack-position.png" class="align-center" src="_images/energy-release-rate-crack-position.png" style="width: 600px;" /></a>
-<p>In this case the crack actually arrests for a while at around <span class="math">t
-= 6</span> ps. This is another characteristic feature of non-brittle
+<p>In this case the crack actually arrests for a while at around <span class="math">\(t
+= 6\)</span> ps. This is another characteristic feature of non-brittle
 fracture, indicating that our simulation is failing to match well
 with experiment. According to Griffith&#8217;s criterion, fracture should
-initiate at <span class="math">2\gamma \sim 2.7</span> J/m<sup>2</sup>, whereas we
-don&#8217;t see any motion of the crack tip until <span class="math">G \sim 11</span> J/m<sup>2</sup>. How much of this difference do you think is due to
+initiate at <span class="math">\(2\gamma \sim 2.7\)</span> J/m<sup>2</sup>, whereas we
+don&#8217;t see any motion of the crack tip until <span class="math">\(G \sim 11\)</span> J/m<sup>2</sup>. How much of this difference do you think is due to
 the high strain rate and small system used here, and how much to the
 choice of interatomic potential? How would you check this?</p>
 </div>
@@ -723,8 +734,8 @@ thermostat introduce?</p>
 match the expected Maxwell-Boltzmann distribution of atomic
 velocities, given by</p>
 <div class="math">
-<p><span class="math">f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v</span></p>
-</div><p>Here&#8217;s a Python function which implements this formula:</p>
+\[f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v\]</div>
+<p>Here&#8217;s a Python function which implements this formula:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
    <span class="s2">&quot;Maxwell-Boltmann distribution of speeds at temperature T for particles of mass m&quot;</span>
    <span class="k">return</span> <span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="o">*</span><span class="n">T</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="o">*</span><span class="n">T</span><span class="p">))</span>
@@ -758,35 +769,35 @@ all the four-fold coordinated atoms in the tetrahedral structure (all
 other atoms are assigned zero strain) by comparing the atomic
 positions with the unstrained crystal. The neighbours of each atom are
 used to define a local set of cubic axes, and the deformations along
-each of these axes are combined into a matrix <span class="math">E</span> describing the
+each of these axes are combined into a matrix <span class="math">\(E\)</span> describing the
 local deformation:</p>
 <div class="math">
-<p><span class="math">E = \left(\begin{array}{ccc}
+\[\begin{split}E = \left(\begin{array}{ccc}
 | &amp; | &amp; | \\
 \mathbf{e}_{1} &amp; \mathbf{e}_{2} &amp; \mathbf{e}_{3} \\
 | &amp; | &amp; |
-\end{array}\right)</span></p>
-</div><p>where, for example <span class="math">\mathbf{e}_{1}</span> is the relative deformation
+\end{array}\right)\end{split}\]</div>
+<p>where, for example <span class="math">\(\mathbf{e}_{1}\)</span> is the relative deformation
 along the first cubic axis.  To compute the local strain of the atom,
 we need to separate this deformation into a contribution due to
 rotation and one due to strain.  This can be done by finding the polar
-decomposition of <span class="math">E</span>, by writing <span class="math">E</span> in the form <span class="math">E
-= SR</span> with <span class="math">R</span> a pure rotation and <span class="math">S</span> a symmetric matrix.</p>
-<p>Diagonalising the product <span class="math">EE^T</span> allows <span class="math">R</span> and <span class="math">S</span>
-to be calculated. The strain components <span class="math">\epsilon_{xx}</span>,
-<span class="math">\epsilon_{yy}</span>, <span class="math">\epsilon_{zz}</span>, <span class="math">\epsilon_{xy}</span>,
-<span class="math">\epsilon_{xz}</span> and <span class="math">\epsilon_{yz}</span> can then be calculated
-by rotating <span class="math">S</span> to align the local cubic axes with the Cartesian
+decomposition of <span class="math">\(E\)</span>, by writing <span class="math">\(E\)</span> in the form <span class="math">\(E
+= SR\)</span> with <span class="math">\(R\)</span> a pure rotation and <span class="math">\(S\)</span> a symmetric matrix.</p>
+<p>Diagonalising the product <span class="math">\(EE^T\)</span> allows <span class="math">\(R\)</span> and <span class="math">\(S\)</span>
+to be calculated. The strain components <span class="math">\(\epsilon_{xx}\)</span>,
+<span class="math">\(\epsilon_{yy}\)</span>, <span class="math">\(\epsilon_{zz}\)</span>, <span class="math">\(\epsilon_{xy}\)</span>,
+<span class="math">\(\epsilon_{xz}\)</span> and <span class="math">\(\epsilon_{yz}\)</span> can then be calculated
+by rotating <span class="math">\(S\)</span> to align the local cubic axes with the Cartesian
 axes:</p>
 <div class="math">
-<p><span class="math">R^T S R = I + \epsilon = \left(\begin{array}{ccc}
+\[\begin{split}  R^T S R = I + \epsilon = \left(\begin{array}{ccc}
 1 + \epsilon_{xx} &amp; \frac{1}{2}\epsilon_{xy} &amp; \frac{1}{2}\epsilon_{xz} \\
 \frac{1}{2}\epsilon_{xy} &amp; 1 + \epsilon_{yy} &amp; \frac{1}{2}\epsilon_{yz} \\
 \frac{1}{2}\epsilon_{xz} &amp; \frac{1}{2}\epsilon_{yz} &amp; 1 + \epsilon_{zz}
-\end{array}\right).</span></p>
-</div><p>Finally if we assume linear elasticity applies, the atomistic stress
-can be computed simply as <span class="math">\bm\sigma = C \bm\epsilon</span> where
-<span class="math">C</span> is the <span class="math">6\times6</span> matrix of elastic constants.</p>
+\end{array}\right).\end{split}\]</div>
+<p>Finally if we assume linear elasticity applies, the atomistic stress
+can be computed simply as <span class="math">\(\bm\sigma = C \bm\epsilon\)</span> where
+<span class="math">\(C\)</span> is the <span class="math">\(6\times6\)</span> matrix of elastic constants.</p>
 <p>The <a class="reference internal" href="elasticity.html#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><code class="xref py py-class docutils literal"><span class="pre">AtomResolvedStressField</span></code></a> class
 implements this approach. To use it to calculate the stress in your
 <cite>crack_slab</cite> Atoms object, you can use the following code:</p>
@@ -795,12 +806,12 @@ implements this approach. To use it to calculate the stress in your
 <span class="n">ar_stress</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Colour your atoms by the <span class="math">\sigma_{yy}</span> component of the
+<p>Colour your atoms by the <span class="math">\(\sigma_{yy}\)</span> component of the
 atom-resolved stress field, and compare with the local virial stress
-results. Add the atom resolved <span class="math">\sigma_{yy}</span> values along
-<span class="math">y = 0</span> to your plot. Do you notice any significant differences?
+results. Add the atom resolved <span class="math">\(\sigma_{yy}\)</span> values along
+<span class="math">\(y = 0\)</span> to your plot. Do you notice any significant differences?
 Repeat the minimisation of the crack slab with a lower value of
-<cite>relax_fmax</cite> (e.g. <span class="math">1 \times 10^{-3}</span> eV/A). Do the stress
+<cite>relax_fmax</cite> (e.g. <span class="math">\(1 \times 10^{-3}\)</span> eV/A). Do the stress
 components computed using the two methods change much?</p>
 <p>When you are ready, proceed to <a class="reference internal" href="adaptive-qmmm-step3.html#step3"><span class="std std-ref">Step 3: LOTF hybrid MD simulation of fracture in Si</span></a>.</p>
 </div>
@@ -848,7 +859,7 @@ components computed using the two methods change much?</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -857,6 +868,7 @@ components computed using the two methods change much?</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

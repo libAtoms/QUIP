@@ -8,10 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Linear algebra routines &mdash; quippy f02bb86+ documentation</title>
+  <title>Linear algebra routines &mdash; quippy 5e57e9f+ documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
   
 
   
@@ -33,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy f02bb86+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Quaternions and rotation" href="quaternions.html"/> 
 
@@ -66,7 +68,7 @@
             
             
               <div class="version">
-                f02bb86+
+                5e57e9f+
               </div>
             
           
@@ -85,6 +87,7 @@
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
+    
             
             
                 <ul class="current">
@@ -115,6 +118,14 @@
 
             
           
+    <p></p>
+    <ul>
+        <li><a href="genindex.html">Index</a></li>
+        <li><a href="py-modindex.html">Module Index</a></li>
+        <li><a href="search.html">Search Page</a></li>
+        <li><a href="_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
         </div>
       </div>
     </nav>
@@ -176,7 +187,7 @@ as well as array searching, sorting and averaging.</p>
 <td>compare contents of 2 cells in up to N=2 arrays (int or real), return true if</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.fit_cubic" title="quippy.linearalgebra.fit_cubic"><code class="xref py py-obj docutils literal"><span class="pre">fit_cubic</span></code></a>(x0,y0,y0p,x1,y1,y1p)</td>
-<td>Fit a cubic polynomial to a function given its values (<span class="math">y_0</span> and <span class="math">y_1</span>) and</td>
+<td>Fit a cubic polynomial to a function given its values (<span class="math">\(y_0\)</span> and <span class="math">\(y_1\)</span>) and</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.kmeans" title="quippy.linearalgebra.kmeans"><code class="xref py py-obj docutils literal"><span class="pre">kmeans</span></code></a>(data,k,means,assign,[err,initialisation])</td>
 <td>K-means clustering.</td>
@@ -216,10 +227,10 @@ as well as array searching, sorting and averaging.</p>
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.linear_interpolate" title="quippy.linearalgebra.linear_interpolate"><code class="xref py py-obj docutils literal"><span class="pre">linear_interpolate</span></code></a>(x0,y0,x1,y1,x)</td>
-<td>Linearly interpolate between the points <span class="math">(x_0,y_0)</span> and <span class="math">(x_1,y_1)</span>.</td>
+<td>Linearly interpolate between the points <span class="math">\((x_0,y_0)\)</span> and <span class="math">\((x_1,y_1)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.cubic_interpolate" title="quippy.linearalgebra.cubic_interpolate"><code class="xref py py-obj docutils literal"><span class="pre">cubic_interpolate</span></code></a>(x0,y0,x1,y1,x)</td>
-<td>Perform a cubic interpolation between the points <span class="math">(x_0,y_0)</span> and <span class="math">(x_1,y_1)</span>, using the cubic function with zero first derivative at <span class="math">x_0</span> and <span class="math">x_1</span>.</td>
+<td>Perform a cubic interpolation between the points <span class="math">\((x_0,y_0)\)</span> and <span class="math">\((x_1,y_1)\)</span>, using the cubic function with zero first derivative at <span class="math">\(x_0\)</span> and <span class="math">\(x_1\)</span>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.oscillate" title="quippy.linearalgebra.oscillate"><code class="xref py py-obj docutils literal"><span class="pre">oscillate</span></code></a>(m)</td>
 <td>:math:` (-1)^n ` function.</td>
@@ -395,10 +406,10 @@ as well as array searching, sorting and averaging.</p>
 <td>Factorial, integer result</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_inverse" title="quippy.linearalgebra.matrix3x3_inverse"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_inverse</span></code></a>(matrix)</td>
-<td>Calculate <span class="math">3\times3</span> matrix inverse of <code class="docutils literal"><span class="pre">lattice</span></code> and store result in <code class="docutils literal"><span class="pre">g</span></code>.</td>
+<td>Calculate <span class="math">\(3\times3\)</span> matrix inverse of <code class="docutils literal"><span class="pre">lattice</span></code> and store result in <code class="docutils literal"><span class="pre">g</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.matrix3x3_det" title="quippy.linearalgebra.matrix3x3_det"><code class="xref py py-obj docutils literal"><span class="pre">matrix3x3_det</span></code></a>(m)</td>
-<td>Calulates determinant of <span class="math">3\times3</span> matrix</td>
+<td>Calulates determinant of <span class="math">\(3\times3\)</span> matrix</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.fill_random_integer" title="quippy.linearalgebra.fill_random_integer"><code class="xref py py-obj docutils literal"><span class="pre">fill_random_integer</span></code></a>(n,n0,[b])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -423,7 +434,7 @@ as well as array searching, sorting and averaging.</p>
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.scalar_triple_product" title="quippy.linearalgebra.scalar_triple_product"><code class="xref py py-obj docutils literal"><span class="pre">scalar_triple_product</span></code></a>(x,y,z)</td>
-<td>Return the scalar triple product <span class="math">\mathbf{x} \cdot \mathbf{y} \times \mathbf{z}</span> of the 3-vectors <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code> and <code class="docutils literal"><span class="pre">z</span></code>.</td>
+<td>Return the scalar triple product <span class="math">\(\mathbf{x} \cdot \mathbf{y} \times \mathbf{z}\)</span> of the 3-vectors <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code> and <code class="docutils literal"><span class="pre">z</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.invsqrt_real_array1d" title="quippy.linearalgebra.invsqrt_real_array1d"><code class="xref py py-obj docutils literal"><span class="pre">invsqrt_real_array1d</span></code></a>(x)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -606,37 +617,37 @@ contents in first cell is less than 2nd, with 1st array taking precendence.</p>
 <dl class="function">
 <dt id="quippy.linearalgebra.fit_cubic">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">fit_cubic</code><span class="sig-paren">(</span><em>x0</em>, <em>y0</em>, <em>y0p</em>, <em>x1</em>, <em>y1</em>, <em>y1p</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.fit_cubic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit a cubic polynomial to a function given its values (<span class="math">y_0</span> and <span class="math">y_1</span>) and
-its derivative (<span class="math">y^\prime_0</span> and <span class="math">y^\prime_1</span>) at two points (<span class="math">x_0</span> and <span class="math">x_1</span>)</p>
+<dd><p>Fit a cubic polynomial to a function given its values (<span class="math">\(y_0\)</span> and <span class="math">\(y_1\)</span>) and
+its derivative (<span class="math">\(y^\prime_0\)</span> and <span class="math">\(y^\prime_1\)</span>) at two points (<span class="math">\(x_0\)</span> and <span class="math">\(x_1\)</span>)</p>
 <div class="math">
-<p><span class="math">y = ax^3 + bx^2 + cx + d</span></p>
-</div><table class="docutils field-list" frame="void" rules="none">
+\[y = ax^3 + bx^2 + cx + d\]</div>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x0</strong> :  input float</p>
 <blockquote>
-<div><p><span class="math">x_0</span>, <span class="math">y_0</span>, <span class="math">y^\prime_0</span></p>
+<div><p><span class="math">\(x_0\)</span>, <span class="math">\(y_0\)</span>, <span class="math">\(y^\prime_0\)</span></p>
 </div></blockquote>
 <p><strong>y0</strong> :  input float</p>
 <blockquote>
-<div><p><span class="math">x_0</span>, <span class="math">y_0</span>, <span class="math">y^\prime_0</span></p>
+<div><p><span class="math">\(x_0\)</span>, <span class="math">\(y_0\)</span>, <span class="math">\(y^\prime_0\)</span></p>
 </div></blockquote>
 <p><strong>y0p</strong> :  input float</p>
 <blockquote>
-<div><p><span class="math">x_0</span>, <span class="math">y_0</span>, <span class="math">y^\prime_0</span></p>
+<div><p><span class="math">\(x_0\)</span>, <span class="math">\(y_0\)</span>, <span class="math">\(y^\prime_0\)</span></p>
 </div></blockquote>
 <p><strong>x1</strong> :  input float</p>
 <blockquote>
-<div><p><span class="math">x_1</span>, <span class="math">y_1</span>, <span class="math">y^\prime_1</span></p>
+<div><p><span class="math">\(x_1\)</span>, <span class="math">\(y_1\)</span>, <span class="math">\(y^\prime_1\)</span></p>
 </div></blockquote>
 <p><strong>y1</strong> :  input float</p>
 <blockquote>
-<div><p><span class="math">x_1</span>, <span class="math">y_1</span>, <span class="math">y^\prime_1</span></p>
+<div><p><span class="math">\(x_1\)</span>, <span class="math">\(y_1\)</span>, <span class="math">\(y^\prime_1\)</span></p>
 </div></blockquote>
 <p><strong>y1p</strong> :  input float</p>
 <blockquote>
-<div><p><span class="math">x_1</span>, <span class="math">y_1</span>, <span class="math">y^\prime_1</span></p>
+<div><p><span class="math">\(x_1\)</span>, <span class="math">\(y_1\)</span>, <span class="math">\(y^\prime_1\)</span></p>
 </div></blockquote>
 </td>
 </tr>
@@ -799,8 +810,8 @@ pairs.</p>
 <dl class="function">
 <dt id="quippy.linearalgebra.linear_interpolate">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">linear_interpolate</code><span class="sig-paren">(</span><em>x0</em>, <em>y0</em>, <em>x1</em>, <em>y1</em>, <em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.linear_interpolate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Linearly interpolate between the points <span class="math">(x_0,y_0)</span> and <span class="math">(x_1,y_1)</span>.
-Returns the interpolated <span class="math">y</span> at position <span class="math">x</span>, where <span class="math">x_0 \le x \le x_1</span>.</p>
+<dd><p>Linearly interpolate between the points <span class="math">\((x_0,y_0)\)</span> and <span class="math">\((x_1,y_1)\)</span>.
+Returns the interpolated <span class="math">\(y\)</span> at position <span class="math">\(x\)</span>, where <span class="math">\(x_0 \le x \le x_1\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -824,9 +835,9 @@ Returns the interpolated <span class="math">y</span> at position <span class="ma
 <dl class="function">
 <dt id="quippy.linearalgebra.cubic_interpolate">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">cubic_interpolate</code><span class="sig-paren">(</span><em>x0</em>, <em>y0</em>, <em>x1</em>, <em>y1</em>, <em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.cubic_interpolate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform a cubic interpolation between the points <span class="math">(x_0,y_0)</span> and <span class="math">(x_1,y_1)</span>,
-using the cubic function with zero first derivative at <span class="math">x_0</span> and <span class="math">x_1</span>.
-Returns the interpolated <span class="math">y</span> at position <span class="math">x</span>, where <span class="math">x_0 \le x \le x_1</span>.</p>
+<dd><p>Perform a cubic interpolation between the points <span class="math">\((x_0,y_0)\)</span> and <span class="math">\((x_1,y_1)\)</span>,
+using the cubic function with zero first derivative at <span class="math">\(x_0\)</span> and <span class="math">\(x_1\)</span>.
+Returns the interpolated <span class="math">\(y\)</span> at position <span class="math">\(x\)</span>, where <span class="math">\(x_0 \le x \le x_1\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1056,7 +1067,7 @@ Returns the interpolated <span class="math">y</span> at position <span class="ma
 <dt id="quippy.linearalgebra.unit_vector">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">unit_vector</code><span class="sig-paren">(</span><em>theta</em>, <em>phi</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.unit_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a unit vector in the direction given by the angles <code class="docutils literal"><span class="pre">theta</span></code> and <code class="docutils literal"><span class="pre">phi</span></code>, i.e.
-convert the spherical polar coordinates point <span class="math">(1,\theta,\phi)</span> to cartesians.</p>
+convert the spherical polar coordinates point <span class="math">\((1,\theta,\phi)\)</span> to cartesians.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1206,8 +1217,8 @@ convert the spherical polar coordinates point <span class="math">(1,\theta,\phi)
 <dd><p>Return the (smallest) angle between two vectors, in radians.
 This is calculated as</p>
 <div class="math">
-<p><span class="math">\arccos\left(\frac{\mathbf{a}\cdot\mathbf{b}}{|\mathbf{a}| |\mathbf{b}|}\right)</span></p>
-</div><table class="docutils field-list" frame="void" rules="none">
+\[\arccos\left(\frac{\mathbf{a}\cdot\mathbf{b}}{|\mathbf{a}| |\mathbf{b}|}\right)\]</div>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1326,8 +1337,8 @@ This is calculated as</p>
 <dl class="function">
 <dt id="quippy.linearalgebra.matrix3x3_inverse">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix3x3_inverse</code><span class="sig-paren">(</span><em>matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.matrix3x3_inverse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate <span class="math">3\times3</span> matrix inverse of <code class="docutils literal"><span class="pre">lattice</span></code> and store result in <code class="docutils literal"><span class="pre">g</span></code>.
-Avoids overhead of calling textsc{lapack} for simple case of <span class="math">3\times3</span> matrix.</p>
+<dd><p>Calculate <span class="math">\(3\times3\)</span> matrix inverse of <code class="docutils literal"><span class="pre">lattice</span></code> and store result in <code class="docutils literal"><span class="pre">g</span></code>.
+Avoids overhead of calling textsc{lapack} for simple case of <span class="math">\(3\times3\)</span> matrix.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1345,7 +1356,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <span class="math">
 <dl class="function">
 <dt id="quippy.linearalgebra.matrix3x3_det">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix3x3_det</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.matrix3x3_det" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calulates determinant of <span class="math">3\times3</span> matrix</p>
+<dd><p>Calulates determinant of <span class="math">\(3\times3\)</span> matrix</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1414,7 +1425,7 @@ Avoids overhead of calling textsc{lapack} for simple case of <span class="math">
 <dl class="function">
 <dt id="quippy.linearalgebra.scalar_triple_product">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">scalar_triple_product</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.scalar_triple_product" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the scalar triple product <span class="math">\mathbf{x} \cdot \mathbf{y} \times \mathbf{z}</span>
+<dd><p>Return the scalar triple product <span class="math">\(\mathbf{x} \cdot \mathbf{y} \times \mathbf{z}\)</span>
 of the 3-vectors <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code> and <code class="docutils literal"><span class="pre">z</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3043,10 +3054,10 @@ complex hermitian postive definite matrices.</p>
 <div><dl class="function">
 <dt>
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em><span class="sig-paren">)</span></dt>
-<dd><p>For two arrays of dimension <span class="math">N \times M</span>, this is calculated as</p>
+<dd><p>For two arrays of dimension <span class="math">\(N \times M\)</span>, this is calculated as</p>
 <div class="math">
-<p><span class="math">\sum_{j=1}^{M} \sum_{i=1}^{N} \left(\mathbf{a_1}_{ij} - \mathbf{a_2}_{ij}\right)^2</span></p>
-</div><table class="docutils field-list" frame="void" rules="none">
+\[\sum_{j=1}^{M} \sum_{i=1}^{N} \left(\mathbf{a_1}_{ij} - \mathbf{a_2}_{ij}\right)^2\]</div>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -3067,10 +3078,10 @@ complex hermitian postive definite matrices.</p>
 <dl class="function">
 <dt>
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">rms_diff</code><span class="sig-paren">(</span><em>vector1</em>, <em>vector2</em><span class="sig-paren">)</span></dt>
-<dd><p>For two vectors of <span class="math">N</span> dimensions, this is calculated as</p>
+<dd><p>For two vectors of <span class="math">\(N\)</span> dimensions, this is calculated as</p>
 <div class="math">
-<p><span class="math">\sum_{i=1}^{N} \left(\mathbf{v_1}_i - \mathbf{v_2}_i\right)^2</span></p>
-</div><table class="docutils field-list" frame="void" rules="none">
+\[\sum_{i=1}^{N} \left(\mathbf{v_1}_i - \mathbf{v_2}_i\right)^2\]</div>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -3623,7 +3634,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'f02bb86+',
+            VERSION:'5e57e9f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -3632,6 +3643,7 @@ constructed from the &#8216;arrayname&#8217; and &#8216;caller&#8217; arguments.
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
