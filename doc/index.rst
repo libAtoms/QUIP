@@ -24,7 +24,7 @@ QUIP and quippy documentation
 
 .. module:: quippy
 
-The `QUIP` package (`GitHub <https://github.com/libAtoms/QUIP>`_) is a
+The ``QUIP`` package (`GitHub <https://github.com/libAtoms/QUIP>`_) is a
 collection of software tools to carry out molecular dynamics
 simulations. It implements a variety of interatomic potentials and
 tight binding quantum mechanics, and is also able to call external
@@ -35,8 +35,8 @@ hybrid combinations are also supported in the style of QM/MM, with a
 particular focus on materials systems such as metals and
 semiconductors.
 
-`quippy` is a Python interface to `QUIP` that provides deep access to most
-of the Fortran types and routines. The quippy interface is principally
+``quippy`` is a Python interface to ``QUIP`` that provides deep access to
+most of the Fortran types and routines. The quippy interface is principally
 maintained by `James Kermode <http://www.warwick.ac.uk/jrkermode>`_.
 
 Long term support of the package is ensured by:
@@ -52,7 +52,7 @@ Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
 Winfield.
 
-Copyright 2006-2015.
+Copyright 2006-2016.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
@@ -118,4 +118,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-* `Module source code <_modules/index.html>`_
+* `Module Source Code <_modules/index.html>`_
