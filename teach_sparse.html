@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command line options of the teach_sparse main program &mdash; quippy 5e57e9f+ documentation</title>
+  <title>Command line options of the teach_sparse main program &mdash; quippy dba24b0+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 5e57e9f+ documentation" href="index.html"/> 
+    <link rel="top" title="quippy dba24b0+ documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                5e57e9f+
+                dba24b0+
               </div>
             
           
@@ -193,7 +193,7 @@ type of input data in the at_file</td>
 <td>None</td>
 <td>What sigma values to choose for each
 type of data. Format:
-{type:energy:force:virial}</td>
+{type:energy:force:virial:hessian}</td>
 </tr>
 <tr class="row-odd"><td>core_ip_args</td>
 <td>str</td>
@@ -212,7 +212,8 @@ after prediction)</td>
 <tr class="row-odd"><td>default_sigma</td>
 <td>float</td>
 <td>//MANDATORY//</td>
-<td>Error in [energies forces virials]</td>
+<td>Error in [energies forces virials
+hessians]</td>
 </tr>
 <tr class="row-even"><td>do_copy_at_file</td>
 <td>bool</td>
@@ -258,13 +259,13 @@ manually.</td>
 <td>str</td>
 <td>energy</td>
 <td>Name of energy property in the at_file
-that describe the data</td>
+that describes the data</td>
 </tr>
 <tr class="row-even"><td>force_parameter_name</td>
 <td>str</td>
 <td>force</td>
 <td>Name of force property in the at_file
-that describe the data</td>
+that describes the data</td>
 </tr>
 <tr class="row-odd"><td>gap</td>
 <td>str</td>
@@ -275,6 +276,19 @@ that describe the data</td>
 <td>str</td>
 <td>gp_new.xml</td>
 <td>Output XML file</td>
+</tr>
+<tr class="row-odd"><td>hessian_delta</td>
+<td>float</td>
+<td>1.0e-2</td>
+<td>Delta to use in numerical
+differentiation when obtaining second
+derivative for the Hessian covariance</td>
+</tr>
+<tr class="row-even"><td>hessian_parameter_name</td>
+<td>str</td>
+<td>hessian</td>
+<td>Name of hessian property in the at_file
+that describes the data</td>
 </tr>
 <tr class="row-odd"><td>rnd_seed</td>
 <td>int</td>
@@ -288,7 +302,7 @@ that describe the data</td>
 given configuration in the database.
 Overrides the command line sigmas. In
 the XYZ, it must be prepended by
-<a href="#id1"><span class="problematic" id="id2">energy_</span></a>, <a href="#id3"><span class="problematic" id="id4">force_</span></a>, or <a href="#id5"><span class="problematic" id="id6">virial_</span></a></td>
+<a href="#id1"><span class="problematic" id="id2">energy_</span></a>, <a href="#id3"><span class="problematic" id="id4">force_</span></a>, <a href="#id5"><span class="problematic" id="id6">virial_</span></a> or <a href="#id7"><span class="problematic" id="id8">hessian_</span></a></td>
 </tr>
 <tr class="row-odd"><td>sigma_per_atom</td>
 <td>bool</td>
@@ -341,7 +355,7 @@ VERBOSE, NERD, ANAL.</td>
 <td>str</td>
 <td>virial</td>
 <td>Name of virial property in the at_file
-that describe the data</td>
+that describes the data</td>
 </tr>
 </tbody>
 </table>
@@ -534,7 +548,7 @@ covariance kernel</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'5e57e9f+',
+            VERSION:'dba24b0+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
