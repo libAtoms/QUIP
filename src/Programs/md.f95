@@ -41,7 +41,7 @@ private
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
-    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
+    real(dp) :: T_initial, T_cur, T_hold, T_slope, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
     real(dp) :: cutoff_buffer
@@ -110,8 +110,8 @@ subroutine get_params(params, mpi_glob)
   ! call param_register(md_params_dict, 'const_P', 'F', params%const_P, help_string="is true, do constant P")
   ! call param_register(md_params_dict, 'variable_T', 'F', params%variable_T, help_string="set automatically when T_final >= 0")
   call param_register(md_params_dict, 'T', '-1.0', params%T_initial, help_string="Initial simulation temperature (Kelvin), enables const_T if >= 0.0")
-  call param_register(md_params_dict, 'T_final', '-1.0', params%T_final, help_string="Final simulation temperature (enables variable_T if >= 0.0)")
-  call param_register(md_params_dict, 'T_increment', '10.0', params%T_increment, help_string="Temperature increments for variable_T")
+  call param_register(md_params_dict, 'T_hold', '-1.0', params%T_hold, help_string="Simulation temperature at end of ramp stage (enables variable_T if >= 0.0)")
+  call param_register(md_params_dict, 'T_slope', '0.01', params%T_slope, help_string="Temperature slope for ramp stage of variable_T")
   call param_register(md_params_dict, 'T_increment_time', '10.0', params%T_increment_time, help_string="time to wait between increments of T")
   call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext, help_string="External pressure (GPa), enables const_P if set explicitly", has_value_target=p_ext_is_present)
   call param_register(md_params_dict, 'hydrostatic_strain', 'T', params%hydrostatic_strain, help_string="If true, and using all purpose thermostat/barostat, force hydrostatic strain only")
@@ -190,7 +190,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   params%variable_T = .false.
   if (p_ext_is_present) params%const_P = .true.
   if (params%T_initial >= 0.0_dp) params%const_T = .true.
-  if (params%T_final >= 0.0_dp) params%variable_T = .true.
+  if (params%T_hold >= 0.0_dp) params%variable_T = .true.
 
   system_use_fortran_random = params%use_fortran_random
 
@@ -221,6 +221,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   endif
 
   params%T_cur = params%T_initial
+  params%T_increment = params%T_slope * params%T_increment_time
 
 end subroutine get_params
 
@@ -247,8 +248,9 @@ subroutine print_params(params)
   call print("md_params%const_T=" // params%const_T)
   if (params%const_T) then
      call print("md_params%T_initial=" // params%T_initial)
-     call print("md_params%T_final=" //  params%T_initial)
-     if (params%T_final >= 0.0_dp) then
+     call print("md_params%T_hold=" //  params%T_hold)
+     if (params%T_hold >= 0.0_dp) then
+	call print("md_params%T_slope=" // params%T_slope)
 	call print("md_params%T_increment=" // params%T_increment)
 	call print("md_params%T_increment_time=" // params%T_increment_time)
      endif
@@ -468,8 +470,8 @@ subroutine initialise_md_thermostat(ds, params)
   type(md_params), intent(inout) :: params
   type(DynamicalSystem), intent(inout) :: ds
 
-  params%T_increment = sign(params%T_increment, params%T_final-params%T_initial)
-  params%variable_T = params%T_final >= 0.0_dp
+  params%T_increment = sign(params%T_increment, params%T_hold-params%T_initial)
+  params%variable_T = params%T_hold >= 0.0_dp
 
   if(params%rescale_initial_velocity) then
     call print('Rescaling initial velocities to T='//params%rescale_initial_velocity_T)
@@ -587,11 +589,12 @@ function cur_temp(params, ds_t) result(T_cur)
 
   integer :: i_increment
 
-  if (params%T_final > 0.0_dp) then
+  if (params%T_hold >= 0.0_dp) then
     i_increment = ds_t/params%T_increment_time
     T_cur = params%T_initial + i_increment*params%T_increment
-    if ((params%T_increment > 0.0 .and. T_cur > params%T_final) .or. &
-        (params%T_increment < 0.0 .and. T_cur < params%T_final)) T_cur = params%T_final
+    ! check for hold stage
+    if ((params%T_increment > 0.0 .and. T_cur > params%T_hold) .or. &
+        (params%T_increment < 0.0 .and. T_cur < params%T_hold)) T_cur = params%T_hold
   else
     T_cur = params%T_initial
   endif
