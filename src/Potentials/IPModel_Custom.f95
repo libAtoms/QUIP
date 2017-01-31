@@ -44,7 +44,7 @@
 module IPModel_Custom_module
 
 use error_module
-use system_module, only : dp, inoutput, print, PRINT_NERD, operator(//)
+use system_module, only : dp, inoutput, print, PRINT_VERBOSE, PRINT_NERD, operator(//)
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -136,18 +136,18 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
    ! Confining potential for methanes - first find general monomers, then place
    ! harmonic restraints on bonds and angles.
 
-   ! NB be sure to use the neighbour list passed from lammps
-
    integer, dimension(:,:), allocatable :: monomer_index
    logical, dimension(:), allocatable :: is_associated
    real(dp) :: energy, force(3,at%N)
 
    type(Dictionary) :: params
-   character(STRING_LENGTH) :: atom_mask_name
-   logical :: has_atom_mask_name
+   character(STRING_LENGTH) :: atom_mask_name, pers_idces_name
+   logical :: has_atom_mask_name, has_pers_idces_name
    logical, dimension(:), pointer :: atom_mask_pointer
+   integer, dimension(:), pointer :: pers_idces_pointer
+   logical :: called_from_lammps
 
-   integer :: mon_i, atom_i, rank_j, atom_j, rank_k, atom_k
+   integer :: mon_i, i_atomic, atom_i, rank_j, atom_j, rank_k, atom_k
    real(dp) :: e_pair, d_epair_dr, rij(3), rik(3), rij_mag, rik_mag, rij_norm(3), rik_norm(3)
    real(dp) :: e_trip, d_etrip_dcos, cos_ijk, fij(3), fik(3)
    real(dp) :: virial_i(3,3), virial_j(3,3), virial_k(3,3)
@@ -162,18 +162,33 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
       help_string="Name of a logical property in the atoms object. For monomers where this property is true the Potential is " // &
       "calculated.")
 
+      call param_register(params, 'lammps', 'F', called_from_lammps, help_string="Should be true if this potential is called from LAMMPS")
+
+      call param_register(params, 'pers_idces_name', 'NONE', pers_idces_name, has_value_target=has_pers_idces_name, &
+                          help_string="Name of an integer property in the atoms object containing the original LAMMPS atom ids (only needed if &
+                                       called from lammps)")
+
       if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='general_dimer_calc args_str')) then
-         RAISE_ERROR("general_dimer_calc failed to parse args_str='"//trim(args_str)//"'", error)
+         RAISE_ERROR("IPModel_Custom_Calc failed to parse args_str='"//trim(args_str)//"'", error)
       endif
 
       call finalise(params)
 
       if( has_atom_mask_name ) then
          if (.not. assign_pointer(at, trim(atom_mask_name), atom_mask_pointer)) then
-            RAISE_ERROR("general_dimer_calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+            RAISE_ERROR("IPModel_Custom_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
          endif
       else
          atom_mask_pointer => null()
+      endif
+
+      if( called_from_lammps ) then
+         if (.not. has_pers_idces_name) then
+            RAISE_ERROR("IPModel_Custom_Calc needs persistent indices if working with lammps.", error)
+         endif
+         if (.not. assign_pointer(at, trim(pers_idces_name), pers_idces_pointer)) then
+            RAISE_ERROR("IPModel_Custom_Calc did not find "//trim(pers_idces_name)//" property in the atoms object.", error)
+         endif
       endif
    endif
 
@@ -194,8 +209,12 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    allocate(is_associated(at%N))
    is_associated = .false.
-   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, general_ordercheck=.true., error=error)
+   if (called_from_lammps) then
+      call shuffle(at, pers_idces_pointer, error)
+   endif
+   call find_general_monomer(at, monomer_index, (/6, 1, 1, 1, 1/), is_associated, this%cutoff, general_ordercheck=.false., error=error)
 
+   call print("Found " // size(monomer_index,  2) // " monomers", PRINT_VERBOSE)
    if(.not. all(is_associated)) then
       call print("WARNING: IP Custom: not all atoms assigned to a methane monomer. If you have partial monomers this is OK.", PRINT_NERD)
    end if
