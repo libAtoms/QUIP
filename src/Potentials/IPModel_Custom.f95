@@ -252,8 +252,10 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
                local_e(atom_k) = local_e(atom_k) + 0.5_dp * e_trip
             end if
             if (present(f) .or. present(virial) .or. present(local_virial)) then
-               fij = -1.0_dp * d_etrip_dcos * (rik_norm - rij_norm*cos_ijk) / rij_mag
-               fik = -1.0_dp * d_etrip_dcos * (rij_norm - rik_norm*cos_ijk) / rik_mag
+               ! Apparently these need to have the opposite sign from what I
+               ! originally thought - isn't it f_i = -grad_i(e) though?
+               fij = 1.0_dp * d_etrip_dcos * (rik_norm - rij_norm*cos_ijk) / rij_mag
+               fik = 1.0_dp * d_etrip_dcos * (rij_norm - rik_norm*cos_ijk) / rik_mag
             end if
             if (present(f)) then
                f(:, atom_i) = f(:, atom_i) + fij + fik
@@ -261,6 +263,7 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
                f(:, atom_k) = f(:, atom_k) - fik
             end if
             if (present(virial) .or. present(local_virial)) then
+               ! TODO check these signs
                virial_j = -1.0_dp * d_etrip_dcos * ((rik_norm .outer. rij_norm) - (rij_norm .outer. rij_norm)*cos_ijk)
                virial_k = -1.0_dp * d_etrip_dcos * ((rij_norm .outer. rik_norm) - (rik_norm .outer. rik_norm)*cos_ijk)
             end if
