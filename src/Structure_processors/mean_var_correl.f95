@@ -315,7 +315,8 @@ use mean_var_correl_util_mod
 implicit none
   integer :: n_bins, n_data, n_weights, i, j, bin_i, skip, max_frame
   logical :: do_weights
-  real(dp), allocatable :: data(:,:), weights(:), data_line(:)
+  real(dp), allocatable :: data(:,:), weights(:), data_line(:), data_t(:,:), weights_t(:)
+  integer :: stat, new_data_array_size
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
   logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_correlation_var_effective_N, do_summed_ac_effective_N, do_sliding_window_effective_N, do_binning_effective_N, do_exp_smoothing
@@ -416,9 +417,6 @@ implicit none
   do i=1, n_bins
     bin_labels(i) = read_line(infile)
   end do
-  if(max_frame > 0 .and. max_frame <= n_data) then
-     n_data = max_frame
-  end if
   allocate(data_line(n_bins+n_weights))
   if(skip > 0) then
      do i=1,skip
@@ -426,21 +424,92 @@ implicit none
      end do
      n_data = n_data-skip
   end if
-  allocate(data(n_bins, n_data))
-  if (n_weights > 0) then
-    allocate(weights(n_data))
+  if (n_data > 0) then
+      if(max_frame > 0 .and. max_frame <= n_data) then
+         n_data = max_frame
+      end if
+      allocate(data(n_bins, n_data))
+      if (n_weights > 0) then
+        allocate(weights(n_data))
+      endif
+      do i=1, n_data
+        call read_ascii(infile, data_line(:))
+        if (n_weights > 0) then
+            weights(i) = data_line(1)
+            data(:,i) = data_line(2:)
+        else
+            data(:,i) = data_line(:)
+        endif
+      end do
+      deallocate(data_line)
+  else ! n_data <= 0, figure out by reading
+      print *, "doing n_data = 0"
+      ! initial counters and storage
+      n_data = 0
+      allocate(data(n_bins,1))
+      if (n_weights > 0) allocate(weights(1))
+      ! read a line
+      do while (.true.)
+          call read_ascii(infile, data_line(:), stat)
+          if (stat < 0 .or. (max_frame > 0 .and. n_data == max_frame)) then ! end
+              ! if we have extra space, reallocate to precise space
+              if (size(data,2) /= n_data) then
+                  ! allocate temporary space
+                  allocate(data_t(n_bins, n_data))
+                  ! copy into temporary
+                  data_t = data(:,1:n_data)
+                  ! reallocate intended space to exact size
+                  deallocate(data)
+                  allocate(data(n_bins, n_data))
+                  data = data_t
+                  ! clear up temporary
+                  deallocate(data_t)
+                  ! do the same for weights
+                  if (n_weights > 0) then
+                      allocate(weights_t(n_data))
+                      weights_t = weights(1:n_data)
+                      deallocate(weights)
+                      allocate(weights(n_data))
+                      weights = weights_t
+                      deallocate(weights_t)
+                  endif
+              endif
+              exit ! from while loop
+          elseif (stat == 0) then ! add this line
+              ! if we don't have space for additional entry, reallocate it
+              if (n_data >= size(data,2)) then
+                ! allocate temporary space
+                allocate(data_t(n_bins,n_data))
+                data_t = data
+                deallocate(data)
+                new_data_array_size = max(int(1.5*n_data),2)
+                allocate(data(n_bins, new_data_array_size))
+                data(1:n_bins,1:n_data) = data_t(:,:)
+                deallocate(data_t)
+                if (n_weights > 0) then
+                    allocate(weights_t(n_data))
+                    weights_t = weights
+                    deallocate(weights)
+                    allocate(weights(new_data_array_size))
+                    weights(1:n_data) = weights_t(:)
+                    deallocate(weights_t)
+                endif
+              endif
+              ! add additional entry
+              n_data = n_data + 1
+              if (n_weights > 0) then
+                  weights(n_data) = data_line(1)
+                  data(:,n_data) = data_line(2:)
+              else
+                  data(:,n_data) = data_line(:)
+              endif
+          else ! real error
+              call system_abort("Read error in data " // stat)
+          endif
+      end do ! while
   endif
-  do i=1, n_data
-    call read_ascii(infile, data_line(:))
-    if (n_weights > 0) then
-        weights(i) = data_line(1)
-        data(:,i) = data_line(2:)
-    else
-        data(:,i) = data_line(:)
-    endif
-  end do
   deallocate(data_line)
-
+  print *, "final n_data", n_data
 
   sz = size(data, other_index)
   r_sz = size(data, reduction_index)
