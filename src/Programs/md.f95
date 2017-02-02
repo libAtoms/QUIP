@@ -864,6 +864,8 @@ contains
     logical, intent(in) :: store_constraint_force
 
     real(dp), pointer :: force_p(:,:)
+    integer :: i, j
+    integer, pointer :: move_mask_p(:), move_mask_3_p(:,:)
     real(dp) :: E, virial(3,3)
     character(STRING_LENGTH) :: extra_calc_args
 
@@ -901,6 +903,18 @@ contains
     if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
     if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
     if (.not. assign_pointer(ds%atoms, "force", force_p)) call system_abort("md failed to get force")
+    if (assign_pointer(ds%atoms, "move_mask", move_mask_p) then
+        do i=1, ds%atoms%N
+            if (move_mask(i) == 0) force_p(:,i) = 0.0_dp
+        end do
+    endif
+    if (assign_pointer(ds%atoms, "move_mask_3", move_mask_3_p) then
+        do i=1, ds%atoms%N
+            do j=1, 3
+                if (move_mask_3(j,i) == 0) force_p(j,i) = 0.0_dp
+            end do
+        end do
+    endif
 
     if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
 
