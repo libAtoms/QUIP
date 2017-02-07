@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.table &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.table &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -177,11 +177,11 @@
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">get_fortran_indexing</span><span class="p">,</span> <span class="n">set_fortran_indexing</span>
 <span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">FortranArray</span>
 
-<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="vm">__doc__</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">__all__</span>
 
 <div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../table.html#quippy.table.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">(</span><span class="n">_table</span><span class="o">.</span><span class="n">Table</span><span class="p">):</span>
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_table</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="vm">__doc__</span>
     <span class="n">_cmp_skip_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span> <span class="s1">&#39;increment&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -212,7 +212,7 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Table.from_atom_indices"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_indices">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_indices</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Table.from_atom_indices"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_indices">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_indices</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct a new Table containing atomic indices from a list or mask</span>
 
@@ -241,7 +241,7 @@
                 <span class="c1"># use indexing style given by force_fortran_indexing</span>
                 <span class="nb">list</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
-            <span class="bp">self</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blank_rows</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">int</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -259,24 +259,24 @@
 
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Table.from_atom_list"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_list">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_list</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Table.from_atom_list"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_list">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct a new Table from a list of atom indices</span>
 
 <span class="sd">        See Table.from_atom_indices for more details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_atom_indices</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_atom_indices</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
                                      <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="n">force_fortran_indexing</span><span class="p">)</span></div>
 
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Table.from_atom_mask"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_mask">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_mask</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Table.from_atom_mask"><a class="viewcode-back" href="../../table.html#quippy.table.Table.from_atom_mask">[docs]</a>    <span class="k">def</span> <span class="nf">from_atom_mask</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct a new Table from an atom mask</span>
 
 <span class="sd">        See Table.from_atom_indices for more details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_atom_indices</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_atom_indices</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
                                      <span class="n">force_fortran_indexing</span><span class="o">=</span><span class="n">force_fortran_indexing</span><span class="p">)</span></div>
 
 
@@ -363,7 +363,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

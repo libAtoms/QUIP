@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy 21b8e64+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
         <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/>
         <link rel="prev" title="Tutorials" href="tutorials.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -357,8 +357,8 @@ and <code class="docutils literal"><span class="pre">z</span></code> <code class
 <span class="go"> [ 1.36  4.08  4.08]]</span>
 </pre></div>
 </div>
-<p>Note that we print the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.11)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
-position array using the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.11)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
+<p>Note that we print the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.12)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
+position array using the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.12)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
 actual <code class="docutils literal"><span class="pre">dia.pos</span></code> array has 3 rows and <code class="docutils literal"><span class="pre">len(dia)</span> <span class="pre">==</span> <span class="pre">8</span></code> columns,
 which isn&#8217;t very convenient for printing. Atomic properties are stored
 in arrays (actually, in a special type of array called a
@@ -584,10 +584,10 @@ arithmetic:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.11)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
+<p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.12)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib&#8217;s
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
 one-based indexing, using <a class="reference internal" href="farray.html#quippy.farray.farray" title="quippy.farray.farray"><code class="xref py py-func docutils literal"><span class="pre">farray()</span></code></a> instead, which
 returns a <a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code></a>.</p>
 <p>Note the partial sums: the inner sum is over axis 1 of <code class="docutils literal"><span class="pre">al.velo</span></code>
@@ -630,9 +630,9 @@ temperature of 500K like this:</p>
 </pre></div>
 </div>
 <p>(If you want to clear the previous plot first, use the
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.clf" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">clf()</span></code></a> matplotlib function). To add a
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.clf" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">clf()</span></code></a> matplotlib function). To add a
 histogram of the speeds in the last frame of our <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a> to
-the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">hist()</span></code></a> function:</p>
+the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">hist()</span></code></a> function:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">al</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">(),</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -648,7 +648,7 @@ is a numpy function which stacks a sequence of arrays horizontally to
 form a composite array. The <cite>alpha</cite> parameter to <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> causes
 the bars to be partially transparent. After setting the axis labels
 and legends, we get the figure shown below.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xlabel</span><span class="p">(</span><span class="s1">r&#39;Velocity / $\AA$ fs$^{-1}$&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Velocity / $\AA$ fs$^{-1}$&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;Maxwell-Boltzmann Distribution&#39;</span><span class="p">,</span> <span class="s1">&#39;Simulation Results&#39;</span><span class="p">])</span>
 </pre></div>
@@ -840,7 +840,7 @@ cubic Si cell using conjugate-gradients (<code class="docutils literal"><span cl
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span> <span class="o">+</span> <span class="mf">2.0</span><span class="p">)</span>   <span class="c1">#crust of 2.0 Angstrom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">at0</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pot</span><span class="o">.</span><span class="n">minim</span><span class="p">(</span><span class="n">at0</span><span class="p">,</span> <span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">do_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_lat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">Welcome to minim()</span>
 <span class="go">space is 33 dimensional</span>
 <span class="go">Method: Conjugate Gradients</span>
@@ -875,7 +875,7 @@ following:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">minimiser</span> <span class="o">=</span> <span class="n">Minim</span><span class="p">(</span><span class="n">at0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">minimiser</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">minimiser</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">at0</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
 <span class="go">[ 5.43094978  5.43094978  5.43094978]</span>
 </pre></div>
@@ -914,7 +914,7 @@ we exploit the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms
 appropriately. Finally, we set the calculator and calculate the
 energy using <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_potential_energy" title="quippy.atoms.Atoms.get_potential_energy"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.get_potential_energy()</span></code></a> and cell volume using
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_volume" title="quippy.atoms.Atoms.get_volume"><code class="xref py py-meth docutils literal"><span class="pre">Atoms.get_volume()</span></code></a>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compress_expand</span><span class="p">(</span><span class="n">at0</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compress_expand</span><span class="p">(</span><span class="n">at0</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">volumes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
@@ -1026,7 +1026,7 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

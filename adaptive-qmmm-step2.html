@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 21b8e64+ documentation</title>
+  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html"/>
         <link rel="prev" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -219,7 +219,7 @@ in the comments on the right of each line:</p>
                                  <span class="c1"># for neighbour calculations</span>
 <span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack</span>
                                  <span class="c1"># is taken to be running</span>
-<span class="n">strain_rate</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
+<span class="n">strain_rate</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
 <span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.nc&#39;</span>            <span class="c1"># Trajectory output file (NetCDF format)</span>
 <span class="n">print_interval</span> <span class="o">=</span> <span class="mi">10</span>              <span class="c1"># Number of time steps between</span>
                                  <span class="c1"># writing output frames</span>
@@ -581,7 +581,7 @@ stress along the line <span class="math">\(y=0\)</span> ahead of the crack tip, 
 obeys the expected <span class="math">\(1/\sqrt{r}\)</span> divergence near the crack tip, and tends
 to a constant value ahead of the crack, due to the thin strip loading. <em>Hint:</em>
 use a mask to select the relevant atoms, as we did when fixing the edge atoms
-above. You can use the matplotlib <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function to
+above. You can use the matplotlib <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function to
 produce a plot.</p>
 </div>
 <div class="section" id="time-averaged-stress-field">
@@ -707,7 +707,7 @@ that we increment at a constant rate).</p>
 <p>The following plot shows the evolution of <cite>G</cite> (blue) and of the
 position of the crack (red; stored as <cite>crack_pos_x</cite>). Note that a
 second vertical axis can be produced with the
-<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.twinx" title="(in Matplotlib v1.5.3)"><code class="xref py py-func docutils literal"><span class="pre">twinx()</span></code></a> function.</p>
+<a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.twinx" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">twinx()</span></code></a> function.</p>
 <a class="reference internal image-reference" href="_images/energy-release-rate-crack-position.png"><img alt="_images/energy-release-rate-crack-position.png" class="align-center" src="_images/energy-release-rate-crack-position.png" style="width: 600px;" /></a>
 <p>In this case the crack actually arrests for a while at around <span class="math">\(t
 = 6\)</span> ps. This is another characteristic feature of non-brittle
@@ -859,7 +859,7 @@ components computed using the two methods change much?</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

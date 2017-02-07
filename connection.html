@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Connection objects &mdash; quippy 21b8e64+ documentation</title>
+  <title>Connection objects &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -327,16 +327,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.assignment" title="quippy.atoms.Connection.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.assignment" title="quippy.atoms.Connection.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Overloaded assigment operators for Atoms objects.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_connect" title="quippy.atoms.Connection.calc_connect"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_connect" title="quippy.atoms.Connection.calc_connect"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Fast <span class="math">\(O(N)\)</span> connectivity calculation routine.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_connect_hysteretic" title="quippy.atoms.Connection.calc_connect_hysteretic"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect_hysteretic</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_connect_hysteretic" title="quippy.atoms.Connection.calc_connect_hysteretic"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect_hysteretic</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>As for <code class="docutils literal"><span class="pre">calc_connect</span></code>, but perform the connectivity update hystertically: atoms must come within <code class="docutils literal"><span class="pre">cutoff</span></code> to be considered neighbours, and then will remain connect until them move apart further than <code class="docutils literal"><span class="pre">cutoff_break</span></code>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_dists" title="quippy.atoms.Connection.calc_dists"><code class="xref py py-obj docutils literal"><span class="pre">calc_dists</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.calc_dists" title="quippy.atoms.Connection.calc_dists"><code class="xref py py-obj docutils literal"><span class="pre">calc_dists</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>The subroutine <code class="docutils literal"><span class="pre">calc_dists</span></code> updates the stored distance tables using the stored connectivity and shifts.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.cell_n" title="quippy.atoms.Connection.cell_n"><code class="xref py py-obj docutils literal"><span class="pre">cell_n</span></code></a>(i,j,k,[error])</td>
@@ -390,13 +390,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.iterneighbours" title="quippy.atoms.Connection.iterneighbours"><code class="xref py py-obj docutils literal"><span class="pre">iterneighbours</span></code></a>()</td>
 <td>Iterate over the neighbours of all atoms</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.n_neighbours" title="quippy.atoms.Connection.n_neighbours"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.n_neighbours" title="quippy.atoms.Connection.n_neighbours"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Neighbour list stuff</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.n_neighbours_total" title="quippy.atoms.Connection.n_neighbours_total"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours_total</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.n_neighbours_total" title="quippy.atoms.Connection.n_neighbours_total"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours_total</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Return the total number of neighbour, i.e.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.neighbour" title="quippy.atoms.Connection.neighbour"><code class="xref py py-obj docutils literal"><span class="pre">neighbour</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.neighbour" title="quippy.atoms.Connection.neighbour"><code class="xref py py-obj docutils literal"><span class="pre">neighbour</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">neighbour</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.pairs" title="quippy.atoms.Connection.pairs"><code class="xref py py-obj docutils literal"><span class="pre">pairs</span></code></a>()</td>
@@ -405,7 +405,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.partition_atoms" title="quippy.atoms.Connection.partition_atoms"><code class="xref py py-obj docutils literal"><span class="pre">partition_atoms</span></code></a>(at,[dont_wipe,error])</td>
 <td>Spatially partition the atoms into cells.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.print_" title="quippy.atoms.Connection.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.print_" title="quippy.atoms.Connection.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Print a verbose textual description of an Atoms object to the default logger or to a specificied Inoutput object.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.remove_bond" title="quippy.atoms.Connection.remove_bond"><code class="xref py py-obj docutils literal"><span class="pre">remove_bond</span></code></a>(i,j,[shift,error])</td>
@@ -428,7 +428,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.wipe" title="quippy.atoms.Connection.wipe"><code class="xref py py-obj docutils literal"><span class="pre">wipe</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.wipe" title="quippy.atoms.Connection.wipe"><code class="xref py py-obj docutils literal"><span class="pre">wipe</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>connection_wipe</td>
 </tr>
 </tbody>
@@ -1127,7 +1127,7 @@ one subcell does not spill out of the surrounding <span class="math">\(3 \times 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

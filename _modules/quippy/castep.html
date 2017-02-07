@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.castep &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.castep &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -348,7 +348,7 @@
     <span class="sd">&quot;&quot;&quot;Class to wrap a CASTEP cell (.cell) file&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cellfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">xml</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">OrderedDict</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">OrderedDict</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cellfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">cellfile</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -580,7 +580,7 @@
     <span class="s2">&quot;Class to wrap a CASTEP parameter (.param) file&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">OrderedDict</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">OrderedDict</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">paramfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">paramfile</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1227,7 +1227,7 @@
                <span class="c1"># The species match in this regex might seem excessive,</span>
                <span class="c1"># but you never know when you&#39;ll want to do DFT on Uuq!</span>
                <span class="c1"># (wait, now its symbol is Fl - oh, whatever.)</span>
-               <span class="n">species_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;\s+Species\s+(\d+),\s+Atom\s+(\d+)\s+:\s+([A-Z][a-z]{0,2})&#39;</span><span class="p">)</span>
+               <span class="n">species_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+Species\s+(\d+),\s+Atom\s+(\d+)\s+:\s+([A-Z][a-z]{0,2})&#39;</span><span class="p">)</span>
                <span class="n">parse_charge</span> <span class="o">=</span> <span class="kc">False</span>
                <span class="n">parse_vol</span> <span class="o">=</span> <span class="kc">False</span>
                <span class="n">parse_rel_vol</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1579,7 +1579,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">castep_exec</span><span class="o">=</span><span class="s1">&#39;castep </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">stem</span><span class="o">=</span><span class="s1">&#39;castep_callback&#39;</span><span class="p">,</span> <span class="n">test_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">little_clusters</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">copy_in_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">subdir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-        <span class="n">Potential</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;CallbackPot little_clusters=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">({</span><span class="kc">True</span><span class="p">:</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="s1">&#39;F&#39;</span><span class="p">}[</span><span class="n">little_clusters</span><span class="p">]))</span>
+        <span class="n">Potential</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;CallbackPot little_clusters=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">({</span><span class="kc">True</span><span class="p">:</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="s1">&#39;F&#39;</span><span class="p">}[</span><span class="n">little_clusters</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1741,7 +1741,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

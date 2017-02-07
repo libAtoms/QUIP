@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.atoms &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.atoms &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -197,7 +197,7 @@
 <span class="n">atomslog</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;quippy.atoms&#39;</span><span class="p">)</span>
 <span class="c1">#atomslog.setLevel(logging.DEBUG)</span>
 
-<span class="n">__doc__</span> <span class="o">=</span> <span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="vm">__doc__</span> <span class="o">=</span> <span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
 
 <span class="s2">This module defines the :class:`Atoms`, which stores and manipulates a</span>
 <span class="s2">collection of atoms, as well as the :class:`Connection` class which stores</span>
@@ -232,7 +232,7 @@
 <span class="k">class</span> <span class="nc">NeighbourInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Store information about a single neighbour of an atom&quot;&quot;&quot;</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;diff&#39;</span><span class="p">,</span> <span class="s1">&#39;cosines&#39;</span><span class="p">,</span> <span class="s1">&#39;shift&#39;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;diff&#39;</span><span class="p">,</span> <span class="s1">&#39;cosines&#39;</span><span class="p">,</span> <span class="s1">&#39;shift&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">cosines</span><span class="p">,</span> <span class="n">shift</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="n">j</span>
@@ -250,7 +250,7 @@
                        <span class="bp">self</span><span class="o">.</span><span class="n">cosines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift</span><span class="p">))</span>
 
 <div class="viewcode-block" id="Connection"><a class="viewcode-back" href="../../connection.html#quippy.atoms.Connection">[docs]</a><span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Connection</span><span class="p">):</span>
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    The :class:`Connection` is a subclass of :class:`_atoms.Connection`</span>
 <span class="s2">    which adds supports for iteration over all atoms, and indexing</span>
 <span class="s2">    e.g. ``at.connect.neighbours[1]`` returns a list of the neighbours of</span>
@@ -299,7 +299,7 @@
                     <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">neighb</span><span class="o">.</span><span class="n">j</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># Neighbours are considered to be equal if *topology* matches,</span>
@@ -307,7 +307,7 @@
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">())</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">pairs</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterneighbours</span><span class="p">()</span>
@@ -389,7 +389,7 @@
     <span class="sd">&quot;&quot;&quot;Wrapper between quippy properties and ASE arrays&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
-        <span class="n">DictMixin</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">DictMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -435,7 +435,7 @@
 
 
 <div class="viewcode-block" id="Atoms"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms">[docs]</a><span class="k">class</span> <span class="nc">Atoms</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    The :class:`Atoms` class is a Pythonic wrapper over the auto-generated</span>
 <span class="s2">    :class:`quippy._atoms.Atoms` class. Atoms object are usually</span>
 <span class="s2">    constructed either by reading from an input file in one of the</span>
@@ -491,7 +491,7 @@
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">Dictionary</span><span class="p">):</span>
             <span class="n">params</span> <span class="o">=</span> <span class="n">Dictionary</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
-        <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+        <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
                               <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
                               <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">fixed_size</span><span class="o">=</span><span class="n">fixed_size</span><span class="p">,</span>
                               <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">)</span>
@@ -499,7 +499,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_ase_arrays</span> <span class="o">=</span> <span class="n">PropertiesWrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># If first argument is quippy.Atoms instance, copy data from it</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">copy_from</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span>
             <span class="n">symbols</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -547,7 +547,7 @@
         <span class="k">if</span> <span class="n">charges</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;charge&#39;</span><span class="p">):</span>
             <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
 
-        <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span>
+        <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span>
                            <span class="n">tags</span><span class="p">,</span> <span class="n">momenta</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">magmoms</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span>
                            <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">pbc</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span>
                            <span class="n">calculator</span><span class="p">)</span>
@@ -711,7 +711,7 @@
             <span class="k">return</span> <span class="kc">False</span></div>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Atoms.read"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Atoms.read"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Class method to read Atoms object from file `source` according to `format`</span>
 
@@ -756,7 +756,7 @@
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Cannot read from </span><span class="si">%r</span><span class="s1"> - not an iterator&#39;</span> <span class="o">%</span> <span class="n">source</span><span class="p">)</span>
 
         <span class="n">at</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Object </span><span class="si">%r</span><span class="s1"> read from  </span><span class="si">%r</span><span class="s1"> is not Atoms instance&#39;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">source</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">opened</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">):</span>
@@ -827,11 +827,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">{},</span> <span class="n">params</span><span class="o">=</span><span class="p">{})</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">{},</span> <span class="n">params</span><span class="o">=</span><span class="p">{})</span>
             <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">orig_index</span><span class="o">=</span><span class="n">orig_index</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">list</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">),</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">),</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
             <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">orig_index</span><span class="o">=</span><span class="n">orig_index</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either mask or list must be present.&#39;</span><span class="p">)</span>
@@ -843,13 +843,13 @@
 <span class="sd">        Return a copy of this :class:`Atoms` object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
                                <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
 
         <span class="c1"># copy any normal (not Fortran) attributes</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
-                <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+                <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
         <span class="c1"># from _atoms.Atoms</span>
         <span class="n">other</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span>
@@ -863,9 +863,9 @@
 <div class="viewcode-block" id="Atoms.copy_from"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.copy_from">[docs]</a>    <span class="k">def</span> <span class="nf">copy_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Replace contents of this Atoms object with data from `other`.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
-            <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+            <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
                                   <span class="n">properties</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">cutoff</span>
@@ -873,8 +873,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">nneightol</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">nneightol</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
-            <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
-            <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+            <span class="n">_atoms</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lattice</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+            <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
 
             <span class="c1"># copy params/info dicts</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">):</span>
@@ -902,9 +902,9 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;can only copy from instances of quippy.Atoms or ase.Atoms&#39;</span><span class="p">)</span>
 
         <span class="c1"># copy any normal (not Fortran) attributes</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span></div>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span></div>
 
 
 <div class="viewcode-block" id="Atoms.read_from"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.read_from">[docs]</a>    <span class="k">def</span> <span class="nf">read_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">readargs</span><span class="p">):</span>
@@ -932,8 +932,8 @@
 
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="c1">#print &#39;setattr&#39;, name, value</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;_initialised&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
-            <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;_initialised&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
@@ -942,7 +942,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Atoms.md5_hash"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.md5_hash">[docs]</a>    <span class="k">def</span> <span class="nf">md5_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Hash an atoms object with a precision of ndigits decimal</span>
@@ -1129,7 +1129,7 @@
         <span class="sd">&quot;&quot;&quot;Extend atoms object by appending atoms from *other*.&quot;&quot;&quot;</span>
         <span class="c1"># modified version of ase.Atoms.extend() to work with QUIP data storage</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atom</span><span class="p">):</span>
-            <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">([</span><span class="n">other</span><span class="p">])</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">([</span><span class="n">other</span><span class="p">])</span>
 
         <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
@@ -1165,7 +1165,7 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-    <span class="n">__iadd__</span> <span class="o">=</span> <span class="n">extend</span>
+    <span class="fm">__iadd__</span> <span class="o">=</span> <span class="n">extend</span>
 
 
     <span class="k">def</span> <span class="nf">__imul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
@@ -1235,7 +1235,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

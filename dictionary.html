@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 21b8e64+ documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -201,7 +201,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.bcast" title="quippy.dictionary.bcast"><code class="xref py py-obj docutils literal"><span class="pre">bcast</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.bcast" title="quippy.dictionary.bcast"><code class="xref py py-obj docutils literal"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">bcast</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -380,19 +380,19 @@ files:</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.add_array" title="quippy.dictionary.Dictionary.add_array"><code class="xref py py-obj docutils literal"><span class="pre">add_array</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.add_array" title="quippy.dictionary.Dictionary.add_array"><code class="xref py py-obj docutils literal"><span class="pre">add_array</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">add_array</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy" title="quippy.dictionary.Dictionary.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy" title="quippy.dictionary.Dictionary.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.deepcopy_no_error" title="quippy.dictionary.Dictionary.deepcopy_no_error"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy_no_error</span></code></a>(from)</td>
 <td>Make a deep copy of <code class="docutils literal"><span class="pre">from</span></code> in <code class="docutils literal"><span class="pre">this</span></code>, allocating new memory for array components; no error passing, for the assignment operator</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal"><span class="pre">expand_string</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal"><span class="pre">expand_string</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Copy extendable string from <code class="docutils literal"><span class="pre">in</span></code> to <code class="docutils literal"><span class="pre">out</span></code>, expanding variables formatted as <code class="docutils literal"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_array" title="quippy.dictionary.Dictionary.get_array"><code class="xref py py-obj docutils literal"><span class="pre">get_array</span></code></a>(key)</td>
@@ -435,10 +435,10 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.lookup_entry_i" title="quippy.dictionary.Dictionary.lookup_entry_i"><code class="xref py py-obj docutils literal"><span class="pre">lookup_entry_i</span></code></a>(key,[case_sensitive])</td>
 <td>OMIT</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_" title="quippy.dictionary.Dictionary.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_" title="quippy.dictionary.Dictionary.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Print a DictEntry or a Dictionary</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_keys" title="quippy.dictionary.Dictionary.print_keys"><code class="xref py py-obj docutils literal"><span class="pre">print_keys</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.print_keys" title="quippy.dictionary.Dictionary.print_keys"><code class="xref py py-obj docutils literal"><span class="pre">print_keys</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -449,16 +449,16 @@ files:</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.read_string" title="quippy.dictionary.Dictionary.read_string"><code class="xref py py-obj docutils literal"><span class="pre">read_string</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.read_string" title="quippy.dictionary.Dictionary.read_string"><code class="xref py py-obj docutils literal"><span class="pre">read_string</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Read into this dictionary from a string</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal"><span class="pre">remove_value</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal"><span class="pre">remove_value</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Remove an entry from a Dictionary</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value" title="quippy.dictionary.Dictionary.set_value"><code class="xref py py-obj docutils literal"><span class="pre">set_value</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value" title="quippy.dictionary.Dictionary.set_value"><code class="xref py py-obj docutils literal"><span class="pre">set_value</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Set a value in a Dictionary</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value_pointer" title="quippy.dictionary.Dictionary.set_value_pointer"><code class="xref py py-obj docutils literal"><span class="pre">set_value_pointer</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value_pointer" title="quippy.dictionary.Dictionary.set_value_pointer"><code class="xref py py-obj docutils literal"><span class="pre">set_value_pointer</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">set_value_pointer</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
@@ -467,10 +467,10 @@ files:</p>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Swap the positions of two entries in the dictionary.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Write a string representation of this dictionary</td>
 </tr>
 </tbody>
@@ -1534,7 +1534,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.simplex &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.simplex &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -197,7 +197,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deltas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">tiny</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span><span class="p">):</span>
+                 <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">tiny</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Minimise *func(x)* using a DownhillSimplex.</span>
 
@@ -385,7 +385,7 @@
                 <span class="nb">print</span> <span class="s1">&#39;step </span><span class="si">%d</span><span class="s1"> temperature </span><span class="si">%f</span><span class="s1"> x </span><span class="si">%s</span><span class="s1"> y </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">ilo</span><span class="p">,:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">ilo</span><span class="p">])</span></div>
 
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     
     <span class="n">do_graphics</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">do_graphics</span><span class="p">:</span>
@@ -400,11 +400,11 @@
         <span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">func</span><span class="p">((</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)),</span> <span class="mi">10</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
 
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">DownhillSimplex</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">],</span> <span class="n">deltas</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">DownhillSimplex</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">],</span> <span class="n">deltas</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">anneal</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="n">do_graphics</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># restart minimiser from best position found during annealing</span>
-    <span class="n">ds</span><span class="o">.</span><span class="n">ftol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span>
+    <span class="n">ds</span><span class="o">.</span><span class="n">ftol</span> <span class="o">=</span> <span class="mf">1e-6</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">pbest</span><span class="p">,</span> <span class="n">deltas</span><span class="o">=.</span><span class="mi">1</span><span class="p">)</span>
     <span class="nb">print</span> <span class="n">ds</span><span class="o">.</span><span class="n">minimise</span><span class="p">()</span>
 
@@ -442,7 +442,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

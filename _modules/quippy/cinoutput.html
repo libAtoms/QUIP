@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.cinoutput &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.cinoutput &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -182,7 +182,7 @@
 <span class="kn">import</span> <span class="nn">__builtin__</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 
-<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="vm">__doc__</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">__all__</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;CInOutputReader&#39;</span><span class="p">,</span> <span class="s1">&#39;CInOutputWriter&#39;</span><span class="p">]</span>
 
 <span class="k">class</span> <span class="nc">CInOutput</span><span class="p">(</span><span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="p">):</span>
@@ -194,13 +194,13 @@
         <span class="k">if</span> <span class="n">string</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">string</span> <span class="o">=</span> <span class="n">filename</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">append</span><span class="p">,</span> <span class="n">netcdf4</span><span class="p">,</span> <span class="n">no_compute_index</span><span class="p">,</span>
+        <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">append</span><span class="p">,</span> <span class="n">netcdf4</span><span class="p">,</span> <span class="n">no_compute_index</span><span class="p">,</span>
                                       <span class="n">frame</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="p">,</span> <span class="n">mpi</span><span class="p">,</span> <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zero</span> <span class="o">=</span> <span class="n">zero</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">range</span> <span class="o">=</span> <span class="nb">range</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span>
 
-    <span class="n">__init__</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">__init__</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">got_index</span><span class="p">:</span>
@@ -236,7 +236,7 @@
 
         <span class="k">return</span> <span class="n">at</span>
 
-    <span class="n">read</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="n">read</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="vm">__doc__</span>
 
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">int_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">real_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
               <span class="n">shuffle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deflate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deflate_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -253,7 +253,7 @@
         <span class="k">if</span> <span class="n">estr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">estr</span><span class="p">)</span>
 
-    <span class="n">write</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="n">write</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="vm">__doc__</span>
 
 
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">FortranDerivedTypes</span>
@@ -318,7 +318,7 @@
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">netcdf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">netcdf_file</span><span class="o">.</span><span class="n">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">netcdf_file</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">netcdf_file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">][:]</span>
@@ -371,7 +371,7 @@
 <span class="k">class</span> <span class="nc">CInOutputStringReader</span><span class="p">(</span><span class="n">CInOutputReader</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">no_compute_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">zero</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">CInOutputReader</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+        <span class="n">CInOutputReader</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
                                  <span class="n">no_compute_index</span><span class="o">=</span><span class="n">no_compute_index</span><span class="p">,</span> <span class="n">zero</span><span class="o">=</span><span class="n">zero</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="n">one_frame_per_file</span><span class="p">,</span>
                                  <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -380,7 +380,7 @@
 <span class="k">class</span> <span class="nc">CInOutputStringWriter</span><span class="p">(</span><span class="n">CInOutputWriter</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">netcdf4</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">dest</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span>
-        <span class="n">CInOutputWriter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">,</span> <span class="n">netcdf4</span><span class="o">=</span><span class="n">netcdf4</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="n">one_frame_per_file</span><span class="p">,</span>
+        <span class="n">CInOutputWriter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">,</span> <span class="n">netcdf4</span><span class="o">=</span><span class="n">netcdf4</span><span class="p">,</span> <span class="n">one_frame_per_file</span><span class="o">=</span><span class="n">one_frame_per_file</span><span class="p">,</span>
                                  <span class="n">string</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">)</span>
 
 <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;string&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputStringWriter</span>
@@ -432,7 +432,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

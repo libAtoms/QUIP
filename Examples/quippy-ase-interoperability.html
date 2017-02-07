@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interoperability with Atomic Simulation Environment &mdash; quippy 21b8e64+ documentation</title>
+  <title>Interoperability with Atomic Simulation Environment &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../index.html"/>
         <link rel="up" title="Examples" href="index.html"/>
         <link rel="next" title="Tutorials" href="../tutorials.html"/>
         <link rel="prev" title="Examples" href="index.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -204,7 +204,7 @@ relaxations with <code class="docutils literal"><span class="pre">ASE</span></co
 <span class="n">vac1</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">sw_pot</span><span class="p">)</span>
 <span class="n">vac1</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
 <span class="n">opt</span> <span class="o">=</span> <span class="n">Minim</span><span class="p">(</span><span class="n">vac1</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg_n&#39;</span><span class="p">)</span> <span class="c1"># big cell, use Fortran minimiser</span>
-<span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
 <span class="n">e_vac</span> <span class="o">=</span> <span class="n">vac1</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">e_bulk_per_atom</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">vac1</span><span class="p">)</span>
 <span class="nb">print</span> <span class="s1">&#39;SW vacancy formation energy&#39;</span><span class="p">,</span> <span class="n">e_vac</span><span class="p">,</span> <span class="s1">&#39;eV&#39;</span>
 </pre></div>
@@ -330,7 +330,7 @@ relaxations with <code class="docutils literal"><span class="pre">ASE</span></co
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

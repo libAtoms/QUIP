@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 21b8e64+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -218,16 +218,16 @@ manipulate it use an <a class="reference internal" href="#quippy.io.AtomsList" t
 <tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><code class="xref py py-obj docutils literal"><span class="pre">AtomsWriter</span></code></a>(dest[,&nbsp;format])</td>
 <td>Returns a file-like object for writing Atoms to <cite>dest</cite> which should be either a filename or an initiliased output object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read_dataset" title="quippy.io.read_dataset"><code class="xref py py-obj docutils literal"><span class="pre">read_dataset</span></code></a>(dirs,&nbsp;pattern,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read_dataset" title="quippy.io.read_dataset"><code class="xref py py-obj docutils literal"><span class="pre">read_dataset</span></code></a>(dirs,&nbsp;pattern,&nbsp;**kwargs)</td>
 <td>Read atomic configurations matching glob <cite>pattern</cite> from each of the directories in <cite>dir</cite> in turn.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.io.time_ordered_series" title="quippy.io.time_ordered_series"><code class="xref py py-obj docutils literal"><span class="pre">time_ordered_series</span></code></a>(source[,&nbsp;dt])</td>
 <td>Given a source of Atoms configurations, return a time ordered list of filename and frame references</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read" title="quippy.io.read"><code class="xref py py-obj docutils literal"><span class="pre">read</span></code></a>(filename,&nbsp;\*\*readargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read" title="quippy.io.read"><code class="xref py py-obj docutils literal"><span class="pre">read</span></code></a>(filename,&nbsp;**readargs)</td>
 <td>Read Atoms from file <cite>filename</cite></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.io.write" title="quippy.io.write"><code class="xref py py-obj docutils literal"><span class="pre">write</span></code></a>(filename,&nbsp;atoms,&nbsp;\*\*writeargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.write" title="quippy.io.write"><code class="xref py py-obj docutils literal"><span class="pre">write</span></code></a>(filename,&nbsp;atoms,&nbsp;**writeargs)</td>
 <td>Write <cite>atoms</cite> to the file <cite>filename</cite></td>
 </tr>
 </tbody>
@@ -812,13 +812,13 @@ NetCDF reading and writing routines, in pure Python.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal"><span class="pre">quip_dirname</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal"><span class="pre">quip_dirname</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">quip_dirname</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal"><span class="pre">quip_chdir</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal"><span class="pre">quip_chdir</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">quip_chdir</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal"><span class="pre">quip_basename</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal"><span class="pre">quip_basename</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">quip_basename</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -1385,7 +1385,7 @@ which can be used to simplify the registration process:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.util &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.util &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -204,7 +204,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">format</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">format</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">__class__</span>
+            <span class="nb">format</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="vm">__class__</span>
 
     <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="nb">format</span></div>
 
@@ -289,7 +289,7 @@
             <span class="n">d</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">ExpatError</span><span class="p">:</span>
             <span class="c1"># Add surrounding document element</span>
-            <span class="n">xml_string</span> <span class="o">=</span> <span class="s1">r&#39;&lt;params&gt;</span><span class="si">%s</span><span class="s1">&lt;/params&gt;&#39;</span> <span class="o">%</span> <span class="n">xml_string</span>
+            <span class="n">xml_string</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;&lt;params&gt;</span><span class="si">%s</span><span class="s1">&lt;/params&gt;&#39;</span> <span class="o">%</span> <span class="n">xml_string</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">firstChild</span>
 
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
@@ -473,7 +473,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.elasticity &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.elasticity &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -495,7 +495,7 @@
             <span class="c1">#print &#39;E&#39;, E</span>
 
             <span class="c1"># Kill near zero elements</span>
-            <span class="n">E</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">E</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">E</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span> <span class="n">E</span> <span class="o">=</span> <span class="o">-</span><span class="n">E</span>
 
@@ -672,7 +672,7 @@
     <span class="sd">&quot;&quot;&quot;Given full tensor c_ijkl, return compressed Voigt form C_ij.</span>
 <span class="sd">    First checks that c_ijkl obeys required symmetries.&quot;&quot;&quot;</span>
 
-    <span class="n">tol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-10</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -717,7 +717,7 @@
 <span class="sd">    </span>
 <span class="sd">    First checks that c_ijkl obeys required symmetries.&quot;&quot;&quot;</span>
 
-    <span class="n">tol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-10</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -797,8 +797,8 @@
     <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">bisect</span>
 
     <span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">C</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">e9</span> <span class="c1"># convert GPa -&gt; Pa</span>
-    <span class="n">rho</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">e3</span> <span class="c1"># convert g/cm^3 -&gt; kg/m^3</span>
+    <span class="n">C</span> <span class="o">*=</span> <span class="mf">1e9</span> <span class="c1"># convert GPa -&gt; Pa</span>
+    <span class="n">rho</span> <span class="o">*=</span> <span class="mf">1e3</span> <span class="c1"># convert g/cm^3 -&gt; kg/m^3</span>
 
     <span class="k">if</span> <span class="n">isotropic</span><span class="p">:</span>
         <span class="n">vp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">rho</span><span class="p">)</span>
@@ -847,7 +847,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

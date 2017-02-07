@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-level system routines &mdash; quippy 21b8e64+ documentation</title>
+  <title>Low-level system routines &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Units and physical constants" href="units.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -189,7 +189,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Open a file for reading or writing.</td>
 </tr>
 </tbody>
@@ -650,13 +650,13 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal"><span class="pre">optional_default</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal"><span class="pre">optional_default</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>takes as arguments a default value and an optional argument, and</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal"><span class="pre">string_to_numerical</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal"><span class="pre">string_to_numerical</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">string_to_numerical</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.print_" title="quippy.system.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.print_" title="quippy.system.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Overloaded interface for printing.</td>
 </tr>
 </tbody>
@@ -786,19 +786,19 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.activate" title="quippy.system.InOutput.activate"><code class="xref py py-obj docutils literal"><span class="pre">activate</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.activate" title="quippy.system.InOutput.activate"><code class="xref py py-obj docutils literal"><span class="pre">activate</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>inoutput_activate</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.backspace" title="quippy.system.InOutput.backspace"><code class="xref py py-obj docutils literal"><span class="pre">backspace</span></code></a>([n])</td>
 <td>Move the file pointer back by <code class="docutils literal"><span class="pre">n</span></code> (defaults to 1) records.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.close" title="quippy.system.InOutput.close"><code class="xref py py-obj docutils literal"><span class="pre">close</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.close" title="quippy.system.InOutput.close"><code class="xref py py-obj docutils literal"><span class="pre">close</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Close file but don&#8217;t finalise this Inoutput</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.deactivate" title="quippy.system.InOutput.deactivate"><code class="xref py py-obj docutils literal"><span class="pre">deactivate</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.deactivate" title="quippy.system.InOutput.deactivate"><code class="xref py py-obj docutils literal"><span class="pre">deactivate</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>inoutput_deactivate</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.do_output" title="quippy.system.InOutput.do_output"><code class="xref py py-obj docutils literal"><span class="pre">do_output</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.do_output" title="quippy.system.InOutput.do_output"><code class="xref py py-obj docutils literal"><span class="pre">do_output</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -812,7 +812,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -823,7 +823,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Call parse_string on the next line from a file</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.print_mem_info" title="quippy.system.InOutput.print_mem_info"><code class="xref py py-obj docutils literal"><span class="pre">print_mem_info</span></code></a>([file])</td>
@@ -837,7 +837,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -848,13 +848,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal"><span class="pre">read_ascii</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal"><span class="pre">read_ascii</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">read_ascii</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Read a line of text from a file (up to a line break, or 1024 characters).</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal"><span class="pre">rewind</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal"><span class="pre">rewind</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Rewind to the start of this file.</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
@@ -3200,7 +3200,7 @@ Other user-defined types define the Print interface in the same way.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

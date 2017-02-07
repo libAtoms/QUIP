@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.structures &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.structures &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -214,13 +214,13 @@
 
     <span class="n">all_brackets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">brackets</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
 
-    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="bp">self</span> <span class="o">=</span> <span class="n">quippy_array</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="bp">self</span> <span class="o">=</span> <span class="n">quippy_array</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> input v should be of length 3 or 4&#39;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> input v should be of length 3 or 4&#39;</span> <span class="o">%</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
@@ -231,7 +231,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;direction&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">([&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;])&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">([&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;])&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">bopen</span><span class="p">,</span> <span class="n">bclose</span> <span class="o">=</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
@@ -246,7 +246,7 @@
         <span class="n">s</span> <span class="o">+=</span> <span class="n">bopen</span>
         <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">component</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">s</span> <span class="o">+=</span> <span class="s1">r&#39;\bar{</span><span class="si">%d</span><span class="s1">}&#39;</span> <span class="o">%</span> <span class="nb">abs</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">r</span><span class="s1">&#39;\bar{</span><span class="si">%d</span><span class="s1">}&#39;</span> <span class="o">%</span> <span class="nb">abs</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">component</span>
         <span class="n">s</span> <span class="o">+=</span> <span class="n">bclose</span>
@@ -254,8 +254,8 @@
         <span class="k">return</span> <span class="n">s</span></div>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="MillerIndex.parse"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
-        <span class="sd">r&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MillerIndex.parse"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parse a Miller index string</span>
 
 <span class="sd">        Negative indices can be denoted by:</span>
@@ -273,7 +273,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t parse from </span><span class="si">%r</span><span class="s2"> of type </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
 
         <span class="n">orig_s</span> <span class="o">=</span> <span class="n">s</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">r&#39;\bar{&#39;</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">b</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">all_brackets</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="sa">r</span><span class="s1">&#39;\bar{&#39;</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">b</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">MillerIndex</span><span class="o">.</span><span class="n">all_brackets</span><span class="p">]:</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
         <span class="n">L</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
@@ -366,7 +366,7 @@
     <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">b</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="rotation_matrix"><a class="viewcode-back" href="../../structures.html#quippy.structures.rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">rotation_matrix</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">):</span>
+<div class="viewcode-block" id="rotation_matrix"><a class="viewcode-back" href="../../structures.html#quippy.structures.rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">rotation_matrix</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return 3x3 matrix rotation matrix defining a crack with open</span>
 <span class="sd">    surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either</span>
 <span class="sd">    crack tip line `z` or crack propagation direction `x`.&quot;&quot;&quot;</span>
@@ -407,7 +407,7 @@
 
 
 
-<div class="viewcode-block" id="orthorhombic_slab"><a class="viewcode-back" href="../../structures.html#quippy.structures.orthorhombic_slab">[docs]</a><span class="k">def</span> <span class="nf">orthorhombic_slab</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_nrep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_nrep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="orthorhombic_slab"><a class="viewcode-back" href="../../structures.html#quippy.structures.orthorhombic_slab">[docs]</a><span class="k">def</span> <span class="nf">orthorhombic_slab</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">min_nrep</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_nrep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Try to construct an orthorhombic cell equivalent to the</span>
 <span class="sd">       primitive cell `at`, using supercells up to at most `max_nrep`</span>
 <span class="sd">       repeats. Symmetry must be exact within a tolerance of `tol`. If</span>
@@ -419,7 +419,7 @@
 <span class="sd">       or more directions. `shift` is a three component vector which</span>
 <span class="sd">       can be used to shift the positions in the final cell. &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">atoms_near_plane</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">atoms_near_plane</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a list of atoms within a distance `tol` of the plane defined by np.dot(n, at.pos) == d&quot;&quot;&quot;</span>
         <span class="n">pd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span> <span class="o">-</span> <span class="n">d</span>
         <span class="k">return</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pd</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
@@ -789,7 +789,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

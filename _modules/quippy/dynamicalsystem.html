@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.dynamicalsystem &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.dynamicalsystem &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -188,8 +188,8 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">_e</span> <span class="o">=</span> <span class="mf">1.60217733e-19</span>          <span class="c1"># elementary charge</span>
     <span class="n">_amu</span> <span class="o">=</span> <span class="mf">1.6605402e-27</span>         <span class="c1"># atomic mass unit, kg</span>
-    <span class="n">second</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e10</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">_e</span> <span class="o">/</span> <span class="n">_amu</span><span class="p">)</span>
-    <span class="n">fs</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">15</span> <span class="o">*</span> <span class="n">second</span>
+    <span class="n">second</span> <span class="o">=</span> <span class="mf">1e10</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">_e</span> <span class="o">/</span> <span class="n">_amu</span><span class="p">)</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="mf">1e-15</span> <span class="o">*</span> <span class="n">second</span>
 
 <span class="c1"># thermostat and barostat type constants are defined in Thermostats.f95,</span>
 <span class="c1"># which is not directly wrapped by quippy, so we reproduce them here</span>
@@ -228,14 +228,14 @@
     <span class="s1">&#39;BAROSTAT_HOOVER_LANGEVIN&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">}</span>
 
-<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="vm">__doc__</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">__all__</span><span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Dynamics&#39;</span><span class="p">,</span> <span class="s1">&#39;fs&#39;</span><span class="p">]</span> <span class="o">+</span>
             <span class="n">_thermostat_types</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="n">_barostat_types</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
 
 <div class="viewcode-block" id="DynamicalSystem"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem">[docs]</a><span class="k">class</span> <span class="nc">DynamicalSystem</span><span class="p">(</span><span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="p">):</span>
 
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="o">.</span><span class="n">__doc__</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="o">.</span><span class="vm">__doc__</span>
 
 <div class="viewcode-block" id="DynamicalSystem.run"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">summary_interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hook_interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -259,7 +259,7 @@
 						 <span class="n">summary_interval</span><span class="o">=</span><span class="n">summary_interval</span><span class="p">,</span> <span class="n">write_interval</span><span class="o">=</span><span class="n">write_interval</span><span class="p">,</span>
                                                  <span class="n">trajectory</span><span class="o">=</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span></div>
 
-    <span class="n">run</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">__doc__</span></div>
+    <span class="n">run</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_dynamicalsystem</span><span class="o">.</span><span class="n">DynamicalSystem</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="vm">__doc__</span></div>
 
 
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">FortranDerivedTypes</span>
@@ -309,7 +309,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;mass&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">MASSCONVERT</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Dynamics confused as atoms has inconsistent &quot;mass&quot; and &quot;masses&quot; arrays&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()</span><span class="o">*</span><span class="n">MASSCONVERT</span><span class="p">)</span>
@@ -321,7 +321,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;velo&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Dynamics confused as atoms has inconsistent &quot;velo&quot; and &quot;momenta&quot; arrays&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;velo&#39;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MASSCONVERT</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -336,7 +336,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span> <span class="o">=</span> <span class="n">DynamicalSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">initialtemperature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">velo</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;initialtemperature given but Atoms already &#39;</span><span class="o">+</span>
                        <span class="s1">&#39;has non-zero velocities!&#39;</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -814,7 +814,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

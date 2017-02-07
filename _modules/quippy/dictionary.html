@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.dictionary &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.dictionary &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -179,11 +179,11 @@
 <span class="kn">from</span> <span class="nn">quippy.dictmixin</span> <span class="k">import</span> <span class="n">DictMixin</span><span class="p">,</span> <span class="n">ParamReaderMixin</span>
 <span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="o">*</span>
 
-<span class="n">__doc__</span> <span class="o">=</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_dictionary</span><span class="o">.</span><span class="vm">__doc__</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">__all__</span>
 
 <div class="viewcode-block" id="Dictionary"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary">[docs]</a><span class="k">class</span> <span class="nc">Dictionary</span><span class="p">(</span><span class="n">DictMixin</span><span class="p">,</span> <span class="n">ParamReaderMixin</span><span class="p">,</span> <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="p">):</span>
-    <span class="n">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span><span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    The quippy Python :class:`Dictionary` class is designed to behave</span>
 <span class="s2">    as much as possible like a true Python dictionary, but since it is</span>
 <span class="s2">    implemented in Fortran it can only store a restricted range of</span>
@@ -239,7 +239,7 @@
                      <span class="n">T_LOGICAL_A</span><span class="p">,</span> <span class="n">T_INTEGER_A2</span><span class="p">,</span> <span class="n">T_REAL_A2</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="p">[]</span>
@@ -389,7 +389,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_value</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ParamReaderMixin</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ParamReaderMixin</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">logging</span>
@@ -417,10 +417,10 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ParamReaderMixin</span><span class="o">.</span><span class="n">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ParamReaderMixin</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Dictionary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -465,7 +465,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

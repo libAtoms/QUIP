@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ase.calculators.calculator &mdash; quippy 21b8e64+ documentation</title>
+  <title>ase.calculators.calculator &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -160,8 +160,10 @@
 
 <span class="kn">from</span> <span class="nn">ase.dft.kpoints</span> <span class="k">import</span> <span class="n">bandpath</span><span class="p">,</span> <span class="n">monkhorst_pack</span>
 
-
 <span class="k">class</span> <span class="nc">ReadError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">PropertyNotImplementedError</span><span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">):</span>
     <span class="k">pass</span>
 
 
@@ -174,10 +176,11 @@
 
 
 <span class="c1"># Recognized names of calculators sorted alphabetically:</span>
-<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abinit&#39;</span><span class="p">,</span> <span class="s1">&#39;aims&#39;</span><span class="p">,</span> <span class="s1">&#39;asap&#39;</span><span class="p">,</span> <span class="s1">&#39;castep&#39;</span><span class="p">,</span> <span class="s1">&#39;cp2k&#39;</span><span class="p">,</span> <span class="s1">&#39;demon&#39;</span><span class="p">,</span> <span class="s1">&#39;dftb&#39;</span><span class="p">,</span> <span class="s1">&#39;eam&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;elk&#39;</span><span class="p">,</span> <span class="s1">&#39;emt&#39;</span><span class="p">,</span> <span class="s1">&#39;exciting&#39;</span><span class="p">,</span> <span class="s1">&#39;fleur&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;gpaw&#39;</span><span class="p">,</span> <span class="s1">&#39;gromacs&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;hotbit&#39;</span><span class="p">,</span> <span class="s1">&#39;jacapo&#39;</span><span class="p">,</span> <span class="s1">&#39;lammps&#39;</span><span class="p">,</span> <span class="s1">&#39;lammpslib&#39;</span><span class="p">,</span> <span class="s1">&#39;lj&#39;</span><span class="p">,</span> <span class="s1">&#39;mopac&#39;</span><span class="p">,</span> <span class="s1">&#39;morse&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;nwchem&#39;</span><span class="p">,</span> <span class="s1">&#39;octopus&#39;</span><span class="p">,</span> <span class="s1">&#39;onetep&#39;</span><span class="p">,</span> <span class="s1">&#39;siesta&#39;</span><span class="p">,</span> <span class="s1">&#39;tip3p&#39;</span><span class="p">,</span> <span class="s1">&#39;turbomole&#39;</span><span class="p">,</span> <span class="s1">&#39;vasp&#39;</span><span class="p">]</span>
+<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abinit&#39;</span><span class="p">,</span> <span class="s1">&#39;aims&#39;</span><span class="p">,</span> <span class="s1">&#39;amber&#39;</span><span class="p">,</span> <span class="s1">&#39;asap&#39;</span><span class="p">,</span> <span class="s1">&#39;castep&#39;</span><span class="p">,</span> <span class="s1">&#39;cp2k&#39;</span><span class="p">,</span> <span class="s1">&#39;demon&#39;</span><span class="p">,</span> <span class="s1">&#39;dftb&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;eam&#39;</span><span class="p">,</span> <span class="s1">&#39;elk&#39;</span><span class="p">,</span> <span class="s1">&#39;emt&#39;</span><span class="p">,</span> <span class="s1">&#39;exciting&#39;</span><span class="p">,</span> <span class="s1">&#39;fleur&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;gpaw&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;gromacs&#39;</span><span class="p">,</span> <span class="s1">&#39;hotbit&#39;</span><span class="p">,</span> <span class="s1">&#39;jacapo&#39;</span><span class="p">,</span> <span class="s1">&#39;lammps&#39;</span><span class="p">,</span> <span class="s1">&#39;lammpslib&#39;</span><span class="p">,</span> <span class="s1">&#39;lj&#39;</span><span class="p">,</span> <span class="s1">&#39;mopac&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;morse&#39;</span><span class="p">,</span> <span class="s1">&#39;nwchem&#39;</span><span class="p">,</span> <span class="s1">&#39;octopus&#39;</span><span class="p">,</span> <span class="s1">&#39;onetep&#39;</span><span class="p">,</span> <span class="s1">&#39;siesta&#39;</span><span class="p">,</span> <span class="s1">&#39;tip3p&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;turbomole&#39;</span><span class="p">,</span> <span class="s1">&#39;vasp&#39;</span><span class="p">]</span>
 
 
 <span class="n">special</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;cp2k&#39;</span><span class="p">:</span> <span class="s1">&#39;CP2K&#39;</span><span class="p">,</span>
@@ -328,7 +331,7 @@
 
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">dict</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -347,10 +350,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read parameters from file.&quot;&quot;&quot;</span>
         <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
-        <span class="n">parameters</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
         <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">parameters</span>
 
@@ -368,10 +371,10 @@
 <span class="k">class</span> <span class="nc">Calculator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Base-class for all ASE calculators.</span>
 
-<span class="sd">    A calculator must raise NotImplementedError if asked for a</span>
+<span class="sd">    A calculator must raise PropertyNotImplementedError if asked for a</span>
 <span class="sd">    property that it can&#39;t calculate.  So, if calculation of the</span>
 <span class="sd">    stress tensor has not been implemented, get_stress(atoms) should</span>
-<span class="sd">    raise NotImplementedError.  This can be achieved simply by not</span>
+<span class="sd">    raise PropertyNotImplementedError.  This can be achieved simply by not</span>
 <span class="sd">    including the string &#39;stress&#39; in the list implemented_properties</span>
 <span class="sd">    which is a class member.  These are the names of the standard</span>
 <span class="sd">    properties: &#39;energy&#39;, &#39;forces&#39;, &#39;stress&#39;, &#39;dipole&#39;, &#39;charges&#39;,</span>
@@ -437,7 +440,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">set_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set label and convert label to directory and prefix.</span>
@@ -512,8 +515,8 @@
         <span class="k">return</span> <span class="n">atoms</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">read_atoms</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">restart</span><span class="o">=</span><span class="n">restart</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">restart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get_atoms</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">read_atoms</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">restart</span><span class="o">=</span><span class="n">restart</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">restart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get_atoms</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set parameters like set(key1=value1, key2=value2, ...).</span>
@@ -540,15 +543,12 @@
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">oldvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">equal</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">oldvalue</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">oldvalue</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">oldvalue</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="n">oldvalue</span>
                 <span class="n">changed_parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="k">return</span> <span class="n">changed_parameters</span>
 
-    <span class="k">def</span> <span class="nf">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">15</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check for system changes since last calculation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">system_changes</span> <span class="o">=</span> <span class="n">all_changes</span><span class="p">[:]</span>
@@ -574,7 +574,7 @@
     <span class="k">def</span> <span class="nf">get_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_consistent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">force_consistent</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;free_energy&#39;</span><span class="p">,</span> <span class="n">energy</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;free_energy&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">energy</span>
 
@@ -599,7 +599,7 @@
 
     <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_calculation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">raise</span> <span class="n">PropertyNotImplementedError</span>
 
         <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span>
@@ -622,7 +622,7 @@
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
             <span class="c1"># For some reason the calculator was not able to do what we want,</span>
             <span class="c1"># and that is OK.</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">raise</span> <span class="n">PropertyNotImplementedError</span>
 
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -680,7 +680,7 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">numeric_force</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))])</span>
 
-    <span class="k">def</span> <span class="nf">calculate_numerical_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="n">voigt</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calculate_numerical_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">voigt</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate numerical stress using finite difference.&quot;&quot;&quot;</span>
 
         <span class="n">stress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -700,7 +700,7 @@
             <span class="n">stress</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">eplus</span> <span class="o">-</span> <span class="n">eminus</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="n">V</span><span class="p">)</span>
             <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">d</span>
 
-            <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">2</span>
             <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
             <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -743,7 +743,7 @@
 <span class="sd">            Command used to start calculation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">Calculator</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">ignore_bad_restart_file</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span>
+        <span class="n">Calculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">ignore_bad_restart_file</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span>
                             <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -818,7 +818,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

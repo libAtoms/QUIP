@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Solutions &mdash; quippy 21b8e64+ documentation</title>
+  <title>Solutions &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="References" href="adaptive-qmmm-references.html"/>
         <link rel="prev" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -263,7 +263,7 @@
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Minimising bulk unit cell...&#39;</span><span class="p">)</span>
 <span class="n">minim</span> <span class="o">=</span> <span class="n">Minim</span><span class="p">(</span><span class="n">si_bulk</span><span class="p">,</span> <span class="n">relax_positions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">relax_cell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">minim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">minim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
     
 <span class="n">a0</span> <span class="o">=</span> <span class="n">si_bulk</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Lattice constant </span><span class="si">%.3f</span><span class="s1"> A</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">a0</span><span class="p">)</span>
@@ -469,7 +469,7 @@
                                  <span class="c1"># for neighbour calculations</span>
 <span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack</span>
                                  <span class="c1"># is taken to be running</span>
-<span class="n">strain_rate</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
+<span class="n">strain_rate</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
 <span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.xyz&#39;</span>           <span class="c1"># Trajectory output file (NetCDF format)</span>
 <span class="n">traj_interval</span> <span class="o">=</span> <span class="mi">10</span>               <span class="c1"># Number of time steps between</span>
                                  <span class="c1"># writing output frames</span>
@@ -611,7 +611,7 @@
                                  <span class="c1"># for neighbour calculations</span>
 <span class="n">tip_move_tol</span> <span class="o">=</span> <span class="mf">10.0</span>              <span class="c1"># Distance tip has to move before crack</span>
                                  <span class="c1"># is taken to be running</span>
-<span class="n">strain_rate</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
+<span class="n">strain_rate</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>  <span class="c1"># Strain rate</span>
 <span class="n">traj_file</span> <span class="o">=</span> <span class="s1">&#39;traj.xyz&#39;</span>           <span class="c1"># Trajectory output file (NetCDF or XYZ format)</span>
 <span class="n">traj_interval</span> <span class="o">=</span> <span class="mi">10</span>               <span class="c1"># Number of time steps between</span>
                                  <span class="c1"># writing output frames</span>
@@ -814,7 +814,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.crack &mdash; quippy 21b8e64+ documentation</title>
+  <title>quippy.crack &mdash; quippy 05a2989+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 21b8e64+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 05a2989+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                21b8e64+
+                05a2989+
               </div>
             
           
@@ -183,7 +183,7 @@
 <span class="kn">from</span> <span class="nn">quippy.surface</span> <span class="k">import</span> <span class="n">J_PER_M2</span>
 <span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">farray</span>
 
-<span class="n">MPA_SQRT_M</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="n">GPA</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0e10</span><span class="p">)</span>
+<span class="n">MPA_SQRT_M</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="o">/</span><span class="n">GPA</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0e10</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -277,7 +277,7 @@
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
 
     <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">crack_slab</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="nb">abs</span><span class="p">((</span><span class="n">maxy</span><span class="o">-</span><span class="n">miny</span><span class="p">)</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span>  <span class="c1"># be sure that remapping didn&#39;t change height of slab</span>
+    <span class="k">assert</span> <span class="nb">abs</span><span class="p">((</span><span class="n">maxy</span><span class="o">-</span><span class="n">miny</span><span class="p">)</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-5</span>  <span class="c1"># be sure that remapping didn&#39;t change height of slab</span>
 
     <span class="c1"># Add various properties to crack_slab</span>
     <span class="n">crack_slab</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hybrid&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -704,7 +704,7 @@
    <span class="k">return</span> <span class="p">(</span><span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">find_mapping</span><span class="p">(</span><span class="n">at_in</span><span class="p">,</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_mapping</span><span class="p">(</span><span class="n">at_in</span><span class="p">,</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Find a mapping between pairs of atoms displaced by a given vector</span>
 <span class="sd">   (or by one of a number of given vectors).</span>
@@ -813,7 +813,7 @@
     <span class="p">}</span>
 
 
-<div class="viewcode-block" id="make_crack_advance_map"><a class="viewcode-back" href="../../crack.html#quippy.crack.make_crack_advance_map">[docs]</a><span class="k">def</span> <span class="nf">make_crack_advance_map</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">):</span>
+<div class="viewcode-block" id="make_crack_advance_map"><a class="viewcode-back" href="../../crack.html#quippy.crack.make_crack_advance_map">[docs]</a><span class="k">def</span> <span class="nf">make_crack_advance_map</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find mapping from atom indices to the index of atom one step ahead</span>
 <span class="sd">    of them in the crack propagation direction (i.e. along +x).</span>
@@ -1425,19 +1425,19 @@
     <span class="n">clf</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">),</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
                                   <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)],</span>
-                                  <span class="p">[</span><span class="s1">&#39;\sigma_</span><span class="si">{xx}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">r&#39;\sigma_</span><span class="si">{yy}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">r&#39;\sigma_</span><span class="si">{xy}</span><span class="s1">&#39;</span><span class="p">]):</span>
+                                  <span class="p">[</span><span class="s1">&#39;\sigma_</span><span class="si">{xx}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\sigma_</span><span class="si">{yy}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\sigma_</span><span class="si">{xy}</span><span class="s1">&#39;</span><span class="p">]):</span>
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
 
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
 
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">7</span><span class="p">)</span>
@@ -1445,7 +1445,7 @@
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span>
                            <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">])</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">dcontours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="s1">r&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+        <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
         <span class="n">draw</span><span class="p">()</span></div>
 
 
@@ -1620,7 +1620,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'21b8e64+',
+            VERSION:'05a2989+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
