@@ -1902,18 +1902,22 @@ contains
 
   pure function real_format_length(r) result(len)
     real(dp), intent(in)::r
-    integer::len
+    integer :: len
+    character(len=mainlog%default_real_precision+10) :: tmp
 
     if(isnan(r)) then
        len = 3
     else       !         sign                           int part         space?          decimal point                                                        fractional part
-       len = int(0.5_dp-sign(0.5_dp,r)) + int(log10(max(1.0_dp,abs(r)))) + 1 + & 
-           & int(sign(0.5_dp,real(mainlog%default_real_precision,dp)-0.5_dp)+0.5_dp) &
-           & + max(0,mainlog%default_real_precision)
+       tmp = ""
+       write(tmp,'(g0.17)') r
+       len = len_trim(tmp)
+       !len = int(0.5_dp-sign(0.5_dp,r)) + int(log10(max(1.0_dp,abs(r)))) + 1 + & 
+       !    & int(sign(0.5_dp,real(mainlog%default_real_precision,dp)-0.5_dp)+0.5_dp) &
+       !    & + max(0,mainlog%default_real_precision)
 
 #ifdef GFORTRAN_ZERO_HACK
        !gfortran hack - 0.0000... is printed as .00000000
-       if (r == 0.0) len = len - 1
+       if (r == 0.0_dp) len = len - 1
 #endif
 
     end if
@@ -1934,7 +1938,7 @@ contains
     character(12) :: format
 
     if (mainlog%default_real_precision > 0) then
-       write(format,'(a,i0,a)')'(f0.',max(0,mainlog%default_real_precision),',a)'
+       write(format,'(a,i0,a)')'(g0.',mainlog%default_real_precision,',a)'
        if (isnan(r)) then
           write(real_cat_string,'(a,a)') "NaN", string
        else
@@ -1956,7 +1960,7 @@ contains
        if (isnan(r)) then
 	 write(string_cat_real,'(a,a)') string,"NaN"
        else
-	 write(format,'(a,i0,a)')'(a,f0.',max(0,mainlog%default_real_precision),')'
+	 write(format,'(a,i0,a)')'(a,g0.',mainlog%default_real_precision,')'
 	 write(string_cat_real,format) string, r
        endif
     else
@@ -1972,8 +1976,8 @@ contains
     character(24) :: format
 
     if (mainlog%default_real_precision > 0) then
-       write(format,'(a,i0,a,i0,a)')'(a,f0.',max(0,mainlog%default_real_precision),'," ",f0.', &
- 	                                     max(0,mainlog%default_real_precision),')'
+       write(format,'(a,i0,a,i0,a)')'(a,g0.',mainlog%default_real_precision,'," ",g0.', &
+ 	                                     mainlog%default_real_precision,')'
        write(string_cat_complex,format) string, c
     else
        write(string_cat_complex,'(i0," ",i0)') string, int(real(c)), int(imag(c))

@@ -33,8 +33,17 @@ program sizeof_fortran_t
 end program sizeof_fortran_t
 EOF
 
-make -I ../../arch -I../.. sizeof_fortran_t > /dev/null
-echo SIZEOF_FORTRAN_T=$(./sizeof_fortran_t)
+# Using && prevents an empty value being added to the makefile
+make -I ../../arch -I../.. sizeof_fortran_t > /dev/null && \
+    echo SIZEOF_FORTRAN_T=$(./sizeof_fortran_t)
+
+# Try to warn that something is wrong
+if [ $? -ne 0 ]; then
+    echo >&2
+    echo Unable to determine SIZEOF_FORTRAN_T >&2
+    echo Check that your compiler is working and try again! >&2
+    echo >&2
+fi
 
 rm sizeof_fortran_t.f90
 rm sizeof_fortran_t
