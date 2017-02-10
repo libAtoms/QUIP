@@ -50,6 +50,13 @@ install:
       export RUN=false;
       export DOCS=false;
     fi
+  # Check if the last build succeeded with the travis.rb client. Rebuild
+  # anything that failed last time.
+  - gem install travis --no-rdoc --no-ri
+  - export TRAVIS_LAST_BUILD=$((${TRAVIS_JOB_NUMBER%.*}-1)).${TRAVIS_JOB_NUMBER#*.}
+  - if travis show --no-interactive ${TRAVIS_LAST_BUILD} | grep -qe "errored\|failed"; then
+      export RUN=true;
+    fi
   # Installing deps takes 10+ mins on a slow day. Only install for running
   # builds.
   # Requires 'sudo' on Travis; i.e. not compatible with container builds.
