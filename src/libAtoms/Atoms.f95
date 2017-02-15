@@ -1114,7 +1114,12 @@ contains
 
   !% Return the number of neighbour that atom 'i' has.  If the
   !% optional arguments max_dist or max_factor are present then only
-  !% neighbours closer than this cutoff are included.  'alt_connect'
+  !% neighbours closer than this cutoff are included.  Do not use
+  !% 'max_dist' when iterating only over neighbours within a certain
+  !% distance; instead, iterate over the full list and discard
+  !% unnecessary neighbours in `atoms_neighbour`.
+  !%
+  !% 'alt_connect'
   !% can be set to another Connection object to use alternative
   !% connectivity information, for example 'hysteretic_connect'.
   function atoms_n_neighbours(this, i, max_dist, max_factor, alt_connect, error) result(n)
@@ -1187,6 +1192,12 @@ contains
   !%>   end do
   !%
   !% If distance $>$ max_dist, return 0, and do not waste time calculating other quantities.
+  !% This means that efficient iteration is possible over neighbours only
+  !% within a certain distance.  However, as the neighbour list is not sorted,
+  !% you must first iterate over the whole list (i.e. do _not_ use the
+  !% `max_dist` parameter in `atoms_n_neighbours`), then skip those
+  !% neighbours where this function returns 0.
+  !%
   !% 'alt_connect' has the same meaning as 'n_neighbours'.
   !%
   !% Here's a typical loop construct in Python. Note how `r` and `u`
