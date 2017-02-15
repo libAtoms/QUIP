@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Atoms objects &mdash; quippy b3e5f82+ documentation</title>
+  <title>Atoms objects &mdash; quippy 0f1fbf5+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy b3e5f82+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 0f1fbf5+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Quippy library reference" href="quippy.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                b3e5f82+
+                0f1fbf5+
               </div>
             
           
@@ -3112,7 +3112,11 @@ Optionally only include the contribution of a subset of atoms.</p>
 <dd><p>Neighbour list stuff
 Return the number of neighbour that atom <code class="docutils literal"><span class="pre">i</span></code> has.  If the
 optional arguments max_dist or max_factor are present then only
-neighbours closer than this cutoff are included.  <code class="docutils literal"><span class="pre">alt_connect</span></code>
+neighbours closer than this cutoff are included.  Do not use
+<code class="docutils literal"><span class="pre">max_dist</span></code> when iterating only over neighbours within a certain
+distance; instead, iterate over the full list and discard
+unnecessary neighbours in <cite>atoms_neighbour</cite>.</p>
+<p><code class="docutils literal"><span class="pre">alt_connect</span></code>
 can be set to another Connection object to use alternative
 connectivity information, for example <code class="docutils literal"><span class="pre">hysteretic_connect</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -3151,7 +3155,12 @@ if <span class="math">\(i &gt; j\)</span>, it is an index into <code class="docu
 </pre></div>
 </div>
 <p>If distance <span class="math">\(&gt;\)</span> max_dist, return 0, and do not waste time calculating other quantities.
-<code class="docutils literal"><span class="pre">alt_connect</span></code> has the same meaning as <code class="docutils literal"><span class="pre">n_neighbours</span></code>.</p>
+This means that efficient iteration is possible over neighbours only
+within a certain distance.  However, as the neighbour list is not sorted,
+you must first iterate over the whole list (i.e. do _not_ use the
+<cite>max_dist</cite> parameter in <cite>atoms_n_neighbours</cite>), then skip those
+neighbours where this function returns 0.</p>
+<p><code class="docutils literal"><span class="pre">alt_connect</span></code> has the same meaning as <code class="docutils literal"><span class="pre">n_neighbours</span></code>.</p>
 <p>Here&#8217;s a typical loop construct in Python. Note how <cite>r</cite> and <cite>u</cite>
 are created before the loop: arguments which are both optional
 and <code class="docutils literal"><span class="pre">intent(out)</span></code> in Fortran are converted to <code class="docutils literal"><span class="pre">intent(in,out)</span></code> for quippy. ::</p>
@@ -4663,7 +4672,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'b3e5f82+',
+            VERSION:'0f1fbf5+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
