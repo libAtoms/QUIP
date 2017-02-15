@@ -216,7 +216,7 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    call print("Found " // size(monomer_index,  2) // " monomers", PRINT_VERBOSE)
    if(.not. all(is_associated)) then
-      call print("WARNING: IP Custom: not all atoms assigned to a methane monomer. If you have partial monomers this is OK.", PRINT_NERD)
+      call print("WARNING: IP Custom: not all atoms assigned to a methane monomer. If you have partial monomers this is OK.", PRINT_VERBOSE)
    end if
 
    ! First, loop over monomers.  These are also the centres of angle triplets.
@@ -228,11 +228,16 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
          if (.not. atom_mask_pointer(atom_i)) cycle
       end if
 
-      do rank_j = 1, n_neighbours(at, atom_i, max_dist=this%cutoff)
+      call print("Atom " // atom_i // " has " // n_neighbours(at, atom_i, max_dist=this%cutoff) // " neighbours", PRINT_VERBOSE)
+      do rank_j = 1, n_neighbours(at, atom_i)
          atom_j = neighbour(at, atom_i, rank_j, distance=rij_mag, diff=rij, cosines=rij_norm, max_dist=this%cutoff)
-         if (rij_mag .feq. 0.0_dp) cycle
+         if (atom_j .eq. 0) cycle  ! Neighbour outside of cutoff
+         if (rij_mag .feq. 0.0_dp) cycle  ! Somehow got self
          ! This really shouldn't happen in any normal cases, but account for it anyways
-         if (.not. (any(monomer_index(2:5, mon_i) .eq. atom_j))) cycle
+         if (.not. (any(monomer_index(2:5, mon_i) .eq. atom_j))) then
+            call print("WARNING: Stray neighbour " // atom_j // ", rank " // rank_j // ", of atom " // atom_i // " detected!", PRINT_VERBOSE)
+            cycle
+         end if
 
          ! Pairwise forces and energies
          e_pair = this%kbond * (rij_mag - this%bond_r0)**2
@@ -255,8 +260,9 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
             local_virial(:, atom_i) = local_virial(:, atom_i) + reshape(virial_i, (/9/))
          end if
 
-         do rank_k = 1, n_neighbours(at, atom_i, max_dist=this%cutoff)
+         do rank_k = 1, n_neighbours(at, atom_i)
             atom_k = neighbour(at, atom_i, rank_k, distance=rik_mag, diff=rik, cosines=rik_norm, max_dist=this%cutoff)
+            if (atom_k .eq. 0) cycle
             ! Again, shouldn't happen, but better to be safe
             if (.not. (any(monomer_index(2:5, mon_i) .eq. atom_k))) cycle
             if (atom_k <= atom_j) cycle
