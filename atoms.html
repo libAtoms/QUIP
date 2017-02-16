@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Atoms objects &mdash; quippy 0f1fbf5+ documentation</title>
+  <title>Atoms objects &mdash; quippy 0931d15+ documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 0f1fbf5+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 0931d15+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Quippy library reference" href="quippy.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0f1fbf5+
+                0931d15+
               </div>
             
           
@@ -813,7 +813,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <td>Neighbour list stuff Return the number of neighbour that atom <code class="docutils literal"><span class="pre">i</span></code> has.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.neighbour" title="quippy.atoms.Atoms.neighbour"><code class="xref py py-obj docutils literal"><span class="pre">neighbour</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Return the index of the <span class="math">\(n^{\mbox{\small{th}}}\)</span> neighbour of atom <span class="math">\(i\)</span>.</td>
+<td>Return the index of the <span class="math">\(n^\mathrm{th}\)</span> neighbour of atom <span class="math">\(i\)</span>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.pop" title="quippy.atoms.Atoms.pop"><code class="xref py py-obj docutils literal"><span class="pre">pop</span></code></a>([i])</td>
 <td>Remove and return atom at index <em>i</em> (default last).</td>
@@ -3115,7 +3115,7 @@ optional arguments max_dist or max_factor are present then only
 neighbours closer than this cutoff are included.  Do not use
 <code class="docutils literal"><span class="pre">max_dist</span></code> when iterating only over neighbours within a certain
 distance; instead, iterate over the full list and discard
-unnecessary neighbours in <cite>atoms_neighbour</cite>.</p>
+unnecessary neighbours in <code class="docutils literal"><span class="pre">atoms_neighbour</span></code>.</p>
 <p><code class="docutils literal"><span class="pre">alt_connect</span></code>
 can be set to another Connection object to use alternative
 connectivity information, for example <code class="docutils literal"><span class="pre">hysteretic_connect</span></code>.</p>
@@ -3142,7 +3142,7 @@ connectivity information, for example <code class="docutils literal"><span class
 <dl class="method">
 <dt id="quippy.atoms.Atoms.neighbour">
 <code class="descname">neighbour</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the index of the <span class="math">\(n^{\mbox{\small{th}}}\)</span> neighbour of atom <span class="math">\(i\)</span>. Together with the
+<dd><p>Return the index of the <span class="math">\(n^\mathrm{th}\)</span> neighbour of atom <span class="math">\(i\)</span>. Together with the
 previous function, this facilites a loop over the neighbours of atom <span class="math">\(i\)</span>. Optionally, we
 return other geometric information, such as distance, direction cosines and difference vector,
 and also a direct index into the neighbour tables. If <span class="math">\(i &lt;= j\)</span>, this is an index into <code class="docutils literal"><span class="pre">neighbour1(i)</span></code>;
@@ -3154,13 +3154,13 @@ if <span class="math">\(i &gt; j\)</span>, it is an index into <code class="docu
 <span class="n">end</span> <span class="n">do</span>
 </pre></div>
 </div>
-<p>If distance <span class="math">\(&gt;\)</span> max_dist, return 0, and do not waste time calculating other quantities.
-This means that efficient iteration is possible over neighbours only
-within a certain distance.  However, as the neighbour list is not sorted,
-you must first iterate over the whole list (i.e. do _not_ use the
-<cite>max_dist</cite> parameter in <cite>atoms_n_neighbours</cite>), then skip those
+<p>If distance <span class="math">\(&gt;\)</span> <code class="docutils literal"><span class="pre">max_dist</span></code>, return 0, and do not waste time calculating other quantities.
+This enables efficient iteration over the subset of neighbours located within the radius
+<code class="docutils literal"><span class="pre">max_dist</span></code>.  However, as the neighbour list is not sorted,
+you must first iterate over the whole list (i.e. do <em>not</em> use the
+<code class="docutils literal"><span class="pre">max_dist</span></code> parameter in <code class="docutils literal"><span class="pre">atoms_n_neighbours</span></code>), then skip those
 neighbours where this function returns 0.</p>
-<p><code class="docutils literal"><span class="pre">alt_connect</span></code> has the same meaning as <code class="docutils literal"><span class="pre">n_neighbours</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">alt_connect</span></code> has the same meaning as in <code class="docutils literal"><span class="pre">n_neighbours</span></code>.</p>
 <p>Here&#8217;s a typical loop construct in Python. Note how <cite>r</cite> and <cite>u</cite>
 are created before the loop: arguments which are both optional
 and <code class="docutils literal"><span class="pre">intent(out)</span></code> in Fortran are converted to <code class="docutils literal"><span class="pre">intent(in,out)</span></code> for quippy. ::</p>
@@ -4672,7 +4672,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0f1fbf5+',
+            VERSION:'0931d15+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
