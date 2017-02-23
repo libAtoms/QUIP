@@ -441,7 +441,6 @@ implicit none
             data(:,i) = data_line(:)
         endif
       end do
-      deallocate(data_line)
   else ! n_data <= 0, figure out by reading
       print *, "doing n_data = 0"
       ! initial counters and storage
