@@ -51,6 +51,7 @@ private
     character(len=STRING_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     real(dp) :: flux_print_interval
+    real(dp) :: extra_calc_interval
     character(len=STRING_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
     logical :: damping, rescale_initial_velocity
@@ -136,6 +137,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
   call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval, help_string="how often to print atomic config to traj file")
   call param_register(md_params_dict, 'flux_print_interval', '-1', params%flux_print_interval, help_string="how often to print heat flux (fs)")
+  call param_register(md_params_dict, 'extra_calc_interval', '-1.0', params%extra_calc_interval, help_string="how often to do extra calcs (e.g. flux)")
   call param_register(md_params_dict, 'print_property_list', '', print_property_list_str, help_string="list of properties to print for atoms")
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval, help_string="how often to print potential object")
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum, help_string="zero total momentum before starting")
@@ -369,7 +371,7 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
      end if
   end if
 
-end subroutine
+end subroutine do_prints
 
 subroutine print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
   type(md_params), intent(in) :: params
@@ -869,6 +871,9 @@ contains
     real(dp) :: E, virial(3,3)
     character(STRING_LENGTH) :: extra_calc_args
 
+    real(dp) :: tprin
+    logical :: do_extra_calc
+
     ! start with have p(t), v(t), a(t)
 
     ! first Verlet half-step
@@ -950,14 +955,23 @@ contains
 
     ! call calc again if needed for v dep. forces
     if (params%v_dep_quants_extra_calc) then
-      tprin = params%extra_calc_interval
-      ! if the time is close to a 
-      if (override_interval .or. abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) then
-          if (params%quiet_calc) call verbosity_push_decrement()
-          call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
-          if (params%quiet_calc) call verbosity_pop()
+      do_extra_calc = .true.
+      if (params%extra_calc_interval > 0.0_dp) then
+         do_extra_calc = .false.
+         ! just a short alias
+         tprin = params%extra_calc_interval
+         ! if the time is close to a 
+         if (abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) do_extra_calc = .true.
+       end if
 
-          if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
+       if (do_extra_calc) then
+         call system_timer("md/extra_calc")
+         if (params%quiet_calc) call verbosity_push_decrement()
+         call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+         if (params%quiet_calc) call verbosity_pop()
+
+         if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
+         call system_timer("md/extra_calc")
       endif
     end if
   end subroutine do_v_dep_calcs
