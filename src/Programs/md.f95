@@ -61,7 +61,6 @@ private
     logical :: quiet_calc, do_timing
     integer :: advance_md_substeps
     logical :: v_dep_quants_extra_calc
-    real(dp) :: extra_calc_interval
     real(dp) :: extra_heat
     logical :: continuation
     logical :: use_fortran_random
@@ -148,7 +147,6 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'do_timing', 'F', params%do_timing, help_string="if true, do timing")
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps, help_string="how many actual MD steps for each apparent steps, for things like hybrid MC")
   call param_register(md_params_dict, 'v_dep_quants_extra_calc', 'F', params%v_dep_quants_extra_calc, help_string="do extra call to calc for velocity dependent quantities (like heat flux)")
-  call param_register(md_params_dict, 'extra_calc_interval', '10.0', params%extra_calc_interval, help_string="how often (in fs) to do extra calcs")
   call param_register(md_params_dict, 'continuation', 'F', params%continuation, help_string="if true, this is a continuation of an old run, read initial time and i_step from input config")
   call param_register(md_params_dict, 'extra_heat', '0.0', params%extra_heat, help_string="If > 0, add extra heating of this magnitude to atoms with field extra_heat_mask /= 0, for testing thermostats")
   call param_register(md_params_dict, 'use_fortran_random', 'F', params%use_fortran_random, help_string="if true, use fortran builtin random_number() routine")
