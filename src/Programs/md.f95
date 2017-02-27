@@ -870,7 +870,6 @@ contains
     character(STRING_LENGTH) :: extra_calc_args
 
     real(dp) :: tprin
-    logical :: do_extra_calc
 
     ! start with have p(t), v(t), a(t)
 
@@ -948,6 +947,7 @@ contains
 
     logical :: use_override_interval
     real(dp) :: tprin
+    logical :: do_extra_calc
 
     use_override_interval = optional_default(.false., override_interval)
 
