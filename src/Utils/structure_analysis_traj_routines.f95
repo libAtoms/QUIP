@@ -578,18 +578,19 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 end subroutine density_sample_radial_mesh_Gaussians
 
 ! from LAMMPS "compute xrd" documentation
-subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, do_Lorentz_polarization, pos_2theta)
+subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, k_spacing, do_Lorentz_polarization, pos_2theta)
   real(dp), intent(inout) :: xrd(:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: lambda
   real(dp), intent(in) :: range_2theta(2)
   integer, intent(in) :: n_2theta
+  real(dp), intent(in) :: k_spacing
   logical, intent(in) :: do_Lorentz_polarization
   real(dp) , intent(inout), optional :: pos_2theta(:)
 
   integer :: i_at, i_2theta
   real(dp) :: min_norm_k, max_norm_k
-  integer :: k1_min, k1_max, k2_min, k2_max, k3_min, k3_max, n_k, k1, k2, k3
+  integer :: n_k, k1, k2, k3, k_max, last_n_k
   real(dp) :: k(3)
   integer :: theta_i
   integer, allocatable :: theta_i_of_k(:), Z_of_type(:)
@@ -597,69 +598,97 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, do_Lorentz_polariza
   complex(dp), allocatable :: exp_2_pi_i_k_dot_r(:,:), F_k(:)
   integer :: i_type, i_Z, n_types, i_k
   complex(dp) :: two_pi_i
+  integer :: i_div, n_k_div
+  real(dp) :: k_grid(3,3)
+  logical :: done_any
 
-  ! print *, "xrd_calc for lambda ", lambda, "range_2theta ", range_2theta, "n_2theta ", n_2theta
   if (present(pos_2theta)) then
     do i_2theta=1, n_2theta
        pos_2theta(i_2theta) = range_2theta(1) + &
          (i_2theta-1)*(range_2theta(2)-range_2theta(1)) / real(n_2theta-1.0_dp,dp)
     end do
-    ! print *, "pos_2theta ", pos_2theta
   end if
+
+  do i_div=1, 3
+      if (k_spacing > 0) then
+          !NB g^T
+          n_k_div = max(1,nint(norm(at%g(i_div,:))/k_spacing))
+      else
+          n_k_div = -nint(k_spacing)
+      endif
+      !NB g^T
+      k_grid(:,i_div) = at%g(i_div,:)/n_k_div
+  end do
 
   min_norm_k = 2.0*sin(range_2theta(1)/2.0)/lambda
   max_norm_k = 2.0*sin(range_2theta(2)/2.0)/lambda
   ! print *, "norm k range ", min_norm_k, max_norm_k
-  k1_min = min_norm_k/norm(at%g(:,1))-1
-  k1_max = max_norm_k/norm(at%g(:,1))+1
-  k2_min = min_norm_k/norm(at%g(:,2))-1
-  k2_max = max_norm_k/norm(at%g(:,2))+1
-  k3_min = min_norm_k/norm(at%g(:,3))-1
-  k3_max = max_norm_k/norm(at%g(:,3))+1
-  k1_min = max(k1_min, 0)
-  k2_min = max(k2_min, 0)
-  k3_min = max(k3_min, 0)
-  ! print *, "k range ", k1_min, k1_max, k2_min, k2_max, k3_min, k3_max
+  ! print *, "k range ", k_max
+  last_n_k = -1
   n_k = 0
-  do k1 = -k1_max, k1_max
-  do k2 = -k2_max, k2_max
-  do k3 = -k3_max, k3_max
-    k = k1*at%g(:,1) + k2*at%g(:,2) + k3*at%g(:,3)
-    if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) n_k = n_k + 1
-  end do
-  end do
+  k_max = 0
+  done_any = .false.
+  do while (last_n_k /= n_k .or. .not. done_any)
+      last_n_k = n_k
+      do k1 = -k_max, k_max
+      do k2 = -k_max, k_max
+      do k3 = -k_max, k_max
+        if (abs(k1) == k_max .or. abs(k2) == k_max .or. abs(k3) == k_max) then
+            k = k1*k_grid(:,1) + k2*k_grid(:,2) + k3*k_grid(:,3)
+            if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) then
+                n_k = n_k + 1
+                done_any = .true.
+            end if
+        end if
+      end do
+      end do
+      end do
+      k_max = k_max + 1
   end do
 
-  ! print *, "n_k ", n_k
+  print *, "n_k ", n_k, " norm(k_grid) ", norm(k_grid(:,1)),norm(k_grid(:,2)),norm(k_grid(:,3))
 
   allocate(ks(n_k,3))
   allocate(theta_i_of_k(n_k), sin_sq_theta_over_lambda_sq(n_k), theta(n_k))
 
+  last_n_k = -1
   n_k = 0
-  do k1 = -k1_max, k1_max
-  do k2 = -k2_max, k2_max
-  do k3 = -k3_max, k3_max
-    k = k1*at%g(:,1) + k2*at%g(:,2) + k3*at%g(:,3)
-    if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) then
-        n_k = n_k + 1
-        ks(n_k,:) = k
-        theta(n_k) = asin(norm(k)*lambda/2.0)
-        sin_sq_theta_over_lambda_sq(n_k) = (norm(k)/2.0)**2
-        theta_i = int(n_2theta*(2.0*theta(n_k) - range_2theta(1))/(range_2theta(2)-range_2theta(1)))+1
-        theta_i_of_k(n_k) = theta_i
-        ! print *, "k ", n_k, k, theta_i
-    endif
-  end do
-  end do
+  k_max = 0
+  done_any = .false.
+  do while (last_n_k /= n_k .or. .not. done_any)
+      last_n_k = n_k
+      do k1 = -k_max, k_max
+      do k2 = -k_max, k_max
+      do k3 = -k_max, k_max
+        if (abs(k1) == k_max .or. abs(k2) == k_max .or. abs(k3) == k_max) then
+            k = k1*k_grid(:,1) + k2*k_grid(:,2) + k3*k_grid(:,3)
+            if (norm(k) >= min_norm_k .and. norm(k) <= max_norm_k) then
+                done_any = .true.
+                n_k = n_k + 1
+                ks(n_k,:) = k
+                theta(n_k) = asin(norm(k)*lambda/2.0)
+                sin_sq_theta_over_lambda_sq(n_k) = (norm(k)/2.0)**2
+                theta_i = int(n_2theta*(2.0*theta(n_k) - range_2theta(1))/(range_2theta(2)-range_2theta(1)))+1
+                theta_i_of_k(n_k) = theta_i
+            endif
+        endif
+      end do
+      end do
+      end do
+      k_max = k_max + 1
   end do
 
   allocate(exp_2_pi_i_k_dot_r(n_k, at%n))
   allocate(k_dot_r(n_k, at%n))
+  ! ks: N_kx3
+  ! pos: 3xN_at
+  ! ks * pos = N_k * N_at
   call matrix_product_sub(k_dot_r, ks, at%pos)
+  deallocate(ks)
   two_pi_i = 2.0*PI*cmplx(0.0_dp, 1.0_dp)
   !$omp parallel do
-  do i_at=1, at%n
-      exp_2_pi_i_k_dot_r(:,i_at) = exp(two_pi_i*k_dot_r(:,i_at))
+  do i_k=1, n_k
+      exp_2_pi_i_k_dot_r(i_k,:) = exp(two_pi_i*k_dot_r(i_k,:))
   end do
   !$omp end parallel do
   deallocate(k_dot_r)
@@ -674,12 +703,19 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, do_Lorentz_polariza
     endif
   end do
   do i_type=1, n_types
+      ! omp parallel inside function
       ASF = atomic_structure_factor(Z_of_type(i_type), sin_sq_theta_over_lambda_sq(:))
       do i_at = 1, at%n
-        if (at%Z(i_at) == Z_of_type(i_type)) exp_2_pi_i_k_dot_r(:,i_at) = exp_2_pi_i_k_dot_r(:,i_at) * ASF
+        if (at%Z(i_at) == Z_of_type(i_type)) then
+            !$omp parallel do
+            do i_k = 1, n_k
+                exp_2_pi_i_k_dot_r(i_k,i_at) = exp_2_pi_i_k_dot_r(i_k,i_at) * ASF(i_k)
+            end do
+            !$omp end parallel do
+        endif
       end do
   end do
-  deallocate(ASF, Z_of_type)
+  deallocate(ASF, Z_of_type, sin_sq_theta_over_lambda_sq)
 
   allocate(F_k(n_k))
   ! F_k = sum(exp_2_pi_i_k_dot_r, dim=2)
@@ -688,6 +724,8 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, do_Lorentz_polariza
     F_k(i_k) = sum(exp_2_pi_i_k_dot_r(i_k,:))
   end do
   !$omp end parallel do
+  deallocate(exp_2_pi_i_k_dot_r)
+
   if (do_Lorentz_polarization) then
       !$omp parallel do
       do i_k=1, n_k
@@ -695,13 +733,16 @@ subroutine xrd_calc(xrd, at, lambda, range_2theta, n_2theta, do_Lorentz_polariza
       end do
       !$omp end parallel do
   endif
+  deallocate(theta)
+
   !$omp parallel do
   do i_2theta = 1, n_2theta
-    xrd(i_2theta) = sum(abs(F_k)**2, mask=(theta_i_of_k == i_2theta)) / at%n
+     xrd(i_2theta) = sum(abs(F_k)**2, mask=(theta_i_of_k == i_2theta)) / at%n
   end do
   !$omp end parallel do
+  deallocate(theta_i_of_k)
 
-  deallocate(ks, exp_2_pi_i_k_dot_r, theta_i_of_k, F_k, sin_sq_theta_over_lambda_sq,theta)
+  deallocate(F_k)
 
 end subroutine xrd_calc
 
@@ -710,12 +751,16 @@ function atomic_structure_factor(Z, sin_sq_theta_over_lambda_sq) result (ASF)
     real(dp) :: sin_sq_theta_over_lambda_sq(:)
     real(dp) :: ASF(size(sin_sq_theta_over_lambda_sq))
 
-    integer :: i
+    integer :: i, i_k
 
     ! print *, "Z ", Z, ASF_c(Z), ASF_a(:,Z), ASF_b(:,Z)
     ASF = ASF_c(Z)
     do i=1, 4
-        ASF(:) = ASF(:) + ASF_a(i,Z)*exp(-ASF_b(i,Z)*sin_sq_theta_over_lambda_sq(:))
+        !$omp parallel do
+        do i_k=1, size(ASF)
+            ASF(i_k) = ASF(i_k) + ASF_a(i,Z)*exp(-ASF_b(i,Z)*sin_sq_theta_over_lambda_sq(i_k))
+        end do
+        !$omp end parallel do
     end do
 end function
 
