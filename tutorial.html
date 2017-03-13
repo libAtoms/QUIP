@@ -382,8 +382,8 @@ and <code class="docutils literal"><span class="pre">z</span></code> <code class
 <span class="go"> [ 1.36  4.08  4.08]]</span>
 </pre></div>
 </div>
-<p>Note that we print the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.12)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
-position array using the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.12)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
+<p>Note that we print the <code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code> of the
+position array using the <code class="xref py py-attr docutils literal"><span class="pre">T</span></code> attribute, since the
 actual <code class="docutils literal"><span class="pre">dia.pos</span></code> array has 3 rows and <code class="docutils literal"><span class="pre">len(dia)</span> <span class="pre">==</span> <span class="pre">8</span></code> columns,
 which isn&#8217;t very convenient for printing. Atomic properties are stored
 in arrays (actually, in a special type of array called a
@@ -609,7 +609,7 @@ arithmetic:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.12)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
+<p>The <code class="xref py py-func docutils literal"><span class="pre">array()</span></code> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib&#8217;s
 <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
