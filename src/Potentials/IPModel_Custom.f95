@@ -190,6 +190,9 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
             RAISE_ERROR("IPModel_Custom_Calc did not find "//trim(pers_idces_name)//" property in the atoms object.", error)
          endif
       endif
+   else
+       called_from_lammps = .false.
+       atom_mask_pointer => null()
    endif
 
    if (present(e)) e = 0.0_dp
@@ -221,6 +224,12 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
    ! First, loop over monomers.  These are also the centres of angle triplets.
    do mon_i = 1, size(monomer_index, 2)
+      ! Copied from IPModel_SW.f95 -- let's hope this works.
+      if (present(mpi)) then
+         if (mpi%active) then
+            if (mod(mon_i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         endif
+      endif
       atom_i = monomer_index(1, mon_i)
       ! Only evaluate the monomer if the central C atom is local - should check
       ! how lammps accounts for forces on non-local atoms
@@ -299,6 +308,15 @@ subroutine IPModel_Custom_Calc(this, at, e, local_e, f, virial, local_virial, ar
          end do
       end do
    end do
+
+   ! Copied from IPModel_SW.xml
+   if (present(mpi)) then
+      if (present(e)) e = sum(mpi, e)
+      if (present(local_e)) call sum_in_place(mpi, local_e)
+      if (present(f)) call sum_in_place(mpi, f)
+      if (present(virial)) call sum_in_place(mpi, virial)
+      if (present(local_virial)) call sum_in_place(mpi, local_virial)
+   endif
 
    deallocate(monomer_index)
    deallocate(is_associated)
