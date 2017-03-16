@@ -41,7 +41,7 @@
 module TBMatrix_module
 
 use error_module
-use system_module, only : dp, current_verbosity, inoutput, PRINT_NORMAL, operator(//)
+use system_module, only : dp, current_verbosity, inoutput, PRINT_NORMAL, operator(//), optional_default
 use mpi_context_module
 use linearalgebra_module
 use atoms_module
@@ -436,37 +436,45 @@ subroutine TBMatrix_Print(this,file)
 
 end subroutine  TBMatrix_Print
 
-subroutine TBMatrix_copy_d(this, data_d)
+subroutine TBMatrix_copy_d(this, data_d, index)
   type(TBMatrix),    intent(in)           :: this
   real(dp), intent(inout), dimension(:,:) :: data_d
+  integer, optional, intent(in) :: index
+  integer my_index
+
+  my_index = optional_default(1, index)
 
   call Print('TBMatrix : ')
   call Print ('TBMatrix : N n_matrices ' // this%N // " " // this%n_matrices)
   call Print ('TBMatrix : is_complex ' // this%is_complex)
 
   if (allocated(this%data_d)) then
-    if (size(this%data_d) /= 1) call system_abort("only n_matrices == 1 supported")
-    data_d(:,:) = this%data_d(1)%data
+    if (my_index > size(this%data_d)) call system_abort("index > size(data_d)")
+    data_d(:,:) = this%data_d(my_index)%data
   else if (allocated(this%sdata_d)) then
-    if (size(this%sdata_d) /= 1) call system_abort("only n_matrices == 1 supported")
-    call copy(this%sdata_d(1), data_d)
+    if (my_index > size(this%sdata_d)) call system_abort("index > size(sdata_d)")
+    call copy(this%sdata_d(my_index), data_d)
   endif
 end subroutine TBmatrix_copy_d
 
-subroutine TBMatrix_copy_z(this, data_z)
+subroutine TBMatrix_copy_z(this, data_z, index)
   type(TBMatrix),    intent(in)           :: this
   complex(dp), intent(inout), dimension(:,:) :: data_z
+  integer, optional, intent(in) :: index
+  integer my_index
+
+  my_index = optional_default(1, index)
 
   call Print('TBMatrix : ')
   call Print ('TBMatrix : N n_matrices ' // this%N // " " // this%n_matrices)
   call Print ('TBMatrix : is_complex ' // this%is_complex)
 
   if (allocated(this%data_z)) then
-    if (size(this%data_z) /= 1) call system_abort("only n_matrices == 1 supported")
-    if (any(shape(data_z) /= shape(this%data_z(1)%data))) call system_abort("data_z size mismatch")
-    data_z(:,:) = this%data_z(1)%data
+    if (my_index > size(this%data_z)) call system_abort("index > size(data_z)")
+    if (any(shape(data_z) /= shape(this%data_z(my_index)%data))) call system_abort("data_z size mismatch")
+    data_z(:,:) = this%data_z(my_index)%data
   else if (allocated(this%sdata_z)) then
-    call system_abort("copying of sdata_z not yet implemented")
+    call copy(this%sdata_z(my_index), data_z)
   endif
 end subroutine TBMatrix_copy_z
 

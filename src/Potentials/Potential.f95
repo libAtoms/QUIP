@@ -419,9 +419,9 @@ module Potential_module
   end interface test_local_virial
 
 #ifdef HAVE_TB
-    public :: copy_TB_matrices
-    interface copy_TB_matrices
-       module procedure Potential_copy_TB_matrices
+    public :: calc_TB_matrices
+    interface calc_TB_matrices
+       module procedure Potential_calc_TB_matrices
     end interface
 #endif
 
@@ -2247,18 +2247,22 @@ end subroutine pack_pos_dg
   end subroutine potential_set_callback
 
 #ifdef HAVE_TB
-  subroutine potential_copy_TB_matrices(this, Hd, Sd, Hz, Sz)
+  subroutine potential_calc_TB_matrices(this, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index)
     type(Potential), intent(inout) :: this
+    type(atoms), intent(inout) :: at
+    character(len=*), intent(in), optional :: args_str
     real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
     complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+    real(dp), intent(inout), optional, dimension(:,:,:,:) :: dH, dS
+    integer, optional, intent(in) :: index
 
     if (this%is_simple) then
-       call copy_TB_matrices(this%simple, Hd, Sd, Hz, Sz)
+       call calc_TB_matrices(this%simple, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index=index)
     else
-       call system_abort('potential_copy_TB_matrices() only implemented for simple Potentials.')
+       call system_abort('potential_calc_TB_matrices() only implemented for simple Potentials.')
     end if
 
-  end subroutine potential_copy_TB_matrices
+  end subroutine potential_calc_TB_matrices
 #endif
 
 #include "Potential_Sum_routines.f95"

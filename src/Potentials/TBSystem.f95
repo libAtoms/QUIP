@@ -1370,15 +1370,16 @@ subroutine TBSystem_Print(this,file)
 
 end subroutine TBSystem_Print
 
-subroutine TBSystem_copy_matrices(this, Hd, Sd, Hz, Sz)
+subroutine TBSystem_copy_matrices(this, Hd, Sd, Hz, Sz, index)
    type(TBSystem), intent(in) :: this
    real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
    complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+   integer, intent(in), optional :: index
 
-   if (present(Hd)) call copy(this%H, Hd)
-   if (present(Hz)) call copy(this%H, Hz)
-   if (present(Sd)) call copy(this%S, Sd)
-   if (present(Sz)) call copy(this%S, Sz)
+   if (present(Hd)) call copy(this%H, Hd, index=index)
+   if (present(Hz)) call copy(this%H, Hz, index=index)
+   if (present(Sd)) call copy(this%S, Sd, index=index)
+   if (present(Sz)) call copy(this%S, Sz, index=index)
 end subroutine TBSystem_copy_matrices
 
 subroutine Self_Consistency_Initialise_str(this, args_str, param_str)

@@ -115,6 +115,7 @@ interface copy
   module procedure copy_dd_dsp
   module procedure copy_zd_zsp
   module procedure copy_dsp_dd
+  module procedure copy_zsp_zd
 end interface
 
 public :: matrix_product_sub
@@ -708,6 +709,40 @@ subroutine copy_dsp_dd(this, dense)
     end do
   end do
 end subroutine copy_dsp_dd
+
+subroutine copy_zsp_zd(this, dense)
+  type(RS_SparseMatrixZ), intent(in) :: this
+  complex(dp), intent(inout), dimension(:,:) :: dense
+
+  integer :: i, tj, j, ii, jj
+  integer :: block_nr, block_nc
+  integer :: n_entries
+
+  if (any(shape(dense) /= (/this%l%N, this%l%N/))) call system_abort("size of dense matrix wrong: expecting "//this%l%N)
+
+  n_entries = 0
+  do i=1, this%l%N
+    block_nr = this%l%block_size(i)
+    do j=this%l%row_indices(i), this%l%row_indices(i+1)-1
+      block_nc = this%l%block_size(this%l%col(j))
+      n_entries = n_entries + block_nr*block_nc
+    end do
+  end do
+
+  do i=1, this%l%N
+    block_nr = this%l%block_size(i)
+    do tj=this%l%row_indices(i), this%l%row_indices(i+1)-1
+      j = this%l%col(tj)
+      do ii=1, block_nr
+        do jj=1, block_nc
+  	       dense(this%l%dense_row_of_row(i)+ii-1, &
+                 this%l%dense_row_of_row(j)+jj-1) = &
+  	             this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr)
+        end do
+      end do
+    end do
+  end do
+end subroutine copy_zsp_zd
 
 subroutine copy_dd_dsp(a, b, d_mask, od_mask)
   type(MatrixD), intent(inout) :: a

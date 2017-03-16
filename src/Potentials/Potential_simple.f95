@@ -144,10 +144,10 @@ module Potential_simple_module
   end interface
 
 #ifdef HAVE_TB
-  public :: copy_TB_matrices
-  interface copy_TB_matrices
-     module procedure Potential_Simple_copy_TB_matrices
-  end interface copy_TB_matrices
+  public :: calc_TB_matrices
+  interface calc_TB_matrices
+     module procedure Potential_Simple_calc_TB_matrices
+  end interface calc_TB_matrices
 #endif
 
 contains
@@ -1577,20 +1577,32 @@ contains
   end subroutine Potential_Simple_set_callback
 
 #ifdef HAVE_TB
-  subroutine Potential_Simple_copy_TB_matrices(this, Hd, Sd, Hz, Sz, error)
+  subroutine Potential_Simple_calc_TB_matrices(this, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index, error)
     type(Potential_Simple), intent(in) :: this
+    type(atoms), intent(inout) :: at
+    character(len=*), intent(in), optional :: args_str
     real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
     complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+
+    real(dp), intent(inout), optional, dimension(:,:,:,:) :: dH, dS
+    integer, intent(in), optional :: index
     integer, intent(out), optional :: error
+    character(len=STRING_LENGTH) :: my_args_str
 
     INIT_ERROR(error)
 
     if (.not. associated(this%tb)) then
       RAISE_ERROR('Potential_Simple_copy_TB_matrices: this Potential_Simple is not a TB potential', error)
     endif
-    call copy_matrices(this%tb, Hd, Sd, Hz, Sz)
 
-  end subroutine Potential_Simple_copy_TB_matrices
+    my_args_str = ""
+    if (present(args_str)) my_args_str = trim(args_str)
+
+    call calc(this%tb, at, args_str=trim(my_args_str)//" forces", dH=dH, dS=dS, index=index)
+    call copy_matrices(this%tb, Hd, Sd, Hz, Sz, index=index)
+
+  end subroutine Potential_Simple_calc_TB_matrices
+
 #endif
 
 end module Potential_Simple_module
