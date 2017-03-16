@@ -1268,14 +1268,14 @@ function calculate_forces_diag(this, dH, dS, index) result(forces)
         call print(this%tbsys%dS(3))
     endif
     if (present(dH)) then
-      call copy(this%tbsys%dH(1), dH(:,:,i,1), index=index)
-      call copy(this%tbsys%dH(2), dH(:,:,i,2), index=index)
-      call copy(this%tbsys%dH(3), dH(:,:,i,3), index=index)
+      call copy(this%tbsys%dH(1), dH(1,i,:,:), index=index)
+      call copy(this%tbsys%dH(2), dH(2,i,:,:), index=index)
+      call copy(this%tbsys%dH(3), dH(3,i,:,:), index=index)
     endif
     if (present(dS)) then
-      call copy(this%tbsys%dS(1), dS(:,:,i,1), index=index)
-      call copy(this%tbsys%dS(2), dS(:,:,i,2), index=index)
-      call copy(this%tbsys%dS(3), dS(:,:,i,3), index=index)
+      call copy(this%tbsys%dS(1), dS(1,i,:,:), index=index)
+      call copy(this%tbsys%dS(2), dS(2,i,:,:), index=index)
+      call copy(this%tbsys%dS(3), dS(3,i,:,:), index=index)
     endif
 
     forces(1,i) = forces(1,i) - local_ksum(this%tbsys%kpoints, real(TraceMult(this%dm,this%tbsys%dH(1), &

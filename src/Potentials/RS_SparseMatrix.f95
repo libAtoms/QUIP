@@ -684,7 +684,7 @@ subroutine copy_dsp_dd(this, dense)
   integer :: block_nr, block_nc
   integer :: n_entries
 
-  if (any(shape(dense) /= (/this%l%N, this%l%N/))) call system_abort("size of dense matrix wrong: expecting "//this%l%N)
+  !if (any(shape(dense) /= (/this%l%N, this%l%N/))) call system_abort("size of dense matrix wrong: expecting "//this%l%N)
 
   n_entries = 0
   do i=1, this%l%N

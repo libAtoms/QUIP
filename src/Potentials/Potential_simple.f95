@@ -1578,16 +1578,17 @@ contains
 
 #ifdef HAVE_TB
   subroutine Potential_Simple_calc_TB_matrices(this, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index, error)
-    type(Potential_Simple), intent(in) :: this
+    type(Potential_Simple), intent(inout) :: this
     type(atoms), intent(inout) :: at
     character(len=*), intent(in), optional :: args_str
     real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
     complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
-
     real(dp), intent(inout), optional, dimension(:,:,:,:) :: dH, dS
     integer, intent(in), optional :: index
     integer, intent(out), optional :: error
+
     character(len=STRING_LENGTH) :: my_args_str
+    real(dp), allocatable, dimension(:,:) :: tmp_forces
 
     INIT_ERROR(error)
 
@@ -1598,8 +1599,10 @@ contains
     my_args_str = ""
     if (present(args_str)) my_args_str = trim(args_str)
 
-    call calc(this%tb, at, args_str=trim(my_args_str)//" forces", dH=dH, dS=dS, index=index)
+    allocate(tmp_forces(3,at%N))
+    call calc(this%tb, at, args_str=trim(my_args_str), forces=tmp_forces, dH=dH, dS=dS, index=index)
     call copy_matrices(this%tb, Hd, Sd, Hz, Sz, index=index)
+    deallocate(tmp_forces)
 
   end subroutine Potential_Simple_calc_TB_matrices
 

@@ -423,13 +423,15 @@ subroutine TBMatrix_Print(this,file)
   if (allocated(this%sdata_d)) then
     do i=1, size(this%sdata_d)
       call Print ('TBMatrix : sdata_d ' // i, file=file)
-      call Print(this%sdata_d(i), file=file)
+      call print_simple(this%sdata_d(i), file=file)
+      !call Print(this%sdata_d(i), file=file)
     end do
   endif
 
   if (allocated(this%sdata_z)) then
     do i=1, size(this%sdata_z)
       call Print ('TBMatrix : sdata_z ' // i, file=file)
+      !call print_simple(this%sdata_z(i), file=file)
       call Print(this%sdata_z(i), file=file)
     end do
   endif
