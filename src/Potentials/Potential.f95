@@ -418,6 +418,13 @@ module Potential_module
      module procedure potential_test_local_virial
   end interface test_local_virial
 
+#ifdef HAVE_TB
+    public :: copy_TB_matrices
+    interface copy_TB_matrices
+       module procedure Potential_copy_TB_matrices
+    end interface
+#endif
+
   contains
 
   !*************************************************************************
@@ -2239,6 +2246,20 @@ end subroutine pack_pos_dg
 
   end subroutine potential_set_callback
 
+#ifdef HAVE_TB
+  subroutine potential_copy_TB_matrices(this, Hd, Sd, Hz, Sz)
+    type(Potential), intent(inout) :: this
+    real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
+    complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+
+    if (this%is_simple) then
+       call copy_TB_matrices(this%simple, Hd, Sd, Hz, Sz)
+    else
+       call system_abort('potential_copy_TB_matrices() only implemented for simple Potentials.')
+    end if
+
+  end subroutine potential_copy_TB_matrices
+#endif
 
 #include "Potential_Sum_routines.f95"
 #include "Potential_ForceMixing_routines.f95"

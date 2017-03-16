@@ -29,17 +29,17 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X Potential_simple module 
+!X Potential_simple module
 !X
 !% The Potential_simple module handles the first-level selection of the
-!% desidered force field (tight-binding \texttt{TB_type}, empirical potential \texttt{IP_type} or 
+!% desidered force field (tight-binding \texttt{TB_type}, empirical potential \texttt{IP_type} or
 !% hybrid description \texttt{FilePot_type}).
-!% It contains the interfaces \texttt{Initialise}, \texttt{Finalise}, \texttt{cutoff}, 
-!% \texttt{Calc}, \texttt{Print}, which have the only role to 
+!% It contains the interfaces \texttt{Initialise}, \texttt{Finalise}, \texttt{cutoff},
+!% \texttt{Calc}, \texttt{Print}, which have the only role to
 !% re-addressing the calls to the corresponding
-!% modules. 
+!% modules.
 !% A Potential object simply contains a pointer to the desired force field type
-!% (only one of the three can be selected). 
+!% (only one of the three can be selected).
 !% It is initialised with
 !%>    call Initialise(pot,arg_str,io_obj,[mpi_obj])
 !% where, \texttt{arg_str} is a string defining the potential type and
@@ -98,7 +98,7 @@ module Potential_simple_module
      logical :: little_clusters
      logical :: force_using_fd
      logical :: virial_using_fd
-     
+
   end type Potential_Simple
 
 !% Initialise a Potential object (selecting the force field) and, if necessary, the  input file for potential parameters.
@@ -114,7 +114,7 @@ module Potential_simple_module
      module procedure Potential_Simple_Finalise
   end interface Finalise
 
-!% Print potential details 
+!% Print potential details
   public :: Print
   interface Print
      module procedure Potential_Simple_Print
@@ -126,7 +126,7 @@ module Potential_simple_module
      module procedure Potential_Simple_cutoff
   end interface cutoff
 
-!% Potential_Simple calculator for energy, forces and virial 
+!% Potential_Simple calculator for energy, forces and virial
   public :: Calc
   interface Calc
      module procedure Potential_Simple_Calc
@@ -142,6 +142,13 @@ module Potential_simple_module
   interface set_callback
      module procedure Potential_Simple_set_callback
   end interface
+
+#ifdef HAVE_TB
+  public :: copy_TB_matrices
+  interface copy_TB_matrices
+     module procedure Potential_Simple_copy_TB_matrices
+  end interface copy_TB_matrices
+#endif
 
 contains
 
@@ -324,7 +331,7 @@ contains
 
   function Potential_Simple_cutoff(this)
     type(Potential_Simple), intent(in) :: this
-    real(dp) :: Potential_Simple_cutoff               
+    real(dp) :: Potential_Simple_cutoff
 
     if(associated(this%ip)) then
        Potential_Simple_cutoff = cutoff(this%ip)
@@ -515,7 +522,7 @@ contains
        call remove_value(params, 'E_scale')
        new_args_str = write_string(params, real_format='f16.8')
        call finalise(params)
- 
+
        if (.not. assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)) then
             RAISE_ERROR('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ', error)
        endif
@@ -535,7 +542,7 @@ contains
           weight_region1_saved = weight_region1
        end if
 
-       ! call ourselves once for each active or transition atom 
+       ! call ourselves once for each active or transition atom
        at_force_ptr = 0.0_dp
        n = 0
        do i=1,at%N
@@ -643,7 +650,7 @@ contains
 
          if (has_cluster_box_buffer) then
             call print('Doing quick cluster carving using cluster box buffer '//cluster_box_buffer//' A')
-            
+
             call estimate_origin_extent(at, hybrid_mark == HYBRID_ACTIVE_MARK, cluster_box_buffer, origin, extent)
             call matrix3x3_inverse(extent,extent_inv)
             subregion_center = origin + 0.5_dp*sum(extent,2)
@@ -653,7 +660,7 @@ contains
             end do
             call select(cluster, at, mask=cluster_mask, orig_index=.true.)
             deallocate(cluster_mask)
-            
+
             ! move orig_index property to index//run_suffix
             call assign_property_pointer(cluster, 'orig_index', cluster_index, error=error)
             PASS_ERROR(error)
@@ -673,7 +680,7 @@ contains
                RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
             endif
             call finalise(t)
-            
+
             call carve_cluster(at, cluster_args_str, cluster_info, cluster, mark_name='hybrid_mark'//trim(run_suffix), error=error)
             PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
             call finalise(cluster_info)
@@ -845,7 +852,7 @@ contains
        do_calc_energy = len_trim(calc_energy) > 0
        do_calc_local_energy = len_trim(calc_local_energy) > 0
        do_calc_virial = (len_trim(calc_virial) > 0) .and. .not. virial_using_fd
-       do_calc_local_virial = len_trim(calc_local_virial) > 0 
+       do_calc_local_virial = len_trim(calc_local_virial) > 0
        call print("do_calc_force=        "//do_calc_force//" calc_force="//trim(calc_force), PRINT_VERBOSE)
        call print("force_using_fd=       "//force_using_fd, PRINT_VERBOSE)
        call print("virial_using_fd=      "//virial_using_fd, PRINT_VERBOSE)
@@ -973,7 +980,7 @@ contains
                       call Calc(this%tb, at, energy=energy, local_e=at_local_energy_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%tb, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              else ! no local virials
                 if (do_calc_virial) then
@@ -1011,7 +1018,7 @@ contains
                       call Calc(this%tb, at, energy=energy, local_e=at_local_energy_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%tb, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              endif
 
@@ -1054,7 +1061,7 @@ contains
                       call Calc(this%filepot, at, energy=energy, local_e=at_local_energy_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%filepot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              else ! no local virials
                 if (do_calc_virial) then
@@ -1092,7 +1099,7 @@ contains
                       call Calc(this%filepot, at, energy=energy, local_e=at_local_energy_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%filepot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              endif
 
@@ -1134,7 +1141,7 @@ contains
                       call Calc(this%callbackpot, at, energy=energy, local_e=at_local_energy_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%callbackpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              else ! no local virials
                 if (do_calc_virial) then
@@ -1172,7 +1179,7 @@ contains
                       call Calc(this%callbackpot, at, energy=energy, local_e=at_local_energy_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%callbackpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              endif
 
@@ -1215,7 +1222,7 @@ contains
                       call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, local_virial = at_local_virial_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              else ! no local virials
                 if (do_calc_virial) then
@@ -1253,7 +1260,7 @@ contains
                       call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, args_str=args_str, error=error)
                    else if (do_calc_energy .and. do_calc_local_energy .and. do_calc_force) then
                       call Calc(this%socketpot, at, energy=energy, local_e=at_local_energy_ptr, forces=at_force_ptr, args_str=args_str, error=error)
-                   end if                
+                   end if
                 end if
              endif
 
@@ -1398,13 +1405,13 @@ contains
           call finalise(params)
 
           call print("Virial finite difference calculation: new_args_str=`"//new_args_str//"'", PRINT_VERBOSE)
-          
+
           allocate(allpos_save(3,at%N))
           allpos_save = at%pos
           lat_save = at%lattice
           do i=1,3
              do j=i,3
-                
+
                 deform = 0.0_dp
                 call add_identity(deform)
                 deform(i,j) = deform(i,j) + virial_fd_delta
@@ -1420,7 +1427,7 @@ contains
 !                call verbosity_pop()
                 call get_param_value(at, "fd_energy", e_plus, error=error)
                 PASS_ERROR_WITH_INFO("Potential_Simple_calc doing fd virial failed to get energy property fd_energy", error)
-                
+
                 deform = 0.0_dp
                 call add_identity(deform)
                 deform(i,j) = deform(i,j) - virial_fd_delta
@@ -1497,8 +1504,8 @@ contains
     character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
 
-    real(dp) :: e                   
-    real(dp), allocatable :: f(:,:)              
+    real(dp) :: e
+    real(dp), allocatable :: f(:,:)
     type(Dictionary) :: params
     character(STRING_LENGTH) :: calc_energy, calc_force
 
@@ -1561,12 +1568,29 @@ contains
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    
+
     if (.not. associated(this%callbackpot)) then
       RAISE_ERROR('Potential_Simple_set_callback: this Potential_Simple is not a CallbackPot', error)
     endif
     call set_callback(this%callbackpot, callback)
 
   end subroutine Potential_Simple_set_callback
+
+#ifdef HAVE_TB
+  subroutine Potential_Simple_copy_TB_matrices(this, Hd, Sd, Hz, Sz, error)
+    type(Potential_Simple), intent(in) :: this
+    real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
+    complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
+
+    if (.not. associated(this%tb)) then
+      RAISE_ERROR('Potential_Simple_copy_TB_matrices: this Potential_Simple is not a TB potential', error)
+    endif
+    call copy_matrices(this%tb, Hd, Sd, Hz, Sz)
+
+  end subroutine Potential_Simple_copy_TB_matrices
+#endif
 
 end module Potential_Simple_module
