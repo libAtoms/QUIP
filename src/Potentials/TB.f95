@@ -335,7 +335,7 @@ subroutine TB_copy_matrices(this, Hd, Sd, Hz, Sz, index)
      integer, intent(in), optional :: index
 
      call copy_matrices(this%tbsys, Hd, Sd, Hz, Sz, index)
-end
+end subroutine TB_copy_matrices
 
 
 subroutine TB_Setup_atoms(this, at, is_noncollinear, args_str, error)
