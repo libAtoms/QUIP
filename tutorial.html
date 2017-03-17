@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy 576cff1+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy 9a10f8f+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 576cff1+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
         <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/>
         <link rel="prev" title="Tutorials" href="tutorials.html"/> 
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                576cff1+
+                9a10f8f+
               </div>
             
           
@@ -382,8 +382,8 @@ and <code class="docutils literal"><span class="pre">z</span></code> <code class
 <span class="go"> [ 1.36  4.08  4.08]]</span>
 </pre></div>
 </div>
-<p>Note that we print the <code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code> of the
-position array using the <code class="xref py py-attr docutils literal"><span class="pre">T</span></code> attribute, since the
+<p>Note that we print the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.12)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
+position array using the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.12)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
 actual <code class="docutils literal"><span class="pre">dia.pos</span></code> array has 3 rows and <code class="docutils literal"><span class="pre">len(dia)</span> <span class="pre">==</span> <span class="pre">8</span></code> columns,
 which isn&#8217;t very convenient for printing. Atomic properties are stored
 in arrays (actually, in a special type of array called a
@@ -609,7 +609,7 @@ arithmetic:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="xref py py-func docutils literal"><span class="pre">array()</span></code> is used here to combine the trajectory frames
+<p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.12)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib&#8217;s
 <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.0.0)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
@@ -1054,7 +1054,7 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'576cff1+',
+            VERSION:'9a10f8f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
