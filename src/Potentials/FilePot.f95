@@ -95,6 +95,7 @@ private
 public :: FilePot_type
 type FilePot_type
   character(len=STRING_LENGTH) :: command
+  character(len=STRING_LENGTH) :: command_addl_args
   character(len=STRING_LENGTH) :: property_list
   character(len=STRING_LENGTH) :: read_extra_property_list
   character(len=STRING_LENGTH) :: read_extra_param_list
@@ -148,7 +149,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
 
   type(Dictionary) ::  params
   character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, &
-       read_extra_param_list, property_list_prefixes, filename
+       read_extra_param_list, property_list_prefixes, command_addl_args, filename
   real(dp) :: min_cutoff
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
@@ -159,6 +160,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
 
   call initialise(params)
   call param_register(params, 'command', PARAM_MANDATORY, command, help_string="system command to execute that should read the structure file, run the model and deposit the output file")
+  call param_register(params, 'command_addl_args', '', command_addl_args, help_string="additional args to be appended to the command line after xyzfile and outfile")
   call param_register(params, 'property_list', 'species:pos', property_list, help_string="list of properties to print with the structure file")
   call param_register(params, 'read_extra_property_list', '', read_extra_property_list, help_string="names of extra properties to read from filepot.out files")
   call param_register(params, 'property_list_prefixes', '', property_list_prefixes, help_string="list of prefixes to which run_suffix will be applied during calc()")
@@ -177,6 +179,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   end if
 
   this%command = command
+  this%command_addl_args = command_addl_args
   this%property_list = property_list
   this%read_extra_property_list = read_extra_property_list
   this%read_extra_param_list = read_extra_param_list
@@ -198,6 +201,7 @@ subroutine FilePot_Wipe(this)
   type(FilePot_type), intent(inout) :: this
 
   this%command=""
+  this%command_addl_args=""
   this%property_list=""
   this%read_extra_property_list=""
   this%read_extra_param_list=""
@@ -219,6 +223,7 @@ subroutine FilePot_Print(this, file)
   if (current_verbosity() < PRINT_NORMAL) return
 
   call print("FilePot: command='"//trim(this%command)// &
+       "' command_addl_args='"//trim(this%command_addl_args)// &
        "' filename='"//trim(this%filename)//&
        "' property_list='"//trim(this%property_list)//&
        "' read_extra_property_list='"//trim(this%read_extra_property_list)//&
@@ -330,11 +335,12 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
 !     call print("FilePot: invoking external command "//trim(this%command)//" "//' '//trim(xyzfile)//" "// &
 !          trim(outfile)//" on "//at%N//" atoms...")
      call print("FilePot: invoking external command "//trim(this%command)//' '//trim(xyzfile)//" "// &
-          trim(outfile)//" "//trim(my_args_str)//" on "//at%N//" atoms...")
+          trim(outfile)//" "//trim(this%command_addl_args)//" "//trim(my_args_str)//" on "//at%N//" atoms...")
 
      ! call the external command here
 !     call system_command(trim(this%command)//" "//trim(xyzfile)//" "//trim(outfile),status=status)
-     call system_command(trim(this%command)//' '//trim(xyzfile)//" "//trim(outfile)//" "//trim(my_args_str),status=status)
+     call system_command(trim(this%command)//' '//trim(xyzfile)//" "//trim(outfile)//" "//&
+          trim(this%command_addl_args)//" "//trim(my_args_str),status=status)
      call print("FilePot: got status " // status // " from external command")
 
      ! read back output from external command

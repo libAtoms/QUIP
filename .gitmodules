@@ -2,3 +2,7 @@
 	path = src/fox
 	url = https://github.com/libAtoms/fox
 	fetchRecursiveSubmodules = on-demand
+[submodule "src/f90wrap"]
+	path = src/f90wrap
+	url = https://github.com/jameskermode/f90wrap
+	fetchRecursiveSubmodules = on-demand
