@@ -1,0 +1,4 @@
+{
+  'atoms': ('atoms_module', ('if (associated(%(PTR)s)) call atoms_repoint(%(PTR)s)',
+                             'if (present(%(ARG)s)) call atoms_repoint(%(PTR)s)'))
+}

@@ -1,3 +1,32 @@
 {
-  'system_module': 'system'
+  # libAtoms modules (low-level)
+  'system_module': 'system',
+  'linearalgebra_module': 'linearalgebra',
+  'quaternions_module': 'quaternions',
+  'connection_module': 'connection',
+  'clusters_module': 'clusters',
+  'structures_module': 'structures',
+  'domaindecomposition_module': 'domaindecomposition',
+  'paramreader_module': 'paramreader',
+  'spline_module': 'spline',
+  'frametools_module': 'frametools',
+  'topology_module': 'topology',
+  'find_surface_atoms_module': 'find_surface_atoms',
+  'ringstat_module': 'ringstat',
+  'angular_functions_module': 'angular_functions_module',
+  'steinhardt_nelson_qw_module': 'steinhard_nelson_qm_module',
+  'nye_tensor_module': 'nye_tensor',
+  
+  # modules which are extended in Python
+  'periodictable_module': '_periodictable',
+  'table_module': '_table',
+  'potential_module': '_potential',
+  'dictionary_module': '_dictionary',
+  'dynamicalsystem_module': '_dynamicalsystem',
+  'cinoutput_module': '_cinoutput',
+  'atoms_module': '_atoms',
+  'atoms_types_module': '_atoms_types',
+  'extendable_str_module': '_extendable_str',
+  'structures_module': '_structures',
+  'elasticity_module': '_elasticity'
 }
