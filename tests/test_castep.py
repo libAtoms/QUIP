@@ -162,6 +162,13 @@ class TestCastepCell(QuippyTestCase):
       self.assertRaises(ValueError, self.cell.to_atoms)
 
    def test_to_atoms_frac_pos(self):
+      def convertStr(s):
+         try:
+            ret = float(s)
+         except:
+            ret = s
+         return ret
+
       c = castep.CastepCell("""%block lattice_cart
 ang
 2.4866946  -4.3070816   0.0000000
@@ -195,7 +202,7 @@ Si   -0.474452  -0.474452   0.000000
                                                        [-2.35963445,  0.        ,  0.        ]]).T)
       c2 = castep.CastepCell()
       c2.update_from_atoms(a, frac_pos=True)
-      self.assertEqual([x.split() for x in c['POSITIONS_FRAC']], [x.split() for x in c2['POSITIONS_FRAC']])
+      self.assertEqual([[convertStr(r) for r in x.split()] for x in c['POSITIONS_FRAC']], [[convertStr(r) for r in x.split()] for x in c2['POSITIONS_FRAC']])
 
    def test_to_atoms_unit_bohr(self):
       c = castep.CastepCell("""%block lattice_cart

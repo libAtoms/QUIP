@@ -176,11 +176,11 @@ int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
   strncpy(indexname, fname, LINESIZE);
   strncat(indexname, ".idx", LINESIZE-strlen(indexname)-1);
 
-  if (stat(fname, &xyz_stat) != 0) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz file %s\n", fname);
+  if (access(fname, R_OK) != 0) {
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot access xyz file %s\n", fname);
   }
 
-  idx_exists = stat(indexname, &idx_stat) == 0;
+  idx_exists = access(indexname, R_OK) == 0;
 
   if (!idx_exists) {
     // Try to read from current dir instead
@@ -189,7 +189,7 @@ int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
     if (getcwd(buf2, LINESIZE) != NULL) {
       strncat(buf2, "/", LINESIZE-strlen(buf2)-1);
       strncat(buf2, bname, LINESIZE-strlen(buf2)-1);
-      if (stat(buf2, &idx_stat) == 0) {
+      if (access(buf2, R_OK) == 0) {
 	fprintf(stderr,"Found index %s\n",buf2);
 	strncpy(indexname,buf2, LINESIZE);
 	idx_exists = 0;
@@ -198,7 +198,15 @@ int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
   }
 
   *do_update = 1;
-  if (idx_exists) *do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
+  if (idx_exists) {
+    if (stat(fname, &xyz_stat) != 0) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz file %s\n", fname);
+    }
+    if (stat(indexname, &idx_stat) != 0) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz.idx file %s\n", fname);
+    }
+    *do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
+  }
 
   return idx_exists;
 }
@@ -1420,6 +1428,9 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	  xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
 	  PASS_ERROR;
 
+	  if (access(indexname, R_OK) != 0) {
+	     RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot access index file %s\n", indexname);
+	  }
 	  if (stat(indexname, &idx_stat) != 0) {
 	     RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat index file %s\n", indexname);
 	  }

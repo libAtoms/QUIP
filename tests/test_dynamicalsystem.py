@@ -63,6 +63,10 @@ class GenericTestDynamics(object):
       random.seed(1)
       system_reseed_rng(2065775975)
       self.at1 = diamond(5.44, 14)
+      # Explicitly set the mass as IUPAC updates in
+      # ase will not always sync with quippy and can
+      # slighly change the final positions.
+      self.at1.set_masses([28.0855]*len(self.at1))
       self.at1.rattle(0.01)
       self.at2 = ase.Atoms(self.at1)
       self.dt = 1.0 # fs

@@ -418,6 +418,13 @@ module Potential_module
      module procedure potential_test_local_virial
   end interface test_local_virial
 
+#ifdef HAVE_TB
+    public :: calc_TB_matrices
+    interface calc_TB_matrices
+       module procedure Potential_calc_TB_matrices
+    end interface
+#endif
+
   contains
 
   !*************************************************************************
@@ -2239,6 +2246,26 @@ end subroutine pack_pos_dg
 
   end subroutine potential_set_callback
 
+#ifdef HAVE_TB
+  !% Calculate TB Hamiltonian and overlap matrices and optionally their derivatives wrt atomic positions.
+  !% This always triggers a force calculation, since the elements for dH and dS are assembled on the fly for each atom.
+  subroutine potential_calc_TB_matrices(this, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index)
+    type(Potential), intent(inout) :: this
+    type(atoms), intent(inout) :: at !% Atomic structure to use for TB matrix calculation
+    character(len=*), intent(in), optional :: args_str !% Additional arguments to pass to TB `calc()` routine
+    real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd !% Hamiltonian and overlap for real wavefunctions (gamma point)
+    complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz !% Complex Hamiltonian and overlap (multiple kpoints)
+    real(dp), intent(inout), optional, dimension(:,:,:,:) :: dH, dS !% Derivative of H and S wrt atomic positiions. Shape is `(3, N_atoms, N_elecs, N_elecs)`
+    integer, optional, intent(in) :: index
+
+    if (this%is_simple) then
+       call calc_TB_matrices(this%simple, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index=index)
+    else
+       call system_abort('potential_calc_TB_matrices() only implemented for simple Potentials.')
+    end if
+
+  end subroutine potential_calc_TB_matrices
+#endif
 
 #include "Potential_Sum_routines.f95"
 #include "Potential_ForceMixing_routines.f95"

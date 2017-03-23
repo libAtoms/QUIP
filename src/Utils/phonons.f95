@@ -44,7 +44,7 @@ real(dp), parameter :: PHONON_FORCE_TOLERANCE = 1.0e-12_dp
 public :: Phonon_fine
 type Phonon_fine
    integer :: n_qvectors, n_modes
-   real(dp), dimension(:,:), allocatable :: q, frequency
+   real(dp), dimension(:,:), allocatable :: q, frequency, hessian
    complex(dp), dimension(:,:,:,:), allocatable :: eigenvector
    logical :: initialised = .false.
 endtype Phonon_fine
@@ -116,6 +116,7 @@ contains
       if(allocated(this%q)) deallocate( this%q )
       if(allocated(this%frequency)) deallocate( this%frequency )
       if(allocated(this%eigenvector)) deallocate( this%eigenvector )
+      if(allocated(this%hessian)) deallocate( this%hessian )
       this%n_qvectors = 0
       
       this%initialised = .false.
@@ -239,6 +240,10 @@ contains
       pos0 = at%pos
     
       allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
+
+      if(allocated(this%hessian)) deallocate(this%hessian)
+      allocate(this%hessian(3*at%N,3*at_in%N))
+
       fp0 = 0.0_dp
       fm0 = 0.0_dp
     
@@ -261,6 +266,16 @@ contains
       call print("Finished force calculations")
       call system_timer("Phonon_fine_calc/force")
     
+      do i = 1, at_in%N
+         do alpha = 1, 3
+            do j = 1, at%N
+               do beta = 1, 3
+                  this%hessian((j-1)*3+beta,(i-1)*3+alpha) = - (fp0(beta,j,alpha,i) - fm0(beta,j,alpha,i)) / 2.0_dp / dx
+               enddo
+            enddo
+         enddo
+      enddo
+
       at%pos = pos0
       call calc_dists(at)
       deallocate(pos0)

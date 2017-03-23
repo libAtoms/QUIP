@@ -191,8 +191,7 @@ and Gromacs, but has a number of unique features:
 7.  To compile the Python wrappers (``quippy``), the minimum requirements
     are:
 
-    - Python 2.6 or 2.7. ``quippy`` is tested with both. It does not yet work
-      with Python 3.
+    - Python 2.7. (Python 3 support is in progress).
 
     - [NumPy](http://www.numpy.org)
 
