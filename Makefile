@@ -171,13 +171,10 @@ ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy: libquip.a
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
-
-install-quippy: quippy
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
-
-clean-quippy:
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch build
+	rm ${BUILDDIR}/Makefile
 
 clean: ${BUILDDIR}
 	-${MAKE} clean-quippy

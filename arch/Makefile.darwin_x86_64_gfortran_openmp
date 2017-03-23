@@ -40,6 +40,6 @@ LINKOPTS += -fopenmp -static-libgcc
 
 QUIPPY_F90FLAGS += -fopenmp
 QUIPPY_CFLAGS += -fopenmp
-QUIPPY_LDFLAGS += -fopenmp
+QUIPPY_LDFLAGS += -fopenmp -lgfortran -lgomp
 
 # rules
