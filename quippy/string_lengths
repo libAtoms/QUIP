@@ -4,6 +4,7 @@
     'value_length':1023,
     'field_length':1023,
     'string_length':10240,
+    'system_string_length_long': 102400,
     'table_string_length':10,
     'default': 1024,
     'dict_char_a_len': 10

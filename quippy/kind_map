@@ -2,7 +2,7 @@
  'real':     {'8':   'double',
               'dp':  'double',
               '16':  'long_double',
-              'qp':  'long_double'},
+              'qp':  'double'}, # qp is usually double, not quad...
  'complex' : {'8':   'complex_double',
               'dp':  'complex_double'},
  'integer' : {'':       'int',
