@@ -124,161 +124,122 @@ QUIPPY_FALSE = quippy.system.reference_false()
 
 def quippy_cleanup():
     try:
-        _quippy.verbosity_pop()
-        _quippy.system_finalise()
+        quippy.system.verbosity_pop()
+        quippy.system.system_finalise()
     except AttributeError:
         pass
 
-_quippy.system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
-_quippy.verbosity_push(0)
+quippy.system.system_initialise(-1, quippy_running=QUIPPY_TRUE)
+quippy.system.verbosity_push(0)
 atexit.register(quippy_cleanup)
-
-from spec import spec
-
-QUIP_ROOT = spec['quip_root']
-QUIP_ARCH = spec['quip_arch']
-QUIP_MAKEFILE = spec['quip_makefile']
-
-if 'netcdf' in disabled_modules:
-    disabled_modules.append('netcdf')
-else:
-    if 'HAVE_NETCDF' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_NETCDF'] == 1:
-        available_modules.append('netcdf')
-    else:
-        unavailable_modules.append('netcdf')
 
 # List of Fortran modules which have Python wrappers in this package
 python_wrappers = ['periodictable', 'table', 'potential',
                    'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
                    'extendable_str', 'structures', 'elasticity']
-modules_name_map = {}
-for mod in python_wrappers:
-    if mod in mod_names:
-        modules_name_map[mod] = '_'+mod
-
-pymods = wrap_all(_quippy, spec, wrap_modules,
-                  merge_modules,
-                  spec['short_names'],
-                  prefix='qp_', package='quippy',
-                  modules_name_map=modules_name_map)
-
-# Add modules to quippy package and to sys.modules
-for name, mod in pymods.items():
-    sys.modules['quippy.'+name] = mod
-    setattr(sys.modules[__name__], name, mod)
-
-    # Emulate 'from quippy.X import *' for modules without wrapper
-    if name in python_wrappers:
-        continue
-    for sym in mod.__all__:
-        setattr(sys.modules[__name__], sym, getattr(mod, sym))
-    __all__.extend(mod.__all__)
-
-del wrap_modules, merge_modules, modules_name_map, mod_names, mod_files
-del name, mod, pymods
 
 # Python modules which extend Fortran modules
 
-import quippy.atoms
-from quippy.atoms import *
-__all__.extend(quippy.atoms.__all__)
+# import quippy.atoms
+# from quippy.atoms import *
+# __all__.extend(quippy.atoms.__all__)
+#
+# import quippy.dictionary
+# from quippy.dictionary import *
+# __all__.extend(quippy.dictionary.__all__)
+#
+# import quippy.cinoutput
+# from quippy.cinoutput import *
+# __all__.extend(quippy.cinoutput.__all__)
+#
+# import quippy.dynamicalsystem
+# from quippy.dynamicalsystem import *
+# __all__.extend(quippy.dynamicalsystem.__all__)
+#
+# import quippy.potential
+# from quippy.potential import *
+# __all__.extend(quippy.potential.__all__)
+#
+# import quippy.table
+# from quippy.table import *
+# __all__.extend(quippy.table.__all__)
+#
+# import quippy.extendable_str
+# from quippy.extendable_str import *
+# __all__.extend(quippy.extendable_str.__all__)
+#
+# import quippy.periodictable
+# from quippy.periodictable import *
+# __all__.extend(quippy.periodictable.__all__)
+#
+# # Utility modules - pure Python
+#
+# import quippy.fortranio
+# from quippy.fortranio import *
+# __all__.extend(quippy.fortranio.__all__)
+#
+# if get_fortran_indexing():
+#    import quippy.farray
+#    __all__.extend(quippy.farray.__all__)
+#    from quippy.farray import *
+#    quippy_array = FortranArray
+# else:
+#    quippy_array = np.ndarray
+# __all__.append('quippy_array')
+#
+# import quippy.io
+# from quippy.io import *
+# __all__.extend(quippy.io.__all__)
+#
+# import quippy.util
+# from quippy.util import *
+# __all__.extend(quippy.util.__all__)
+#
+# import quippy.asap
+# import quippy.povray
+# import quippy.cube
+# import quippy.netcdf
+# import quippy.imd
+# import quippy.vasp
+# import quippy.dan
+# import quippy.qbox
 
-import quippy.dictionary
-from quippy.dictionary import *
-__all__.extend(quippy.dictionary.__all__)
-
-import quippy.cinoutput
-from quippy.cinoutput import *
-__all__.extend(quippy.cinoutput.__all__)
-
-import quippy.dynamicalsystem
-from quippy.dynamicalsystem import *
-__all__.extend(quippy.dynamicalsystem.__all__)
-
-import quippy.potential
-from quippy.potential import *
-__all__.extend(quippy.potential.__all__)
-
-import quippy.table
-from quippy.table import *
-__all__.extend(quippy.table.__all__)
-
-import quippy.extendable_str
-from quippy.extendable_str import *
-__all__.extend(quippy.extendable_str.__all__)
-
-import quippy.periodictable
-from quippy.periodictable import *
-__all__.extend(quippy.periodictable.__all__)
-
-# Utility modules - pure Python
-
-import quippy.fortranio
-from quippy.fortranio import *
-__all__.extend(quippy.fortranio.__all__)
-
-if get_fortran_indexing():
-   import quippy.farray
-   __all__.extend(quippy.farray.__all__)
-   from quippy.farray import *
-   quippy_array = FortranArray
-else:
-   quippy_array = np.ndarray
-__all__.append('quippy_array')
-
-import quippy.io
-from quippy.io import *
-__all__.extend(quippy.io.__all__)
-
-import quippy.util
-from quippy.util import *
-__all__.extend(quippy.util.__all__)
-
-import quippy.asap
-import quippy.povray
-import quippy.cube
-import quippy.netcdf
-import quippy.imd
-import quippy.vasp
-import quippy.dan
-import quippy.qbox
-
-if 'HAVE_CP2K' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_CP2K'] == 1:
-    import quippy.cp2k
-    from quippy.cp2k import *
-    __all__.extend(quippy.cp2k.__all__)
-
-try:
-    import quippy.castep
-except ImportError:
-    logging.debug('quippy.castep import quippy.failed.')
-
-if 'atomeye' in available_modules:
-    import atomeye
-    import quippy.atomeyewriter
-
-if 'enthought.mayavi' in available_modules:
-    import quippy.plot3d
-    from quippy.plot3d import *
-    __all__.extend(quippy.plot3d.__all__)
-
-import quippy.elasticity
-from quippy.elasticity import *
-__all__.extend(quippy.elasticity.__all__)
-
-import quippy.surface
-from quippy.surface import *
-__all__.extend(quippy.surface.__all__)
-
-import quippy.structures
-from quippy.structures import *
-__all__.extend(quippy.structures.__all__)
-
-import quippy.crack
-from quippy.crack import *
-__all__.extend(quippy.crack.__all__)
-
-if 'ase' in available_modules:
-    import quippy.neb
-    from quippy.neb import *
-    __all__.extend(quippy.neb.__all__)
+# if 'HAVE_CP2K' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_CP2K'] == 1:
+#     import quippy.cp2k
+#     from quippy.cp2k import *
+#     __all__.extend(quippy.cp2k.__all__)
+#
+# try:
+#     import quippy.castep
+# except ImportError:
+#     logging.debug('quippy.castep import quippy.failed.')
+#
+# if 'atomeye' in available_modules:
+#     import atomeye
+#     import quippy.atomeyewriter
+#
+# if 'enthought.mayavi' in available_modules:
+#     import quippy.plot3d
+#     from quippy.plot3d import *
+#     __all__.extend(quippy.plot3d.__all__)
+#
+# import quippy.elasticity
+# from quippy.elasticity import *
+# __all__.extend(quippy.elasticity.__all__)
+#
+# import quippy.surface
+# from quippy.surface import *
+# __all__.extend(quippy.surface.__all__)
+#
+# import quippy.structures
+# from quippy.structures import *
+# __all__.extend(quippy.structures.__all__)
+#
+# import quippy.crack
+# from quippy.crack import *
+# __all__.extend(quippy.crack.__all__)
+#
+# if 'ase' in available_modules:
+#     import quippy.neb
+#     from quippy.neb import *
+#     __all__.extend(quippy.neb.__all__)
