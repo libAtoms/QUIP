@@ -45,9 +45,9 @@ QUIPPY_SRC_DIR := ../../quippy/
 FPP = gfortran -E -cpp
 CFLAGS = -fPIC
 
-LIBATOMS_SOURCES = System.f95 Units.f95 linearalgebra.f95
-# MPI_context.f95 Quaternions.f95 \
- 					 Dictionary.f95 Table.f95 PeriodicTable.f95 Atoms_types.f95 Atoms.f95 Connection.f95 DynamicalSystem.f95 \
+LIBATOMS_SOURCES = System.f95 Units.f95 linearalgebra.f95 MPI_context.f95 Quaternions.f95 \
+ 					 Dictionary.f95 Table.f95 PeriodicTable.f95 Atoms_types.f95 Atoms.f95 Connection.f95
+					 #DynamicalSystem.f95 \
  					 	clusters.f95 Structures.f95 DomainDecomposition.f95 CInOutput.f95 ParamReader.f95 Spline.f95 \
  					 frametools.f95 Topology.f95 find_surface_atoms.f95 ringstat.f95 angular_functions.f95 \
  					 steinhardt_nelson_qw.f95 nye_tensor.f95
@@ -83,9 +83,9 @@ _quippy.so: ${WRAP_FPP_FILES}
 	-rm -r quippy
 	f90wrap -m quippy ${WRAP_FPP_FILES} -k $(QUIPPY_SRC_DIR)/kind_map \
 	   -s $(QUIPPY_SRC_DIR)/string_lengths --short-names $(QUIPPY_SRC_DIR)/short_names -P \
-	   -a system_abort --init-file $(QUIPPY_SRC_DIR)/init.py --init-lines $(QUIPPY_SRC_DIR)/init_lines \
+	   -a c_error_abort --init-file $(QUIPPY_SRC_DIR)/init.py --init-lines $(QUIPPY_SRC_DIR)/init_lines \
 		 --py-mod-names $(QUIPPY_SRC_DIR)/py_mod_names --move-methods --shorten-routine-names \
-		 #--skip la_matrix_inverse
+		 --class-names $(QUIPPY_SRC_DIR)/class_names
 	#cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} -L. -lquip --link-lapack
 

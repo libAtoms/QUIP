@@ -1,7 +1,9 @@
 {
   # libAtoms modules (low-level)
   'system_module': 'system',
+  'units_module': 'units',
   'linearalgebra_module': 'linearalgebra',
+  'mpi_context_module': 'mpi_context',
   'quaternions_module': 'quaternions',
   'connection_module': 'connection',
   'clusters_module': 'clusters',
@@ -13,10 +15,10 @@
   'topology_module': 'topology',
   'find_surface_atoms_module': 'find_surface_atoms',
   'ringstat_module': 'ringstat',
-  'angular_functions_module': 'angular_functions_module',
-  'steinhardt_nelson_qw_module': 'steinhard_nelson_qm_module',
+  'angular_functions_module': 'angular_functions',
+  'steinhardt_nelson_qw_module': 'steinhard_nelson_qw',
   'nye_tensor_module': 'nye_tensor',
-  
+
   # modules which are extended in Python
   'periodictable_module': '_periodictable',
   'table_module': '_table',
