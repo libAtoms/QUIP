@@ -42,6 +42,7 @@ Structure generation, manipulation and analysis
    crack.rst
    clusters.rst
    find_surface_atoms.rst
+   descriptors.rst
    real_space_covariance.rst
    structures.rst
    topology.rst
