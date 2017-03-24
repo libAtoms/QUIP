@@ -28,9 +28,8 @@ installation of ``QUIP`` (Fortran library and main programs) and
 Compilation Instructions
 ------------------------
 
-First try the quickstart below, which should work with most Linux systems
-(**TODO** what was the issue with Ubuntu installations?)
-On Mac systems, have a look at `Installing on Mac OS X with macports`_ first.
+First try the quickstart below, which should work with most Linux systems.
+For Mac systems, have a look at `Installing on Mac OS X with macports`_ first.
 
 Quick start
 ^^^^^^^^^^^
@@ -81,7 +80,7 @@ And now open a Python terminal and see if it works:
 
 If the import completes successfully (i.e. with no output) then the
 installation was successful.  You may want to continue with `Installing the
-Jupyter notebook`_ to run the tutorials.
+Jupyter notebook`_ to run the interactive tutorials.
 
 .. [#] If this isn't your machine and you don't have root access, these
    packages might already be installed by the system administrator.  If not,
@@ -110,8 +109,8 @@ Installing the Jupyter notebook
 `Jupyter`_ is an environment for interactive computing that makes using Python
 much easier and more intuitive.  Especially useful is its notebook environment,
 which provides a handy way to experiment with code, see the results, and have a
-record of your progress.  The introductory tutorials (**TODO** being written)
-are Jupyter notebooks that you can run and modify yourself.
+record of your progress.  The interactive getting-started tutorial is a Jupyter
+notebook that you can run and modify yourself.
 
 To get Jupyter up and running, the following should suffice [#]_:
 
@@ -121,9 +120,9 @@ To get Jupyter up and running, the following should suffice [#]_:
     $ jupyter notebook
 
 This will open a new window in your browser that you can use to navigate
-through your filesystem.  To access the tutorials, you can run the ``jupyter
-notebook`` command from your ``QUIP/doc/Tutorials`` directory (**TODO** make this
-exist), or any enclosing directory, then navigate to the notebooks and open
+through your filesystem.  To access the interactive tutorials, you can run the
+``jupyter notebook`` command from your ``QUIP/doc/Examples`` directory (or any
+enclosing directory) then navigate to the notebooks and open
 ``Introduction.ipynb`` to get started.
 
 .. [#] This assumes you've already run ``sudo apt-get install python-pip; pip
