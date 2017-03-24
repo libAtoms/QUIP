@@ -1,5 +1,0 @@
-{
-  'atoms': (('atoms_types_module', ('atoms_repoint',) ),
-            ('if (associated(%(PTR)s)) call atoms_repoint(%(PTR)s)',
-             'if (present(%(ARG)s)) call atoms_repoint(%(PTR)s)'))
-}
