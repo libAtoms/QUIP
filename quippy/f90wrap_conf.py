@@ -1,3 +1,4 @@
+# mapping from Fortran kinds to C types
 kind_map  = {
  'real':     {'8':   'double',
               'dp':  'double',
@@ -12,6 +13,7 @@ kind_map  = {
 	           'c_intptr_t': 'long_long'}
 }
 
+# special cases for types that need initialisation in Fortran
 init_lines = {
   'atoms': (('atoms_types_module', ('atoms_repoint',) ),
             ('if (associated(%(PTR)s)) call atoms_repoint(%(PTR)s)',
@@ -51,7 +53,7 @@ py_mod_names = {
   'dynamicalsystem_module': '_dynamicalsystem',
   'cinoutput_module': '_cinoutput',
   'atoms_module': '_atoms',
-  'atoms_types_module': '_atoms_types',
+  'atoms_types_module': 'atoms_types',
   'extendable_str_module': '_extendable_str',
   'structures_module': '_structures',
   'elasticity_module': '_elasticity'
@@ -67,3 +69,5 @@ short_names = {
 joint_modules = {
   'atoms_types_module': ('atoms_module', 'connection_module')
 }
+
+remove_optional_arguments = ['error']

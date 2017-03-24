@@ -16,12 +16,12 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import args_str, FortranArray, farray, fzeros, s2a, a2s
+from quippy.linearalgebra import sort_array, heap_sort, binary_search
+from quippy.util import args_str
+from quippy.farray import FortranArray, farray, fzeros, s2a, a2s
 from numpy import dtype, int32
 import unittest
 from quippytest import *
-
-from quippy import sort_array, heap_sort, binary_search
 
 class TestLinearAlgebra(QuippyTestCase):
 

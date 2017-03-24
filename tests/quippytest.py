@@ -18,7 +18,7 @@
 
 import unittest, logging
 from numpy import all, unravel_index, loadtxt, isnan
-from quippy import frange, farray, FortranArray
+from quippy.farray import frange, farray, FortranArray
 from StringIO import StringIO
 
 def string_to_array(s):
