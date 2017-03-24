@@ -61,7 +61,7 @@ EOF3
 # originally the test used rng_seed=1
 # after the change in commit 8facdc861fa3e26f87ccb38bad4e64267bd9a8a3 this needed changing
 # rng_seed=2065775975 gives 1 after 100 iterations
-${MPIRUN} $bindir/md pot_init_args='{IP SW}' param_filename=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=1500.0 dt=1.0 N_steps=10 rng_seed=2065775975 atoms_filename=${TEST}.in.xyz > ${TEST}.out.raw
+${MPIRUN} $bindir/md pot_init_args='{IP SW}' param_filename=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml trajectory_filename=${TEST}.traj.xyz T=1500.0 dt=1.0 N_steps=10 rng_seed=2065775975 atoms_filename=${TEST}.in.xyz > ${TEST}.out.raw
 egrep '^ST' ${TEST}.out.raw > ${TEST}.out
 tail -8 ${TEST}.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > ${TEST}.traj_pos.xyz
 
