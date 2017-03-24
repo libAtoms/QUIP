@@ -39,13 +39,15 @@ Structure generation, manipulation and analysis
 -----------------------------------------------
 
 .. toctree::
+   structures.rst
+   descriptors.rst
    crack.rst
    clusters.rst
    find_surface_atoms.rst
-   descriptors.rst
    real_space_covariance.rst
-   structures.rst
    topology.rst
+
+   
 
 Molecular Dynamics
 ------------------
