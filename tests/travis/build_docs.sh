@@ -10,7 +10,7 @@ set -e
 export QUIP_ROOT=`pwd`
 
 # packages for building docs
-pip install sphinx sphinx_rtd_theme numpydoc
+pip install sphinx sphinx_rtd_theme nbsphinx numpydoc
 
 # needed to nbconvert ipynb files and to process the rst files
 pip install nbconvert\[execute\] ipython
