@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import, division
+
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
@@ -217,7 +219,7 @@ class ParamReaderMixin(object):
     def write(self, f):
         f.write(self.asstring(sep='\n'))
 
-from ordereddict import OrderedDict
+from quippy.ordereddict import OrderedDict
 
 class PuPyDictionary(OrderedDict, ParamReaderMixin):
     """Subclass of OrderedDict for reading key/value pairs from strings or files.
