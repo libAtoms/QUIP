@@ -837,7 +837,7 @@ contains
 
     max_moved = max_moved + params%dt*maxval(abs(ds%atoms%velo))*sqrt(3.0_dp)
     call system_timer("md/calc_connect")
-    if (max_moved > 0.9_dp*params%cutoff_buffer) then
+    if (max_moved > 0.9_dp*params%cutoff_skin) then
       call calc_connect(ds%atoms)
       max_moved = 0.0_dp
     else
