@@ -251,7 +251,10 @@ class FortranArray(np.ndarray):
 
         if one_dim and not islist:
             if len(self.shape) > 1:
-                res = (Ellipsis,nindx[0])
+                if nindx[0] is Ellipsis:
+                    res = Ellipsis
+                else:
+                    res = (Ellipsis,nindx[0])
             else:
                 res = nindx[0]
         else:
@@ -267,7 +270,10 @@ class FortranArray(np.ndarray):
                 res = nindx
             else:
                 if len(self.shape) > len(nindx):
-                    res = tuple([Ellipsis] + nindx)
+                    if nindx[0] is Ellipsis:
+                        res = tuple(nindx)
+                    else:
+                        res = tuple([Ellipsis] + nindx)
                 else:
                     res = tuple(nindx)
 

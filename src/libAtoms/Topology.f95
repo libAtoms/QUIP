@@ -2757,7 +2757,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      end  do ! i
    end function find_motif_backbone
 
-   subroutine find_general_monomer(at,monomer_index,signature,is_associated,cutoff,general_ordercheck,use_smooth_cutoff,error)
+   subroutine find_general_monomer(at,monomer_index,signature,is_associated,cutoff,general_ordercheck,error)
      type(atoms), intent(in) :: at
      integer, intent(in), dimension(:) :: signature
      real(dp), dimension(:), allocatable :: r
@@ -2766,12 +2766,11 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANAL)
      integer, dimension(:), allocatable :: indices
      integer, dimension(:,:), allocatable :: monomer_index, monomer_index_working
      integer, intent(out), optional :: error
-     logical, optional :: use_smooth_cutoff, general_ordercheck
+     logical, optional :: general_ordercheck
      integer :: i, j, k, n, Z_uniq_index, Z_uniq, Z_uniq_pos, monomers_found
      logical, dimension(:), intent(inout) :: is_associated
-     logical :: do_general_ordercheck, my_use_smooth_cutoff
+     logical :: do_general_ordercheck
 
-     my_use_smooth_cutoff = optional_default(.false.,use_smooth_cutoff)
      do_general_ordercheck = optional_default(.true.,general_ordercheck)
 
      allocate(monomer_index(size(signature),0))
