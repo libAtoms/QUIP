@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-level system routines &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Low-level system routines &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Units and physical constants" href="units.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -201,7 +201,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.system">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.system">
 <span id="low-level-system-routines"></span><h1>Low-level system routines<a class="headerlink" href="#module-quippy.system" title="Permalink to this headline">¶</a></h1>
 <p>The system module contains low-level routines for I/O, timing, random
 number generation etc. The Inoutput type is used to abstract both
@@ -214,7 +248,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-obj docutils literal"><span class="pre">InOutput</span></code></a>(...)</td>
 <td>Open a file for reading or writing.</td>
 </tr>
 </tbody>
@@ -765,7 +799,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 <dl class="class">
 <dt id="quippy.system.InOutput">
-<em class="property">class </em><code class="descclassname">quippy.system.</code><code class="descname">InOutput</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.system.</code><code class="descname">InOutput</code><span class="sig-paren">(</span><span class="optional">[</span><em>filename</em>, <em>action</em>, <em>isformatted</em>, <em>append</em>, <em>verbosity</em>, <em>verbosity_cascade</em>, <em>master_only</em>, <em>unit</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>Open a file for reading or writing. The action optional parameter can
 be one of <code class="docutils literal"><span class="pre">INPUT</span></code> (default), <code class="docutils literal"><span class="pre">OUTPUT</span></code> or <code class="docutils literal"><span class="pre">INOUT</span></code>.
@@ -837,7 +871,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal"><span class="pre">mpi_all_inoutput</span></code></a>([value])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -848,7 +882,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.parse_line" title="quippy.system.InOutput.parse_line"><code class="xref py py-obj docutils literal"><span class="pre">parse_line</span></code></a>(delimiters,fields,[status])</td>
 <td>Call parse_string on the next line from a file</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.print_mem_info" title="quippy.system.InOutput.print_mem_info"><code class="xref py py-obj docutils literal"><span class="pre">print_mem_info</span></code></a>([file])</td>
@@ -862,7 +896,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal"><span class="pre">print_mpi_id</span></code></a>([value])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -876,7 +910,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal"><span class="pre">read_ascii</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">read_ascii</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal"><span class="pre">read_line</span></code></a>([status])</td>
 <td>Read a line of text from a file (up to a line break, or 1024 characters).</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal"><span class="pre">rewind</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -950,7 +984,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.mpi_all_inoutput">
-<code class="descname">mpi_all_inoutput</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mpi_all_inoutput</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -965,7 +999,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.parse_line">
-<code class="descname">parse_line</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_line</code><span class="sig-paren">(</span><em>delimiters</em>, <em>fields</em><span class="optional">[</span>, <em>status</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call parse_string on the next line from a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1002,7 +1036,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.print_mpi_id">
-<code class="descname">print_mpi_id</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_mpi_id</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1070,7 +1104,7 @@ derived types.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.read_line">
-<code class="descname">read_line</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_line</code><span class="sig-paren">(</span><span class="optional">[</span><em>status</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a line of text from a file (up to a line break, or 1024 characters).
 This can then be parsed by the calling routine (using <code class="docutils literal"><span class="pre">parse_line</span></code> for example)</p>
 <p>Optionally, a status is returned which is:</p>
@@ -3228,7 +3262,7 @@ Other user-defined types define the Print interface in the same way.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quaternions and rotation &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Quaternions and rotation &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Linear algebra routines" href="linearalgebra.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -195,7 +195,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.quaternions">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.quaternions">
 <span id="quaternions-and-rotation"></span><h1>Quaternions and rotation<a class="headerlink" href="#module-quippy.quaternions" title="Permalink to this headline">¶</a></h1>
 <p>Implementation of quaternion algebra. Primarily for use with
 rigid body dynamics, although the <code class="docutils literal"><span class="pre">Orientation</span></code>, <code class="docutils literal"><span class="pre">Rotation</span></code>
@@ -212,7 +246,7 @@ i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-obj docutils literal"><span class="pre">Quaternion</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-obj docutils literal"><span class="pre">Quaternion</span></code></a>([a,b,c,d])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -245,7 +279,7 @@ i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 </table>
 <dl class="class">
 <dt id="quippy.quaternions.Quaternion">
-<em class="property">class </em><code class="descclassname">quippy.quaternions.</code><code class="descname">Quaternion</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.quaternions.</code><code class="descname">Quaternion</code><span class="sig-paren">(</span><span class="optional">[</span><em>a</em>, <em>b</em>, <em>c</em>, <em>d</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>quaternion_initialise([a,b,c,d])</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -276,7 +310,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.print_" title="quippy.quaternions.Quaternion.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.print_" title="quippy.quaternions.Quaternion.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -347,7 +381,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.quaternions.Quaternion.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion.print_" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -584,7 +618,7 @@ rotation on <cite>origin</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>DomainDecomposition objects &mdash; quippy 9a10f8f+ documentation</title>
+  <title>DomainDecomposition objects &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -200,11 +200,45 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="domaindecomposition-objects">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="domaindecomposition-objects">
 <h1>DomainDecomposition objects<a class="headerlink" href="#domaindecomposition-objects" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="quippy.atoms.DomainDecomposition">
-<em class="property">class </em><code class="descclassname">quippy.atoms.</code><code class="descname">DomainDecomposition</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.atoms.</code><code class="descname">DomainDecomposition</code><span class="sig-paren">(</span><span class="optional">[</span><em>decomposition</em>, <em>verlet_shell</em>, <em>mode</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>Initialize the domain decomposition module</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -334,41 +368,41 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.allocate" title="quippy.atoms.DomainDecomposition.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.allocate" title="quippy.atoms.DomainDecomposition.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(at,[range,error])</td>
 <td>Assign global indices</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_atoms" title="quippy.atoms.DomainDecomposition.comm_atoms"><code class="xref py py-obj docutils literal"><span class="pre">comm_atoms</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_atoms" title="quippy.atoms.DomainDecomposition.comm_atoms"><code class="xref py py-obj docutils literal"><span class="pre">comm_atoms</span></code></a>(at,[error])</td>
 <td>Communicate particles which left the domains</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_atoms_to_all" title="quippy.atoms.DomainDecomposition.comm_atoms_to_all"><code class="xref py py-obj docutils literal"><span class="pre">comm_atoms_to_all</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_atoms_to_all" title="quippy.atoms.DomainDecomposition.comm_atoms_to_all"><code class="xref py py-obj docutils literal"><span class="pre">comm_atoms_to_all</span></code></a>(at,[error])</td>
 <td>Communicate all particles from this domain to all other domains</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_ghosts" title="quippy.atoms.DomainDecomposition.comm_ghosts"><code class="xref py py-obj docutils literal"><span class="pre">comm_ghosts</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_ghosts" title="quippy.atoms.DomainDecomposition.comm_ghosts"><code class="xref py py-obj docutils literal"><span class="pre">comm_ghosts</span></code></a>(at,new_list,[error])</td>
 <td>Communicate ghost particles to neighboring domains (former prebinning routine).</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_reverse" title="quippy.atoms.DomainDecomposition.comm_reverse"><code class="xref py py-obj docutils literal"><span class="pre">comm_reverse</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.comm_reverse" title="quippy.atoms.DomainDecomposition.comm_reverse"><code class="xref py py-obj docutils literal"><span class="pre">comm_reverse</span></code></a>(at,[error])</td>
 <td>Communicate forces of ghost particles back.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.deepcopy" title="quippy.atoms.DomainDecomposition.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.deepcopy" title="quippy.atoms.DomainDecomposition.deepcopy"><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code></a>(from)</td>
 <td>Create a deep copy</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.disable" title="quippy.atoms.DomainDecomposition.disable"><code class="xref py py-obj docutils literal"><span class="pre">disable</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.disable" title="quippy.atoms.DomainDecomposition.disable"><code class="xref py py-obj docutils literal"><span class="pre">disable</span></code></a>(at,[error])</td>
 <td>Disable domain decomposition, after this call every process retains an identical copy of the system.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.enable" title="quippy.atoms.DomainDecomposition.enable"><code class="xref py py-obj docutils literal"><span class="pre">enable</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.enable" title="quippy.atoms.DomainDecomposition.enable"><code class="xref py py-obj docutils literal"><span class="pre">enable</span></code></a>(...)</td>
 <td>Enable domain decomposition, after this call every process remains only with the atoms in its local domain.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_border" title="quippy.atoms.DomainDecomposition.set_border"><code class="xref py py-obj docutils literal"><span class="pre">set_border</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_border" title="quippy.atoms.DomainDecomposition.set_border"><code class="xref py py-obj docutils literal"><span class="pre">set_border</span></code></a>(at,border,[verlet_shell,error])</td>
 <td>Set the communication border</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_comm_property" title="quippy.atoms.DomainDecomposition.set_comm_property"><code class="xref py py-obj docutils literal"><span class="pre">set_comm_property</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_comm_property" title="quippy.atoms.DomainDecomposition.set_comm_property"><code class="xref py py-obj docutils literal"><span class="pre">set_comm_property</span></code></a>(...)</td>
 <td>Set which properties to communicate on which events comm_atoms:   Communicate when atom is moved to different domain.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.allocate">
-<code class="descname">allocate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.allocate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">allocate</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>range</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.allocate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign global indices
 Allocate internal buffer</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -388,7 +422,7 @@ Allocate internal buffer</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.comm_atoms">
-<code class="descname">comm_atoms</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">comm_atoms</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Communicate particles which left the domains
 to the neighboring domains (former order routine)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -407,7 +441,7 @@ to the neighboring domains (former order routine)</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.comm_atoms_to_all">
-<code class="descname">comm_atoms_to_all</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_atoms_to_all" title="Permalink to this definition">¶</a></dt>
+<code class="descname">comm_atoms_to_all</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_atoms_to_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Communicate all particles from this domain to all other domains</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -425,7 +459,7 @@ to the neighboring domains (former order routine)</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.comm_ghosts">
-<code class="descname">comm_ghosts</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_ghosts" title="Permalink to this definition">¶</a></dt>
+<code class="descname">comm_ghosts</code><span class="sig-paren">(</span><em>at</em>, <em>new_list</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_ghosts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Communicate ghost particles to neighboring domains
 (former prebinning routine). <em>bwidth</em> is the width of
 the border.</p>
@@ -446,7 +480,7 @@ the border.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.comm_reverse">
-<code class="descname">comm_reverse</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_reverse" title="Permalink to this definition">¶</a></dt>
+<code class="descname">comm_reverse</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.comm_reverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Communicate forces of ghost particles back.
 This is needed for rigid object (i.e., water) or to reduce the
 border size in BOPs.</p>
@@ -466,7 +500,7 @@ border size in BOPs.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.deepcopy">
-<code class="descname">deepcopy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.deepcopy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">deepcopy</code><span class="sig-paren">(</span><em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.deepcopy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a deep copy</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -484,7 +518,7 @@ border size in BOPs.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.disable">
-<code class="descname">disable</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.disable" title="Permalink to this definition">¶</a></dt>
+<code class="descname">disable</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.disable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disable domain decomposition, after this call every process
 retains an identical copy of the system.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -503,7 +537,7 @@ retains an identical copy of the system.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.enable">
-<code class="descname">enable</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.enable" title="Permalink to this definition">¶</a></dt>
+<code class="descname">enable</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>mpi</em>, <em>decomposition</em>, <em>verlet_shell</em>, <em>mode</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.enable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enable domain decomposition, after this call every process
 remains only with the atoms in its local domain.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -526,7 +560,7 @@ remains only with the atoms in its local domain.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.set_border">
-<code class="descname">set_border</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.set_border" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_border</code><span class="sig-paren">(</span><em>at</em>, <em>border</em><span class="optional">[</span>, <em>verlet_shell</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.set_border" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the communication border</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -546,7 +580,7 @@ remains only with the atoms in its local domain.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.DomainDecomposition.set_comm_property">
-<code class="descname">set_comm_property</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.set_comm_property" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_comm_property</code><span class="sig-paren">(</span><em>propname</em><span class="optional">[</span>, <em>comm_atoms</em>, <em>comm_ghosts</em>, <em>comm_reverse</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.DomainDecomposition.set_comm_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set which properties to communicate on which events
 comm_atoms:   Communicate when atom is moved to different domain.</p>
 <blockquote>
@@ -806,7 +840,7 @@ propagated on the domain they reside in only.</dd>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

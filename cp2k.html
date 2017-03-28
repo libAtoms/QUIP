@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>CP2K I/O and driver &mdash; quippy 9a10f8f+ documentation</title>
+  <title>CP2K I/O and driver &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Elasticity calculations" href="elasticity.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -194,7 +194,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.cp2k">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.cp2k">
 <span id="cp2k-i-o-and-driver"></span><span id="cp2k"></span><h1>CP2K I/O and driver<a class="headerlink" href="#module-quippy.cp2k" title="Permalink to this headline">¶</a></h1>
 <p>Module contents for <a class="reference internal" href="#module-quippy.cp2k" title="quippy.cp2k: CP2K I/O"><code class="xref py py-mod docutils literal"><span class="pre">quippy.cp2k</span></code></a>:</p>
 <p class="rubric">Classes</p>
@@ -420,7 +454,12 @@ run dir on /tmp.</td>
 POTENTIAL file to copy it to the cp2k
 run dir on /tmp.</td>
 </tr>
-<tr class="row-even"><td>auto_centre</td>
+<tr class="row-even"><td>Run_Type</td>
+<td>str</td>
+<td>PARAM_MANDATORY</td>
+<td>Type of run QS, MM, or QMMM</td>
+</tr>
+<tr class="row-odd"><td>auto_centre</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, automatically center
@@ -428,33 +467,38 @@ configuration. May cause energy/force
 fluctuations. Mutually exclusive with
 centre_pos</td>
 </tr>
-<tr class="row-odd"><td>break_bond</td>
+<tr class="row-even"><td>break_bond</td>
 <td>int</td>
 <td>0 0</td>
 <td>Bond to break (for EVB)</td>
 </tr>
-<tr class="row-even"><td>centre_pos</td>
+<tr class="row-odd"><td>centre_pos</td>
 <td>float</td>
 <td>0.0 0.0 0.0</td>
 <td>Position to center around, mutually
 exclusive with auto_centre</td>
 </tr>
-<tr class="row-odd"><td>clean_up_files</td>
+<tr class="row-even"><td>clean_up_files</td>
 <td>bool</td>
 <td>True</td>
 <td>If true, clean up run directory files</td>
 </tr>
-<tr class="row-even"><td>clean_up_keep_n</td>
+<tr class="row-odd"><td>clean_up_keep_n</td>
 <td>int</td>
 <td>1</td>
 <td>Number of old run directories to keep
 if cleaning up</td>
 </tr>
-<tr class="row-odd"><td>cp2k_calc_fake</td>
+<tr class="row-even"><td>cp2k_calc_fake</td>
 <td>bool</td>
 <td>False</td>
 <td>If true, do fake cp2k runs that just
 read from old output files</td>
+</tr>
+<tr class="row-odd"><td>cp2k_program</td>
+<td>str</td>
+<td>PARAM_MANDATORY</td>
+<td>Path to cp2k executable</td>
 </tr>
 <tr class="row-even"><td>cp2k_template_file</td>
 <td>str</td>
@@ -829,7 +873,7 @@ virial in</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

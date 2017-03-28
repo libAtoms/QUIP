@@ -1,0 +1,172 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Interoperability with Atomic Simulation Environment\n",
+    "\n",
+    "\\[[View with IPython nbviewer](http://nbviewer.ipython.org/github/libAtoms/QUIP/blob/public/doc/Examples/quippy-ase-interoperability.ipynb)\\]\n",
+    "\n",
+    "- quippy `Potential` objects can be used as ASE calculators, and vice-versa\n",
+    "- quippy `Atoms` object is interoperable with ASE `Atoms`\n",
+    "- Can use standard ASE tools, plus communicate with other packages using ASE as *lingua franca*\n",
+    "\n",
+    "## Example: vacancy formation energy\n",
+    "\n",
+    "- Generate structure with `ASE` lattice tools\n",
+    "- Stillinger-Weber potential implementation from `QUIP`\n",
+    "- Elastic constant fitting routine from `matscipy`, internal relaxations with `ASE` FIRE minimiser"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Populating the interactive namespace from numpy and matplotlib\n",
+      "FIRE:   0  15:12:13      -34.635777       0.3247\n",
+      "FIRE:   1  15:12:13      -34.642625       0.2026\n",
+      "FIRE:   2  15:12:13      -34.646995       0.0046\n",
+      "FIRE:   0  15:12:13      -34.670667       0.1584\n",
+      "FIRE:   1  15:12:13      -34.672303       0.0999\n",
+      "FIRE:   2  15:12:13      -34.673382       0.0046\n",
+      "FIRE:   0  15:12:13      -34.678737       0.0000\n",
+      "FIRE:   0  15:12:13      -34.660845       0.1508\n",
+      "FIRE:   1  15:12:13      -34.662341       0.0972\n",
+      "FIRE:   2  15:12:13      -34.663394       0.0090\n",
+      "FIRE:   0  15:12:13      -34.617822       0.2945\n",
+      "FIRE:   1  15:12:13      -34.623549       0.1917\n",
+      "FIRE:   2  15:12:13      -34.627707       0.0221\n",
+      "Fitting C_11\n",
+      "Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])\n",
+      "Stress array([-2.56097717, -1.01273495,  0.5027424 ,  1.98320536,  3.42678422]) GPa\n",
+      "Cij (gradient) / GPa    :     149.714630969\n",
+      "Error in Cij / GPa      :     1.19249995513\n",
+      "Correlation coefficient :     0.999904848087\n",
+      "Setting C11 (1) to 0.934445 +/- 0.007443\n",
+      "\n",
+      "\n",
+      "Fitting C_21\n",
+      "Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])\n",
+      "Stress array([-1.0766539 , -0.26645127,  0.5027424 ,  1.23340389,  1.92788225]) GPa\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "WARNING:quippy.potential:Minim atoms is not quippy.Atoms instance, copy forced!\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Cij (gradient) / GPa    :     75.0892745799\n",
+      "Error in Cij / GPa      :     1.31766559061\n",
+      "Correlation coefficient :     0.999538422023\n",
+      "Setting C21 (7) to 0.468670 +/- 0.008224\n",
+      "\n",
+      "\n",
+      "Fitting C_31\n",
+      "Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])\n",
+      "Stress array([-1.0766539 , -0.26645127,  0.5027424 ,  1.23340389,  1.92788225]) GPa\n",
+      "Cij (gradient) / GPa    :     75.0892745799\n",
+      "Error in Cij / GPa      :     1.31766559061\n",
+      "Correlation coefficient :     0.999538422023\n",
+      "Updating C31 (7) with value 0.468670 +/- 0.008224\n",
+      "\n",
+      "\n",
+      "Fitting C_44\n",
+      "Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])\n",
+      "Stress array([ -1.15145968e+00,  -5.81643079e-01,  -9.46417971e-15,\n",
+      "         5.90131462e-01,   1.18570415e+00]) GPa\n",
+      "Cij (gradient) / GPa    :     58.4610219649\n",
+      "Error in Cij / GPa      :     0.295085346334\n",
+      "Correlation coefficient :     0.999961785442\n",
+      "Setting C44 (4) to 0.364885 +/- 0.001842\n",
+      "\n",
+      "\n",
+      "[[ C11  C12  C12               ]\n",
+      " [ C12  C11  C12               ]\n",
+      " [ C12  C12  C11               ]\n",
+      " [                C44          ]\n",
+      " [                     C44     ]\n",
+      " [                          C44]]\n",
+      "\n",
+      " = \n",
+      "\n",
+      "[[ 149.71   75.09   75.09    0.      0.      0.  ]\n",
+      " [  75.09  149.71   75.09    0.      0.      0.  ]\n",
+      " [  75.09   75.09  149.71    0.      0.      0.  ]\n",
+      " [   0.      0.      0.     58.46    0.      0.  ]\n",
+      " [   0.      0.      0.      0.     58.46    0.  ]\n",
+      " [   0.      0.      0.      0.      0.     58.46]]\n",
+      "C_11 = 149.71 +/- 1.19 GPa\n",
+      "C_12 = 75.09 +/- 1.32 GPa\n",
+      "C_44 = 58.46 +/- 0.30 GPa\n",
+      "SW vacancy formation energy 4.30106655261 eV\n"
+     ]
+    }
+   ],
+   "source": [
+    "%pylab inline\n",
+    "from ase.build import bulk\n",
+    "from ase.optimize import FIRE\n",
+    "from quippy.potential import Potential\n",
+    "from quippy.potential import Minim\n",
+    "\n",
+    "si = bulk('Si', a=5.44, cubic=True)\n",
+    "sw_pot = Potential('IP SW') # call into Fortran code\n",
+    "si.set_calculator(sw_pot)\n",
+    "e_bulk_per_atom = si.get_potential_energy()/len(si)\n",
+    "\n",
+    "# call general purpose elastic constants calculator \n",
+    "#   using ASE Atoms and QUIP Potential\n",
+    "from matscipy.elasticity import fit_elastic_constants\n",
+    "Cij = fit_elastic_constants(si, optimizer=FIRE, \n",
+    "                            symmetry='cubic', logfile='-')\n",
+    "vac1 = si.copy()\n",
+    "vac1 *= (3, 3, 3)\n",
+    "half_cell = np.diag(vac1.cell)/2.\n",
+    "vac_atom = ((vac1.positions - half_cell)**2).sum(axis=1).argmin()\n",
+    "del vac1[vac_atom]\n",
+    "\n",
+    "vac1.set_calculator(sw_pot)\n",
+    "vac1.rattle(0.01)\n",
+    "opt = Minim(vac1, method='cg_n') # big cell, use Fortran minimiser\n",
+    "opt.run(fmax=1e-6)\n",
+    "e_vac = vac1.get_potential_energy() - e_bulk_per_atom*len(vac1)\n",
+    "print 'SW vacancy formation energy', e_vac, 'eV'"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2.0
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

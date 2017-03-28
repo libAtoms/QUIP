@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Cluster carving routines &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Cluster carving routines &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Identification of atoms on surfaces" href="find_surface_atoms.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -104,12 +104,13 @@
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="structures.html">Structure building routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="descriptors.html">Descriptors for atomic environments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="crack.html">Tools for fracture simulations</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Cluster carving routines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="find_surface_atoms.html">Identification of atoms on surfaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="real_space_covariance.html">Real-space covariance representation of atomic environments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="structures.html">Structure building routines</a></li>
-<li class="toctree-l3"><a class="reference internal" href="topology.html">Utilities for topological analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="topology.html">Some utilities for topological analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
@@ -195,7 +196,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.clusters">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.clusters">
 <span id="cluster-carving-routines"></span><h1>Cluster carving routines<a class="headerlink" href="#module-quippy.clusters" title="Permalink to this headline">¶</a></h1>
 <p>Module contents for <a class="reference internal" href="#module-quippy.clusters" title="quippy.clusters: Cluster carving routines"><code class="xref py py-mod docutils literal"><span class="pre">quippy.clusters</span></code></a>:</p>
 <p class="rubric">Functions</p>
@@ -918,32 +953,126 @@ make cluster&#8217;s cell vectors periodic</td>
 <td>Don&#8217;t modify cluster cell vectors from
 incoming cell vectors</td>
 </tr>
-<tr class="row-even"><td>even_electrons</td>
+<tr class="row-even"><td>combined_protein_heuristics</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristics for proteins:
+overrides keep_whole_molecules=F,
+keep_whole_residues=F,
+keep_whole_subgroups=T,
+keep_whole_prolines=T,
+keep_whole_proline_sidechains=F,
+protect_double_bonds=F,
+protect_peptide_bonds=T</td>
+</tr>
+<tr class="row-odd"><td>even_electrons</td>
 <td>bool</td>
 <td>False</td>
 <td>Remove passivation hydrogen to keep
 total number of electrons even</td>
 </tr>
-<tr class="row-odd"><td>hysteretic_connect</td>
+<tr class="row-even"><td>fix_termination_clash</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply termination clash (terimnation H
+too close together) heureistic</td>
+</tr>
+<tr class="row-odd"><td>force_no_fix_termination_clash</td>
+<td>bool</td>
+<td>False</td>
+<td>Overrides values of (terminate .or.
+termination_clash) to explicitly
+disable termination clash heuristic</td>
+</tr>
+<tr class="row-even"><td>hysteretic_connect</td>
 <td>bool</td>
 <td>False</td>
 <td>Use hysteretic connect object to decide
 what&#8217;s bonded. Usually goes with
 cluster_*_nneighb_only=F.</td>
 </tr>
-<tr class="row-even"><td>in_out_in</td>
+<tr class="row-odd"><td>in_out_in</td>
 <td>bool</td>
 <td>False</td>
 <td>Apply heuristic than adds atoms to
 avoid IN-OUT-IN configurations. Usually
 equivalent to reduce_n_cut_bonds.</td>
 </tr>
-<tr class="row-odd"><td>in_out_in_mode</td>
+<tr class="row-even"><td>in_out_in_mode</td>
 <td>str</td>
 <td>all</td>
 <td>Mode to use for in_out_in heuristic -
 can be either &#8216;all&#8217; or &#8216;any&#8217;. Default
 is &#8216;all&#8217;.</td>
+</tr>
+<tr class="row-odd"><td>keep_whole_molecules</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristic keeping identified
+molecules (i.e. contiguous bonded
+groups of atoms) whole</td>
+</tr>
+<tr class="row-even"><td>keep_whole_proline_sidechains</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristic keeping identified
+prolines sidechain+directly connected
+backbone part whole</td>
+</tr>
+<tr class="row-odd"><td>keep_whole_prolines</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristic keeping identified
+prolines whole</td>
+</tr>
+<tr class="row-even"><td>keep_whole_residues</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply heuristic keeping identified
+residues whole</td>
+</tr>
+<tr class="row-odd"><td>keep_whole_silica_tetrahedra</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heureistic keeping SiO2
+tetrahedra whole</td>
+</tr>
+<tr class="row-even"><td>keep_whole_subgroups</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristic keeping identified
+subgroups within a residue whole</td>
+</tr>
+<tr class="row-odd"><td>keep_whole_titania_octahedra</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heureistic keeping TiO2
+tetragonal structure whole</td>
+</tr>
+<tr class="row-even"><td>protect_X_H_bonds</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply heuristic protecting X-H bonds -
+no point H passivating bonds with an H</td>
+</tr>
+<tr class="row-odd"><td>protect_double_bonds</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply heuristic protecting double bonds
+from being cut (based one some
+heuristic idea of what&#8217;s a double bond</td>
+</tr>
+<tr class="row-even"><td>protect_peptide_bonds</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heuristic protecting peptide
+bonds from being cut (RO-C...N-RR)</td>
+</tr>
+<tr class="row-odd"><td>reduce_n_cut_bonds</td>
+<td>bool</td>
+<td>True</td>
+<td>Apply heuristic that adds atoms if
+doing so reduces number of broken bonds</td>
 </tr>
 <tr class="row-even"><td>terminate</td>
 <td>bool</td>
@@ -951,14 +1080,20 @@ is &#8216;all&#8217;.</td>
 <td>Do hydrogen termination for dangling
 bonds</td>
 </tr>
-<tr class="row-odd"><td>termination_clash_factor</td>
+<tr class="row-odd"><td>terminate_octahedra</td>
+<td>bool</td>
+<td>False</td>
+<td>Apply heureistic terminating TiO2
+octahedra</td>
+</tr>
+<tr class="row-even"><td>termination_clash_factor</td>
 <td>float</td>
 <td>1.2</td>
 <td>Factor to multiply H-H bond-length by
 when deciding if two Hs are too close.
 Default 1.2</td>
 </tr>
-<tr class="row-even"><td>termination_rescale</td>
+<tr class="row-odd"><td>termination_rescale</td>
 <td>float</td>
 <td>0.0</td>
 <td>Rescale factor for X-H passivation
@@ -1080,7 +1215,7 @@ according to <code class="docutils literal"><span class="pre">cluster_mark</span
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

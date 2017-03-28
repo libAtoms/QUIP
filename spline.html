@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Cubic spline interpolation &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Cubic spline interpolation &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -194,7 +194,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.spline">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.spline">
 <span id="cubic-spline-interpolation"></span><h1>Cubic spline interpolation<a class="headerlink" href="#module-quippy.spline" title="Permalink to this headline">¶</a></h1>
 <p>Defines derived type for a spline, and associated functions.
 Code partially based on Numerical Recipes.</p>
@@ -206,14 +240,14 @@ Code partially based on Numerical Recipes.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline" title="quippy.spline.Spline"><code class="xref py py-obj docutils literal"><span class="pre">Spline</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline" title="quippy.spline.Spline"><code class="xref py py-obj docutils literal"><span class="pre">Spline</span></code></a>(x,y,yp1,ypn)</td>
 <td>Initialises a spline with given x and y values (and endpoint derivatives)</td>
 </tr>
 </tbody>
 </table>
 <dl class="class">
 <dt id="quippy.spline.Spline">
-<em class="property">class </em><code class="descclassname">quippy.spline.</code><code class="descname">Spline</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.spline.</code><code class="descname">Spline</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>yp1</em>, <em>ypn</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialises a spline with given x and y values (and endpoint derivatives)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -301,7 +335,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.print_" title="quippy.spline.Spline.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.print_" title="quippy.spline.Spline.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -367,7 +401,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.spline.Spline.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline.print_" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -473,7 +507,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

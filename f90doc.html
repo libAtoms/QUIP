@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>f90doc — Fortran 90 source code scanner &mdash; quippy 9a10f8f+ documentation</title>
+  <title>f90doc — Fortran 90 source code scanner &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Appendix: wrapping Fortran 90 Code" href="fortran_wrapper.html"/>
         <link rel="next" title="f2py_wrapper_gen — Fortran 90 source code wrapping" href="f2py_wrapper_gen.html"/>
         <link rel="prev" title="Appendix: wrapping Fortran 90 Code" href="fortran_wrapper.html"/> 
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -189,7 +189,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-f90doc">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-f90doc">
 <span id="f90doc-fortran-90-source-code-scanner"></span><h1><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> &#8212; Fortran 90 source code scanner<a class="headerlink" href="#module-f90doc" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> can be used either as a command line tool or as a module.</p>
 <div class="section" id="command-line-usage">
@@ -307,7 +341,7 @@ a tuple <cite>(programs, modules, functs, subts)</cite>.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

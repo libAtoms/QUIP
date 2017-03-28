@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>MPI parallel interface &mdash; quippy 9a10f8f+ documentation</title>
+  <title>MPI parallel interface &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -200,7 +200,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.mpi_context">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.mpi_context">
 <span id="mpi-parallel-interface"></span><h1>MPI parallel interface<a class="headerlink" href="#module-quippy.mpi_context" title="Permalink to this headline">¶</a></h1>
 <p>Module contents for <a class="reference internal" href="#module-quippy.mpi_context" title="quippy.mpi_context: MPI parallel interface"><code class="xref py py-mod docutils literal"><span class="pre">quippy.mpi_context</span></code></a>:</p>
 <p class="rubric">Classes</p>
@@ -210,7 +244,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-obj docutils literal"><span class="pre">MPI_context</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-obj docutils literal"><span class="pre">MPI_context</span></code></a>(...)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -262,7 +296,7 @@
 </table>
 <dl class="class">
 <dt id="quippy.mpi_context.MPI_context">
-<em class="property">class </em><code class="descclassname">quippy.mpi_context.</code><code class="descname">MPI_context</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.mpi_context.</code><code class="descname">MPI_context</code><span class="sig-paren">(</span><span class="optional">[</span><em>communicator</em>, <em>context</em>, <em>dims</em>, <em>periods</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>mpi_context_initialise([communicator,context,dims,periods,error])</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -288,7 +322,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.all" title="quippy.mpi_context.MPI_context.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.all" title="quippy.mpi_context.MPI_context.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a>(v,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -299,7 +333,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.any" title="quippy.mpi_context.MPI_context.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.any" title="quippy.mpi_context.MPI_context.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a>(v,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -310,7 +344,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal"><span class="pre">barrier</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal"><span class="pre">barrier</span></code></a>([error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -324,7 +358,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.bcast" title="quippy.mpi_context.MPI_context.bcast"><code class="xref py py-obj docutils literal"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">bcast</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal"><span class="pre">cart_shift</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal"><span class="pre">cart_shift</span></code></a>(direction,displ,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -335,7 +369,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect" title="quippy.mpi_context.MPI_context.collect"><code class="xref py py-obj docutils literal"><span class="pre">collect</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect" title="quippy.mpi_context.MPI_context.collect"><code class="xref py py-obj docutils literal"><span class="pre">collect</span></code></a>(v_in,n2,n3,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -357,7 +391,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal"><span class="pre">free_context</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal"><span class="pre">free_context</span></code></a>([error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -388,7 +422,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -408,7 +442,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal"><span class="pre">split_context</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal"><span class="pre">split_context</span></code></a>(split_index,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -429,7 +463,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.all">
-<code class="descname">all</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.all" title="Permalink to this definition">¶</a></dt>
+<code class="descname">all</code><span class="sig-paren">(</span><em>v</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.all" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -449,7 +483,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.any">
-<code class="descname">any</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.any" title="Permalink to this definition">¶</a></dt>
+<code class="descname">any</code><span class="sig-paren">(</span><em>v</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.any" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -469,7 +503,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.barrier">
-<code class="descname">barrier</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.barrier" title="Permalink to this definition">¶</a></dt>
+<code class="descname">barrier</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.barrier" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -751,7 +785,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.cart_shift">
-<code class="descname">cart_shift</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.cart_shift" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cart_shift</code><span class="sig-paren">(</span><em>direction</em>, <em>displ</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.cart_shift" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -771,7 +805,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.collect">
-<code class="descname">collect</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.collect" title="Permalink to this definition">¶</a></dt>
+<code class="descname">collect</code><span class="sig-paren">(</span><em>v_in</em>, <em>n2</em>, <em>n3</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.collect" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -827,7 +861,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.free_context">
-<code class="descname">free_context</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.free_context" title="Permalink to this definition">¶</a></dt>
+<code class="descname">free_context</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.free_context" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -957,7 +991,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.print_" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1059,7 +1093,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.split_context">
-<code class="descname">split_context</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.split_context" title="Permalink to this definition">¶</a></dt>
+<code class="descname">split_context</code><span class="sig-paren">(</span><em>split_index</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.split_context" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1339,7 +1373,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

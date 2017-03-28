@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Structure building routines &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Structure building routines &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -103,14 +103,15 @@
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Structure building routines</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="descriptors.html">Descriptors for atomic environments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="crack.html">Tools for fracture simulations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="clusters.html">Cluster carving routines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="find_surface_atoms.html">Identification of atoms on surfaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="real_space_covariance.html">Real-space covariance representation of atomic environments</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Structure building routines</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="topology.html">Utilities for topological analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="topology.html">Some utilities for topological analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
@@ -196,7 +197,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.structures">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.structures">
 <span id="structure-building-routines"></span><h1>Structure building routines<a class="headerlink" href="#module-quippy.structures" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a variety of structure generating routines.</p>
 <p>Module contents for <a class="reference internal" href="#module-quippy.structures" title="quippy.structures: Structure building routines"><code class="xref py py-mod docutils literal"><span class="pre">quippy.structures</span></code></a>:</p>
@@ -1973,7 +2008,7 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

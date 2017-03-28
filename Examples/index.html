@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Examples &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Examples &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,8 +37,8 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="../index.html"/>
-        <link rel="next" title="Interoperability with Atomic Simulation Environment" href="quippy-ase-interoperability.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="../index.html"/>
+        <link rel="next" title="Getting started with Atoms" href="Introduction.html"/>
         <link rel="prev" title="Installation of QUIP and quippy" href="../install.html"/> 
 
   
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -100,6 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
 </ul>
 </li>
@@ -179,13 +180,54 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="examples">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
 <p>The following examples are currently available:</p>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html#ASE-and-quippy">ASE and <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html#Changing-Atoms">Changing <code class="docutils literal"><span class="pre">Atoms</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html#Generating-structures-from-scratch">Generating structures from scratch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html#Computing-the-energy">Computing the energy</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html#example-vacancy-formation-energy">Example: vacancy formation energy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html#Example:-vacancy-formation-energy">Example: vacancy formation energy</a></li>
 </ul>
 </li>
 </ul>
@@ -202,7 +244,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quippy-ase-interoperability.html" class="btn btn-neutral float-right" title="Interoperability with Atomic Simulation Environment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="Introduction.html" class="btn btn-neutral float-right" title="Getting started with Atoms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../install.html" class="btn btn-neutral" title="Installation of QUIP and quippy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -236,7 +278,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

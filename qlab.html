@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Visualisation Tools" href="visualisation.html"/>
         <link rel="prev" title="Visualisation Tools" href="visualisation.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -191,7 +191,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-qlab">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-qlab">
 <span id="interactive-visualisation-of-atomic-systems-with-qlab"></span><h1>Interactive visualisation of atomic systems with <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a><a class="headerlink" href="#module-qlab" title="Permalink to this headline">¶</a></h1>
 <p>The <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> module provides a <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#module-matplotlib.pyplot" title="(in Matplotlib v2.0.0)"><code class="xref py py-mod docutils literal"><span class="pre">pylab</span></code></a>-style
 interface to <a class="reference internal" href="index.html#module-quippy" title="quippy"><code class="xref py py-mod docutils literal"><span class="pre">quippy</span></code></a> and <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a>, and is designed for interactive use,
@@ -1265,7 +1299,7 @@ lattice vectors.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

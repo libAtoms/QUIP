@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 9a10f8f+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -207,7 +207,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.io">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.io">
 <span id="atomslist-and-atomsreader-objects-for-i-o"></span><h1>AtomsList and AtomsReader objects for I/O<a class="headerlink" href="#module-quippy.io" title="Permalink to this headline">¶</a></h1>
 <p>There are two classes for reading trajectories: <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></code></a>
 and <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a>. Use an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></code></a> for quick
@@ -1413,7 +1447,7 @@ which can be used to simplify the registration process:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

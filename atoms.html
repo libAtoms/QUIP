@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Atoms objects &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Atoms objects &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Quippy library reference" href="quippy.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -194,7 +194,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.atoms">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.atoms">
 <span id="atoms-objects"></span><h1>Atoms objects<a class="headerlink" href="#module-quippy.atoms" title="Permalink to this headline">¶</a></h1>
 <p>This module defines the <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a>, which stores and manipulates a
 collection of atoms, as well as the <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> class which stores
@@ -207,10 +241,10 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-obj docutils literal"><span class="pre">Connection</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-obj docutils literal"><span class="pre">Connection</span></code></a>(...)</td>
 <td>The Connection type stores the topology of a set of Atoms</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="domaindecomposition.html#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-obj docutils literal"><span class="pre">DomainDecomposition</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="domaindecomposition.html#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-obj docutils literal"><span class="pre">DomainDecomposition</span></code></a>(...)</td>
 <td>Initialize the domain decomposition module</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-obj docutils literal"><span class="pre">Atoms</span></code></a>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;...)</td>
@@ -283,7 +317,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal"><span class="pre">map_into_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Map atomic positions into the unit cell so that lattice</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params_</span></code>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params_</span></code>(...)</td>
 <td>Opposite of Make_Lattice.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.get_lattice_params" title="quippy.atoms.get_lattice_params"><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params</span></code></a>(lattice)</td>
@@ -384,86 +418,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.adsorbate_info" title="quippy.atoms.Atoms.adsorbate_info"><code class="xref py py-obj docutils literal"><span class="pre">adsorbate_info</span></code></a></td>
-<td>Return the adsorbate information set by one of the surface builder functions.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.arrays" title="quippy.atoms.Atoms.arrays"><code class="xref py py-obj docutils literal"><span class="pre">arrays</span></code></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.arrays" title="quippy.atoms.Atoms.arrays"><code class="xref py py-obj docutils literal"><span class="pre">arrays</span></code></a></td>
 <td>Provides access to ASE arrays, stored in QUIP properties dict</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc" title="quippy.atoms.Atoms.calc"><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></a></td>
-<td>Calculator object.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.cell" title="quippy.atoms.Atoms.cell"><code class="xref py py-obj docutils literal"><span class="pre">cell</span></code></a></td>
-<td>Attribute for direct manipulation of the unit cell.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.connect" title="quippy.atoms.Atoms.connect"><code class="xref py py-obj docutils literal"><span class="pre">connect</span></code></a></td>
-<td><a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.constraints" title="quippy.atoms.Atoms.constraints"><code class="xref py py-obj docutils literal"><span class="pre">constraints</span></code></a></td>
-<td>Constraints of the atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.cutoff" title="quippy.atoms.Atoms.cutoff"><code class="xref py py-obj docutils literal"><span class="pre">cutoff</span></code></a></td>
-<td>Cutoff distance for neighbour calculations.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.cutoff_skin" title="quippy.atoms.Atoms.cutoff_skin"><code class="xref py py-obj docutils literal"><span class="pre">cutoff_skin</span></code></a></td>
-<td>If set, increase cutoff by this amount to reduce calc_connect() frequency</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.domain" title="quippy.atoms.Atoms.domain"><code class="xref py py-obj docutils literal"><span class="pre">domain</span></code></a></td>
-<td>Domain decomposition object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.fixed_size" title="quippy.atoms.Atoms.fixed_size"><code class="xref py py-obj docutils literal"><span class="pre">fixed_size</span></code></a></td>
-<td>Can the number of atoms be changed after initialisation?</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.g" title="quippy.atoms.Atoms.g"><code class="xref py py-obj docutils literal"><span class="pre">g</span></code></a></td>
-<td>Inverse lattice (stored for speed)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.hysteretic_connect" title="quippy.atoms.Atoms.hysteretic_connect"><code class="xref py py-obj docutils literal"><span class="pre">hysteretic_connect</span></code></a></td>
-<td>Hysteretic <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.indices" title="quippy.atoms.Atoms.indices"><code class="xref py py-obj docutils literal"><span class="pre">indices</span></code></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.indices" title="quippy.atoms.Atoms.indices"><code class="xref py py-obj docutils literal"><span class="pre">indices</span></code></a></td>
 <td>Return array of atoms indices</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.info" title="quippy.atoms.Atoms.info"><code class="xref py py-obj docutils literal"><span class="pre">info</span></code></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.info" title="quippy.atoms.Atoms.info"><code class="xref py py-obj docutils literal"><span class="pre">info</span></code></a></td>
 <td>ASE info dictionary</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><code class="xref py py-obj docutils literal"><span class="pre">lattice</span></code></a></td>
-<td>Lattice vectors, as columns:</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.n" title="quippy.atoms.Atoms.n"><code class="xref py py-obj docutils literal"><span class="pre">n</span></code></a></td>
-<td>The number of atoms held (including ghost particles)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.nbuffer" title="quippy.atoms.Atoms.nbuffer"><code class="xref py py-obj docutils literal"><span class="pre">nbuffer</span></code></a></td>
-<td>The number of atoms that can be stored in the buffers of this Atoms object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.ndomain" title="quippy.atoms.Atoms.ndomain"><code class="xref py py-obj docutils literal"><span class="pre">ndomain</span></code></a></td>
-<td>The number of atoms held by the local process (excluding ghost particles)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.nneightol" title="quippy.atoms.Atoms.nneightol"><code class="xref py py-obj docutils literal"><span class="pre">nneightol</span></code></a></td>
-<td>Count as nearest neighbour if sum of covalent radii times <code class="docutils literal"><span class="pre">this.nneightol</span></code> greater than distance between atoms.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.number_of_lattice_vectors" title="quippy.atoms.Atoms.number_of_lattice_vectors"><code class="xref py py-obj docutils literal"><span class="pre">number_of_lattice_vectors</span></code></a></td>
-<td>Number of (non-zero) lattice vectors.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.numbers" title="quippy.atoms.Atoms.numbers"><code class="xref py py-obj docutils literal"><span class="pre">numbers</span></code></a></td>
-<td>Attribute for direct manipulation of the atomic numbers.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.own_this" title="quippy.atoms.Atoms.own_this"><code class="xref py py-obj docutils literal"><span class="pre">own_this</span></code></a></td>
-<td>Do I own myself?</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.params" title="quippy.atoms.Atoms.params"><code class="xref py py-obj docutils literal"><span class="pre">params</span></code></a></td>
-<td><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> of parameters. Useful for storing data about this</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.pbc" title="quippy.atoms.Atoms.pbc"><code class="xref py py-obj docutils literal"><span class="pre">pbc</span></code></a></td>
-<td>Attribute for direct manipulation of the periodic boundary condition flags.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.positions" title="quippy.atoms.Atoms.positions"><code class="xref py py-obj docutils literal"><span class="pre">positions</span></code></a></td>
-<td>Attribute for direct manipulation of the positions.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.properties" title="quippy.atoms.Atoms.properties"><code class="xref py py-obj docutils literal"><span class="pre">properties</span></code></a></td>
-<td><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> of atomic properties. A property is an array</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.ref_count" title="quippy.atoms.Atoms.ref_count"><code class="xref py py-obj docutils literal"><span class="pre">ref_count</span></code></a></td>
-<td>Reference counter</td>
 </tr>
 </tbody>
 </table>
@@ -474,583 +436,32 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.add_atoms" title="quippy.atoms.Atoms.add_atoms"><code class="xref py py-obj docutils literal"><span class="pre">add_atoms</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Add one or more atoms to an Atoms object.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.add_cut_hydrogens" title="quippy.atoms.Atoms.add_cut_hydrogens"><code class="xref py py-obj docutils literal"><span class="pre">add_cut_hydrogens</span></code></a>(...)</td>
-<td>Given an atoms structure and a list of quantum atoms, find X-H bonds which have been cut and include the other atom of the pair in the quantum list.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.add_property" title="quippy.atoms.Atoms.add_property"><code class="xref py py-obj docutils literal"><span class="pre">add_property</span></code></a>(name,&nbsp;value[,&nbsp;n_cols,&nbsp;...])</td>
-<td>Add a new property to this Atoms object.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.add_property_from_pointer" title="quippy.atoms.Atoms.add_property_from_pointer"><code class="xref py py-obj docutils literal"><span class="pre">add_property_from_pointer</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Add a per-atom property to this atoms object, but point to existing space rather than allocating new space for it (as add_property does).</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.angular_momentum" title="quippy.atoms.Atoms.angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">angular_momentum</span></code></a>([origin,indices])</td>
-<td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <span class="math">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.append" title="quippy.atoms.Atoms.append"><code class="xref py py-obj docutils literal"><span class="pre">append</span></code></a>(atom)</td>
-<td>Append atom to end.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.assignment" title="quippy.atoms.Atoms.assignment"><code class="xref py py-obj docutils literal"><span class="pre">assignment</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Overloaded assigment operators for Atoms objects.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.bfs_grow_list" title="quippy.atoms.Atoms.bfs_grow_list"><code class="xref py py-obj docutils literal"><span class="pre">bfs_grow_list</span></code></a>(...)</td>
-<td>On exit, <code class="docutils literal"><span class="pre">list</span></code> will have been grown by <code class="docutils literal"><span class="pre">n</span></code> bond hops.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.bfs_grow_single" title="quippy.atoms.Atoms.bfs_grow_single"><code class="xref py py-obj docutils literal"><span class="pre">bfs_grow_single</span></code></a>(...)</td>
-<td>On exit, <code class="docutils literal"><span class="pre">list</span></code> will contain <code class="docutils literal"><span class="pre">atom</span></code> (with shift <code class="docutils literal"><span class="pre">000</span></code>) plus the atoms within <code class="docutils literal"><span class="pre">n</span></code> bonds hops of it.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.bfs_step" title="quippy.atoms.Atoms.bfs_step"><code class="xref py py-obj docutils literal"><span class="pre">bfs_step</span></code></a>(...)</td>
-<td>Execute one Breadth-First-Search move on the atomic connectivity graph.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_connect" title="quippy.atoms.Atoms.calc_connect"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Fast <span class="math">\(O(N)\)</span> connectivity calculation routine.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_connect_hysteretic" title="quippy.atoms.Atoms.calc_connect_hysteretic"><code class="xref py py-obj docutils literal"><span class="pre">calc_connect_hysteretic</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>As for <code class="docutils literal"><span class="pre">calc_connect</span></code>, but perform the connectivity update  hystertically: atoms must come within a relative distance of <code class="docutils literal"><span class="pre">cutoff_factor</span></code> to be considered neighbours, and then will remain  connected until them move apart further than a relative distance  of <code class="docutils literal"><span class="pre">cutoff_break_factor</span></code> (all cutoff factors are relative  to covalent radii).</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_dists" title="quippy.atoms.Atoms.calc_dists"><code class="xref py py-obj docutils literal"><span class="pre">calc_dists</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Update stored distance tables.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_msd" title="quippy.atoms.Atoms.calc_msd"><code class="xref py py-obj docutils literal"><span class="pre">calc_msd</span></code></a>(at,[mask,reset_msd,persistent])</td>
-<td>calculate mean squared displacement, with or without persistent atoms object</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_qw" title="quippy.atoms.Atoms.calc_qw"><code class="xref py py-obj docutils literal"><span class="pre">calc_qw</span></code></a>(...)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.calc_qw_grad" title="quippy.atoms.Atoms.calc_qw_grad"><code class="xref py py-obj docutils literal"><span class="pre">calc_qw_grad</span></code></a>(...)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.cell_volume" title="quippy.atoms.Atoms.cell_volume"><code class="xref py py-obj docutils literal"><span class="pre">cell_volume</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>atoms_cell_volume</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.center" title="quippy.atoms.Atoms.center"><code class="xref py py-obj docutils literal"><span class="pre">center</span></code></a>([vacuum,&nbsp;axis,&nbsp;about])</td>
-<td>Center atoms in unit cell.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.centre_of_mass" title="quippy.atoms.Atoms.centre_of_mass"><code class="xref py py-obj docutils literal"><span class="pre">centre_of_mass</span></code></a>(at,[index_list,mask,origin,error])</td>
-<td>Calculate the centre of mass of an atoms object, using the closest images to the origin atom, or first atom if this is not specified.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.closest_atom" title="quippy.atoms.Atoms.closest_atom"><code class="xref py py-obj docutils literal"><span class="pre">closest_atom</span></code></a>(...)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.coalesce_in_one_periodic_image" title="quippy.atoms.Atoms.coalesce_in_one_periodic_image"><code class="xref py py-obj docutils literal"><span class="pre">coalesce_in_one_periodic_image</span></code></a>(...)</td>
-<td>move atoms around following neighbor list bonds so that all are in the same periodic image</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.complement" title="quippy.atoms.Atoms.complement"><code class="xref py py-obj docutils literal"><span class="pre">complement</span></code></a>(at,inlist)</td>
-<td>Return the complement of a list, i.e.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy" title="quippy.atoms.Atoms.copy"><code class="xref py py-obj docutils literal"><span class="pre">copy</span></code></a>()</td>
-<td>Return a copy of this <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy_entry" title="quippy.atoms.Atoms.copy_entry"><code class="xref py py-obj docutils literal"><span class="pre">copy_entry</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Copy an atom to a different index Move a single atom from one location to another one.</td>
-</tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy_from" title="quippy.atoms.Atoms.copy_from"><code class="xref py py-obj docutils literal"><span class="pre">copy_from</span></code></a>(other)</td>
 <td>Replace contents of this Atoms object with data from <cite>other</cite>.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy_properties" title="quippy.atoms.Atoms.copy_properties"><code class="xref py py-obj docutils literal"><span class="pre">copy_properties</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Copy some properties from one atoms struct to another The destination will be overriden.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy_without_connect" title="quippy.atoms.Atoms.copy_without_connect"><code class="xref py py-obj docutils literal"><span class="pre">copy_without_connect</span></code></a>(...)</td>
-<td>Make a copy of the atoms object <code class="docutils literal"><span class="pre">from</span></code> without including connectivity information.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.cosine" title="quippy.atoms.Atoms.cosine"><code class="xref py py-obj docutils literal"><span class="pre">cosine</span></code></a>(i,j,k,[error])</td>
-<td>Cosine of the angle j&#8211;i&#8211;k</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.cosine_neighbour" title="quippy.atoms.Atoms.cosine_neighbour"><code class="xref py py-obj docutils literal"><span class="pre">cosine_neighbour</span></code></a>(i,n,m)</td>
-<td>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>n`th, :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>m`th} neighbours of i</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.density" title="quippy.atoms.Atoms.density"><code class="xref py py-obj docutils literal"><span class="pre">density</span></code></a>()</td>
 <td>Density in units of <span class="math">\(g/m^3\)</span>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.diff" title="quippy.atoms.Atoms.diff"><code class="xref py py-obj docutils literal"><span class="pre">diff</span></code></a>(i,j,shift)</td>
-<td>Difference vector between atoms <span class="math">\(i\)</span> and <span class="math">\(j\)</span> if they are separated by a shift of <code class="docutils literal"><span class="pre">shift</span></code></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.diff_min_image" title="quippy.atoms.Atoms.diff_min_image"><code class="xref py py-obj docutils literal"><span class="pre">diff_min_image</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Return the minimum image difference vector between two atoms or  positions.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.direction_cosines" title="quippy.atoms.Atoms.direction_cosines"><code class="xref py py-obj docutils literal"><span class="pre">direction_cosines</span></code></a>(i,j,shift)</td>
-<td>Given two atoms <span class="math">\(i\)</span> and <span class="math">\(j\)</span> and a shift returns the direction cosines of the differnece vector from <span class="math">\(i\)</span> to <span class="math">\(j\)</span>.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.direction_cosines_min_image" title="quippy.atoms.Atoms.direction_cosines_min_image"><code class="xref py py-obj docutils literal"><span class="pre">direction_cosines_min_image</span></code></a>(i,j,[error])</td>
-<td>Direction cosines of the difference vector from <span class="math">\(i\)</span> to <span class="math">\(j\)</span></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.directionality" title="quippy.atoms.Atoms.directionality"><code class="xref py py-obj docutils literal"><span class="pre">directionality</span></code></a>(origin,list,[method,error])</td>
-<td>Given an origin atom and a list of other atoms, give information as to whether the other atoms are distributed roughly linearly, planar or spherically around the origin atom.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.distance" title="quippy.atoms.Atoms.distance"><code class="xref py py-obj docutils literal"><span class="pre">distance</span></code></a>(i,j,shift)</td>
-<td>Return distance between atoms <code class="docutils literal"><span class="pre">i</span></code> and <code class="docutils literal"><span class="pre">j</span></code> if they are separated by a shift of <code class="docutils literal"><span class="pre">shift</span></code>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.distance_min_image" title="quippy.atoms.Atoms.distance_min_image"><code class="xref py py-obj docutils literal"><span class="pre">distance_min_image</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>This interface calculates the distance between the nearest periodic images of two points (or atoms).</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.edit" title="quippy.atoms.Atoms.edit"><code class="xref py py-obj docutils literal"><span class="pre">edit</span></code></a>()</td>
-<td>Modify atoms interactively through ase-gui viewer.</td>
-</tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.equivalent" title="quippy.atoms.Atoms.equivalent"><code class="xref py py-obj docutils literal"><span class="pre">equivalent</span></code></a>(other)</td>
 <td>Test for equivalence of two Atoms objects.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.extend" title="quippy.atoms.Atoms.extend"><code class="xref py py-obj docutils literal"><span class="pre">extend</span></code></a>(other)</td>
-<td>Extend atoms object by appending atoms from <em>other</em>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.fake_smooth_pos" title="quippy.atoms.Atoms.fake_smooth_pos"><code class="xref py py-obj docutils literal"><span class="pre">fake_smooth_pos</span></code></a>(at,mix,[persistent])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_all_distances" title="quippy.atoms.Atoms.get_all_distances"><code class="xref py py-obj docutils literal"><span class="pre">get_all_distances</span></code></a>([mic])</td>
-<td>Return distances of all of the atoms with all of the atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_angle" title="quippy.atoms.Atoms.get_angle"><code class="xref py py-obj docutils literal"><span class="pre">get_angle</span></code></a>(list)</td>
-<td>Get angle formed by three atoms.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_angular_momentum" title="quippy.atoms.Atoms.get_angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">get_angular_momentum</span></code></a>()</td>
-<td>Get total angular momentum with respect to the center of mass.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_array" title="quippy.atoms.Atoms.get_array"><code class="xref py py-obj docutils literal"><span class="pre">get_array</span></code></a>(name[,&nbsp;copy])</td>
-<td>Get an array.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_atom" title="quippy.atoms.Atoms.get_atom"><code class="xref py py-obj docutils literal"><span class="pre">get_atom</span></code></a>(i)</td>
 <td>Return a dictionary containing the properties of the atom with index <cite>i</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_atomic_numbers" title="quippy.atoms.Atoms.get_atomic_numbers"><code class="xref py py-obj docutils literal"><span class="pre">get_atomic_numbers</span></code></a>()</td>
-<td>Get integer array of atomic numbers.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_calculator" title="quippy.atoms.Atoms.get_calculator"><code class="xref py py-obj docutils literal"><span class="pre">get_calculator</span></code></a>()</td>
-<td>Get currently attached calculator object.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_cell" title="quippy.atoms.Atoms.get_cell"><code class="xref py py-obj docutils literal"><span class="pre">get_cell</span></code></a>([complete])</td>
-<td>Get the three unit cell vectors as a 3x3 ndarray.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_cell_lengths_and_angles" title="quippy.atoms.Atoms.get_cell_lengths_and_angles"><code class="xref py py-obj docutils literal"><span class="pre">get_cell_lengths_and_angles</span></code></a>()</td>
-<td>Get unit cell parameters.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_celldisp" title="quippy.atoms.Atoms.get_celldisp"><code class="xref py py-obj docutils literal"><span class="pre">get_celldisp</span></code></a>()</td>
-<td>Get the unit cell displacement vectors.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_center_of_mass" title="quippy.atoms.Atoms.get_center_of_mass"><code class="xref py py-obj docutils literal"><span class="pre">get_center_of_mass</span></code></a>([scaled])</td>
-<td>Get the center of mass.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_charges" title="quippy.atoms.Atoms.get_charges"><code class="xref py py-obj docutils literal"><span class="pre">get_charges</span></code></a>()</td>
-<td>Get calculated charges.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_chemical_formula" title="quippy.atoms.Atoms.get_chemical_formula"><code class="xref py py-obj docutils literal"><span class="pre">get_chemical_formula</span></code></a>([mode])</td>
-<td>Get the chemial formula as a string based on the chemical symbols.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_chemical_symbols" title="quippy.atoms.Atoms.get_chemical_symbols"><code class="xref py py-obj docutils literal"><span class="pre">get_chemical_symbols</span></code></a>()</td>
-<td>Get list of chemical symbol strings.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_dihedral" title="quippy.atoms.Atoms.get_dihedral"><code class="xref py py-obj docutils literal"><span class="pre">get_dihedral</span></code></a>(list)</td>
-<td>Calculate dihedral angle.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_dipole_moment" title="quippy.atoms.Atoms.get_dipole_moment"><code class="xref py py-obj docutils literal"><span class="pre">get_dipole_moment</span></code></a>()</td>
-<td>Calculate the electric dipole moment for the atoms object.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_distance" title="quippy.atoms.Atoms.get_distance"><code class="xref py py-obj docutils literal"><span class="pre">get_distance</span></code></a>(a0,&nbsp;a1[,&nbsp;mic,&nbsp;vector])</td>
-<td>Return distance between two atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_distances" title="quippy.atoms.Atoms.get_distances"><code class="xref py py-obj docutils literal"><span class="pre">get_distances</span></code></a>(a,&nbsp;indices[,&nbsp;mic,&nbsp;vector])</td>
-<td>Return distances of atom No.i with a list of atoms.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_forces" title="quippy.atoms.Atoms.get_forces"><code class="xref py py-obj docutils literal"><span class="pre">get_forces</span></code></a>([apply_constraint,&nbsp;md])</td>
-<td>Calculate atomic forces.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_initial_charges" title="quippy.atoms.Atoms.get_initial_charges"><code class="xref py py-obj docutils literal"><span class="pre">get_initial_charges</span></code></a>()</td>
-<td>Get array of initial charges.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_initial_magnetic_moments" title="quippy.atoms.Atoms.get_initial_magnetic_moments"><code class="xref py py-obj docutils literal"><span class="pre">get_initial_magnetic_moments</span></code></a>()</td>
-<td>Get array of initial magnetic moments.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_kinetic_energy" title="quippy.atoms.Atoms.get_kinetic_energy"><code class="xref py py-obj docutils literal"><span class="pre">get_kinetic_energy</span></code></a>()</td>
-<td>Get the kinetic energy.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_magnetic_moment" title="quippy.atoms.Atoms.get_magnetic_moment"><code class="xref py py-obj docutils literal"><span class="pre">get_magnetic_moment</span></code></a>()</td>
-<td>Get calculated total magnetic moment.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_magnetic_moments" title="quippy.atoms.Atoms.get_magnetic_moments"><code class="xref py py-obj docutils literal"><span class="pre">get_magnetic_moments</span></code></a>()</td>
-<td>Get calculated local magnetic moments.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_masses" title="quippy.atoms.Atoms.get_masses"><code class="xref py py-obj docutils literal"><span class="pre">get_masses</span></code></a>()</td>
-<td>Get array of masses.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_momenta" title="quippy.atoms.Atoms.get_momenta"><code class="xref py py-obj docutils literal"><span class="pre">get_momenta</span></code></a>()</td>
-<td>Get array of momenta.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_moments_of_inertia" title="quippy.atoms.Atoms.get_moments_of_inertia"><code class="xref py py-obj docutils literal"><span class="pre">get_moments_of_inertia</span></code></a>([vectors])</td>
-<td>Get the moments of inertia along the principal axes.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_number_of_atoms" title="quippy.atoms.Atoms.get_number_of_atoms"><code class="xref py py-obj docutils literal"><span class="pre">get_number_of_atoms</span></code></a>()</td>
-<td>Returns the global number of atoms in a distributed-atoms parallel simulation.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_param_value" title="quippy.atoms.Atoms.get_param_value"><code class="xref py py-obj docutils literal"><span class="pre">get_param_value</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>get a (per-configuration) value from the atoms%params dictionary</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_pbc" title="quippy.atoms.Atoms.get_pbc"><code class="xref py py-obj docutils literal"><span class="pre">get_pbc</span></code></a>()</td>
-<td>Get periodic boundary condition flags.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_positions" title="quippy.atoms.Atoms.get_positions"><code class="xref py py-obj docutils literal"><span class="pre">get_positions</span></code></a>([wrap])</td>
-<td>Get array of positions.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_potential_energies" title="quippy.atoms.Atoms.get_potential_energies"><code class="xref py py-obj docutils literal"><span class="pre">get_potential_energies</span></code></a>()</td>
-<td>Calculate the potential energies of all the atoms.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_potential_energy" title="quippy.atoms.Atoms.get_potential_energy"><code class="xref py py-obj docutils literal"><span class="pre">get_potential_energy</span></code></a>([force_consistent,&nbsp;...])</td>
-<td>Calculate potential energy.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_reciprocal_cell" title="quippy.atoms.Atoms.get_reciprocal_cell"><code class="xref py py-obj docutils literal"><span class="pre">get_reciprocal_cell</span></code></a>()</td>
-<td>Get the three reciprocal lattice vectors as a 3x3 ndarray.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_scaled_positions" title="quippy.atoms.Atoms.get_scaled_positions"><code class="xref py py-obj docutils literal"><span class="pre">get_scaled_positions</span></code></a>([wrap])</td>
-<td>Get positions relative to unit cell.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_stress" title="quippy.atoms.Atoms.get_stress"><code class="xref py py-obj docutils literal"><span class="pre">get_stress</span></code></a>([voigt])</td>
-<td>Calculate stress tensor.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_stresses" title="quippy.atoms.Atoms.get_stresses"><code class="xref py py-obj docutils literal"><span class="pre">get_stresses</span></code></a>()</td>
-<td>Calculate the stress-tensor of all the atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_tags" title="quippy.atoms.Atoms.get_tags"><code class="xref py py-obj docutils literal"><span class="pre">get_tags</span></code></a>()</td>
-<td>Get integer array of tags.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_temperature" title="quippy.atoms.Atoms.get_temperature"><code class="xref py py-obj docutils literal"><span class="pre">get_temperature</span></code></a>()</td>
-<td>Get the temperature in Kelvin.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_total_energy" title="quippy.atoms.Atoms.get_total_energy"><code class="xref py py-obj docutils literal"><span class="pre">get_total_energy</span></code></a>()</td>
-<td>Get the total energy - potential plus kinetic energy.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_velocities" title="quippy.atoms.Atoms.get_velocities"><code class="xref py py-obj docutils literal"><span class="pre">get_velocities</span></code></a>()</td>
-<td>Get array of velocities.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_volume" title="quippy.atoms.Atoms.get_volume"><code class="xref py py-obj docutils literal"><span class="pre">get_volume</span></code></a>()</td>
-<td>Get volume of unit cell.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.has" title="quippy.atoms.Atoms.has"><code class="xref py py-obj docutils literal"><span class="pre">has</span></code></a>(name)</td>
-<td>Check for existence of array.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.has_property" title="quippy.atoms.Atoms.has_property"><code class="xref py py-obj docutils literal"><span class="pre">has_property</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Convenience function to test if a property is present.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.index_to_z_index" title="quippy.atoms.Atoms.index_to_z_index"><code class="xref py py-obj docutils literal"><span class="pre">index_to_z_index</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Convert from a single index in range 1..this.N to a CASTEP-style (element, index) pair</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.is_domain_decomposed" title="quippy.atoms.Atoms.is_domain_decomposed"><code class="xref py py-obj docutils literal"><span class="pre">is_domain_decomposed</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>atoms_is_domain_decomposed</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.is_initialised" title="quippy.atoms.Atoms.is_initialised"><code class="xref py py-obj docutils literal"><span class="pre">is_initialised</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Is this atoms object initialised?</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.is_min_image" title="quippy.atoms.Atoms.is_min_image"><code class="xref py py-obj docutils literal"><span class="pre">is_min_image</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.is_nearest_neighbour" title="quippy.atoms.Atoms.is_nearest_neighbour"><code class="xref py py-obj docutils literal"><span class="pre">is_nearest_neighbour</span></code></a>(i,n,[alt_connect])</td>
-<td>Test if an atom&#8217;s :math:<a href="#id5"><span class="problematic" id="id6">`</span></a>n`th neighbour is one if its nearest neighbours</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.is_nearest_neighbour_abs_index" title="quippy.atoms.Atoms.is_nearest_neighbour_abs_index"><code class="xref py py-obj docutils literal"><span class="pre">is_nearest_neighbour_abs_index</span></code></a>(i,j,[alt_connect])</td>
-<td>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id7"><span class="problematic" id="id8">``</span></a>i``s nearest neighbours</td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
-<td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
-</tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.iteratoms" title="quippy.atoms.Atoms.iteratoms"><code class="xref py py-obj docutils literal"><span class="pre">iteratoms</span></code></a>()</td>
 <td>Iterate over atoms, calling get_atom() for each one</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.kinetic_energy" title="quippy.atoms.Atoms.kinetic_energy"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_energy</span></code></a>([mpi_obj,local_ke,error])</td>
-<td>Return the total kinetic energy <span class="math">\(E_k = \sum_{i} \frac{1}{2} m v^2\)</span></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.kinetic_virial" title="quippy.atoms.Atoms.kinetic_virial"><code class="xref py py-obj docutils literal"><span class="pre">kinetic_virial</span></code></a>([mpi_obj,error])</td>
-<td>Return the total kinetic virial <span class="math">\(w_ij = \sum_{k} \frac{1}{2} m v_i v_j\)</span></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.list_matching_prop" title="quippy.atoms.Atoms.list_matching_prop"><code class="xref py py-obj docutils literal"><span class="pre">list_matching_prop</span></code></a>(at,list,name,value,[error])</td>
-<td>Find atoms which have integer property <code class="docutils literal"><span class="pre">prop</span></code> with value <code class="docutils literal"><span class="pre">value</span></code> and return them in a table <code class="docutils literal"><span class="pre">list</span></code>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.make_convex" title="quippy.atoms.Atoms.make_convex"><code class="xref py py-obj docutils literal"><span class="pre">make_convex</span></code></a>(list)</td>
-<td>Add atoms to <code class="docutils literal"><span class="pre">list</span></code> to make the selection region convex, i.e.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.map_into_cell" title="quippy.atoms.Atoms.map_into_cell"><code class="xref py py-obj docutils literal"><span class="pre">map_into_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>atoms_map_into_cell</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.mark_cylinder" title="quippy.atoms.Atoms.mark_cylinder"><code class="xref py py-obj docutils literal"><span class="pre">mark_cylinder</span></code></a>(...)</td>
-<td>Mark atoms in a cylinder centred on the point <cite>p</cite> with axis <cite>v</cite> and radius <cite>r</cite></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.mark_sphere" title="quippy.atoms.Atoms.mark_sphere"><code class="xref py py-obj docutils literal"><span class="pre">mark_sphere</span></code></a>(...)</td>
-<td>Mark atoms in a cylinder centred on the point <cite>p</cite> with radius <cite>r</cite></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.md5_hash" title="quippy.atoms.Atoms.md5_hash"><code class="xref py py-obj docutils literal"><span class="pre">md5_hash</span></code></a>(ndigits)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.md5_hash" title="quippy.atoms.Atoms.md5_hash"><code class="xref py py-obj docutils literal"><span class="pre">md5_hash</span></code></a>(ndigits)</td>
 <td>Hash an atoms object with a precision of ndigits decimal digits.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.mem_estimate" title="quippy.atoms.Atoms.mem_estimate"><code class="xref py py-obj docutils literal"><span class="pre">mem_estimate</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.mem_estimate" title="quippy.atoms.Atoms.mem_estimate"><code class="xref py py-obj docutils literal"><span class="pre">mem_estimate</span></code></a>()</td>
 <td>Estimate memory usage of this Atoms object, in bytes</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.moment_of_inertia_tensor" title="quippy.atoms.Atoms.moment_of_inertia_tensor"><code class="xref py py-obj docutils literal"><span class="pre">moment_of_inertia_tensor</span></code></a>([origin])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.momentum" title="quippy.atoms.Atoms.momentum"><code class="xref py py-obj docutils literal"><span class="pre">momentum</span></code></a>([indices])</td>
-<td>Return the total momentum <span class="math">\(\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}\)</span>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.n_neighbours" title="quippy.atoms.Atoms.n_neighbours"><code class="xref py py-obj docutils literal"><span class="pre">n_neighbours</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Neighbour list stuff Return the number of neighbour that atom <code class="docutils literal"><span class="pre">i</span></code> has.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.neighbour" title="quippy.atoms.Atoms.neighbour"><code class="xref py py-obj docutils literal"><span class="pre">neighbour</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Return the index of the <span class="math">\(n^\mathrm{th}\)</span> neighbour of atom <span class="math">\(i\)</span>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.pop" title="quippy.atoms.Atoms.pop"><code class="xref py py-obj docutils literal"><span class="pre">pop</span></code></a>([i])</td>
-<td>Remove and return atom at index <em>i</em> (default last).</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.print_" title="quippy.atoms.Atoms.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Print a verbose textual description of an Atoms object to the default logger or to a specificied Inoutput object.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.print_atom" title="quippy.atoms.Atoms.print_atom"><code class="xref py py-obj docutils literal"><span class="pre">print_atom</span></code></a>(i)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.print_atom" title="quippy.atoms.Atoms.print_atom"><code class="xref py py-obj docutils literal"><span class="pre">print_atom</span></code></a>(i)</td>
 <td>Pretty-print the properties of the atom with index <cite>i</cite></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.prop_names_string" title="quippy.atoms.Atoms.prop_names_string"><code class="xref py py-obj docutils literal"><span class="pre">prop_names_string</span></code></a>([with_types,error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.rattle" title="quippy.atoms.Atoms.rattle"><code class="xref py py-obj docutils literal"><span class="pre">rattle</span></code></a>([stdev,&nbsp;seed])</td>
-<td>Randomly displace atoms.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.read" title="quippy.atoms.Atoms.read"><code class="xref py py-obj docutils literal"><span class="pre">read</span></code></a>(source[,&nbsp;format])</td>
-<td>Class method to read Atoms object from file <cite>source</cite> according to <cite>format</cite></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_cinoutput" title="quippy.atoms.Atoms.read_cinoutput"><code class="xref py py-obj docutils literal"><span class="pre">read_cinoutput</span></code></a>(...)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_from" title="quippy.atoms.Atoms.read_from"><code class="xref py py-obj docutils literal"><span class="pre">read_from</span></code></a>(source,&nbsp;**readargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_from" title="quippy.atoms.Atoms.read_from"><code class="xref py py-obj docutils literal"><span class="pre">read_from</span></code></a>(source,&nbsp;**readargs)</td>
 <td>Replace contents of this Atoms object with Atoms read from <cite>source</cite></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.realpos" title="quippy.atoms.Atoms.realpos"><code class="xref py py-obj docutils literal"><span class="pre">realpos</span></code></a>(i)</td>
-<td>Return the real position of atom <code class="docutils literal"><span class="pre">i</span></code>, taking into account the stored travel across the periodic boundary conditions.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.remove_atoms" title="quippy.atoms.Atoms.remove_atoms"><code class="xref py py-obj docutils literal"><span class="pre">remove_atoms</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Remove one or more atoms from an Atoms object.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.remove_property" title="quippy.atoms.Atoms.remove_property"><code class="xref py py-obj docutils literal"><span class="pre">remove_property</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Remove a property from this atoms object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.repeat" title="quippy.atoms.Atoms.repeat"><code class="xref py py-obj docutils literal"><span class="pre">repeat</span></code></a>(rep)</td>
-<td>Create new repeated atoms object.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.repoint" title="quippy.atoms.Atoms.repoint"><code class="xref py py-obj docutils literal"><span class="pre">repoint</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>OMIT</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.rotate" title="quippy.atoms.Atoms.rotate"><code class="xref py py-obj docutils literal"><span class="pre">rotate</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Rotate this Atoms object, transforming all rank 1 and rank 2 tensors parameters and properties</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.rotate_dihedral" title="quippy.atoms.Atoms.rotate_dihedral"><code class="xref py py-obj docutils literal"><span class="pre">rotate_dihedral</span></code></a>(list,&nbsp;angle[,&nbsp;mask])</td>
-<td>Rotate dihedral angle.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.rotate_euler" title="quippy.atoms.Atoms.rotate_euler"><code class="xref py py-obj docutils literal"><span class="pre">rotate_euler</span></code></a>([center,&nbsp;phi,&nbsp;theta,&nbsp;psi])</td>
-<td>Rotate atoms via Euler angles.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.select" title="quippy.atoms.Atoms.select"><code class="xref py py-obj docutils literal"><span class="pre">select</span></code></a>([mask,&nbsp;list,&nbsp;orig_index])</td>
-<td>Return a new <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> containing a subset of the atoms in this Atoms object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_angle" title="quippy.atoms.Atoms.set_angle"><code class="xref py py-obj docutils literal"><span class="pre">set_angle</span></code></a>(list,&nbsp;angle[,&nbsp;mask])</td>
-<td>Set angle formed by three atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_array" title="quippy.atoms.Atoms.set_array"><code class="xref py py-obj docutils literal"><span class="pre">set_array</span></code></a>(name,&nbsp;a[,&nbsp;dtype,&nbsp;shape])</td>
-<td>Update array.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_atomic_numbers" title="quippy.atoms.Atoms.set_atomic_numbers"><code class="xref py py-obj docutils literal"><span class="pre">set_atomic_numbers</span></code></a>(numbers[,&nbsp;set_species])</td>
-<td>Set atomic numbers and optionally also species property (default True)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_atoms" title="quippy.atoms.Atoms.set_atoms"><code class="xref py py-obj docutils literal"><span class="pre">set_atoms</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Set atomic numbers (in the &#8216;z&#8217; integer property), species names  (in &#8216;species&#8217; string property) and optionally masses (if &#8216;mass&#8217;  property exists in the Atoms object).</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_calculator" title="quippy.atoms.Atoms.set_calculator"><code class="xref py py-obj docutils literal"><span class="pre">set_calculator</span></code></a>([calc])</td>
-<td>Attach calculator object.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_cell" title="quippy.atoms.Atoms.set_cell"><code class="xref py py-obj docutils literal"><span class="pre">set_cell</span></code></a>(cell[,&nbsp;scale_atoms])</td>
-<td>Set unit cell vectors.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_celldisp" title="quippy.atoms.Atoms.set_celldisp"><code class="xref py py-obj docutils literal"><span class="pre">set_celldisp</span></code></a>(celldisp)</td>
-<td>Set the unit cell displacement vectors.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_chemical_symbols" title="quippy.atoms.Atoms.set_chemical_symbols"><code class="xref py py-obj docutils literal"><span class="pre">set_chemical_symbols</span></code></a>(symbols[,&nbsp;set_species])</td>
-<td>Set chemical symbols - sets Z and optionally also species properties (default True)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_comm_property" title="quippy.atoms.Atoms.set_comm_property"><code class="xref py py-obj docutils literal"><span class="pre">set_comm_property</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Set which properties to communicate when comm_atoms:   Communicate when atom is moved to different domain.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_constraint" title="quippy.atoms.Atoms.set_constraint"><code class="xref py py-obj docutils literal"><span class="pre">set_constraint</span></code></a>([constraint])</td>
-<td>Apply one or more constrains.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_cutoff" title="quippy.atoms.Atoms.set_cutoff"><code class="xref py py-obj docutils literal"><span class="pre">set_cutoff</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>set a uniform cutoff</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_cutoff_minimum" title="quippy.atoms.Atoms.set_cutoff_minimum"><code class="xref py py-obj docutils literal"><span class="pre">set_cutoff_minimum</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>increase cutoff</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_dihedral" title="quippy.atoms.Atoms.set_dihedral"><code class="xref py py-obj docutils literal"><span class="pre">set_dihedral</span></code></a>(list,&nbsp;angle[,&nbsp;mask,&nbsp;indices])</td>
-<td>Set the dihedral angle between vectors list[0]-&gt;list[1] and list[2]-&gt;list[3] by changing the atom indexed by list[3] if mask is not None, all the atoms described in mask (read: the entire subgroup) are moved.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_distance" title="quippy.atoms.Atoms.set_distance"><code class="xref py py-obj docutils literal"><span class="pre">set_distance</span></code></a>(a0,&nbsp;a1,&nbsp;distance[,&nbsp;fix,&nbsp;mic])</td>
-<td>Set the distance between two atoms.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_initial_charges" title="quippy.atoms.Atoms.set_initial_charges"><code class="xref py py-obj docutils literal"><span class="pre">set_initial_charges</span></code></a>([charges])</td>
-<td>Set the initial charges.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_initial_magnetic_moments" title="quippy.atoms.Atoms.set_initial_magnetic_moments"><code class="xref py py-obj docutils literal"><span class="pre">set_initial_magnetic_moments</span></code></a>([magmoms])</td>
-<td>Set the initial magnetic moments.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_lattice" title="quippy.atoms.Atoms.set_lattice"><code class="xref py py-obj docutils literal"><span class="pre">set_lattice</span></code></a>(lattice[,&nbsp;scale_positions])</td>
-<td>Change the lattice vectors, keeping the inverse lattice vectors up to date.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_map_shift" title="quippy.atoms.Atoms.set_map_shift"><code class="xref py py-obj docutils literal"><span class="pre">set_map_shift</span></code></a>([error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_masses" title="quippy.atoms.Atoms.set_masses"><code class="xref py py-obj docutils literal"><span class="pre">set_masses</span></code></a>([masses])</td>
-<td>Set atomic masses.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_momenta" title="quippy.atoms.Atoms.set_momenta"><code class="xref py py-obj docutils literal"><span class="pre">set_momenta</span></code></a>(momenta[,&nbsp;apply_constraint])</td>
-<td>Set momenta.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_param_value" title="quippy.atoms.Atoms.set_param_value"><code class="xref py py-obj docutils literal"><span class="pre">set_param_value</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>set a (per-configuration) value from the atoms%params dictionary</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_pbc" title="quippy.atoms.Atoms.set_pbc"><code class="xref py py-obj docutils literal"><span class="pre">set_pbc</span></code></a>(pbc)</td>
-<td>Set periodic boundary condition flags.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_positions" title="quippy.atoms.Atoms.set_positions"><code class="xref py py-obj docutils literal"><span class="pre">set_positions</span></code></a>(newpositions[,&nbsp;apply_constraint])</td>
-<td>Set positions, honoring any constraints.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_scaled_positions" title="quippy.atoms.Atoms.set_scaled_positions"><code class="xref py py-obj docutils literal"><span class="pre">set_scaled_positions</span></code></a>(scaled)</td>
-<td>Set positions relative to unit cell.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_tags" title="quippy.atoms.Atoms.set_tags"><code class="xref py py-obj docutils literal"><span class="pre">set_tags</span></code></a>(tags)</td>
-<td>Set tags for all atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_velocities" title="quippy.atoms.Atoms.set_velocities"><code class="xref py py-obj docutils literal"><span class="pre">set_velocities</span></code></a>(velocities)</td>
-<td>Set the momenta by specifying the velocities.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.set_zs" title="quippy.atoms.Atoms.set_zs"><code class="xref py py-obj docutils literal"><span class="pre">set_zs</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>set Zs from species</td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
-<td>Return a shallow copy of <cite>self</cite>.</td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
-<td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.shuffle" title="quippy.atoms.Atoms.shuffle"><code class="xref py py-obj docutils literal"><span class="pre">shuffle</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Reshuffle the order of the atomic indices to new_indices.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.sort" title="quippy.atoms.Atoms.sort"><code class="xref py py-obj docutils literal"><span class="pre">sort</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>sort atoms according to an externally provided field</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.sort_by_rindex" title="quippy.atoms.Atoms.sort_by_rindex"><code class="xref py py-obj docutils literal"><span class="pre">sort_by_rindex</span></code></a>(sort_index,[error])</td>
-<td>sort atoms according to an externally provided field</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.transform_basis" title="quippy.atoms.Atoms.transform_basis"><code class="xref py py-obj docutils literal"><span class="pre">transform_basis</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Basis transformation of rank 0, 1 and 2 tensors real values in Atoms object.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.translate" title="quippy.atoms.Atoms.translate"><code class="xref py py-obj docutils literal"><span class="pre">translate</span></code></a>(displacement)</td>
-<td>Translate atomic positions.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.undo_com_motion" title="quippy.atoms.Atoms.undo_com_motion"><code class="xref py py-obj docutils literal"><span class="pre">undo_com_motion</span></code></a>(at,[persistent])</td>
-<td>undo center of mass motion, with or without persistent atoms object</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.undo_pbc_jumps" title="quippy.atoms.Atoms.undo_pbc_jumps"><code class="xref py py-obj docutils literal"><span class="pre">undo_pbc_jumps</span></code></a>(at,[persistent])</td>
-<td>undo pbc jumps, assuming nearest periodic image, with or without persistent atoms object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.unskew_cell" title="quippy.atoms.Atoms.unskew_cell"><code class="xref py py-obj docutils literal"><span class="pre">unskew_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Unskew lattice so the cosines of the lattice angles fall between</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.wrap" title="quippy.atoms.Atoms.wrap"><code class="xref py py-obj docutils literal"><span class="pre">wrap</span></code></a>([center,&nbsp;pbc,&nbsp;eps])</td>
-<td>Wrap positions to unit cell.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.write" title="quippy.atoms.Atoms.write"><code class="xref py py-obj docutils literal"><span class="pre">write</span></code></a>([dest,&nbsp;format,&nbsp;properties,&nbsp;prefix])</td>
-<td>Write this <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object to <cite>dest</cite>.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.write_cinoutput" title="quippy.atoms.Atoms.write_cinoutput"><code class="xref py py-obj docutils literal"><span class="pre">write_cinoutput</span></code></a>(...)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.z_index_to_index" title="quippy.atoms.Atoms.z_index_to_index"><code class="xref py py-obj docutils literal"><span class="pre">z_index_to_index</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Inverse of atoms_index_to_z_index</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.zero" title="quippy.atoms.Atoms.zero"><code class="xref py py-obj docutils literal"><span class="pre">zero</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Zero data in an Atoms structure &#8212; this doesn``t finalise it or change it``s size.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.zero_angular_momentum" title="quippy.atoms.Atoms.zero_angular_momentum"><code class="xref py py-obj docutils literal"><span class="pre">zero_angular_momentum</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>give the system a rigid body rotation so as to zero the angular momentum about the centre of mass</td>
 </tr>
 </tbody>
 </table>
@@ -1343,7 +754,7 @@ rather than allocating new space for it (as add_property does).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.assignment">
-<code class="descname">assignment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.assignment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">assignment</code><span class="sig-paren">(</span><em>to</em>, <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.assignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded assigment operators for Atoms objects.
 Overloaded assigment operators for Connection objects.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1456,7 +867,7 @@ indices and shifts.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.calc_connect">
-<code class="descname">calc_connect</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_connect" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_connect</code><span class="sig-paren">(</span><span class="optional">[</span><em>alt_connect</em>, <em>own_neighbour</em>, <em>store_is_min_image</em>, <em>skip_zero_zero_bonds</em>, <em>store_n_neighb</em>, <em>max_pos_change</em>, <em>did_rebuild</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fast <span class="math">\(O(N)\)</span> connectivity calculation routine. It divides the unit
 cell into similarly shaped subcells, of sufficient size that
 sphere of radius <code class="docutils literal"><span class="pre">cutoff</span></code> is contained in a subcell, at least in
@@ -1491,7 +902,7 @@ calc_dists() is called to update the stored distance tables.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.calc_connect_hysteretic">
-<code class="descname">calc_connect_hysteretic</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_connect_hysteretic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_connect_hysteretic</code><span class="sig-paren">(</span><em>cutoff_factor</em>, <em>cutoff_break_factor</em><span class="optional">[</span>, <em>alt_connect</em>, <em>origin</em>, <em>extent</em>, <em>own_neighbour</em>, <em>store_is_min_image</em>, <em>store_n_neighb</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_connect_hysteretic" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div>As for <code class="docutils literal"><span class="pre">calc_connect</span></code>, but perform the connectivity update
 hystertically: atoms must come within a relative distance of</div></blockquote>
@@ -1530,7 +941,7 @@ routine in clusters.f95 can be used to guess suitable values.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.calc_dists">
-<code class="descname">calc_dists</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_dists" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_dists</code><span class="sig-paren">(</span><span class="optional">[</span><em>alt_connect</em>, <em>parallel</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.calc_dists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update stored distance tables. To be called after moving atoms, in between calls to calc_connect().</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1760,7 +1171,7 @@ in list. Result is in outlist on exit.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.copy_entry">
-<code class="descname">copy_entry</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.copy_entry" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy_entry</code><span class="sig-paren">(</span><em>src</em>, <em>dst</em><span class="optional">[</span>, <em>swap</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.copy_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy an atom to a different index
 Move a single atom from one location to another one.
 The destination will be overriden.</p>
@@ -1788,7 +1199,7 @@ The destination will be overriden.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.copy_properties">
-<code class="descname">copy_properties</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.copy_properties" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy_properties</code><span class="sig-paren">(</span><em>from</em>, <em>property_list</em><span class="optional">[</span>, <em>case_sensitive</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.copy_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy some properties from one atoms struct to another
 The destination will be overriden.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1857,7 +1268,7 @@ cost.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.cosine_neighbour">
 <code class="descname">cosine_neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em>, <em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.cosine_neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>n`th, :math:<a href="#id11"><span class="problematic" id="id12">`</span></a>m`th} neighbours of i</p>
+<dd><p>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>n`th, :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>m`th} neighbours of i</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2800,7 +2211,7 @@ there is a certain arbitrariness in defining per-atom stresses.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.has_property">
-<code class="descname">has_property</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.has_property" title="Permalink to this definition">¶</a></dt>
+<code class="descname">has_property</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.has_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function to test if a property is present. No checking
 of property type is done. Property names are case-insensitive.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2819,7 +2230,7 @@ of property type is done. Property names are case-insensitive.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.index_to_z_index">
-<code class="descname">index_to_z_index</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.index_to_z_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">index_to_z_index</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.index_to_z_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert from a single index in range 1..this.N to a CASTEP-style (element, index) pair</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2854,7 +2265,7 @@ of property type is done. Property names are case-insensitive.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_initialised">
-<code class="descname">is_initialised</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_initialised" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_initialised</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_initialised" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is this atoms object initialised?</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2870,7 +2281,7 @@ of property type is done. Property names are case-insensitive.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_min_image">
-<code class="descname">is_min_image</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_min_image" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_min_image</code><span class="sig-paren">(</span><em>i</em><span class="optional">[</span>, <em>alt_connect</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_min_image" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2892,7 +2303,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_nearest_neighbour">
 <code class="descname">is_nearest_neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em><span class="optional">[</span>, <em>alt_connect</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_nearest_neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test if an atom&#8217;s :math:<a href="#id13"><span class="problematic" id="id14">`</span></a>n`th neighbour is one if its nearest neighbours</p>
+<dd><p>Test if an atom&#8217;s :math:<a href="#id5"><span class="problematic" id="id6">`</span></a>n`th neighbour is one if its nearest neighbours</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2914,7 +2325,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_nearest_neighbour_abs_index">
 <code class="descname">is_nearest_neighbour_abs_index</code><span class="sig-paren">(</span><em>i</em>, <em>j</em><span class="optional">[</span>, <em>alt_connect</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_nearest_neighbour_abs_index" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id15"><span class="problematic" id="id16">``</span></a>i``s nearest neighbours</p>
+<dd><p>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id7"><span class="problematic" id="id8">``</span></a>i``s nearest neighbours</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3133,7 +2544,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.n_neighbours">
-<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.n_neighbours" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>i</em><span class="optional">[</span>, <em>max_dist</em>, <em>max_factor</em>, <em>alt_connect</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.n_neighbours" title="Permalink to this definition">¶</a></dt>
 <dd><p>Neighbour list stuff
 Return the number of neighbour that atom <code class="docutils literal"><span class="pre">i</span></code> has.  If the
 optional arguments max_dist or max_factor are present then only
@@ -3166,7 +2577,7 @@ connectivity information, for example <code class="docutils literal"><span class
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.neighbour">
-<code class="descname">neighbour</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.neighbour" title="Permalink to this definition">¶</a></dt>
+<code class="descname">neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em><span class="optional">[</span>, <em>distance</em>, <em>diff</em>, <em>cosines</em>, <em>shift</em>, <em>index</em>, <em>max_dist</em>, <em>jn</em>, <em>alt_connect</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.neighbour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the index of the <span class="math">\(n^\mathrm{th}\)</span> neighbour of atom <span class="math">\(i\)</span>. Together with the
 previous function, this facilites a loop over the neighbours of atom <span class="math">\(i\)</span>. Optionally, we
 return other geometric information, such as distance, direction cosines and difference vector,
@@ -3230,7 +2641,7 @@ and <code class="docutils literal"><span class="pre">intent(out)</span></code> i
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.print_">
-<code class="descname">print_</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.print_" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.print_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a verbose textual description of an Atoms object to the default logger or to
 a specificied Inoutput object.
 Print a verbose textual description of a Connection object to the default
@@ -3415,7 +2826,7 @@ stored travel across the periodic boundary conditions.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.remove_property">
-<code class="descname">remove_property</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.remove_property" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_property</code><span class="sig-paren">(</span><em>name</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.remove_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a property from this atoms object</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3450,7 +2861,7 @@ to <em>(r,r,r)</em>.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.rotate">
-<code class="descname">rotate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.rotate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>axis</em>, <em>angle</em><span class="optional">[</span>, <em>rank1</em>, <em>rank2</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.rotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate this Atoms object, transforming all rank 1 and rank 2 tensors parameters and properties</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3642,7 +3053,7 @@ Default behavior is to <em>not</em> move the atoms (scale_atoms=False).</dd>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_comm_property">
-<code class="descname">set_comm_property</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_comm_property" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_comm_property</code><span class="sig-paren">(</span><em>propname</em><span class="optional">[</span>, <em>comm_atoms</em>, <em>comm_ghosts</em>, <em>comm_reverse</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_comm_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set which properties to communicate when
 comm_atoms:   Communicate when atom is moved to different domain.</p>
 <blockquote>
@@ -3682,7 +3093,7 @@ list of constraint objects.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_cutoff">
-<code class="descname">set_cutoff</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_cutoff" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_cutoff</code><span class="sig-paren">(</span><em>cutoff</em><span class="optional">[</span>, <em>cutoff_skin</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_cutoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>set a uniform cutoff
 Specify a uniform neighbour cutoff throughout the system.
 Optionally set <code class="docutils literal"><span class="pre">cutoff_skin</span></code> at the same time.</p>
@@ -3702,7 +3113,7 @@ Optionally set <code class="docutils literal"><span class="pre">cutoff_skin</spa
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_cutoff_minimum">
-<code class="descname">set_cutoff_minimum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_cutoff_minimum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_cutoff_minimum</code><span class="sig-paren">(</span><em>cutoff</em><span class="optional">[</span>, <em>cutoff_skin</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_cutoff_minimum" title="Permalink to this definition">¶</a></dt>
 <dd><p>increase cutoff
 Set the cutoff to at least the requested value
 Optionally set <code class="docutils literal"><span class="pre">cutoff_skin</span></code> at the same time.</p>
@@ -3970,7 +3381,7 @@ applied to all atoms.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_zs">
-<code class="descname">set_zs</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_zs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_zs</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_zs" title="Permalink to this definition">¶</a></dt>
 <dd><p>set Zs from species</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3986,7 +3397,7 @@ applied to all atoms.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.shuffle">
-<code class="descname">shuffle</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.shuffle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shuffle</code><span class="sig-paren">(</span><em>new_indices</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.shuffle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reshuffle the order of the atomic indices to new_indices.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4004,7 +3415,7 @@ applied to all atoms.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.sort">
-<code class="descname">sort</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.sort" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sort</code><span class="sig-paren">(</span><em>sort_index</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.sort" title="Permalink to this definition">¶</a></dt>
 <dd><p>sort atoms according to an externally provided field</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4040,7 +3451,7 @@ applied to all atoms.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.transform_basis">
-<code class="descname">transform_basis</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.transform_basis" title="Permalink to this definition">¶</a></dt>
+<code class="descname">transform_basis</code><span class="sig-paren">(</span><em>l</em><span class="optional">[</span>, <em>rank1</em>, <em>rank2</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.transform_basis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basis transformation of rank 0, 1 and 2 tensors real values in Atoms object.
 This routine transforms rank 1 and rank 2 tensors in this.params and
 this.properties. Tensors are identified by having the correct type
@@ -4115,7 +3526,7 @@ interspersed will not work</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.unskew_cell">
-<code class="descname">unskew_cell</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.unskew_cell" title="Permalink to this definition">¶</a></dt>
+<code class="descname">unskew_cell</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.unskew_cell" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Unskew lattice so the cosines of the lattice angles fall between</dt>
 <dd><span class="math">\(-0.5\)</span> and <span class="math">\(0.5\)</span></dd>
@@ -4204,7 +3615,7 @@ output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.z_index_to_index">
-<code class="descname">z_index_to_index</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.z_index_to_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">z_index_to_index</code><span class="sig-paren">(</span><em>z</em>, <em>z_index</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.z_index_to_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inverse of atoms_index_to_z_index</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4226,7 +3637,7 @@ output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.zero">
-<code class="descname">zero</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.zero" title="Permalink to this definition">¶</a></dt>
+<code class="descname">zero</code><span class="sig-paren">(</span><span class="optional">[</span><em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.zero" title="Permalink to this definition">¶</a></dt>
 <dd><p>Zero data in an Atoms structure &#8212;
 this doesn``t finalise it or change it``s size. We zero <code class="docutils literal"><span class="pre">this.pos</span></code>,
 <code class="docutils literal"><span class="pre">this.Z</span></code> and <code class="docutils literal"><span class="pre">this.species</span></code>.</p>
@@ -4700,7 +4111,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

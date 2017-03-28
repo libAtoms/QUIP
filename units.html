@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Units and physical constants &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Units and physical constants &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Low-level system routines" href="system.html"/>
         <link rel="prev" title="Periodic table data" href="periodictable.html"/> 
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -192,7 +192,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-quippy.units">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-quippy.units">
 <span id="units-and-physical-constants"></span><h1>Units and physical constants<a class="headerlink" href="#module-quippy.units" title="Permalink to this headline">¶</a></h1>
 <p>This module holds a collection of our units and conversion factors.
 We use Angstroms (<span class="math">\(\mathrm{\AA}\)</span>), eV, and femtoseconds (fs).</p>
@@ -219,85 +253,97 @@ We use Angstroms (<span class="math">\(\mathrm{\AA}\)</span>), eV, and femtoseco
 <td>(0.0, 0.0)</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">BOLTZMANN_K</span></code></td>
-<td>8.617385e-05</td>
+<td>8.6173303e-05</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">RADIANS_PER_DEGREE</span></code></td>
 <td>0.0174532925199</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">VACUUM_C</span></code></td>
+<td>299792458.0</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND</span></code></td>
 <td>1e+15</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">N_A</span></code></td>
-<td>6.0221479e+23</td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">N_A</span></code></td>
+<td>6.022140857e+23</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CUBIC_BOHR</span></code></td>
-<td>0.0102908560748</td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_EVSEC</span></code></td>
+<td>6.582119514e-16</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">AU_FS</span></code></td>
-<td>0.0241888434383</td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">AU_FS</span></code></td>
+<td>0.0241888432628</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_cp2k</span></code></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">have_cp2k</span></code></td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">BOHR</span></code></td>
-<td>0.529177249</td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">BOHR</span></code></td>
+<td>0.52917721067</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">KCAL_MOL</span></code></td>
-<td>0.043383</td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">KCAL_MOL</span></code></td>
+<td>0.0433641039006</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">have_lotf</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_lotf</span></code></td>
 <td>1</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">GRAM</span></code></td>
+<td>0.001</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">DEBYE</span></code></td>
-<td>0.208194346224</td>
+<td>0.208194334425</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PI</span></code></td>
-<td>3.14159265359</td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR</span></code></td>
+<td>0.6582119514</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_ONE</span></code></td>
 <td>(1.0, 0.0)</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ONESECOND_AU</span></code></td>
-<td>4.13413730405e+16</td>
+<td>4.13413733405e+16</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">MASSCONVERT</span></code></td>
-<td>103.642721759</td>
+<td>103.642695707</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ELEM_CHARGE</span></code></td>
-<td>1.60217653e-19</td>
+<td>1.6021766208e-19</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">EPSILON_0</span></code></td>
-<td>0.0055263497194</td>
+<td>0.00552634940621</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">GPA</span></code></td>
-<td>160.22</td>
+<td>160.21766208</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_EVSEC</span></code></td>
-<td>6.582122e-16</td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CUBIC_BOHR</span></code></td>
+<td>0.0102908583961</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR</span></code></td>
-<td>0.6582122</td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">EPSILON_0_AU</span></code></td>
+<td>8.854187817e-12</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">have_netcdf</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">PI</span></code></td>
+<td>3.14159265359</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">have_netcdf</span></code></td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_AU</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HBAR_AU</span></code></td>
 <td>1.0</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">RYDBERG</span></code></td>
-<td>13.60569805</td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">RYDBERG</span></code></td>
+<td>13.60569301</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">DEGREES_PER_RADIAN</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">DEGREES_PER_RADIAN</span></code></td>
 <td>57.2957795131</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_IMAG</span></code></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">CPLX_IMAG</span></code></td>
 <td>(0.0, 1.0)</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HARTREE</span></code></td>
-<td>27.2113961</td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">HARTREE</span></code></td>
+<td>27.21138602</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ELECTRONMASS</span></code></td>
+<td>9.10938356e-31</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">ELECTRONMASS_GPERMOL</span></code></td>
-<td>0.000548579903</td>
+<td>0.000548579909188</td>
 </tr>
 </tbody>
 </table>
@@ -347,7 +393,7 @@ We use Angstroms (<span class="math">\(\mathrm{\AA}\)</span>), eV, and femtoseco
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

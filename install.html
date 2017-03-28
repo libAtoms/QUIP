@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation of QUIP and quippy &mdash; quippy 9a10f8f+ documentation</title>
+  <title>Installation of QUIP and quippy &mdash; quippy 12a2034+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 9a10f8f+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 12a2034+ documentation" href="index.html"/>
         <link rel="next" title="Examples" href="Examples/index.html"/>
         <link rel="prev" title="Introduction to quippy" href="intro.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                9a10f8f+
+                12a2034+
               </div>
             
           
@@ -99,11 +99,16 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation of QUIP and quippy</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#compilation-instructions">Compilation Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compilation-instructions">Compilation Instructions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quick-start">Quick start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-by-step">Step by step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-the-jupyter-notebook">Installing the Jupyter notebook</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-settings">Custom settings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#common-problems">Common Problems</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#permission-errors-when-installing">Permission errors when installing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#installating-on-mac-os-x-with-macports">Installating on Mac OS X with macports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-on-mac-os-x-with-macports">Installing on Mac OS X with macports</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#runtimeerror-when-importing">RuntimeError when importing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#importerror-when-importing">ImportError when importing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#possible-problems-installing-atomeye-module">Possible problems installing atomeye module</a></li>
@@ -193,15 +198,100 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation-of-quip-and-quippy">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="installation-of-quip-and-quippy">
 <span id="installation"></span><h1>Installation of QUIP and quippy<a class="headerlink" href="#installation-of-quip-and-quippy" title="Permalink to this headline">¶</a></h1>
 <p>These intructions provide more details on the compilation and
 installation of <code class="docutils literal"><span class="pre">QUIP</span></code> (Fortran library and main programs) and
 <code class="docutils literal"><span class="pre">quippy</span></code> (Python interface).</p>
 <div class="section" id="compilation-instructions">
 <h2>Compilation Instructions<a class="headerlink" href="#compilation-instructions" title="Permalink to this headline">¶</a></h2>
-<p>These instructions are excerpted from the top-level <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>, which is
-the most up-to-date source of information.</p>
+<p>First try the quickstart below, which should work with most Linux systems.
+For Mac systems, have a look at <a class="reference internal" href="#installing-on-mac-os-x-with-macports">Installing on Mac OS X with macports</a> first.</p>
+<div class="section" id="quick-start">
+<h3>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h3>
+<p>Install <a class="footnote-reference" href="#id2" id="id1">[1]</a> the prerequisites: GCC, gfortran, Python, and the linear algebra
+libraries.  For example, on Ubuntu, do (in a terminal):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo apt-get install gcc gfortran python python-pip libblas-dev liblapack-dev
+</pre></div>
+</div>
+<p>For other systems, replace the <code class="docutils literal"><span class="pre">apt-get</span></code> part with your system package manager.
+Beware that the packages might also have slightly different names; these can
+usually be found with a quick search.</p>
+<p>Don&#8217;t forget the <code class="docutils literal"><span class="pre">quippy</span></code> prerequisites:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install numpy
+$ pip install ase
+</pre></div>
+</div>
+<p>Now you can get the code and compile:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone --recursive https://github.com/libAtoms/QUIP.git
+$ export QUIP_ARCH=linux_x86_64_gfortran
+$ export QUIPPY_INSTALL_OPTS=--user  # omit for a system-wide installation
+$ make config
+</pre></div>
+</div>
+<p>Answer all the questions with their defaults (by pressing enter) for now, just
+to get things working.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ make
+$ make install-quippy
+</pre></div>
+</div>
+<p>And now open a Python terminal and see if it works:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python
+&gt;&gt;&gt; import quippy
+&gt;&gt;&gt;
+</pre></div>
+</div>
+<p>If the import completes successfully (i.e. with no output) then the
+installation was successful.  You may want to continue with <a class="reference internal" href="#installing-the-jupyter-notebook">Installing the
+Jupyter notebook</a> to run the interactive tutorials.</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>If this isn&#8217;t your machine and you don&#8217;t have root access, these
+packages might already be installed by the system administrator.  If not,
+ask them.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="step-by-step">
+<h3>Step by step<a class="headerlink" href="#step-by-step" title="Permalink to this headline">¶</a></h3>
+<p>If that didn&#8217;t work, try these step-by-step instructions
+instructions excerpted from the top-level <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>.  The <code class="docutils literal"><span class="pre">README</span></code> file
+is the most up-to-date source of installation information.</p>
 <blockquote>
 <div><ol class="arabic">
 <li><p class="first">To compile QUIP the minimum requirements are:</p>
@@ -361,6 +451,35 @@ into library form, and then follow the instructions in the
 </li>
 </ol>
 </div></blockquote>
+<p>If that still doesn&#8217;t work or you&#8217;re using a nonstandard architecture, try
+looking at <a class="reference internal" href="#custom-settings">Custom settings</a> and <a class="reference internal" href="#common-problems">Common Problems</a>.  As a last resort you can
+consult the <a class="reference external" href="https://github.com/libAtoms/QUIP/issues">issue tracker on Github</a>.</p>
+</div>
+<div class="section" id="installing-the-jupyter-notebook">
+<h3>Installing the Jupyter notebook<a class="headerlink" href="#installing-the-jupyter-notebook" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://jupyter.org/">Jupyter</a> is an environment for interactive computing that makes using Python
+much easier and more intuitive.  Especially useful is its notebook environment,
+which provides a handy way to experiment with code, see the results, and have a
+record of your progress.  The interactive getting-started tutorial is a Jupyter
+notebook that you can run and modify yourself.</p>
+<p>To get Jupyter up and running, the following should suffice <a class="footnote-reference" href="#id4" id="id3">[2]</a>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install jupyter
+$ jupyter notebook
+</pre></div>
+</div>
+<p>This will open a new window in your browser that you can use to navigate
+through your filesystem.  To access the interactive tutorials, you can run the
+<code class="docutils literal"><span class="pre">jupyter</span> <span class="pre">notebook</span></code> command from your <code class="docutils literal"><span class="pre">QUIP/doc/Examples</span></code> directory (or any
+enclosing directory) then navigate to the notebooks and open
+<code class="docutils literal"><span class="pre">Introduction.ipynb</span></code> to get started.</p>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td>This assumes you&#8217;ve already run <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python-pip;</span> <span class="pre">pip</span>
+<span class="pre">install</span> <span class="pre">numpy;</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ase</span></code> as in the <a class="reference internal" href="#quick-start">Quick start</a>.</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="custom-settings">
 <h2>Custom settings<a class="headerlink" href="#custom-settings" title="Permalink to this headline">¶</a></h2>
@@ -428,8 +547,8 @@ the <span class="target" id="index-0"></span><code class="xref std std-envvar do
 </pre></div>
 </div>
 </div>
-<div class="section" id="installating-on-mac-os-x-with-macports">
-<h3>Installating on Mac OS X with macports<a class="headerlink" href="#installating-on-mac-os-x-with-macports" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="installing-on-mac-os-x-with-macports">
+<h3>Installing on Mac OS X with macports<a class="headerlink" href="#installing-on-mac-os-x-with-macports" title="Permalink to this headline">¶</a></h3>
 <p>Macports requires various packages to be installed to compile
 everything, and may require extra linking arguments. See the
 <code class="file docutils literal"><span class="pre">README.macports</span></code> for the latest details.</p>
@@ -599,7 +718,7 @@ threading with <code class="docutils literal"><span class="pre">export</span> <s
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'9a10f8f+',
+            VERSION:'12a2034+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
