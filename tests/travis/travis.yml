@@ -37,13 +37,23 @@ env:
 python:
   - 2.7
 install:
-  # Run everything on Saturday, GCC 4.6 + GAP daily, and only VANILLA
-  # for each push.
+  # VANILLA only for each push, and on branches and forks.
+  # GCC 4.6 + GAP daily (includes building docs) [cron],
+  # Run all compiler versions on Saturday [cron]
   # Disable docs on non-build as fully built quippy is required.
+  # GAP can be triggerd with [ci all] in the commit message, add [ci docs]
+  # to also build docs.
   - if [ "${TRAVIS_EVENT_TYPE}" == "cron" ] && [ "$(date +%u)" == "6" ]; then
       export RUN=true;
     elif [ "${TRAVIS_EVENT_TYPE}" == "cron" ] && [ -z "${GCC_VERSION+x}" ]; then
       export RUN=true;
+    elif [ -z "${TRAVIS_COMMIT_MESSAGE##*\[ci all\]*}" ] && [ -z "${GCC_VERSION+x}" ]; then
+      export RUN=true;
+      if [ -z "${TRAVIS_COMMIT_MESSAGE##*\[ci docs\]*}" ]; then
+        export DOCS=true;
+      else
+        export DOCS=false;
+      fi
     elif [ "${BUILD}" == "VANILLA" ]  && [ -z "${GCC_VERSION+x}" ]; then
       export RUN=true;
     else
