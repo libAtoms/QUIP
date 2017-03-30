@@ -163,7 +163,7 @@ implicit none
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
   call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation, help_string="project out rotation components from phonons?")
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat, help_string="print out force constant matrix from phonon calculation?")
-  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy format. Atomic positions and force constants are the ones resulting from the (fine) supercell.")
+  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons, help_string="compute phonons in parallel?")
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment, help_string="compute dipole moment?")
   call param_register(cli_params, 'absorption', 'F', do_absorption, help_string="compute absorption spectrum (electronic, TB only)?")

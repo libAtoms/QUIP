@@ -341,6 +341,7 @@ contains
 
 ! Printing out the force constant and atomic positions in the phonopy format:
       if_do_phonopy_force_const_mat: if (do_phonopy_force_const_mat) then
+         call print_warning("phonopy_force_const_mat: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
          call print("Force constant matrix using supercell/supercell fine:")
 
          allocate(fine_force_const(at_in%N,3,do_phonon_supercell_fine(1)*do_phonon_supercell_fine(2)*do_phonon_supercell_fine(3)*at_in%N,3))
