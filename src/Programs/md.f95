@@ -37,19 +37,19 @@ private
 
   public :: md_params
   type md_params
-    character(len=STRING_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file, flux_out_file
+    character(len=STRING_LENGTH) :: atoms_filename, param_filename, trajectory_filename, flux_filename
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
     real(dp) :: T_initial, T_cur, T_hold, T_slope, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
-    real(dp) :: cutoff_buffer
+    real(dp) :: cutoff_skin
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, all_purpose_thermostat_massive, nose_hoover_thermostat, barostat_const_T
     real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
     character(len=STRING_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
-    integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
+    integer :: summary_interval, params_print_interval, trajectory_print_interval, pot_print_interval
     real(dp) :: flux_print_interval
     real(dp) :: extra_calc_interval
     character(len=STRING_LENGTH), allocatable :: print_property_list(:)
@@ -92,10 +92,10 @@ subroutine get_params(params, mpi_glob)
   character(len=10240) :: param_strings(64)
 
   call initialise(md_params_dict)
-  call param_register(md_params_dict, 'atoms_in_file', 'stdin', params%atoms_in_file, help_string="Initial atomic data file name")
-  call param_register(md_params_dict, 'trajectory_out_file', 'traj.xyz', params%trajectory_out_file, help_string="Trajectory output file name ")
-  call param_register(md_params_dict, 'flux_out_file', 'flux.dat', params%flux_out_file, help_string="Name of output file for heat flux")
-  call param_register(md_params_dict, 'params_in_file', 'quip_params.xml', params%params_in_file, help_string="QUIP XML parameter file name")
+  call param_register(md_params_dict, 'atoms_filename', 'stdin', params%atoms_filename, help_string="Initial atomic data file name")
+  call param_register(md_params_dict, 'trajectory_filename', 'traj.xyz', params%trajectory_filename, help_string="Trajectory output file name ")
+  call param_register(md_params_dict, 'param_filename', 'quip_params.xml', params%param_filename, help_string="QUIP XML parameter file name")
+  call param_register(md_params_dict, 'flux_filename', 'flux.dat', params%flux_filename, help_string="Name of output file for heat flux")
   call param_register(md_params_dict, 'rng_seed', '-1', params%rng_seed, help_string="Random seed")
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_value_target=has_N_steps, help_string="Number of MD steps to perform")
   call param_register(md_params_dict, 'max_time', '-1.0', params%max_time, help_string="Maximum simulation time (femtoseconds)")
@@ -131,10 +131,10 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial, help_string="if true, calculate virial each step")
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy, help_string="if true, calculate energy each step")
   call param_register(md_params_dict, 'pot_init_args', PARAM_MANDATORY, params%pot_init_args, help_string="args string to initialise potential")
-  call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer, help_string="extra distance to calculate neighbors (added to potential cutoff) so that list doesn't have to be recalculated every step")
+  call param_register(md_params_dict, 'cutoff_skin', '0.5', params%cutoff_skin, help_string="extra distance to calculate neighbors (added to potential cutoff) so that list doesn't have to be recalculated every step")
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval, help_string="how often to print summary line")
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
-  call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval, help_string="how often to print atomic config to traj file")
+  call param_register(md_params_dict, 'trajectory_print_interval', '100', params%trajectory_print_interval, help_string="how often to print atomic config to traj file")
   call param_register(md_params_dict, 'flux_print_interval', '-1', params%flux_print_interval, help_string="how often to print heat flux (fs)")
   call param_register(md_params_dict, 'extra_calc_interval', '-1.0', params%extra_calc_interval, help_string="how often to do extra calcs (e.g. flux)")
   call param_register(md_params_dict, 'print_property_list', '', print_property_list_str, help_string="list of properties to print for atoms")
@@ -233,11 +233,11 @@ subroutine print_params(params)
   call print("md_params%pot_init_args='" // trim(params%pot_init_args) // "'")
   call print("md_params%pot_calc_args='" // trim(params%pot_calc_args) // "'")
   call print("md_params%first_pot_calc_args='" // trim(params%first_pot_calc_args) // "'")
-  call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
-  call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
-  call print("md_params%trajectory_out_file='" // trim(params%trajectory_out_file) // "'")
-  call print("md_params%flux_out_file='" // trim(params%flux_out_file) // "'")
-  call print("md_params%cutoff_buffer='" // params%cutoff_buffer // "'")
+  call print("md_params%atoms_filename='" // trim(params%atoms_filename) // "'")
+  call print("md_params%param_filename='" // trim(params%param_filename) // "'")
+  call print("md_params%trajectory_filename='" // trim(params%trajectory_filename) // "'")
+  call print("md_params%flux_filename='" // trim(params%flux_filename) // "'")
+  call print("md_params%cutoff_skin='" // params%cutoff_skin // "'")
   call print("md_params%rng_seed=" // params%rng_seed)
   call print("md_params%N_steps=" // params%N_steps)
   call print("md_params%max_time=" // params%max_time)
@@ -279,7 +279,7 @@ subroutine print_params(params)
   call print("md_params%calc_energy=" // params%calc_energy)
   call print("md_params%summary_interval=" // params%summary_interval)
   call print("md_params%params_print_interval=" // params%params_print_interval)
-  call print("md_params%at_print_interval=" // params%at_print_interval)
+  call print("md_params%trajectory_print_interval=" // params%trajectory_print_interval)
   call print("md_params%flux_print_interval=" // params%flux_print_interval)
   call print("md_params%print_property_list=", nocr=.true.)
   if (allocated(params%print_property_list)) then
@@ -308,11 +308,11 @@ subroutine print_usage()
   call Print('Usage: md <command line arguments>', PRINT_ALWAYS)
   call Print('available parameters (in md_params file or on command line):', PRINT_ALWAYS)
   call Print('  pot_init_args="args" [pot_calc_args="args"] [first_pot_calc_args="args"]', PRINT_ALWAYS)
-  call Print('  [atoms_in_file=file(stdin)] [params_in_file=file(quip_params.xml)]', PRINT_ALWAYS)
-  call Print('  [trajectory_out_file=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
+  call Print('  [atoms_filename=file(stdin)] [param_filename=file(quip_params.xml)]', PRINT_ALWAYS)
+  call Print('  [trajectory_filename=file(traj.xyz)] [cutoff_skin=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
   call Print('  [N_steps=n(1)] [max_time=t(-1.0)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', PRINT_ALWAYS)
   call Print('  [calc_virial=logical(F)]', PRINT_ALWAYS)
-  call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [at_print_interval=n(100)]', PRINT_ALWAYS)
+  call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [trajectory_print_interval=n(100)]', PRINT_ALWAYS)
   call Print('  [print_property_list=prop1:prop2:...()] [pot_print_interval=n(-1)]', PRINT_ALWAYS)
   call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)]', PRINT_ALWAYS)
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
@@ -353,8 +353,8 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
     if (my_override_intervals .or. mod(i_step,params%pot_print_interval) == 0) call print_pot(params, pot)
   endif
 
-  if (params%at_print_interval > 0) then
-      if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
+  if (params%trajectory_print_interval > 0) then
+      if (my_override_intervals .or. mod(i_step,params%trajectory_print_interval) == 0) &
 	call print_at(params, ds, e, pot, traj_out)
   endif
 
@@ -648,12 +648,12 @@ implicit none
 
   if (params%rng_seed >= 0) call system_reseed_rng(params%rng_seed)
 
-  call initialise(atoms_in_cio, params%atoms_in_file, INPUT, mpi=mpi_glob)
+  call initialise(atoms_in_cio, params%atoms_filename, INPUT, mpi=mpi_glob)
   call read(at_in, atoms_in_cio, error=error)
   HANDLE_ERROR(error)
 
-  if (len_trim(params%params_in_file) > 0) then
-     call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator,  mpi_id=mpi_glob%my_proc)
+  if (len_trim(params%param_filename) > 0) then
+     call read(params_es, params%param_filename, convert_to_string=.true., mpi_comm=mpi_glob%communicator,  mpi_id=mpi_glob%my_proc)
   else
      call initialise(params_es)
   endif
@@ -684,9 +684,9 @@ implicit none
 
   call finalise(params_es)
 
-  call initialise(traj_out, params%trajectory_out_file, OUTPUT, mpi=mpi_glob, netcdf4=params%netcdf4)
+  call initialise(traj_out, params%trajectory_filename, OUTPUT, mpi=mpi_glob, netcdf4=params%netcdf4)
   if (params%flux_print_interval > 0.0_dp) then
-    open(uflux, file=params%flux_out_file, position='append')
+    open(uflux, file=params%flux_filename, position='append')
   endif
 
   call initialise_md_thermostat(ds, params)
@@ -697,7 +697,7 @@ implicit none
   ! add properties
   call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3, ptr2=force_p)
 
-  call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_buffer)
+  call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_skin)
 
   ! start with p(t), v(t)
   ! calculate f(t)
@@ -886,7 +886,7 @@ contains
 
     max_moved = max_moved + params%dt*maxval(abs(ds%atoms%velo))*sqrt(3.0_dp)
     call system_timer("md/calc_connect")
-    if (max_moved > 0.9_dp*params%cutoff_buffer) then
+    if (max_moved > 0.9_dp*params%cutoff_skin) then
       call calc_connect(ds%atoms)
       max_moved = 0.0_dp
     else
