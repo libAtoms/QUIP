@@ -1,0 +1,1029 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": true,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "import quippy"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "At the moment, the pythonic wrapper around the descriptors fortran module still needs to be imported explicitly (hopefully this will be an invisible wrapper in the future, so that you can just do `from quippy import descriptors`)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "import quippy.descriptors_pythonic as descriptors"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Create a configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0. ,  0. ,  0. ],\n",
+       "       [ 0.5,  0.5,  0.5],\n",
+       "       [ 1. ,  1. ,  0. ],\n",
+       "       [ 1.5,  1.5,  0.5],\n",
+       "       [ 1. ,  0. ,  1. ],\n",
+       "       [ 1.5,  0.5,  1.5],\n",
+       "       [ 0. ,  1. ,  1. ],\n",
+       "       [ 0.5,  1.5,  1.5]])"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "at = quippy.diamond(2)\n",
+    "at.Z[:] = 6\n",
+    "at.positions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "All descriptors are instantiated by a call to `Descriptor()`, which takes the descriptor initialisation string as its only argument. For a list of available descriptors and their parameters, see []"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "Here we use a simple pair distance between carbon atoms, with a cutoff of 1.5 Angstrom."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "desc = descriptors.Descriptor(\"distance_2b Z1=6 Z2=6 cutoff=2\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "The descriptor dimension is the length of the descriptor vector. For the scalar distance this is 1."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This descriptor is very simple: it is scalar (dimension 1), and hence only has a single permutation."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1"
+      ]
+     },
+     "execution_count": 26,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc.n_dim # number of dimensions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1"
+      ]
+     },
+     "execution_count": 28,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc.n_p # number of permutations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[1]], dtype=int32)"
+      ]
+     },
+     "execution_count": 30,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc.permutations() # array of permutation arrays"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "Many descriptors rely on the neighbour connectivity, so we need to call `calc_connect`, after setting the Atoms cutoff with a skin of 1 A:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "at.set_cutoff(desc.cutoff()+1.0)\n",
+    "at.calc_connect()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We can now calculate how many instances of this descriptor are found in an `Atoms` (or `ASEAtoms`) object:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "224"
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc.count(at)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This also works transparently for iterables (such as lists), returning a list of the counts."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We can also calculate the actual descriptor values -- in this case, the list of pairwise distances:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.41421356],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 0.8660254 ],\n",
+       "       [ 1.6583124 ],\n",
+       "       [ 1.6583124 ]])"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc.calc(at)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "[to be moved into wrapper]\n",
+    "Calculate size of descriptor data:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "n_desc, n_cross = desc.descriptor_sizes(at)\n",
+    "print(\"n_desc=%d n_cross=%d\" % (n_desc,n_cross))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "`n_desc` is number of descriptors, `n_cross` is number of gradients"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Gradients are returned in a `DescriptorCalcResult` object, which has the following elements:\n",
+    "- `data` = the descriptor values (equivalent to `desc.calc(at)`)\n",
+    "- `grad` = the gradients\n",
+    "- `index` = the indices (`i_desc`, `i_atom`, `i_coord`)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FortranArray([[ 1.6583124 ,  1.6583124 ,  1.6583124 ,  1.6583124 ,  1.6583124 ,\n",
+       "                1.6583124 ,  0.8660254 ,  1.41421356,  0.8660254 ,  1.41421356]])"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res = desc.calc_grad(at)\n",
+    "res.data[:,:10]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FortranArray([[ 0.30151134,  0.30151134,  0.90453403, -0.30151134, -0.30151134,\n",
+       "               -0.90453403, -0.30151134, -0.30151134,  0.90453403,  0.30151134]])"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.grad[:,:10]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FortranArray([[1, 1, 1, 1, 1, 1, 2, 2, 2, 2],\n",
+       "              [1, 1, 1, 4, 4, 4, 1, 1, 1, 2],\n",
+       "              [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]], dtype=int32)"
+      ]
+     },
+     "execution_count": 44,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.index[:,:10]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "source": [
+    "Now for a more interesting descriptor: a three-site benzene monomer"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {
+    "collapsed": true,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "desc_monomer = descriptors.Descriptor('general_monomer signature={6 6 6} atom_ordercheck=F')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Three intramolecular distances = dimensionality 3:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3"
+      ]
+     },
+     "execution_count": 46,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc_monomer.n_dim"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "And a lot more permutations now:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "6"
+      ]
+     },
+     "execution_count": 47,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc_monomer.n_p"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[1, 2, 3],\n",
+       "       [2, 1, 3],\n",
+       "       [1, 3, 2],\n",
+       "       [3, 1, 2],\n",
+       "       [2, 3, 1],\n",
+       "       [3, 2, 1]], dtype=int32)"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "desc_monomer.permutations()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Load some test configurations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "benzat = quippy.AtomsList('benzene_frames.xyz')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(40, 3, 648)"
+      ]
+     },
+     "execution_count": 50,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "benzat.pos.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "for i in range(len(benzat)):\n",
+    "    benzat[i].set_cutoff(desc_monomer.cutoff()+0.5)\n",
+    "    benzat[i].calc_connect()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Calling `calc` or any of the other methods on an `AtomsList` returns a list of results. Here we look at the results for the first configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "res = desc_monomer.calc_grad(benzat)[0]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(3, 1944)"
+      ]
+     },
+     "execution_count": 53,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.grad.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 104,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "9.0"
+      ]
+     },
+     "execution_count": 104,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "1944/216"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "metadata": {
+    "collapsed": true,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": [
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([1, 2, 3, ..., 1, 2, 3], dtype=int32)"
+      ]
+     },
+     "execution_count": 69,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "np.array(res.index)[2]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FortranArray([ True,  True,  True], dtype=bool)"
+      ]
+     },
+     "execution_count": 57,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.index[6] == res.index[:,6]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FortranArray([[ True,  True,  True, ...,  True,  True,  True],\n",
+       "              [ True,  True,  True, ...,  True,  True,  True]], dtype=bool)"
+      ]
+     },
+     "execution_count": 62,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.index[:2] == res.index[:2,:]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "False"
+      ]
+     },
+     "execution_count": 60,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.index[:2] == res.indeax[:,:2]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {
+    "collapsed": false,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "False"
+      ]
+     },
+     "execution_count": 58,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "res.index[:10] == res.index[:,:10]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true,
+    "deletable": true,
+    "editable": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

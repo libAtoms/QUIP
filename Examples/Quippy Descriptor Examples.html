@@ -1,0 +1,1228 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>&lt;no title&gt; &mdash; quippy 2632ff3+ documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="quippy 2632ff3+ documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="../_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2632ff3+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+    <p></p>
+    <ul>
+        <li><a href="../genindex.html">Index</a></li>
+        <li><a href="../py-modindex.html">Module Index</a></li>
+        <li><a href="../search.html">Search Page</a></li>
+        <li><a href="../_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">quippy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Examples/Quippy Descriptor Examples.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">quippy</span>
+</pre></div>
+</div>
+</div>
+<p>At the moment, the pythonic wrapper around the descriptors fortran
+module still needs to be imported explicitly (hopefully this will be an
+invisible wrapper in the future, so that you can just do
+<code class="docutils literal"><span class="pre">from</span> <span class="pre">quippy</span> <span class="pre">import</span> <span class="pre">descriptors</span></code>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">quippy.descriptors_pythonic</span> <span class="kn">as</span> <span class="nn">descriptors</span>
+</pre></div>
+</div>
+</div>
+<p>Create a configuration:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">diamond</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">at</span><span class="o">.</span><span class="n">Z</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">at</span><span class="o">.</span><span class="n">positions</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[ 0. ,  0. ,  0. ],
+       [ 0.5,  0.5,  0.5],
+       [ 1. ,  1. ,  0. ],
+       [ 1.5,  1.5,  0.5],
+       [ 1. ,  0. ,  1. ],
+       [ 1.5,  0.5,  1.5],
+       [ 0. ,  1. ,  1. ],
+       [ 0.5,  1.5,  1.5]])
+</pre></div>
+</div>
+</div>
+<p>All descriptors are instantiated by a call to <code class="docutils literal"><span class="pre">Descriptor()</span></code>, which
+takes the descriptor initialisation string as its only argument. For a
+list of available descriptors and their parameters, see []</p>
+<p>Here we use a simple pair distance between carbon atoms, with a cutoff
+of 1.5 Angstrom.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;distance_2b Z1=6 Z2=6 cutoff=2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The descriptor dimension is the length of the descriptor vector. For the
+scalar distance this is 1.</p>
+<p>This descriptor is very simple: it is scalar (dimension 1), and hence
+only has a single permutation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">n_dim</span> <span class="c1"># number of dimensions</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[26]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>1
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">n_p</span> <span class="c1"># number of permutations</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[28]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>1
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">permutations</span><span class="p">()</span> <span class="c1"># array of permutation arrays</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[30]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[1]], dtype=int32)
+</pre></div>
+</div>
+</div>
+<p>Many descriptors rely on the neighbour connectivity, so we need to call
+<code class="docutils literal"><span class="pre">calc_connect</span></code>, after setting the Atoms cutoff with a skin of 1 A:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>We can now calculate how many instances of this descriptor are found in
+an <code class="docutils literal"><span class="pre">Atoms</span></code> (or <code class="docutils literal"><span class="pre">ASEAtoms</span></code>) object:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[21]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>224
+</pre></div>
+</div>
+</div>
+<p>This also works transparently for iterables (such as lists), returning a
+list of the counts.</p>
+<p>We can also calculate the actual descriptor values &#8211; in this case, the
+list of pairwise distances:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[23]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.41421356],
+       [ 1.6583124 ],
+       [ 0.8660254 ],
+       [ 1.6583124 ],
+       [ 1.6583124 ]])
+</pre></div>
+</div>
+</div>
+<p>[to be moved into wrapper] Calculate size of descriptor data:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">n_desc</span><span class="p">,</span> <span class="n">n_cross</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;n_desc=</span><span class="si">%d</span><span class="s2"> n_cross=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_desc</span><span class="p">,</span><span class="n">n_cross</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal"><span class="pre">n_desc</span></code> is number of descriptors, <code class="docutils literal"><span class="pre">n_cross</span></code> is number of gradients</p>
+<p>Gradients are returned in a <code class="docutils literal"><span class="pre">DescriptorCalcResult</span></code> object, which has
+the following elements: - <code class="docutils literal"><span class="pre">data</span></code> = the descriptor values (equivalent
+to <code class="docutils literal"><span class="pre">desc.calc(at)</span></code>) - <code class="docutils literal"><span class="pre">grad</span></code> = the gradients - <code class="docutils literal"><span class="pre">index</span></code> = the
+indices (<code class="docutils literal"><span class="pre">i_desc</span></code>, <code class="docutils literal"><span class="pre">i_atom</span></code>, <code class="docutils literal"><span class="pre">i_coord</span></code>)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">calc_grad</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[40]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>FortranArray([[ 1.6583124 ,  1.6583124 ,  1.6583124 ,  1.6583124 ,  1.6583124 ,
+                1.6583124 ,  0.8660254 ,  1.41421356,  0.8660254 ,  1.41421356]])
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[42]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>FortranArray([[ 0.30151134,  0.30151134,  0.90453403, -0.30151134, -0.30151134,
+               -0.90453403, -0.30151134, -0.30151134,  0.90453403,  0.30151134]])
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[44]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>FortranArray([[1, 1, 1, 1, 1, 1, 2, 2, 2, 2],
+              [1, 1, 1, 4, 4, 4, 1, 1, 1, 2],
+              [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]], dtype=int32)
+</pre></div>
+</div>
+</div>
+<p>Now for a more interesting descriptor: a three-site benzene monomer</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">Descriptor</span><span class="p">(</span><span class="s1">&#39;general_monomer signature={6 6 6} atom_ordercheck=F&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Three intramolecular distances = dimensionality 3:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">n_dim</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[46]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>3
+</pre></div>
+</div>
+</div>
+<p>And a lot more permutations now:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">n_p</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[47]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>6
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">permutations</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[37]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[1, 2, 3],
+       [2, 1, 3],
+       [1, 3, 2],
+       [3, 1, 2],
+       [2, 3, 1],
+       [3, 2, 1]], dtype=int32)
+</pre></div>
+</div>
+</div>
+<p>Load some test configurations</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">benzat</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">AtomsList</span><span class="p">(</span><span class="s1">&#39;benzene_frames.xyz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">benzat</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[50]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(40, 3, 648)
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">benzat</span><span class="p">)):</span>
+    <span class="n">benzat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">benzat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Calling <code class="docutils literal"><span class="pre">calc</span></code> or any of the other methods on an <code class="docutils literal"><span class="pre">AtomsList</span></code> returns
+a list of results. Here we look at the results for the first
+configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span> <span class="o">=</span> <span class="n">desc_monomer</span><span class="o">.</span><span class="n">calc_grad</span><span class="p">(</span><span class="n">benzat</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[53]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(3, 1944)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [104]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="mi">1944</span><span class="o">/</span><span class="mi">216</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[104]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>9.0
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [65]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [69]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[69]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([1, 2, 3, ..., 1, 2, 3], dtype=int32)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:,</span><span class="mi">6</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[57]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>FortranArray([ True,  True,  True], dtype=bool)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [62]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">2</span><span class="p">,:]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[62]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>FortranArray([[ True,  True,  True, ...,  True,  True,  True],
+              [ True,  True,  True, ...,  True,  True,  True]], dtype=bool)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [60]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">indeax</span><span class="p">[:,:</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[60]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>False
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [58]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[58]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>False
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2632ff3+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
