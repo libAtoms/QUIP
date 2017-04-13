@@ -69,6 +69,8 @@ type IPModel_LMTO_TBE
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp) :: cutoff = 0.0_dp !% cutoff is always zero as LMTO code does its own neighbour calculation
   character(len=STRING_LENGTH) :: label, control_file
+!HL 
+!  integer   :: control_file
   type(Atoms) :: oldat
 
 end type IPModel_LMTO_TBE

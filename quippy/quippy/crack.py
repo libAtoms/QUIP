@@ -1128,7 +1128,7 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
     sigma[:,0,2] = 0.0
     sigma[:,2,0] = 0.0
     sigma[:,1,2] = 0.0
-    sigma[:,2.1] = 0.0
+    sigma[:,2,1] = 0.0
 
     mask = Ellipsis # all atoms
     if r_range is not None:
