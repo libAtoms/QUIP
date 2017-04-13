@@ -57,8 +57,9 @@ implicit none
 
   character(len=STRING_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
-	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
-             & do_fine_phonons, do_EvsV, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
+           & do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_phonopy_force_const_mat, &
+           & do_parallel_phonons, do_dipole_moment, do_absorption, &
+           & do_fine_phonons, do_EvsV, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
   integer :: EvsV_NdVsteps
   real(dp) :: EvsV_dVfactor
   real(dp) :: relax_lattice_fix(9)
@@ -162,6 +163,7 @@ implicit none
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
   call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation, help_string="project out rotation components from phonons?")
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat, help_string="print out force constant matrix from phonon calculation?")
+  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons, help_string="compute phonons in parallel?")
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment, help_string="compute dipole moment?")
   call param_register(cli_params, 'absorption', 'F', do_absorption, help_string="compute absorption spectrum (electronic, TB only)?")
@@ -641,10 +643,12 @@ implicit none
         if (has_phonons_path_start .and. has_phonons_path_end) then
            call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
                 & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
-                & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, phonons_path_steps=phonons_path_steps)
+                & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, &
+                & phonons_path_steps=phonons_path_steps, do_phonopy_force_const_mat=do_phonopy_force_const_mat)
         else
            call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
-                & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine)
+                & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
+                & do_phonopy_force_const_mat=do_phonopy_force_const_mat)
         endif
      endif ! do_fine_phonons
 

@@ -44,7 +44,7 @@ private
     real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
-    real(dp) :: cutoff_buffer
+    real(dp) :: cutoff_skin
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P, all_purpose_thermostat, all_purpose_thermostat_massive, nose_hoover_thermostat, barostat_const_T
     real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
@@ -122,7 +122,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial, help_string="if true, calculate virial each step")
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy, help_string="if true, calculate energy each step")
   call param_register(md_params_dict, 'pot_init_args', PARAM_MANDATORY, params%pot_init_args, help_string="args string to initialise potential")
-  call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer, help_string="extra distance to calculate neighbors (added to potential cutoff) so that list doesn't have to be recalculated every step")
+  call param_register(md_params_dict, 'cutoff_skin', '0.5', params%cutoff_skin, help_string="extra distance to calculate neighbors (added to potential cutoff) so that list doesn't have to be recalculated every step")
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval, help_string="how often to print summary line")
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
   call param_register(md_params_dict, 'trajectory_print_interval', '100', params%trajectory_print_interval, help_string="how often to print atomic config to traj file")
@@ -216,7 +216,7 @@ subroutine print_params(params)
   call print("md_params%atoms_filename='" // trim(params%atoms_filename) // "'")
   call print("md_params%param_filename='" // trim(params%param_filename) // "'")
   call print("md_params%trajectory_filename='" // trim(params%trajectory_filename) // "'")
-  call print("md_params%cutoff_buffer='" // params%cutoff_buffer // "'")
+  call print("md_params%cutoff_skin='" // params%cutoff_skin // "'")
   call print("md_params%rng_seed=" // params%rng_seed)
   call print("md_params%N_steps=" // params%N_steps)
   call print("md_params%max_time=" // params%max_time)
@@ -285,7 +285,7 @@ subroutine print_usage()
   call Print('available parameters (in md_params file or on command line):', PRINT_ALWAYS)
   call Print('  pot_init_args="args" [pot_calc_args="args"] [first_pot_calc_args="args"]', PRINT_ALWAYS)
   call Print('  [atoms_filename=file(stdin)] [param_filename=file(quip_params.xml)]', PRINT_ALWAYS)
-  call Print('  [trajectory_filename=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
+  call Print('  [trajectory_filename=file(traj.xyz)] [cutoff_skin=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
   call Print('  [N_steps=n(1)] [max_time=t(-1.0)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', PRINT_ALWAYS)
   call Print('  [calc_virial=logical(F)]', PRINT_ALWAYS)
   call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [trajectory_print_interval=n(100)]', PRINT_ALWAYS)
@@ -654,7 +654,7 @@ implicit none
   ! add properties
   call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3, ptr2=force_p)
 
-  call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_buffer)
+  call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_skin)
 
   ! start with p(t), v(t)
   ! calculate f(t)
@@ -837,7 +837,7 @@ contains
 
     max_moved = max_moved + params%dt*maxval(abs(ds%atoms%velo))*sqrt(3.0_dp)
     call system_timer("md/calc_connect")
-    if (max_moved > 0.9_dp*params%cutoff_buffer) then
+    if (max_moved > 0.9_dp*params%cutoff_skin) then
       call calc_connect(ds%atoms)
       max_moved = 0.0_dp
     else
