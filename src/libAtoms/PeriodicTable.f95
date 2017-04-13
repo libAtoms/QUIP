@@ -48,27 +48,25 @@ private
 
 public :: ElementName, ElementMass, ElementValence, ElementCovRad, atomic_number, atomic_number_from_symbol, atomic_number_from_mass
 
-character(3),parameter,dimension(0:116) :: ElementName =   (/"xx ",                                    &
-   "H  ","He ","Li ","Be ","B  ","C  ","N  ","O  ","F  ","Ne ","Na ","Mg ","Al ","Si ","P  ","S  ",    &
-   "Cl ","Ar ","K  ","Ca ","Sc ","Ti ","V  ","Cr ","Mn ","Fe ","Co ","Ni ","Cu ","Zn ","Ga ","Ge ",    &
-   "As ","Se ","Br ","Kr ","Rb ","Sr ","Y  ","Zr ","Nb ","Mo ","Tc ","Ru ","Rh ","Pd ","Ag ","Cd ",    &
-   "In ","Sn ","Sb ","Te ","I  ","Xe ","Cs ","Ba ","La ","Ce ","Pr ","Nd ","Pm ","Sm ","Eu ","Gd ",    &
-   "Tb ","Dy ","Ho ","Er ","Tm ","Yb ","Lu ","Hf ","Ta ","W  ","Re ","Os ","Ir ","Pt ","Au ","Hg ",    &
-   "Tl ","Pb ","Bi ","Po ","At ","Rn ","Fr ","Ra ","Ac ","Th ","Pa ","U  ","Np ","Pu ","Am ","Cm ",    &
-   "Bk ","Cf ","Es ","Fm ","Md ","No ","Lr ","Rf ","Db ","Sg ","Bh ","Hs ","Mt ","Ds ","Rg ","Uub",    &
-   "Uut","Uuq","Uup","Uuh" /) !% Mapping of atomic number to element name
+! IUPAC 2017 element symbols
+character(3),parameter,dimension(0:118) :: ElementName =   (/"xx ",                                             &
+   "H  ","He ",                                                                                                 &
+   "Li ","Be ","B  ","C  ","N  ","O  ","F  ","Ne ",                                                             &
+   "Na ","Mg ","Al ","Si ","P  ","S  ","Cl ","Ar ",                                                             &
+   "K  ","Ca ","Sc ","Ti ","V  ","Cr ","Mn ","Fe ","Co ","Ni ","Cu ","Zn ","Ga ","Ge ","As ","Se ","Br ","Kr ", &
+   "Rb ","Sr ","Y  ","Zr ","Nb ","Mo ","Tc ","Ru ","Rh ","Pd ","Ag ","Cd ","In ","Sn ","Sb ","Te ","I  ","Xe ", &
+   "Cs ","Ba ","La ","Ce ","Pr ","Nd ","Pm ","Sm ","Eu ","Gd ","Tb ","Dy ","Ho ","Er ","Tm ","Yb ","Lu ","Hf ", &
+   "Ta ","W  ","Re ","Os ","Ir ","Pt ","Au ","Hg ","Tl ","Pb ","Bi ","Po ","At ","Rn ",                         &
+   "Fr ","Ra ","Ac ","Th ","Pa ","U  ","Np ","Pu ","Am ","Cm ","Bk ","Cf ","Es ","Fm ","Md ","No ","Lr ","Rf ", &
+   "Db ","Sg ","Bh ","Hs ","Mt ","Ds ","Rg ","Cn ","Nh ","Fl ","Mc ","Lv ","Ts ","Og "                          &
+   /) !% Mapping of atomic number to element name
 
-
-! NOTE: constants used in array initializers below are SINGLE
-! PRECISION, so values of ElementMass and ElementCovRad are slightly
-! incorrect, e.g. masses differ by ~1.0e-7 from results of double
-! precision multiplication of atomic masses by MASSCONVERT. Adding
-! "_dp" after each constant fixes this but causes a number of
-! regression tests to fail.
 
 ! Units: grams per Mole * MASSCONVERT (conforming to eV,A,fs system)
-
-real(dp),parameter,dimension(116) :: ElementMass =                                                     &
+#ifdef LEGACY_MASSES
+! Masses for pre-2017 code. Many of these have been updated, but some code may depend on these
+! values. If used, tests will fail.
+real(dp),parameter,dimension(118) :: ElementMass =                                                     &
 (/1.00794, 4.00260, 6.941, 9.012187, 10.811, 12.0107, 14.00674, 15.9994, 18.99840, 20.1797, 22.98977,  &
 24.3050, 26.98154, 28.0855, 30.97376, 32.066, 35.4527, 39.948, 39.0983, 40.078, 44.95591, 47.867,      &
 50.9415, 51.9961, 54.93805, 55.845, 58.93320, 58.6934, 63.546, 65.39, 69.723, 72.61, 74.92160, 78.96,  &
@@ -78,22 +76,45 @@ real(dp),parameter,dimension(116) :: ElementMass =                              
 168.93421, 173.04, 174.967, 178.49, 180.9479, 183.84, 186.207, 190.23, 192.217, 195.078, 196.96655,    &
 200.59, 204.3833, 207.2, 208.98038, 209.0, 210.0, 222.0, 223.0, 226.0, 227.0, 232.0381, 231.03588,     &
 238.0289, 237.0, 244.0, 243.0, 247.0, 247.0, 251.0, 252.0, 257.0, 258.0, 259.0, 262.0, 261.0, 262.0,   &
-263.0, 264.0, 265.0, 268.0, 271.0, 272.0, 285.0, 284.0, 289.0, 288.0, 292.0/)*MASSCONVERT 
+263.0, 264.0, 265.0, 268.0, 271.0, 272.0, 285.0, 284.0, 289.0, 288.0, 292.0, 293.0, 294.0/)*MASSCONVERT
+#else
+! IUPAC2016 masses from:
+!   Meija, J., Coplen, T., Berglund, M., et al. (2016). Atomic weights of
+!   the elements 2013 (IUPAC Technical Report). Pure and Applied Chemistry,
+!   88(3), pp. 265-291. Retrieved 30 Nov. 2016,
+!   from doi:10.1515/pac-2015-0305
+! Consistent with ase 3.14 onwards
+real(dp),parameter,dimension(118) :: ElementMass = (/                                                 &
+1.008_dp,4.002602_dp,6.94_dp,9.0121831_dp,10.81_dp,12.011_dp,14.007_dp,15.999_dp,18.998403163_dp,     &
+20.1797_dp,22.98976928_dp,24.305_dp,26.9815385_dp,28.085_dp,30.973761998_dp,32.06_dp,35.45_dp,        &
+39.948_dp,39.0983_dp,40.078_dp,44.955908_dp,47.867_dp,50.9415_dp,51.9961_dp,54.938044_dp,55.845_dp,   &
+58.933194_dp,58.6934_dp,63.546_dp,65.38_dp,69.723_dp,72.63_dp,74.921595_dp,78.971_dp,79.904_dp,       &
+83.798_dp,85.4678_dp,87.62_dp,88.90584_dp,91.224_dp,92.90637_dp,95.95_dp,97.90721_dp,101.07_dp,       &
+102.9055_dp,106.42_dp,107.8682_dp,112.414_dp,114.818_dp,118.71_dp,121.76_dp,127.6_dp,126.90447_dp,    &
+131.293_dp,132.90545196_dp,137.327_dp,138.90547_dp,140.116_dp,140.90766_dp,144.242_dp,144.91276_dp,   &
+150.36_dp,151.964_dp,157.25_dp,158.92535_dp,162.5_dp,164.93033_dp,167.259_dp,168.93422_dp,173.054_dp, &
+174.9668_dp,178.49_dp,180.94788_dp,183.84_dp,186.207_dp,190.23_dp,192.217_dp,195.084_dp,196.966569_dp,&
+200.592_dp,204.38_dp,207.2_dp,208.9804_dp,208.98243_dp,209.98715_dp,222.01758_dp,223.01974_dp,        &
+226.02541_dp,227.02775_dp,232.0377_dp,231.03588_dp,238.02891_dp,237.04817_dp,244.06421_dp,            &
+243.06138_dp,247.07035_dp,247.07031_dp,251.07959_dp,252.083_dp,257.09511_dp,258.09843_dp,259.101_dp,  &
+262.11_dp,267.122_dp,268.126_dp,271.134_dp,270.133_dp,269.1338_dp,278.156_dp,281.165_dp,281.166_dp,   &
+285.177_dp,286.182_dp,289.19_dp,289.194_dp,293.204_dp,293.208_dp,294.214_dp /)*MASSCONVERT
 !% Element mass in grams per Mole $\times$ 'MASSCONVERT' (conforming to eV,\AA,fs unit system).
+#endif
 
 ! Units: Angstroms
 
-real(dp),parameter,dimension(116) :: ElementCovRad =                                                   &
+real(dp),parameter,dimension(118) :: ElementCovRad =                                                   &
 (/0.320,0.310,1.630,0.900,0.820,0.770,0.750,0.730,0.720,0.710,1.540,1.360,1.180,1.110,1.060,1.020,     &
 0.990,0.980,2.030,1.740,1.440,1.320,1.220,1.180,1.170,1.170,1.160,1.150,1.170,1.250,1.260,1.220,1.200, &
 1.160,1.140,1.120,2.160,1.910,1.620,1.450,1.340,1.300,1.270,1.250,1.250,1.280,1.340,1.480,1.440,1.410, &
 1.400,1.360,1.330,1.310,2.350,1.980,1.690,1.650,1.650,1.840,1.630,1.620,1.850,1.610,1.590,1.590,1.580, &
 1.570,1.560,2.000,1.560,1.440,1.340,1.300,1.280,1.260,1.270,1.300,1.340,1.490,1.480,1.470,1.460,1.460, &
 2.000,2.000,2.000,2.000,2.000,1.650,2.000,1.420,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000, &
-2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000/)
+2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000/)
 !% Covalent radii in \AA.
 
-integer,parameter,dimension(116) :: ElementValence =  &
+integer,parameter,dimension(118) :: ElementValence =  &
 (/1,-1, 1, 2, 3, 4, 3, 2, 1,-1, 1, 2, 3, 4, 3, 2,     &
   1,-1, 1, 2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
@@ -101,7 +122,7 @@ integer,parameter,dimension(116) :: ElementValence =  &
  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
- -1,-1,-1,-1/)
+ -1,-1,-1,-1,-1,-1/)
 
 
 interface atomic_number
@@ -120,15 +141,15 @@ contains
     if (verify(trim(adjustl(atomic_symbol)),"0123456789") == 0) then ! an integer
        read (atomic_symbol, *) atomic_number_from_symbol
        if (atomic_number_from_symbol < 1 .or. atomic_number_from_symbol > size(ElementName)) then
-	  atomic_number_from_symbol = 0
+          atomic_number_from_symbol = 0
        endif
        return
     else ! not an integer, hopefully an element abbreviation
-       do i = 1, 116
-	  if (trim(lower_case(adjustl(atomic_symbol)))==trim(lower_case(ElementName(i)))) then
-	     atomic_number_from_symbol = i
-	     return
-	  end if
+       do i = 1, 118
+          if (trim(lower_case(adjustl(atomic_symbol)))==trim(lower_case(ElementName(i)))) then
+             atomic_number_from_symbol = i
+             return
+          end if
        end do
     end if
 
@@ -138,14 +159,15 @@ contains
   end function atomic_number_from_symbol
 
   !Look up the atomic number for a given atomic mass (IN GRAMS PER MOLE)
-  !Note: this may fail for some of the transuranic elements... so put those ununpentium simulations on hold for a while ;-)
+  !Note: this may fail for some of the transuranic elements...
+  !so put those ununpentium simulations on hold for a while ;-)
   function atomic_number_from_mass(atomic_mass)
     real(dp), intent(in) :: atomic_mass
     integer              :: atomic_number_from_mass
     integer              :: i
     real(dp), parameter  :: TOL = 0.01_dp
 
-    do i = 1, 116
+    do i = 1, 118
        if (abs(atomic_mass - ElementMass(i)/MASSCONVERT) < TOL) then
           atomic_number_from_mass = i
           return

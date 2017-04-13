@@ -1,12 +1,19 @@
 Travis CI Build
 ============
 
-QUIP makes use of [Travis CI](travisci.org) for running build testing and regression tests for pushed commits. All of the Travis specific files are in the `tests/travis` directory. Some of the files need to be edited to build all features successfully:
+QUIP makes use of [Travis CI](travisci.org) for running build testing and regression tests for pushed commits. All builds can be viewed on the [Travis Website](https://travis-ci.org/libAtoms/QUIP). All of the Travis specific files are in the `tests/travis` directory. Some of the files need to be edited to build all features successfully:
 
 Setup
 -------
 
-The build should work as-is for basic builds. On push requests only `VANILLA` configurations will be built and only for the default compiler set, all other configurations will run but not do anything (so appearing as successful jobs). Daily cron jobs will build the `ALL` configurations (i.e. including all modules like GAP and ThirdParty) and refresh the documentation (setup for crons is on the Travis website). A weekly cron job builds everything for large range of gcc versions.
+The build should work as-is for basic builds:
+
+* On push requests only `VANILLA` configurations will be built, and only for the default compiler set, all other configurations will run but not do anything (so appearing as successful jobs).
+* Daily cron jobs will build the `ALL` configurations (i.e. including all modules like GAP and ThirdParty) and refresh the documentation (setup for crons is on the Travis website).
+* A weekly cron job builds everything for large range of gcc versions.
+* If any parts of the last build failed, then they will be rebuilt until they pass again.
+* The `ALL` builds can be triggered by adding `[ci all]` to the commit message.
+* The documentation can be rebuilt by adding `[ci all]` and `[ci docs]` to the commit message.
 
 To set up the build to work for GAP and pushing the docs the [Travis Client](https://github.com/travis-ci/travis.rb) Is needed to encrypt sensitive data. Install this and work from inside a clone of the repository.
 
