@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Phonon calculation &mdash; quippy 2632ff3+ documentation</title>
+  <title>Phonon calculation &mdash; quippy 686b7d6+ documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2632ff3+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 686b7d6+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Tools for electrostatic embedding" href="electrostaticembed.html"/> 
 
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                2632ff3+
+                686b7d6+
               </div>
             
           
@@ -359,7 +359,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 <dl class="method">
 <dt id="quippy.phonons.Phonon_fine.calc">
-<code class="descname">calc</code><span class="sig-paren">(</span><em>pot</em>, <em>at_in</em>, <em>dx</em>, <em>do_phonopy_force_const_mat</em><span class="optional">[</span>, <em>phonon_supercell</em>, <em>phonon_supercell_fine</em>, <em>args</em>, <em>do_parallel</em>, <em>phonons_path_start</em>, <em>phonons_path_end</em>, <em>phonons_path_steps</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine.calc" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc</code><span class="sig-paren">(</span><em>pot</em>, <em>at_in</em>, <em>dx</em><span class="optional">[</span>, <em>phonon_supercell</em>, <em>phonon_supercell_fine</em>, <em>args</em>, <em>do_parallel</em>, <em>phonons_path_start</em>, <em>phonons_path_end</em>, <em>phonons_path_steps</em>, <em>do_phonopy_force_const_mat</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine.calc" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -374,7 +374,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <p><strong>phonons_path_start</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
 <p><strong>phonons_path_end</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
 <p><strong>phonons_path_steps</strong> :  input int, optional</p>
-<p><strong>do_phonopy_force_const_mat</strong> :  input int</p>
+<p><strong>do_phonopy_force_const_mat</strong> :  input int, optional</p>
 <p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
 </td>
 </tr>
@@ -405,7 +405,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="function">
 <dt id="quippy.phonons.phonon_fine_calc_print">
-<code class="descclassname">quippy.phonons.</code><code class="descname">phonon_fine_calc_print</code><span class="sig-paren">(</span><em>pot</em>, <em>at_in</em>, <em>dx</em>, <em>do_phonopy_force_const_mat</em><span class="optional">[</span>, <em>phonon_supercell</em>, <em>phonon_supercell_fine</em>, <em>calc_args</em>, <em>do_parallel</em>, <em>phonons_path_start</em>, <em>phonons_path_end</em>, <em>phonons_path_steps</em>, <em>file</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.phonon_fine_calc_print" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.phonons.</code><code class="descname">phonon_fine_calc_print</code><span class="sig-paren">(</span><em>pot</em>, <em>at_in</em>, <em>dx</em><span class="optional">[</span>, <em>phonon_supercell</em>, <em>phonon_supercell_fine</em>, <em>calc_args</em>, <em>do_parallel</em>, <em>phonons_path_start</em>, <em>phonons_path_end</em>, <em>phonons_path_steps</em>, <em>file</em>, <em>do_phonopy_force_const_mat</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.phonon_fine_calc_print" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -421,7 +421,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <p><strong>phonons_path_end</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
 <p><strong>phonons_path_steps</strong> :  input int, optional</p>
 <p><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p><strong>do_phonopy_force_const_mat</strong> :  input int</p>
+<p><strong>do_phonopy_force_const_mat</strong> :  input int, optional</p>
 <p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
 </td>
 </tr>
@@ -531,7 +531,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2632ff3+',
+            VERSION:'686b7d6+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
