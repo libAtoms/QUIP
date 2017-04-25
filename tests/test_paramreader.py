@@ -20,8 +20,7 @@ from numpy import dtype
 import unittest
 import numpy as np
 from quippytest import *
-
-from quippy import *
+from quippy.dictionary import ParamReader
 
 class TestParamReader(QuippyTestCase):
 
@@ -46,3 +45,5 @@ class TestParamReader(QuippyTestCase):
         self.assertEqual(list(self.a), [1,2,3])
         self.assertArrayAlmostEqual(self.b, [3.5, 0., 0.])
     
+if __name__ == '__main__':
+   unittest.main()

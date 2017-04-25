@@ -19,18 +19,23 @@
 import weakref
 import numpy as np
 
+import f90wrap.runtime
+
 from quippy import _dictionary
-from quippy._dictionary import *
+from quippy._dictionary import (Dictionary,
+                                T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR, T_DICT,
+                                T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_CHAR_A,
+                                T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
+
 from quippy import get_fortran_indexing
-from quippy.oo_fortran import update_doc_string
 from quippy.dictmixin import DictMixin, ParamReaderMixin
-from quippy.farray import *
+from quippy.farray import farray
 
 __doc__ = _dictionary.__doc__
-__all__ = _dictionary.__all__
 
+@f90wrap.runtime.register_class('Dictionary')
 class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
-    __doc__ = update_doc_string(_dictionary.Dictionary.__doc__, """
+    __doc__ = _dictionary.Dictionary.__doc__ + """
     The quippy Python :class:`Dictionary` class is designed to behave
     as much as possible like a true Python dictionary, but since it is
     implemented in Fortran it can only store a restricted range of
@@ -75,10 +80,10 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
 	>>> d2 = Dictionary('a=1 b=2 c=3')
 	>>> d2.keys(), d2.values()
 	(['a', 'b', 'c'], [1, 2, 3])
-    """, signature='Dictionary([D])')
+    """
 
-    _interfaces = _dictionary.Dictionary._interfaces
-    _interfaces['set_value'] = [ k for k in _dictionary.Dictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
+    #_interfaces = _dictionary.Dictionary._interfaces
+    #_interfaces['set_value'] = [ k for k in _dictionary.Dictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
 
     _scalar_types = (T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR, T_DICT)
 
@@ -276,6 +281,3 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
         if out is None: out = Dictionary()
         _dictionary.Dictionary.subset(self, keys, out, case_sensitive, out_no_initialise)
         return out
-
-from quippy import FortranDerivedTypes
-FortranDerivedTypes['type(dictionary)'] = Dictionary

@@ -16,12 +16,13 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import args_str, FortranArray, farray, fzeros, s2a, a2s
+from quippy.util import args_str
+from quippy.farray import FortranArray, farray, fzeros, s2a, a2s
 from numpy import dtype
 import unittest
 from quippytest import *
 
-from quippy import Dictionary
+from quippy.dictionary import Dictionary
 
 class TestDictionary(QuippyTestCase):
 
@@ -198,7 +199,7 @@ c=44""")
       self.assertRaises(RuntimeError, d.subset, ['bad_key'])
 
    def test_bcast(self):
-      from quippy import MPI_context, bcast
+      from quippy.mpi_context import MPI_context, bcast
       d = Dictionary()
       mpi = MPI_context()
       bcast(mpi, d)
