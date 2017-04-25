@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # default to be overridden by site-specific config
-QUIPPY_INSTALL_DIR = ${HOME}/lib/python
+QUIPPY_INSTALL_DIR = ${HOME}/anaconda2/lib/python2.7/site-packages
 
 # include other makefiles and export env variables
 export QUIP_ARCH
@@ -88,6 +88,6 @@ _quippy.so: ${WRAP_FPP_FILES}
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		 -L. -lquip --link-lapack
 
-install:
+install: build
 	cp -r quippy ${QUIPPY_INSTALL_DIR}
 	cp _quippy.so ${QUIPPY_INSTALL_DIR}

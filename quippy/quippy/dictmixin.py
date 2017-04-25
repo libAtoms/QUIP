@@ -95,7 +95,7 @@ def MakeFullDict(tgt):
     tgt.__bases__ = tuple(list(tgt.__bases__) + [DictMixin])
 
 
-from farray import *
+from quippy import farray
 import string, re
 
 class ParamReaderMixin(object):
