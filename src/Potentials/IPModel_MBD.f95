@@ -54,6 +54,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use MBD_UTILS
 
 use mpi_context_module
 use QUIP_Common_module
@@ -65,8 +66,13 @@ include 'IPModel_interface.h'
 
 public :: IPModel_MBD
 type IPModel_MBD
-  real(dp) :: cutoff = 0.0_dp
-  real(dp) :: kconf = 0.0_dp
+  real(dp) :: cutoff = 0.0_dp ! Cutoff in the quip sense doesn't really apply here
+  integer  :: xc = 1 ! PBE
+  real(dp) :: mbd_cfdm_dip_cutoff = 100.d0 ! Angstrom
+  real(dp) :: mbd_supercell_cutoff= 25.d0  ! Angstrom
+  real(dp) :: mbd_scs_dip_cutoff  = 120.0  ! Angstrom
+  logical, dimension(3) :: mbd_scs_vacuum_axis = {.false., .false., .false.}
+
 end type IPModel_MBD
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -101,7 +107,11 @@ subroutine IPModel_MBD_Initialise_str(this, args_str, param_str, error)
   call Finalise(this)
 
   call initialise(params)
-  call param_register(params, 'kconf', '0.0', this%kconf, help_string='strength of quadratic confinement potential on O atoms. potential is kconf*(rO)^2')
+  ! Some of these should definitely be in the xml file, but use command line for now
+  call param_register(params, 'cfdm_dip_cutoff', '100.0', this%mbd_cfdm_dip_cutoff, help_string='MBD dipole field integration cutoff')
+  call param_register(params, 'scs_dip_cutoff', '120.0', this%mbd_scs_dip_cutoff, help_string='Periodic SCS integration cutoff - important for low-dim systems')
+  call param_register(params, 'supercell_cutoff', '25.0', this%mbd_supercell_cutoff, help_string='Radius used to make periodic supercell - important convergence parameter')
+  call param_register(params, 'scs_vacuum_axis', {.false., .false., .false.}, this%mbd_scs_vacuum_axis, help_string='Which directions should be treated as vacuum instead of periodic')
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Initialise args_str')) then
      RAISE_ERROR("IPModel_MBD_Init failed to parse args_str='"//trim(args_str)//"'", error)
   end if
@@ -130,54 +140,17 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    ! Add calc() code here
 
 
-   real(dp) :: energy, force(3,at%N)
-   real(dp) :: rO1, rO2, drO1(3), drO2(3)
-
    INIT_ERROR(error)
-
-   ! Harmonic confining potential on Os
-
-   rO1 = distance_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))
-   rO2 = distance_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))
-
-
-   energy = this%kConf*rO1**2 + this%kConf*rO2**2 
-
-   !Forces
-
-   force = 0.0_dp
-
-   if(rO1 .feq. 0.0_dp) then
-      drO1 = 0.0_dp
-   else
-      drO1 = diff_min_image(at, 1, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO1
-   end if
-
-   if(rO2 .feq. 0.0_dp) then
-      drO2 = 0.0_dp
-   else
-      drO2 = diff_min_image(at, 4, (/0.0_dp, 0.0_dp, 0.0_dp/))/rO2
-   end if
-
-   force(:,1) = 2.0_dp*this%kConf*rO1*drO1 
-   force(:,4) = 2.0_dp*this%kConf*rO2*drO2 
-
 
    if (present(e)) e = energy
    if (present(local_e)) then
-      call check_size('Local_E',local_e,(/at%N/),'IPModel_MBD_Calc', error)
-      local_e = 0.0_dp
+       !TODO lammps usually asks for this though - is there another way?
+       RAISE_ERROR("IPModel_MBD does not have local energies", error)
    endif
-   if (present(f)) then
-      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_MBD_Calc', error)
-      f = force
-   end if
-   if (present(virial)) virial = 0.0_dp
-   if (present(local_virial)) then
-      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_MBD_Calc', error)
-      local_virial = 0.0_dp
+   ! Need finite differences for forces and virials
+   if (present(f) .or. present(virial) .or. present(local_virial)) then
+       RAISE_ERROR("IPModel_MBD does not yet provide analytical gradients", error)
    endif
-
 
 end subroutine IPModel_MBD_Calc
 
@@ -186,9 +159,9 @@ subroutine IPModel_MBD_Print(this, file)
   type(IPModel_MBD), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  call Print("IPModel_MBD : Custom Potential", file=file)
-  call Print("IPModel_MBD : cutoff = " // this%cutoff, file=file)
-  call Print("IPModel_MBD : kconf = " // this%kconf, file=file)
+  call Print("IPModel_MBD : Many-body dispersion", file=file)
+  call Print("IPModel_MBD : mbd_supercell_cutoff = " // this%mbd_supercell_cutoff, file=file)
+  ! And a few more
 
 end subroutine IPModel_MBD_Print
 
