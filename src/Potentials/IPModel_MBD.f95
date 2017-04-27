@@ -54,6 +54,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use units_module, only : PI => QPI, BOHR => QBOHR
 use MBD_UTILS
 
 use mpi_context_module
@@ -108,14 +109,29 @@ subroutine IPModel_MBD_Initialise_str(this, args_str, param_str, error)
 
   call initialise(params)
   ! Some of these should definitely be in the xml file, but use command line for now
+  call param_register(params, 'xc_type', '1', this%xc, help_string='Type of X-C functional that was used: dial 1 for PBE, 2 for PBE0, or 3 for HSE')
   call param_register(params, 'cfdm_dip_cutoff', '100.0', this%mbd_cfdm_dip_cutoff, help_string='MBD dipole field integration cutoff')
   call param_register(params, 'scs_dip_cutoff', '120.0', this%mbd_scs_dip_cutoff, help_string='Periodic SCS integration cutoff - important for low-dim systems')
   call param_register(params, 'supercell_cutoff', '25.0', this%mbd_supercell_cutoff, help_string='Radius used to make periodic supercell - important convergence parameter')
-  call param_register(params, 'scs_vacuum_axis', {.false., .false., .false.}, this%mbd_scs_vacuum_axis, help_string='Which directions should be treated as vacuum instead of periodic')
+  call param_register(params, 'scs_vacuum_axis', '{.false., .false., .false.}', this%mbd_scs_vacuum_axis, help_string='Which directions should be treated as vacuum instead of periodic')
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Initialise args_str')) then
      RAISE_ERROR("IPModel_MBD_Init failed to parse args_str='"//trim(args_str)//"'", error)
   end if
   call finalise(params)
+
+  ! MBD pi = QUIP Units pi
+  pi = QPI
+  three_by_pi = 3.0 / pi
+  flag_xc = this%xc
+  mbd_cfdm_dip_cutoff = this%mbd_cfdm_dip_cutoff
+  mbd_supercell_cutoff= this%mbd_supercell_cutoff
+  mbd_scs_dip_cutoff  = this%mbd_scs_dip_cutoff
+  n_periodic = 0
+  mbd_scs_vacuum_axis = this%mbd_scs_vacuum_axis
+  ! And that replaces MBD_UTILS::init_constants()
+  ! MPI stuff:
+  ! Um, this was supposed to be set in MPI_INIT but I can't find a way to access it
+  mpierror = 0
 
 end subroutine IPModel_MBD_Initialise_str
 
@@ -137,10 +153,30 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
-   ! Add calc() code here
-
+   real(dp), pointer, dimension(:) :: my_hirshfeld_volume
 
    INIT_ERROR(error)
+
+   if present(mpi) then
+       myid = mpi%my_proc
+       n_tasks = mpi%n_procs
+       call allocate_task()
+   endif
+   n_atoms = at%N
+
+   ! Note many variables included from the MBD_UTILS module
+   if(.not.allocated(coords))                 allocate(coords(3,n_atoms))
+   if(.not.allocated(atom_name))              allocate(atom_name(n_atoms))
+   if(.not.allocated(hirshfeld_volume))       allocate(hirshfeld_volume(n_atoms))
+   lattice_vector = at%lattice / QBOHR  ! Check whether this is transposed
+   n_periodic = 3 ! I think this means use PBC
+   coords = at%pos / QBOHR
+   atom_name = at%species ! This might not actually work - character arrays; consider iteration
+   ! Allow the property name to be specified
+   call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
+   hirshfeld_volume = my_hirshfeld_volume
+
+   ! TODO now call MBD_at_rSCS and assign result to e
 
    if (present(e)) e = energy
    if (present(local_e)) then
@@ -151,7 +187,6 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    if (present(f) .or. present(virial) .or. present(local_virial)) then
        RAISE_ERROR("IPModel_MBD does not yet provide analytical gradients", error)
    endif
-
 end subroutine IPModel_MBD_Calc
 
 
