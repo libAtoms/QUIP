@@ -9,11 +9,15 @@ set -e
 # builds expect this
 export QUIP_ROOT=`pwd`
 
+# need newer pip so it doesn't install incompatible
+# ipython
+pip install --upgrade pip
+
 # packages for building docs
 pip install sphinx sphinx_rtd_theme nbsphinx numpydoc
 
 # needed to nbconvert ipynb files and to process the rst files
-pip install nbconvert\[execute\] ipython
+pip install 'nbconvert[execute]' 'ipython<6'
 
 # quippy is working, install it
 make install-quippy
