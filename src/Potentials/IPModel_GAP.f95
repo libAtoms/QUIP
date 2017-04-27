@@ -43,7 +43,7 @@
 module IPModel_GAP_module
 
 use error_module
-use system_module, only : dp, inoutput, string_to_int, reallocate, system_timer
+use system_module, only : dp, inoutput, string_to_int, reallocate, system_timer , print, PRINT_NERD
 use dictionary_module
 use extendable_str_module
 use paramreader_module
@@ -258,6 +258,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   real(dp), dimension(:,:), pointer :: gap_variance_gradient_pointer
   real(dp) :: gap_variance_regularisation
   logical :: do_rescale_r, do_rescale_E, do_gap_variance, print_gap_variance, do_local_gap_variance
+  integer :: only_descriptor
+  logical :: do_select_descriptor
 
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: my_args_str
@@ -303,6 +305,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   atom_mask_pointer => null()
   has_atom_mask_name = .false.
   atom_mask_name = ""
+  only_descriptor = 0
 
   calc_local_gap_variance = ""
   print_gap_variance = .false.
@@ -318,6 +321,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
      call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
 
+     call param_register(params, 'only_descriptor', '0', only_descriptor, has_value_target=do_select_descriptor, help_string="Only select a single coordinate")
      call param_register(params, 'local_gap_variance', '', calc_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
      call param_register(params, 'print_gap_variance', 'F', print_gap_variance, help_string="Compute variance estimate of the GAP prediction per descriptor and prints it.")
      call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
@@ -378,6 +382,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   end if
 
   loop_over_descriptors: do i_coordinate = 1, this%my_gp%n_coordinate
+     if (do_select_descriptor .and. (this%my_gp%n_coordinate > 1)) then
+        if (i_coordinate /= only_descriptor) then
+           call print("GAP label="//trim(this%label)//" skipping coordinate "//i_coordinate, PRINT_NERD)
+           cycle
+        end if
+     end if
 
      if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
 
@@ -401,6 +411,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      PASS_ERROR(error)
      allocate(gap_variance(size(my_descriptor_data%x)))
 
+     call system_timer('IPModel_GAP_Calc_gp_predict')
+
 !$omp parallel default(none) private(i,gradPredict, grad_variance_estimate, e_i,n,m,j,pos,f_gp,e_i_cutoff,virial_i,i_pos0,gap_variance_i_cutoff) &
 !$omp shared(this,at,i_coordinate,my_descriptor_data,e,virial,local_virial,local_e,do_gap_variance,do_local_gap_variance,gap_variance,f) &
 !$omp reduction(+:local_e_in,f_in,virial_in,local_gap_variance_in, gap_variance_gradient_in)
@@ -409,7 +421,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      loop_over_descriptor_instances: do i = 1, size(my_descriptor_data%x)
         if( .not. my_descriptor_data%x(i)%has_data ) cycle
 
-        call system_timer('IPModel_GAP_Calc_gp_predict')
+        !call system_timer('IPModel_GAP_Calc_gp_predict')
 
         if(present(f) .or. present(virial) .or. present(local_virial)) then
            call reallocate(gradPredict,size(my_descriptor_data%x(i)%data(:)),zero=.true.)
@@ -417,10 +429,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         else
            e_i =  gp_predict(this%my_gp%coordinate(i_coordinate) , xStar=my_descriptor_data%x(i)%data(:), variance_estimate=gap_variance(i), do_variance_estimate=do_gap_variance)
         endif
-        call system_timer('IPModel_GAP_Calc_gp_predict')
+        !call system_timer('IPModel_GAP_Calc_gp_predict')
         if(present(e) .or. present(local_e)) then
 
            e_i_cutoff = e_i * my_descriptor_data%x(i)%covariance_cutoff / size(my_descriptor_data%x(i)%ci)
+           call print("GAPDEBUG ci="//my_descriptor_data%x(i)%ci//" e_i="//e_i//" e_i_cutoff="//e_i_cutoff, PRINT_NERD)
 
            do n = 1, size(my_descriptor_data%x(i)%ci)
               local_e_in( my_descriptor_data%x(i)%ci(n) ) = local_e_in( my_descriptor_data%x(i)%ci(n) ) + e_i_cutoff
@@ -467,11 +480,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp end do
      if(allocated(gradPredict)) deallocate(gradPredict)
 !$omp end parallel
+     call system_timer('IPModel_GAP_Calc_gp_predict')
+
      if(print_gap_variance) then
         if( size(my_descriptor_data%x) > 0 ) then
            do i = 1, size(my_descriptor_data%x)
               if( .not. my_descriptor_data%x(i)%has_data ) cycle
-              call print('GAP_VARIANCE potential '//trim(this%label)//' descriptor '//i_coordinate//' var( '//i//' ) = '//(gap_variance(i)*my_descriptor_data%x(i)%covariance_cutoff**2))
+              call print('GAP_VARIANCE potential '//trim(this%label)//' descriptor '//i_coordinate//' var( '//i//' ) = '//(gap_variance(i))//" * "//(my_descriptor_data%x(i)%covariance_cutoff**2)//" cutoff")
               if(allocated(my_descriptor_data%x(i)%ii)) call print('GAP_VARIANCE potential '//trim(this%label)//' descriptor '//i_coordinate//' ii( '//i//' ) = '//my_descriptor_data%x(i)%ii)
            enddo
         else
