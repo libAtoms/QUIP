@@ -67,6 +67,9 @@ endif
 ifeq (${HAVE_MTP},1)
    THIRDPARTY_LIBS += libmtp.a
 endif
+ifeq (${HAVE_MBD},1)
+   THIRDPARTY_LIBS += mbd_utils.mod
+endif
 endif
 
 MODULES += libAtoms

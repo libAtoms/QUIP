@@ -54,7 +54,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
-use units_module, only : PI => QPI, BOHR => QBOHR
+use units_module, only : QPI => PI, QBOHR => BOHR
 use MBD_UTILS
 
 use mpi_context_module
@@ -131,7 +131,7 @@ subroutine IPModel_MBD_Initialise_str(this, args_str, param_str, error)
   ! And that replaces MBD_UTILS::init_constants()
   ! MPI stuff:
   ! Um, this was supposed to be set in MPI_INIT but I can't find a way to access it
-  mpierror = 0
+  mpiierror = 0
 
 end subroutine IPModel_MBD_Initialise_str
 
@@ -154,10 +154,11 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    integer, intent(out), optional :: error
 
    real(dp), pointer, dimension(:) :: my_hirshfeld_volume
+   real(dp)                        :: energy
 
    INIT_ERROR(error)
 
-   if present(mpi) then
+   if (present(mpi)) then
        myid = mpi%my_proc
        n_tasks = mpi%n_procs
        call allocate_task()
@@ -169,6 +170,8 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    if(.not.allocated(atom_name))              allocate(atom_name(n_atoms))
    if(.not.allocated(hirshfeld_volume))       allocate(hirshfeld_volume(n_atoms))
    lattice_vector = at%lattice / QBOHR  ! Check whether this is transposed
+   ! TODO maybe this should count the number of periodic dimensions - even
+   !      though UTILS only distinguishes 0 and >0
    n_periodic = 3 ! I think this means use PBC
    coords = at%pos / QBOHR
    atom_name = at%species ! This might not actually work - character arrays; consider iteration
@@ -176,7 +179,7 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
    hirshfeld_volume = my_hirshfeld_volume
 
-   ! TODO now call MBD_at_rSCS and assign result to e
+   call MBD_at_rsSCS(energy)
 
    if (present(e)) e = energy
    if (present(local_e)) then
