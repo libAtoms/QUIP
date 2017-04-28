@@ -1,10 +1,23 @@
 #! /bin/bash
 
+# EXIT if anything oes wrong so
+# we don't end up pushing empty
+# repositories
+
+set -e
+
 # builds expect this
 export QUIP_ROOT=`pwd`
 
+# need newer pip so it doesn't install incompatible
+# ipython
+pip install --upgrade pip
+
 # packages for building docs
-pip install sphinx nbconvert numpydoc
+pip install sphinx sphinx_rtd_theme nbsphinx numpydoc
+
+# needed to nbconvert ipynb files and to process the rst files
+pip install 'nbconvert[execute]' 'ipython<6'
 
 # quippy is working, install it
 make install-quippy
@@ -16,22 +29,33 @@ cd AtomEye/Python
 
 # Install in the virtualenv
 python setup.py install
-cd ../../../
 
 # Work from the docs directory
-cd doc
+DOCS_DIR=${QUIP_ROOT}/doc
+cd ${DOCS_DIR}
 
 # Put a working copy of the gh-pages where they are expected
-PAGES_DIR=../../QUIP-pages
-git clone -b gh-pages ${PAGES_URL} ${PAGES_DIR} > /dev/null 2>&1
+PAGES_DIR=${DOCS_DIR}/_build/html
+git clone -b gh-pages ${PAGES_URL} ${PAGES_DIR} > /dev/null 2>&1 || echo "Failed to clone docs"
+
+# Clean out previous builds; should keep .git and .nojekll but get rid
+# of cruft
+cd ${PAGES_DIR}
+rm -rf *
+
+# html version goes into _build
+cd ${DOCS_DIR}
+# Force complete rebuild
+O=-Ea make html
 
 # set up git so it can push
 git config --global user.name "Travis-CI"
 git config --global user.email "build@travis.org"
 
-# For some reason, it won't import from the current directory;
-export PYTHONPATH=`pwd`:$PYTHONPATH
-
-# html version is fine, push it later
-make docpush
+# add -A will both add and delete files
+# These commands are moved from docpush/Makefile
+cd ${PAGES_DIR}
+git add -A
+git commit -m docpush
+git push origin gh-pages --quiet
 

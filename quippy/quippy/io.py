@@ -764,7 +764,7 @@ def ASEReader(source, format=None):
 
         e = None
         try:
-            e = at.get_potential_energy()
+            e = at.get_potential_energy(force_consistent=True)
         except RuntimeError:
             pass
 
@@ -833,7 +833,7 @@ def dict2atoms(row):
 
     e = None
     try:
-        e = at.get_potential_energy()
+        e = at.get_potential_energy(force_consistent=True)
     except RuntimeError:
         pass
 

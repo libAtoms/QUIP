@@ -29,11 +29,11 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X TB module 
+!X TB module
 !X
 !% General object which handles all the possible tight-binding potentials (TB), re-addressing
-!% the calls to the right routines. 
-!% 
+!% the calls to the right routines.
+!%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #include "error.inc"
@@ -61,13 +61,13 @@ use Matrix_module, only : matrixd, add_identity, inverse
 use TB_KPoints_module, only : kpoints, ksum_dup, ksum_distrib, local_ksum, min, max, ksum_distrib_inplace, collect
 use TBModel_module, only : has_band_width, has_Fermi_T, has_Fermi_E, get_local_rep_E, get_local_rep_E_force, get_local_rep_E_virial
 use TBMatrix_module, only : tbmatrix, tbvector, finalise, wipe, diagonalise, partial_TraceMult, Re_diag, diag_spinor, partial_TraceMult_spinor, TraceMult, matrix_product_sub, &
-   multDiag, multDiagRL, zero, transpose_sub, accum_scaled_elem_product, scaled_accum
+   multDiag, multDiagRL, zero, transpose_sub, accum_scaled_elem_product, scaled_accum, copy
 use TBSystem_module, only : tbsystem, initialise, finalise, wipe, print, setup_atoms, update_orb_local_pot, atom_orbital_spread, &
    scf_e_correction, scf_f_correction, scf_virial_correction, atom_orbital_sum, fill_matrices, fill_dmatrices, fill_these_matrices, &
    SCF_LCN, SCF_GCN, SCF_LOCAL_U, SCF_NONLOCAL_U_DFTB, SCF_NONLOCAL_U_NRL_TB, n_elec, scf_set_atomic_n_mom, scf_set_global_n, &
    calc_orb_local_pot, scf_get_atomic_n_mom, scf_get_global_n, set_type, local_scf_e_correction, fill_sc_matrices, setup_deriv_matrices, &
    add_term_d2scfe_dn2_times_vec, add_term_dscf_e_correction_dn, add_term_d2scfe_dgndn, atom_orbital_spread_mat, ksum_atom_orbital_sum_mat, &
-   add_term_dscf_e_correction_dgn
+   add_term_dscf_e_correction_dgn, copy_matrices
 use TB_GreensFunctions_module, only : greensfunctions, initialise, finalise, wipe, print, calc_dm_from_gs, calc_gs, calc_mod_dm_from_gs, gsum_distrib_inplace
 
 implicit none
@@ -79,9 +79,9 @@ type TB_type
   type(Atoms) at
   integer method
 
-  type(TBVector) :: evals, E_fillings, F_fillings, eval_F_fillings 
-  type(TBMatrix) :: evecs                  
-  type(TBMatrix) :: dm, Hdm, scaled_evecs  
+  type(TBVector) :: evals, E_fillings, F_fillings, eval_F_fillings
+  type(TBMatrix) :: evecs
+  type(TBMatrix) :: dm, Hdm, scaled_evecs
 
   type(MPI_context) :: mpi
 
@@ -168,6 +168,10 @@ interface realloc_match_tbsys
   module procedure realloc_match_tbsys_vec, realloc_match_tbsys_mat
 end interface realloc_match_tbsys
 
+public :: copy_matrices
+interface copy_matrices
+  module procedure TB_copy_matrices
+end interface copy_matrices
 
 contains
 
@@ -323,6 +327,16 @@ subroutine TB_Print(this, file)
   call verbosity_pop()
 
 end subroutine TB_Print
+
+subroutine TB_copy_matrices(this, Hd, Sd, Hz, Sz, index)
+     type(TB_type), intent(in) :: this
+     real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
+     complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+     integer, intent(in), optional :: index
+
+     call copy_matrices(this%tbsys, Hd, Sd, Hz, Sz, index)
+end subroutine TB_copy_matrices
+
 
 subroutine TB_Setup_atoms(this, at, is_noncollinear, args_str, error)
   type(TB_type), intent(inout) :: this
@@ -549,7 +563,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 end subroutine TB_solve_diag
 
 subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args_str, &
-  use_fermi_E, fermi_E, fermi_T, band_width, AF, error)
+  use_fermi_E, fermi_E, fermi_T, band_width, AF, dH, dS, index, error)
 
   type(TB_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
@@ -561,6 +575,9 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
   logical, optional :: use_fermi_E
   real(dp), intent(inout), optional :: fermi_E, fermi_T, band_width
   type(ApproxFermi), intent(inout), optional :: AF
+  real(dp), optional, intent(inout), dimension(:,:,:,:) :: dH
+  real(dp), optional, intent(inout), dimension(:,:,:,:) :: dS
+  integer, optional, intent(in) :: index
   integer, intent(out), optional :: error
 
   real(dp) :: my_energy
@@ -639,7 +656,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
     case ('DIAG')
       call system_timer("TB_calc/DIAG_calc_diag")
       my_energy = calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N_p, forces, virial, &
-	use_prev_charge = use_prev_charge, AF=AF, do_evecs = do_evecs, error=error)
+	use_prev_charge = use_prev_charge, AF=AF, do_evecs = do_evecs, dH=dH, dS=dS, index=index, error=error)
       call system_timer("TB_calc/DIAG_calc_diag")
     case ('GF')
       call system_timer("TB_calc/GF_calc_GF")
@@ -672,7 +689,9 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
       call system_timer("TB_calc/DIAG_GF_prep")
 
       call system_timer("TB_calc/DIAG_GF_calc_diag")
-      my_energy = calc_diag(this, my_use_fermi_E, local_e = local_e, local_N = local_N_p, use_prev_charge = use_prev_charge, do_evecs = do_evecs, AF = my_AF)
+      my_energy = calc_diag(this, my_use_fermi_E, local_e = local_e, &
+        local_N = local_N_p, use_prev_charge = use_prev_charge, do_evecs = do_evecs, &
+          AF = my_AF)
       call system_timer("TB_calc/DIAG_GF_calc_diag")
       if (present(forces)) then
 	call system_timer("TB_calc/DIAG_GF_calc_GF")
@@ -729,7 +748,7 @@ subroutine copy_atoms_fields(from_at, to_at)
 
 end subroutine copy_atoms_fields
 
-function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, forces, virial, use_prev_charge, AF, do_evecs, error)
+function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, forces, virial, use_prev_charge, AF, do_evecs, dH, dS, index, error)
   type(TB_type), intent(inout) :: this
   logical, optional :: use_fermi_E
   real(dp), intent(inout), optional :: fermi_E, fermi_T
@@ -740,6 +759,9 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   logical, optional, intent(in) :: use_prev_charge
   type(ApproxFermi), intent(inout), optional :: AF
   logical, optional :: do_evecs
+  real(dp), optional, intent(inout), dimension(:,:,:,:) :: dH
+  real(dp), optional, intent(inout), dimension(:,:,:,:) :: dS
+  integer, optional, intent(in) :: index
   integer, intent(out), optional :: error
   real(dp) :: TB_calc_diag
 
@@ -907,7 +929,7 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
     call system_timer("TB_calc_diag/calc_EFV/calc_dm_for_FV")
     if (present(forces)) then
       call system_timer("TB_calc_diag/calc_EFV/calculate_forces")
-      forces =  calculate_forces_diag(this)
+      forces =  calculate_forces_diag(this, dH, dS, index)
       allocate(forces_scf(3,this%at%N))
       forces_scf = scf_f_correction(this%tbsys, this%at)
       forces = forces + forces_scf
@@ -1006,7 +1028,7 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
 
   if (.not. find_new_fermi_E .and. (.not. has_fermi_E(this%fermi_e, this%tbsys%tbmodel, fermi_E, this%calc_args_str) .and. &
       .not. present(AF))) then
-    call system_abort("called calc_GF with use_fermi_E but no fermi_E or AF") 
+    call system_abort("called calc_GF with use_fermi_E but no fermi_E or AF")
   endif
 
   if ((present(fermi_E) .or. present(fermi_T) .or. present(band_width)) .and. present(AF)) then
@@ -1209,9 +1231,12 @@ subroutine calc_local_orbital_mom(this, local_m)
 end subroutine calc_local_orbital_mom
 
 
-function calculate_forces_diag(this) result(forces)
+function calculate_forces_diag(this, dH, dS, index) result(forces)
   type(TB_type), intent(inout) :: this
   real(dp) :: forces(3,this%at%N) ! result
+  real(dp), optional, intent(inout), dimension(:,:,:,:) :: dH
+  real(dp), optional, intent(inout), dimension(:,:,:,:) :: dS
+  integer, optional, intent(in) :: index
 
   logical, allocatable :: od_mask(:), d_mask(:)
 
@@ -1228,6 +1253,31 @@ function calculate_forces_diag(this) result(forces)
   call Setup_deriv_matrices(this%tbsys, this%at)
   do i=1, this%at%N
     call fill_dmatrices(this%tbsys, this%at, i, diag_mask=d_mask, offdiag_mask=od_mask)
+    if (current_verbosity() >= PRINT_NERD) then
+        call print("force dH x "//i)
+        call print(this%tbsys%dH(1))
+        call print("force dH y "//i)
+        call print(this%tbsys%dH(2))
+        call print("force dH z "//i)
+        call print(this%tbsys%dH(3))
+        call print("force dS x "//i)
+        call print(this%tbsys%dS(1))
+        call print("force dS y "//i)
+        call print(this%tbsys%dS(2))
+        call print("force dS z "//i)
+        call print(this%tbsys%dS(3))
+    endif
+    if (present(dH)) then
+      call copy(this%tbsys%dH(1), dH(1,i,:,:), index=index)
+      call copy(this%tbsys%dH(2), dH(2,i,:,:), index=index)
+      call copy(this%tbsys%dH(3), dH(3,i,:,:), index=index)
+    endif
+    if (present(dS)) then
+      call copy(this%tbsys%dS(1), dS(1,i,:,:), index=index)
+      call copy(this%tbsys%dS(2), dS(2,i,:,:), index=index)
+      call copy(this%tbsys%dS(3), dS(3,i,:,:), index=index)
+    endif
+
     forces(1,i) = forces(1,i) - local_ksum(this%tbsys%kpoints, real(TraceMult(this%dm,this%tbsys%dH(1), &
       a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
     forces(2,i) = forces(2,i) - local_ksum(this%tbsys%kpoints, real(TraceMult(this%dm,this%tbsys%dH(2), &
@@ -1499,7 +1549,7 @@ function scf_f_correction_GF(gf, at, w_e, w_n) result(forces)
     forces(:,:) = forces(:,:) - dglobal_pot*dgN_dr_vec(:,:)
 
     deallocate(dgN_dr_vec)
-    
+
   endif ! local or global u
 
   call finalise(sp_Stwid)
@@ -1603,7 +1653,7 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
 	dn0_dr = 0.0_dp
 
 	! Tr [ drho0/dr S WI ] = Tr [ sum_i ( a_i z_i G_i dS/dr G_i - a_i G_i dH0/dr G_i ) S WI =
-        !    Tr [ sum_i a_i z_i G_i dS/dr G_i S WI - sum_i a_i G_i dH0/dr G_i S WI 
+        !    Tr [ sum_i a_i z_i G_i dS/dr G_i S WI - sum_i a_i G_i dH0/dr G_i S WI
         if (.not. gf%tbsys%tbmodel%is_orthogonal) then
           call matrix_product_sub(G_dAdr,  gf%G(ip), gf%tbsys%dS(j), diag_mask=d_mask, offdiag_mask=od_mask)
 
@@ -1639,7 +1689,7 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
       call multDiag(GSU, GS, U_spread)
     endif
 
-    ! factor of 0.5 to compensate for factor of 2 in a (or explicit eval of G(conjg(z)) 
+    ! factor of 0.5 to compensate for factor of 2 in a (or explicit eval of G(conjg(z))
     ! OMP critical
     call accum_scaled_elem_product(GU, SGS_T, 0.5_dp*a, M2_raw)
     call accum_scaled_elem_product(GSU, GS_T, 0.5_dp*a, M2_raw)
@@ -1668,7 +1718,7 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
           dn0_dr = 0.0_dp
 
           ! Tr [ drho0/dr S WI ] = Tr [ sum_i ( a_i z_i G_i dS/dr G_i - a_i G_i dH0/dr G_i ) S WI =
-          !    Tr [ sum_i a_i z_i G_i dS/dr G_i S WI - sum_i a_i G_i dH0/dr G_i S WI 
+          !    Tr [ sum_i a_i z_i G_i dS/dr G_i S WI - sum_i a_i G_i dH0/dr G_i S WI
           if (.not. gf%tbsys%tbmodel%is_orthogonal) then
             call matrix_product_sub(G_dAdr,  gf%G_conjg(ip), gf%tbsys%dS(j), diag_mask=d_mask, offdiag_mask=od_mask)
 
@@ -1703,7 +1753,7 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
         call multDiag(GSU, GS, U_spread)
       endif
 
-      ! factor of 0.5 to compensate for factor of 2 in a (or explicit eval of G(conjg(z)) 
+      ! factor of 0.5 to compensate for factor of 2 in a (or explicit eval of G(conjg(z))
       ! OMP critical
       call accum_scaled_elem_product(GU, SGS_T, 0.5_dp*a, M2_raw)
       call accum_scaled_elem_product(GSU, GS_T, 0.5_dp*a, M2_raw)

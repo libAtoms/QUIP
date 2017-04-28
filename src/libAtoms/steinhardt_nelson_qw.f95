@@ -1,5 +1,8 @@
+#include "error.inc"
+
 module steinhardt_nelson_qw_module
 
+use error_module
 use system_module
 use units_module
 use dictionary_module
@@ -15,21 +18,25 @@ public :: calc_qw, calc_qw_grad
 
 contains
 
-subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width)
+subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width,mask,error)
    type(atoms), intent(inout) :: this
    integer, intent(in) :: l
    logical, intent(in), optional :: do_q, do_w
-   real(dp), optional :: cutoff, cutoff_transition_width
+   real(dp), intent(in), optional :: cutoff, cutoff_transition_width
+   logical, dimension(:), intent(in), optional :: mask
+   integer, intent(out), optional :: error
 
    real(dp), dimension(:), pointer :: ql, wl
    real(dp), dimension(3) :: diff_ij
    real(dp) :: ql_crystal, wl_crystal, my_cutoff, my_cutoff_transition_width, r_ij, f_cut
    logical :: my_do_q, my_do_w, do_smooth_cutoff
 
-   complex(dp), dimension(:,:), allocatable :: spherical_c
+   complex(dp), dimension(:), allocatable :: spherical_c
    complex(dp), dimension(:), allocatable :: spherical_c_crystal
    integer :: i, j, m, n, m1, m2, m3
    real(dp) :: n_bonds, n_bonds_crystal
+
+   INIT_ERROR(error)
 
    my_do_q = optional_default(.false.,do_q)
    my_do_w = optional_default(.false.,do_w)
@@ -46,7 +53,11 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width)
    if(my_do_q) call add_property(this, 'q'//l, 0.0_dp, ptr=ql)
    if(my_do_w) call add_property(this, 'w'//l, 0.0_dp, ptr=wl)
 
-   allocate(spherical_c(-l:l,this%N), spherical_c_crystal(-l:l))
+   if(present(mask)) then
+      call check_size("mask",mask,this%N,"calc_qw",error)
+   endif
+
+   allocate(spherical_c(-l:l), spherical_c_crystal(-l:l))
    spherical_c = CPLX_ZERO
    spherical_c_crystal = CPLX_ZERO
 
@@ -55,6 +66,9 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width)
    n_bonds_crystal = 0.0_dp
 
    do i = 1, this%N
+      if(present(mask)) then
+         if( .not. mask(i) ) cycle
+      endif
       n_bonds = 0.0_dp
       do n = 1, n_neighbours(this,i)
 	 j = neighbour(this,i,n,diff=diff_ij,distance=r_ij)
@@ -67,30 +81,30 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width)
 	 n_bonds = n_bonds + f_cut
 
 	 do m = -l, l
-	    spherical_c(m,i) = spherical_c(m,i) + SphericalYCartesian(l,m,diff_ij) * f_cut
+	    spherical_c(m) = spherical_c(m) + SphericalYCartesian(l,m,diff_ij) * f_cut
 	 enddo
 
       enddo
 
       ! spherical_c_crystal is defined as in Steinhardt and Nelson, from ( \sum_i spherical_c(i) ) / ( \sum_i n_bonds(i))
       ! An altenative would be \sum_i ( spherical_c(i) / n_bonds(i) )
-      spherical_c_crystal = spherical_c_crystal + spherical_c(:,i)
+      spherical_c_crystal = spherical_c_crystal + spherical_c
       n_bonds_crystal = n_bonds_crystal + n_bonds
 
-      if(n_bonds > 0.0_dp) spherical_c(:,i) = spherical_c(:,i) / n_bonds
+      if(n_bonds > 0.0_dp) spherical_c = spherical_c / n_bonds
 
-      if(my_do_q) ql(i) = sqrt( dot_product(spherical_c(:,i),spherical_c(:,i)) * 4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
+      if(my_do_q) ql(i) = sqrt( dot_product(spherical_c,spherical_c) * 4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
 
       if(my_do_w) then
 	 wl(i) = 0.0_dp
 	 do m1 = -l, l
 	    do m2 = -l, l
 	       m3 = -m1-m2
-	       if( m3 >= -l .and. m3 <= l ) wl(i) = wl(i) + spherical_c(m1,i) * spherical_c(m2,i) * spherical_c(m3,i) * wigner3j(l,m1,l,m2,l,m3)
+	       if( m3 >= -l .and. m3 <= l ) wl(i) = wl(i) + spherical_c(m1) * spherical_c(m2) * spherical_c(m3) * wigner3j(l,m1,l,m2,l,m3)
 	    enddo
 	 enddo
 	 
-	 wl(i) = wl(i) / sqrt( dot_product(spherical_c(:,i),spherical_c(:,i))**3 )
+	 wl(i) = wl(i) / sqrt( dot_product(spherical_c,spherical_c)**3 )
       endif
 
    enddo

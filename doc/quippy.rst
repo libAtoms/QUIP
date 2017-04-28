@@ -39,12 +39,15 @@ Structure generation, manipulation and analysis
 -----------------------------------------------
 
 .. toctree::
+   structures.rst
+   descriptors.rst
    crack.rst
    clusters.rst
    find_surface_atoms.rst
    real_space_covariance.rst
-   structures.rst
    topology.rst
+
+   
 
 Molecular Dynamics
 ------------------
@@ -61,6 +64,7 @@ Additional tools for Potentials
    elasticity.rst
    polarization.rst
    electrostaticembed.rst
+   phonons.rst
 
 Mathematical and optimisation tools
 -----------------------------------

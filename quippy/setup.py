@@ -40,8 +40,11 @@ if (major, minor) < (2, 4):
 
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
-    quip_root = os.path.abspath(os.path.join(os.getcwd(), '../'))
-    os.environ['QUIP_ROOT'] = quip_root # export to enviroment for Makefile variables
+    if not 'QUIP_ROOT' in os.environ:
+        quip_root = os.path.abspath(os.path.join(os.getcwd(), '../'))
+        os.environ['QUIP_ROOT'] = quip_root # export to enviroment for Makefile variables
+    else:
+        quip_root = os.environ['QUIP_ROOT']
 
     if not 'QUIP_ARCH' in os.environ:
         raise ValueError('QUIP_ARCH environment variable not set')
@@ -263,12 +266,15 @@ def find_wrap_sources(makefile, quip_root):
         libraries = ['gap_predict'] + libraries
         targets.extend([(quip_root, 'GAP')])
         wrap_sources += [os.path.join(quip_root, 'src/GAP', 'descriptors.f95')]
-        wrap_types += ['descriptor']
+        wrap_types += ['descriptor', 'soap', 'general_monomer']
 
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
         gp_dir = os.path.join(quip_root, 'src/GAP-filler')
         source_dirs.append(gp_dir)
+        libraries = ['gap_filler'] + libraries
         targets.extend([(quip_root, 'GAP-filler')])
+        wrap_sources += [os.path.join(quip_root, 'src/GAP-filler', 'teach_sparse_module.f95')]
+        wrap_types += ['teach_sparse']
 
     quip_core_dir = os.path.join(quip_root, 'src/Potentials/')
     source_dirs.append(quip_core_dir)
@@ -415,7 +421,10 @@ if 'QUIPPY_INSTALL_OPTS' in makefile:
     install_opts = makefile['QUIPPY_INSTALL_OPTS'].split()
     default_options['install'] = {}
     for opt in install_opts:
-        n, v = opt.split('=')
+        if '=' in opt:
+            n, v = opt.split('=')
+        else:
+            n, v = opt, True
         n = n[2:] # remove --
         default_options['install'][n] = v
 

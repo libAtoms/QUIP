@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !%    This module encapsulates all the interatomic potentials implemented in QUIP
-!%    
+!%
 !%    A Potential object represents an interatomic potential, a
 !%    tight binding model or an interface to an external code used to
 !%    perform calculations. It is initialised from an `args_str`
@@ -37,10 +37,10 @@
 !%    `param_str` giving the parameters.
 !%
 !%    Types of Potential:
-!%    
+!%
 !%      ====================  ==========================================================
 !%      `args_str` prefix      Description
-!%      ====================  ==========================================================   
+!%      ====================  ==========================================================
 !%      ``IP``                Interatomic Potential
 !%      ``TB``                Tight Binding Model
 !%      ``FilePot``           File potential, used to communicate with external program
@@ -48,13 +48,13 @@
 !%      ``Sum``               Sum of two other potentials
 !%      ``ForceMixing``       Combination of forces from two other potentials
 !%      ====================  ==========================================================
-!%    
-!%    
+!%
+!%
 !%    Types of interatomic potential available:
-!%    
+!%
 !%      ======================== ==========================================================
 !%      `args_str` prefix        Description
-!%      ======================== ==========================================================   
+!%      ======================== ==========================================================
 !%      ``IP BOP``               Bond order potential for metals
 !%      ``IP BornMayer``         Born-Mayer potential for oxides
 !%                               (e.g. BKS potential for silica)
@@ -87,22 +87,22 @@
 !%      ``IP TS``                Tangney-Scandolo polarisable potential for oxides
 !%      ``IP Tersoff``           Tersoff potential for silicon
 !%      ``IP WaterDimer_Gillan`` 2-body potential for water dimer
-!%      ======================== ==========================================================   
-!%    
+!%      ======================== ==========================================================
+!%
 !%    Types of tight binding potential available:
-!%    
+!%
 !%      ======================= ==========================================================
 !%      `args_str` prefix       Description
-!%      ======================= ==========================================================   
-!%      ``TB Bowler``           Bowler tight binding model 
+!%      ======================= ==========================================================
+!%      ``TB Bowler``           Bowler tight binding model
 !%      ``TB DFTB``             Density functional tight binding
 !%      ``TB GSP``              Goodwin-Skinner-Pettifor tight binding model
 !%      ``TB NRL_TB``           Naval Research Laboratory tight binding model
-!%      ======================= ==========================================================   
-!%    
+!%      ======================= ==========================================================
+!%
 !%    Examples of the XML parameters for each of these potential can be
-!%    found in the `QUIP_Core/parameters <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/tags/QUIP_release/QUIP_Core/parameters/>`_
-!%    directory of the QUIP svn repository.
+!%    found in the `src/Parameters <https://github.com/libAtoms/QUIP/tree/public/share/Parameters>`_
+!%    directory of the QUIP git repository.
 !%
 !%!X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -305,7 +305,7 @@ module Potential_module
   !%
   !% The 'args_str' argument is an optional string  containing
   !% additional arguments which depend on the particular Potential
-  !% being used. 
+  !% being used.
   !%
   !% Not all Potentials support all of these quantities: an error
   !% will be raised if you ask for something that is not supported.
@@ -380,7 +380,7 @@ module Potential_module
      type(Potential), pointer :: minim_pot => null()
      type(CInoutput), pointer :: minim_cinoutput_movie => null()
      real(dp), dimension(3,3) :: external_pressure = 0.0_dp
-    
+
     logical :: connectivity_rebuilt = .false.
 
   end type Potential_minimise
@@ -418,6 +418,13 @@ module Potential_module
      module procedure potential_test_local_virial
   end interface test_local_virial
 
+#ifdef HAVE_TB
+    public :: calc_TB_matrices
+    interface calc_TB_matrices
+       module procedure Potential_calc_TB_matrices
+    end interface
+#endif
+
   contains
 
   !*************************************************************************
@@ -442,7 +449,7 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
   if (len_trim(param_filename) == 0) then
      RAISE_ERROR("potential_Filename_Initialise: empty filename",error)
   endif
-  
+
   my_cwd = quip_getcwd()
   param_file_dirname = quip_dirname(trim(param_filename))
   param_file_basename = quip_basename(trim(param_filename))
@@ -700,13 +707,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
            RAISE_ERROR("potential_initialise: do_rescale_E=T but neither E_scale nor target_B present", error)
         end if
      end if
-     
+
      ! Automatic calculation of rescaling factors r_scale and E_scale to match target_vol and/or target_B
      if (has_target_vol .or. has_target_B) then
         if (.not. present(bulk_scale)) then
            RAISE_ERROR("potential_initialise: target_vol or target_B present but no bulk_scale provided", error)
         end if
-        
+
         bulk = bulk_scale
         call set_cutoff(bulk, cutoff(this)+1.0_dp)
         call calc_connect(bulk)
@@ -846,7 +853,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        end if
        call calc_connect(at)
     end if
-    
+
     extra_args_str = ""
 
     ! create property/param names and possibly storage
@@ -1104,7 +1111,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     type(Atoms), intent(inout), target :: at !% starting configuration
     character(*), intent(in)    :: method !% passed to minim()
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-                                                    !% 'convergence_tol'. 
+                                                    !% 'convergence_tol'.
     integer,      intent(in)    :: max_steps  !% Maximum number of steps
     character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use, passed to base minim()
     logical, optional :: do_print !% if true, print configurations using minim's hook()
@@ -1290,7 +1297,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     if(at%cutoff > 0.0_dp) then
        call calc_connect(at)
     end if
-    
+
     allocate(tmp_local_virial(9,at%N), local_virial(3,3,at%N), local_virial_fd(3,3,at%N), &
        local_energy_p(at%N), local_energy_m(at%N), pos0(3,at%N))
 
@@ -1323,11 +1330,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
              end if
              call calc(this,at,local_energy=local_energy_m,args_str=args_str)
 
-             at%pos(alpha,i) = pos0(alpha,i) 
+             at%pos(alpha,i) = pos0(alpha,i)
              if(at%cutoff > 0.0_dp) then
                 call calc_connect(at)
              end if
-             
+
              do n = 1, n_neighbours(at,i)
                 k = neighbour(at,i,n,distance = r_ik, diff = diff_ik)
 
@@ -1540,13 +1547,13 @@ end subroutine undo_travel
 
 
          if (am%minim_pot%is_forcemixing) then
-	    !NB This should really be an arbitrary field name, but no obvious way to pass print_hook info on what 
+	    !NB This should really be an arbitrary field name, but no obvious way to pass print_hook info on what
 	    !NB the name is (no run_suffix args_str argument, for example)
-            if (assign_pointer(am%minim_at, 'hybrid_mark', hybrid_mark)) then 
+            if (assign_pointer(am%minim_at, 'hybrid_mark', hybrid_mark)) then
                if (.not. am%minim_pot%forcemixing%minimise_mm) then
                   call set_value(am%minim_at%params, 'QM_MaxForce', &
                        maxval(abs(f(:,find(hybrid_mark == HYBRID_ACTIVE_MARK)))))
-            
+
                   call set_value(am%minim_at%params, 'QM_df2', &
                        normsq(reshape(f(:,find(hybrid_mark == HYBRID_ACTIVE_MARK)),&
                        (/3*count(hybrid_mark == HYBRID_ACTIVE_MARK)/))))
@@ -1767,7 +1774,7 @@ end subroutine undo_travel
        call print(virial, PRINT_NERD)
     end if
     virial = virial - am%external_pressure*cell_volume(am%minim_at)
-    
+
     if (current_verbosity() >= PRINT_NERD) then
        call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
        call print(virial, PRINT_NERD)
@@ -1974,7 +1981,7 @@ end subroutine undo_travel
 if (am%minim_do_pos) then
    if (all(hack_restraint_i > 0) .and. all(hack_restraint_i <= am%minim_at%n)) then
       call print("hack_restraint i "//hack_restraint_i// " k " // hack_restraint_k // " r " // hack_restraint_r, PRINT_ALWAYS)
-      dr = distance_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2)) 
+      dr = distance_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2))
       hack_restraint_E = 0.5_dp * hack_restraint_k*(dr - hack_restraint_r)**2
       val = val + hack_restraint_E
       hack_restraint_F = hack_restraint_k*(dr - hack_restraint_r)*diff_min_image(am%minim_at, hack_restraint_i(1), hack_restraint_i(2))/dr
@@ -2124,7 +2131,7 @@ end subroutine unpack_pos_dg
 
     if (size(x2d,1) /= 3) call system_abort("Called pack with mismatching size(x2d,1) " // &
       size(x2d,1) // " != 3")
-    
+
     if (size(dg2d,1) /= 3 .or. size(dg2d,2) /= 3) &
       call system_abort("Called pack with mismatching size(dg2d,1) " // shape(dg2d) // " != 3x3")
     if (size(x) /= (size(x2d)+size(dg2d))) &
@@ -2173,7 +2180,7 @@ end subroutine pack_pos_dg
      character(len=*), intent(in)   :: localname
      character(len=*), intent(in)   :: name
      type(dictionary_t), intent(in) :: attributes
-   
+
      integer :: status
      character(len=STRING_LENGTH) :: value
 
@@ -2204,7 +2211,7 @@ end subroutine pack_pos_dg
         else
            call system_abort("Potential_startElement_handler: no init_args attribute found")
         endif
-        
+
      endif
 
   endsubroutine Potential_startElement_handler
@@ -2230,7 +2237,7 @@ end subroutine pack_pos_dg
          integer, intent(in) :: at(12)
        end subroutine callback
     end interface
-    
+
     if (this%is_simple) then
        call set_callback(this%simple, callback)
     else
@@ -2239,6 +2246,26 @@ end subroutine pack_pos_dg
 
   end subroutine potential_set_callback
 
+#ifdef HAVE_TB
+  !% Calculate TB Hamiltonian and overlap matrices and optionally their derivatives wrt atomic positions.
+  !% This always triggers a force calculation, since the elements for dH and dS are assembled on the fly for each atom.
+  subroutine potential_calc_TB_matrices(this, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index)
+    type(Potential), intent(inout) :: this
+    type(atoms), intent(inout) :: at !% Atomic structure to use for TB matrix calculation
+    character(len=*), intent(in), optional :: args_str !% Additional arguments to pass to TB `calc()` routine
+    real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd !% Hamiltonian and overlap for real wavefunctions (gamma point)
+    complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz !% Complex Hamiltonian and overlap (multiple kpoints)
+    real(dp), intent(inout), optional, dimension(:,:,:,:) :: dH, dS !% Derivative of H and S wrt atomic positiions. Shape is `(3, N_atoms, N_elecs, N_elecs)`
+    integer, optional, intent(in) :: index
+
+    if (this%is_simple) then
+       call calc_TB_matrices(this%simple, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index=index)
+    else
+       call system_abort('potential_calc_TB_matrices() only implemented for simple Potentials.')
+    end if
+
+  end subroutine potential_calc_TB_matrices
+#endif
 
 #include "Potential_Sum_routines.f95"
 #include "Potential_ForceMixing_routines.f95"
@@ -2275,8 +2302,8 @@ end subroutine pack_pos_dg
     interface
        subroutine hook()
        end subroutine hook
-    end interface    
-    
+    end interface
+
     integer :: n, my_summary_interval, my_hook_interval, my_write_interval
     real(dp) :: e
     real(dp), pointer, dimension(:,:) :: f

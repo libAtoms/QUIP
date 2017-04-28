@@ -463,9 +463,9 @@ module linearalgebra_module
     module procedure sort_array_i, sort_array_r
   end interface sort_array
 
-  private :: heap_sort_i, heap_sort_r, heap_sort_r_2dim
+  private :: heap_sort_i, heap_sort_r, heap_sort_r_2dim, heap_sort_i_2dim
   interface heap_sort
-    module procedure heap_sort_i, heap_sort_r, heap_sort_r_2dim
+    module procedure heap_sort_i, heap_sort_r, heap_sort_r_2dim, heap_sort_i_2dim
   end interface heap_sort
 
   private :: insertion_sort_i, insertion_sort_r
@@ -2968,6 +2968,7 @@ CONTAINS
     real(dp) :: tmp
     character(len=1) :: jobu, jobvt
     integer :: lwork, info, i, j
+    integer(kind=8) :: lwork_min
 
     INIT_ERROR(error)
 
@@ -3018,7 +3019,20 @@ CONTAINS
     allocate(work(1))
     lwork = -1
     call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, my_s, my_u, this%n, my_vt, this%m, work, lwork, info)
-    lwork = ceiling(work(1))
+    if( work(1) > huge(lwork) ) then ! optimal size of work is a bit too large.
+       ! that's the minimum size of the work array
+       lwork_min = max( 3*min(this%m, this%n) + max(this%n,this%m), 5*min(this%m,this%n) )
+       if( lwork_min > huge(lwork) ) then
+          RAISE_ERROR("LA_Matrix_SVD: temporary array for SVD would be too large.", error)
+       else
+          ! max out the work array
+          lwork = huge(lwork)
+       endif
+    else
+       ! otherwise just go with the optimum
+       lwork = ceiling(work(1))
+    endif
+       
     deallocate(work)
 
     allocate(work(lwork))
@@ -5653,6 +5667,108 @@ CONTAINS
      endsubroutine siftdown
 
    endsubroutine heap_sort_r_2dim
+
+   subroutine heap_sort_i_2dim(array, i_data, r_data)
+     integer,            dimension(:,:), intent(inout)  :: array
+     integer,  optional, dimension(:), intent(inout)    :: i_data
+     real(dp), optional, dimension(:), intent(inout)    :: r_data
+
+     ! ---
+
+     integer   :: N, i, j, root, tmpi, d
+     integer, dimension(:), allocatable  :: tmp_array
+     real(dp) :: tmpr
+
+     ! ---
+
+     N = size(array,2)
+     d = size(array,1)
+     allocate(tmp_array(d))
+
+     do i = N/2, 1, -1
+
+        j = i
+        call siftdown(j, N)
+
+     enddo
+
+     do i = N, 2, -1
+        
+        ! Swap
+        tmp_array(:) = array(:,1)
+        array(:,1)   = array(:,i)
+        array(:,i)   = tmp_array(:)
+        if (present(i_data)) then
+           tmpi       = i_data(1)
+           i_data(1)  = i_data(i)
+           i_data(i)  = tmpi
+        endif
+        if (present(r_data)) then
+           tmpr       = r_data(1)
+           r_data(1)  = r_data(i)
+           r_data(i)  = tmpr
+        endif
+
+        root = 1
+        j = i -1
+        call siftdown(root, j)
+    
+     enddo
+
+     deallocate(tmp_array)
+
+   contains
+
+     subroutine siftdown(root, bottom)
+       integer, intent(inout)  :: root
+       integer, intent(in)     :: bottom
+
+       ! ---
+
+       logical  :: done
+       integer  :: maxchild
+
+       ! ---
+
+       done = .false.
+
+       do while ((root*2 <= bottom) .and. .not. done)
+
+          if (root*2 == bottom) then
+             maxchild = root * 2
+          else if ( int_array_gt(array(:,root*2),array(:,root*2+1)) ) then  !array(:,root*2) > array(:,root*2+1)
+             maxchild = root * 2
+          else
+             maxchild = root*2 + 1
+          endif
+
+          if ( int_array_lt(array(:,root),array(:,maxchild)) ) then ! array(:,root) < array(:,maxchild)
+
+             ! Swap
+             tmp_array(:)       = array(:,root)
+             array(:,root)      = array(:,maxchild)
+             array(:,maxchild)  = tmp_array(:)
+             if (present(i_data)) then
+                tmpi              = i_data(root)
+                i_data(root)      = i_data(maxchild)
+                i_data(maxchild)  = tmpi
+             endif
+             if (present(r_data)) then
+                tmpr              = r_data(root)
+                r_data(root)      = r_data(maxchild)
+                r_data(maxchild)  = tmpr
+             endif
+
+             root = maxchild
+          else
+             done = .true.
+          endif
+
+       enddo
+
+     endsubroutine siftdown
+
+   endsubroutine heap_sort_i_2dim
 
    !% Do an in place insertion sort on 'this', in ascending order.
    !% If 'idx' is present  then on exit it will contain the list 

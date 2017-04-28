@@ -1,71 +1,119 @@
 language: python
+sudo: required
 env:
   matrix:
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=5
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=VANILLA GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=5
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=VANILLA GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=5
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=VANILLA GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=5
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=5
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=5
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL_NOEXTERNAL GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
-    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.9
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
-    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
-global:
-    secure: "Rf5lXPfUtz+dgBhOdSy0hlJhBDqDVearmnbaJev/OzXBE7ZJENF6grnfxIgleTNKcUvlG21R/eWdGee8l37IWTIx/46iYuwSGeHfhQ9LwRIA4Ks6VruXqJfNMJ9iqowUt8ok6/EQ0usW7KfQFg0SenmtA8Hjmenoj0cPdlkLP5U="
-matrix:
-  allow_failures:
-    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL DOCS=true
-    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=5
-    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.4
-    - env: QUIP_ARCH=linux_x86_64_gfortran BUILD=ALL GCC_VERSION=4.9
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=5
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.4
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmp BUILD=ALL GCC_VERSION=4.9
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=5
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.4
-    - env: QUIP_ARCH=linux_x86_64_gfortran_openmpi BUILD=ALL GCC_VERSION=4.9
+    # Every build
+    - BUILD=VANILLA
+    - BUILD=VANILLA PAR=openmp
+    - BUILD=VANILLA PAR=openmpi
+    # Daily deps
+    - BUILD=ALL DOCS=true
+    - BUILD=ALL PAR=openmp
+    - BUILD=ALL PAR=openmpi
+    # All configurations
+    - GCC_VERSION=4.4 BUILD=VANILLA
+    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
+    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmpi
+    - GCC_VERSION=4.4 BUILD=ALL
+    - GCC_VERSION=4.4 BUILD=ALL PAR=openmp
+    - GCC_VERSION=4.4 BUILD=ALL PAR=openmpi
+    - GCC_VERSION=4.9 BUILD=VANILLA
+    - GCC_VERSION=4.9 BUILD=VANILLA PAR=openmp
+    - GCC_VERSION=4.9 BUILD=VANILLA PAR=openmpi
+    - GCC_VERSION=4.9 BUILD=ALL
+    - GCC_VERSION=4.9 BUILD=ALL PAR=openmp
+    - GCC_VERSION=4.9 BUILD=ALL PAR=openmpi
+    - GCC_VERSION=5 BUILD=VANILLA
+    - GCC_VERSION=5 BUILD=VANILLA PAR=openmp
+    - GCC_VERSION=5 BUILD=VANILLA PAR=openmpi
+    - GCC_VERSION=5 BUILD=ALL
+    - GCC_VERSION=5 BUILD=ALL PAR=openmp
+    - GCC_VERSION=5 BUILD=ALL PAR=openmpi
+    - GCC_VERSION=6 BUILD=VANILLA
+    - GCC_VERSION=6 BUILD=VANILLA PAR=openmp
+    - GCC_VERSION=6 BUILD=VANILLA PAR=openmpi
+    - GCC_VERSION=6 BUILD=ALL
+    - GCC_VERSION=6 BUILD=ALL PAR=openmp
+    - GCC_VERSION=6 BUILD=ALL PAR=openmpi
+  global:
+    secure: "Y5dAhnGQrytV8tJX1oCQMVqAQ2LJIXilFJCgvBMxfaJrs3tORf0gRCKiG7RmUnfWrJtweKkHlXUf4oBWdfg8cCL2rqw3iwun+AV8GY70jd2zUpegv39I5AoLda+BoFaFWYkpdq5jgrFs/DmBgGGZ14dGiIljsAS02MRcGMwxBMg="
 python:
-  - 2.6
   - 2.7
 install:
-  # Set up the compiler versions for different gcc versions
-  - mkdir ~/bin; export PATH=${HOME}/bin:${PATH}
-  - if [ "${GCC_VERSION}x" != "x" ]; then
-      ln -sf `which gfortran-$GCC_VERSION` ~/bin/gfortran; gfortran --version;
-      ln -sf `which gcc-$GCC_VERSION` ~/bin/gcc; gcc --version;
-      ln -sf `which g++-$GCC_VERSION` ~/bin/g++; g++ --version;
+  # Always linux, use PAR so that it is easier to read
+  # configurations on travis website
+  - export QUIP_ARCH=linux_x86_64_gfortran${PAR+_${PAR}}
+  - echo ${QUIP_ARCH}
+  # VANILLA only for each push, and on branches and forks.
+  # GCC 4.6 + GAP daily (includes building docs) [cron],
+  # Run all compiler versions on Saturday [cron]
+  # Disable docs on non-build as fully built quippy is required.
+  # GAP can be triggerd with [ci all] in the commit message, add [ci docs]
+  # to also build docs.
+  - if [ "${TRAVIS_EVENT_TYPE}" == "cron" ] && [ "$(date +%u)" == "6" ]; then
+      export RUN=true;
+      echo "Weekly run -- everything runs";
+    elif [ "${TRAVIS_EVENT_TYPE}" == "cron" ] && [ -z "${GCC_VERSION+x}" ]; then
+      export RUN=true;
+      echo "Daily run -- default compiler";
+    elif [ -z "${TRAVIS_COMMIT_MESSAGE##*\[ci all\]*}" ] && [ -z "${GCC_VERSION+x}" ]; then
+      export RUN=true;
+      echo "Requested run -- triggerd from commit message";
+      if [ -z "${TRAVIS_COMMIT_MESSAGE##*\[ci docs\]*}" ] && [ "${DOCS}" == "true" ]; then
+        export DOCS=true;
+        echo "Requested docs -- triggered from commit message";
+      else
+        export DOCS=false;
+      fi
+    elif [ "${BUILD}" == "VANILLA" ]  && [ -z "${GCC_VERSION+x}" ]; then
+      export RUN=true;
+      echo "Standard minimal build";
+    else
+      export RUN=false;
+      export DOCS=false;
+      echo "Skipping this build";
     fi
-  # Deal with deps; will fail on fork pull requests
-  - if [ "${BUILD}" == "ALL" ]; then
+  # Check if the last build succeeded with the travis.rb client. Rebuild
+  # anything that failed last time.
+  - gem install travis --no-rdoc --no-ri
+  - export TRAVIS_LAST_BUILD=$((${TRAVIS_JOB_NUMBER%.*}-1)).${TRAVIS_JOB_NUMBER#*.}
+  - if travis show --no-interactive ${TRAVIS_LAST_BUILD} | grep State | grep -qe "errored\|failed"; then
+      export RUN=true;
+      echo "Rebuilding previously failed build";
+    fi
+  # Installing deps takes 10+ mins on a slow day. Only install for running
+  # builds.
+  # Requires 'sudo' on Travis; i.e. not compatible with container builds.
+  # pandoc is required for nbconvert in docs; gsl and xpm are for atomeye.
+  - if [ "${RUN}" == "true" ]; then
+      sudo add-apt-repository -y "ppa:ubuntu-toolchain-r/test";
+      sudo apt-get -yq update;
+      sudo apt-get install -y gfortran
+                              liblapack-dev
+                              libblas-dev
+                              python-numpy
+                              openmpi-bin
+                              libopenmpi-dev
+                              netcdf-bin
+                              libnetcdf-dev
+                              libhdf5-serial-dev
+                              pandoc
+                              libgsl0-dev
+                              libxpm-dev;
+    fi
+
+  # If build uses a different GCC, then install it and put
+  # it into PATH.
+  - mkdir ~/bin; export PATH=${HOME}/bin:${PATH}
+  - if [ -n "${GCC_VERSION+x}" ] && [ "${RUN}" == "true" ]; then
+      sudo apt-get install -y g++-${GCC_VERSION} gfortran-${GCC_VERSION};
+      ln -sf `which gfortran-${GCC_VERSION}` ~/bin/gfortran;
+      ln -sf `which gcc-${GCC_VERSION}` ~/bin/gcc;
+      ln -sf `which g++-${GCC_VERSION}` ~/bin/g++;
+    fi
+  # Deal with deps (GAP...); should only run with cron, so no failures
+  - if [ "${BUILD}" == "ALL" ] && [ "${RUN}" == "true" ]; then
+      echo "Pulling deps";
       openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
       bash get_deps.sh > /dev/null 2>&1;
     fi
@@ -73,45 +121,34 @@ install:
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
   - cp tests/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
-  # Compile QUIP
-  - make > /dev/null
-  - make libquip > /dev/null
-  # Fetch and install ASE for quippy
-  - git clone https://gitlab.com/ase/ase.git
-  - cd ase; pip install .; cd ..
-  # Build quippy bindings
-  - make quippy > /dev/null
+  # Compile QUIP, libquip and quippy, if a non-skipped build.
+  # stdout is redirected as it generates too much output.
+  - if [ "${RUN}" == "true" ]; then
+      gfortran --version;
+      gcc --version;
+      g++ --version;
+      make > /dev/null;
+      make libquip > /dev/null;
+      make quippy > /dev/null;
+    fi
 script:
-  # Sometimes file limit is 64000 and read_loop reads and writes this many files
-  # causing the build to time out
+  # Sometimes file limit is 64000 and read_loop reads and writes this many
+  # files causing the build to time out
   - ulimit -n 256
-  # Quippy should be built -> start tests
-  - make test
+  # Install ASE from PyPI as GitLab is unreliable for pulling git master.
+  # Quippy should have built successfully -> start tests
+  - if [ "${RUN}" == "true" ]; then
+      python --version;
+      pip install ase;
+      make test;
+    fi
 after_success:
-  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then tests/travis/build_docs.sh; fi
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gfortran
-      - gfortran-4.4
-      - g++-4.4
-#      - gfortran-4.9
-#      - g++-4.9
-      - gfortran-5
-      - g++-5
-      - liblapack-dev
-      - libblas-dev
-      - python-numpy
-      - openmpi-bin
-      - libopenmpi-dev
-      - netcdf-bin
-      - libnetcdf-dev
-      - libhdf5-serial-dev
-      # for atomeye
-      - libgsl0-dev
-      - libxpm-dev
+  # There is no notification if the docs fail to build,
+  # so cause a failure by timeout using a long sleep :)
+  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then
+      tests/travis/build_docs.sh || sleep 11m ;
+    fi
 notifications:
   email:
     - quip-developers@eng.cam.ac.uk
+

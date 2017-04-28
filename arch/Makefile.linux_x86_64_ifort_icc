@@ -35,6 +35,7 @@ F90 = ifort
 F95 = ifort
 CC = icc
 CPLUSPLUS = icpc -Kc++
+FPP = ifort -E
 LINKER = ifort
 
 SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
@@ -43,17 +44,21 @@ OPTIM = -O3
 CDEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-DEFINES = -DGETARG_F2003 -DFORTRAN_UNDERSCORE
-F95FLAGS += -fpp -free -warn unused
-F77FLAGS += -fpp -fixed
+DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
+F95FLAGS += -fpp -free -warn unused -fPIC
+F77FLAGS += -fpp -fixed -fPIC
+CFLAGS += -fPIC
+CPLUSPLUSFLAGS += -fPIC
+LINKOPTS += -nofor-main
 
 AR_ADD = src
 
 # rules
 
-F95_PRE_FILENAME_FLAG = -Tf
-QUIPPY_FCOMPILER = ifort
+QUIPPY_FCOMPILER = intelem
 QUIPPY_DEFINES = -DGETARG_F2003
 QUIPPY_F90FLAGS = -fpp -free
 QUIPPY_F77FLAGS = -fpp -fixed
 QUIPPY_CPP = ifort -EP
+
+F95_PRE_FILENAME_FLAG = -Tf

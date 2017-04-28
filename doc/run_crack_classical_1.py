@@ -24,7 +24,7 @@ from quippy.crack import (get_strain,
                           get_energy_release_rate,
                           ConstantStrainRate,
                           find_crack_tip_stress_field)
-                         
+
 # ******* Start of parameters ***********
 
 input_file = 'crack.xyz'         # File from which to read crack slab structure
@@ -33,7 +33,7 @@ nsteps = 10000                   # Total number of timesteps to run for
 timestep = 1.0*units.fs          # Timestep (NB: time base units are not fs!)
 cutoff_skin = 2.0*units.Ang      # Amount by which potential cutoff is increased
                                  # for neighbour calculations
-tip_move_tol = 10.0              # Distance tip has to move before crack 
+tip_move_tol = 10.0              # Distance tip has to move before crack
                                  # is taken to be running
 strain_rate = 1e-5*(1/units.fs)  # Strain rate
 traj_file = 'traj.nc'            # Trajectory output file (NetCDF format)
@@ -68,13 +68,10 @@ fixed_mask = ((abs(atoms.positions[:, 1] - top) < 1.0) |
               (abs(atoms.positions[:, 1] - bottom) < 1.0))
 fix_atoms = FixAtoms(mask=fixed_mask)
 print('Fixed %d atoms\n' % fixed_mask.sum())
+atoms.set_constraint([fix_atoms])
 
 # Increase epsilon_yy applied to all atoms at constant strain rate
-
 strain_atoms = ConstantStrainRate(orig_height, strain_rate*timestep)
-
-atoms.set_constraint([fix_atoms, strain_atoms])
-
 
 # ******* Set up potentials and calculators ********
 

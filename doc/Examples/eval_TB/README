@@ -3,22 +3,25 @@ Set QUIP_ARCH environment variable
 or
   setenv QUIP_ARCH your_quip_arch # for csh/tcsh
 
-Set QUIP_ROOT environment variable to the path to your top level QUIP source directory 
-  (where the QUIP_Core/, structures/, etc., subdirectories are)
+Set QUIP_ROOT environment variable to the path to your top level QUIP source directory
+  (where the src/ subdirectory is)
 
-Create executables (do this in $QUIP_ROOT)
-  make Tools/make_bulk_supercell Tools/make_k_mesh QUIP_Programs/eval
+Configure the build, TB must be enabled.
+  make config
+
+Create executables
+  make
 
 Create 8 atom simple cubic supercell of diamond structure Si (Z=14)
 Note that the Z_values has to begin with a letter (which is later ignored), so that QUIP parses it as a string
-  ${QUIP_ROOT}/build.${QUIP_ARCH}/make_bulk_supercell struct=dia_sc vol_per_atom=20.0 Z_values='S 14' > dia.xyz
+  ${QUIP_ROOT}/build/${QUIP_ARCH}/make_bulk_supercell struct=dia_sc vol_per_atom=20.0 Z_values='S 14' > dia.xyz
 
 Create a k-point mesh
-  ${QUIP_ROOT}/build.${QUIP_ARCH}/make_k_mesh mesh='2 2 2' monkhorst_pack > k_points.xml
+  ${QUIP_ROOT}/build/${QUIP_ARCH}/make_k_mesh mesh='2 2 2' monkhorst_pack > k_points.xml
 Combine model parameters and k-points into a quip paramter file (you may need to give concat_quip_params execute permission)
-  ${QUIP_ROOT}/QUIP_Core/parameters/concat_quip_params ${QUIP_ROOT}/QUIP_Core/parameters/tightbind.parms.NRL_TB.Si.xml k_points.xml > quip_params.xml
+  ${QUIP_ROOT}/share/Parameters/concat_quip_params ${QUIP_ROOT}/share/Parameters/tightbind.parms.NRL_TB.Si.xml k_points.xml > quip_params.xml
 
 Relax configuration with NRL-TB
-  ${QUIP_ROOT}/build.${QUIP_ARCH}/eval E F V relax init_args='{TB NRL-TB}' param_file=quip_params.xml at_file=dia.xyz 
+  ${QUIP_ROOT}/build/${QUIP_ARCH}/quip E F V relax init_args='{TB NRL-TB}' param_file=quip_params.xml at_file=dia.xyz
 For brief usage message, do:
-  ${QUIP_ROOT}/build.${QUIP_ARCH}/eval
+  ${QUIP_ROOT}/build/${QUIP_ARCH}/quip

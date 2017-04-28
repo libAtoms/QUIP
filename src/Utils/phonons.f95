@@ -39,11 +39,13 @@ use libatoms_misc_utils_module
 implicit none
 private
 
+real(dp), parameter :: PHONON_FORCE_TOLERANCE = 1.0e-12_dp
+
 public :: Phonon_fine
 type Phonon_fine
    integer :: n_qvectors, n_modes
-   real(dp), dimension(:,:), allocatable :: q, frequency
-   real(dp), dimension(:,:,:,:), allocatable :: eigenvector
+   real(dp), dimension(:,:), allocatable :: q, frequency, hessian
+   complex(dp), dimension(:,:,:,:), allocatable :: eigenvector
    logical :: initialised = .false.
 endtype Phonon_fine
 
@@ -114,6 +116,7 @@ contains
       if(allocated(this%q)) deallocate( this%q )
       if(allocated(this%frequency)) deallocate( this%frequency )
       if(allocated(this%eigenvector)) deallocate( this%eigenvector )
+      if(allocated(this%hessian)) deallocate( this%hessian )
       this%n_qvectors = 0
       
       this%initialised = .false.
@@ -158,7 +161,7 @@ contains
 
    subroutine Phonon_fine_calc(this,pot, at_in, dx, &
          phonon_supercell, phonon_supercell_fine, calc_args, do_parallel, &
-         phonons_path_start, phonons_path_end, phonons_path_steps, error)
+         phonons_path_start, phonons_path_end, phonons_path_steps, do_phonopy_force_const_mat, error)
 
       type(Phonon_fine), intent(inout) :: this
 
@@ -166,18 +169,20 @@ contains
       type(Atoms), intent(inout) :: at_in
       real(dp), intent(in) :: dx
       character(len=*), intent(in), optional :: calc_args
+      logical, intent(in), optional :: do_phonopy_force_const_mat
+      logical :: my_phonopy_force_const_mat
       logical, intent(in), optional :: do_parallel
       integer, dimension(3), intent(in), optional :: phonon_supercell, phonon_supercell_fine
       real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end
       integer, intent(in), optional :: phonons_path_steps
       integer, intent(out), optional :: error
     
-      type(Atoms) :: at, at_fine, at_in_copy
+      type(Atoms) :: at, at_fine
       integer :: i, j, k, alpha, beta, n, n1, n2, n3, jn, j_fine
       integer, dimension(3) :: do_phonon_supercell, do_phonon_supercell_fine
-      integer, dimension(:,:,:,:), allocatable :: map_at, map_at_fine
+      integer, dimension(:,:,:,:), allocatable :: map_at_fine
     
-      real(dp) :: r_ij, dm(3)
+      real(dp) :: r_ij, dm(3), at_max_cutoff
       complex(dp) :: exp_I_k_R
       real(dp), dimension(3) :: pp, diff_ij
       integer, dimension(3) :: shift_ij, j_SI, j_SI_fine
@@ -190,10 +195,18 @@ contains
     
       real(dp), dimension(:,:), allocatable :: frac
       integer :: do_phonons_path_steps
+
+      integer :: primcell_counter,i_n,n1i,n2i,n3i,n1eff,n2eff,n3eff,jneff
+      real(dp), dimension(:,:,:,:), allocatable :: fine_force_const
+      real(dp), dimension(3,3) :: super_cell_lattice,fract_matrix
+
+
     
       INIT_ERROR(error)
     
       call finalise(this, error)
+
+      my_phonopy_force_const_mat = optional_default(.false., do_phonopy_force_const_mat)
 
       do_phonon_supercell = optional_default((/1,1,1/),phonon_supercell)
       do_phonon_supercell_fine = optional_default(do_phonon_supercell,phonon_supercell_fine)
@@ -237,6 +250,12 @@ contains
       pos0 = at%pos
     
       allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
+
+      if(allocated(this%hessian)) deallocate(this%hessian)
+      allocate(this%hessian(3*at%N,3*at_in%N))
+
+      fp0 = 0.0_dp
+      fm0 = 0.0_dp
     
       call system_timer("Phonon_fine_calc/force")
       call print("Starting force calculations")
@@ -257,6 +276,16 @@ contains
       call print("Finished force calculations")
       call system_timer("Phonon_fine_calc/force")
     
+      do i = 1, at_in%N
+         do alpha = 1, 3
+            do j = 1, at%N
+               do beta = 1, 3
+                  this%hessian((j-1)*3+beta,(i-1)*3+alpha) = - (fp0(beta,j,alpha,i) - fm0(beta,j,alpha,i)) / 2.0_dp / dx
+               enddo
+            enddo
+         enddo
+      enddo
+
       at%pos = pos0
       call calc_dists(at)
       deallocate(pos0)
@@ -271,62 +300,155 @@ contains
       fp0_fine = 0.0_dp
       fm0_fine = 0.0_dp
 
+      allocate(map_at_fine(0:at_in%N-1,0:do_phonon_supercell_fine(1)-1,0:do_phonon_supercell_fine(2)-1,0:do_phonon_supercell_fine(3)-1))
+      do i = 1, at_fine%N
+         map_at_fine(mod(i,at_in%N),phonons_fine_SI(1,i),phonons_fine_SI(2,i),phonons_fine_SI(3,i)) = i
+      enddo
+
       if( all(do_phonon_supercell == do_phonon_supercell_fine) ) then
          fp0_fine = fp0
          fm0_fine = fm0
       else
-         if( max_cutoff(at%lattice,error) <= cutoff(pot) ) then
+         at_max_cutoff = max_cutoff(at%lattice,error)
+         if( at_max_cutoff <= cutoff(pot) ) then
             RAISE_ERROR("phonons_fine: if cutoff sphere cannot fit in supercell, it is not possible to map supercell atoms to supercell_fine atoms",error)
          endif
 
-         allocate(map_at(0:at_in%N-1,0:do_phonon_supercell(1)-1,0:do_phonon_supercell(2)-1,0:do_phonon_supercell(3)-1))
-         allocate(map_at_fine(0:at_in%N-1,0:do_phonon_supercell_fine(1)-1,0:do_phonon_supercell_fine(2)-1,0:do_phonon_supercell_fine(3)-1))
-
-         do i = 1, at%N
-            map_at(mod(i,at_in%N),phonons_SI(1,i),phonons_SI(2,i),phonons_SI(3,i)) = i
-         enddo
-
-         do i = 1, at_fine%N
-            map_at_fine(mod(i,at_in%N),phonons_fine_SI(1,i),phonons_fine_SI(2,i),phonons_fine_SI(3,i)) = i
-         enddo
-
-         at_in_copy = at_in
-         call set_cutoff(at_in_copy,cutoff(pot), cutoff_skin=0.5_dp)
-         call calc_connect(at_in_copy)
-         
-         do i = 1, at_in_copy%N
+         do i = 1, at_in%N
             fp0_fine(:,i,:,i) = fp0(:,i,:,i)
             fm0_fine(:,i,:,i) = fm0(:,i,:,i)
 
-            do n = 1, n_neighbours(at_in_copy,i)
-               jn = neighbour(at_in_copy,i,n,distance=r_ij,shift=shift_ij, diff=diff_ij)
-               if( r_ij < cutoff(pot) + dx ) then
-                  j_SI = mod(shift_ij + do_phonon_supercell,do_phonon_supercell)
-                  j_SI_fine = mod(shift_ij + do_phonon_supercell_fine,do_phonon_supercell_fine)
-
-                  j = map_at(mod(jn,at_in_copy%N),j_SI(1),j_SI(2),j_SI(3))
-                  j_fine = map_at_fine(mod(jn,at_in_copy%N),j_SI_fine(1),j_SI_fine(2),j_SI_fine(3))
-
-                  fp0_fine(:,j_fine,:,i) = fp0(:,j,:,i)
-                  fm0_fine(:,j_fine,:,i) = fm0(:,j,:,i)
-
+            do j = 1, at%N
+               r_ij = distance_min_image(at,i,j,shift=shift_ij)
+               if( r_ij >= at_max_cutoff ) then
+                  if( any(abs(fp0(:,j,:,i)) > PHONON_FORCE_TOLERANCE) .or. any(abs(fm0(:,j,:,i)) > PHONON_FORCE_TOLERANCE) ) then
+                     call print_warning( "Phonon_fine_calc: in the supercell there are non-zero forces on atoms outside of the minimum-image cutoff sphere. &
+                     Phonons computed in the fine supercell may be inaccurate. This problem may be eliminated by increasing phonon_supercell. &
+                     Atoms in supercell: "//i//" and"//j//" from "//r_ij//" A from each other, forces are: "//reshape(fp0(:,j,:,i),(/9/)) &
+                     //" "//reshape(fm0(:,j,:,i),(/9/)) )
+                  endif
                endif
+               shift_ij = phonons_SI(:,j) + shift_ij * do_phonon_supercell
+
+               j_SI_fine = mod(shift_ij + do_phonon_supercell_fine,do_phonon_supercell_fine)
+               j_fine = map_at_fine(mod(j,at_in%N),j_SI_fine(1),j_SI_fine(2),j_SI_fine(3))
+               fp0_fine(:,j_fine,:,i) = fp0(:,j,:,i)
+               fm0_fine(:,j_fine,:,i) = fm0(:,j,:,i)
             enddo
          enddo
-         deallocate(map_at)
-         deallocate(map_at_fine)
-         call finalise(at_in_copy)
+
       endif
     
       call system_timer("Phonon_fine_calc/phonon")
       call print("Starting phonon calculations")
+
+! Printing out the force constant and atomic positions in the phonopy format:
+      if_my_phonopy_force_const_mat: if (my_phonopy_force_const_mat) then
+         call print_warning("phonopy_force_const_mat: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
+         call print("Force constant matrix using supercell/supercell fine:")
+
+         allocate(fine_force_const(at_in%N,3,do_phonon_supercell_fine(1)*do_phonon_supercell_fine(2)*do_phonon_supercell_fine(3)*at_in%N,3))
+
+         do i = 1, at_in%N
+            do alpha = 1, 3
+               do beta = 1, 3
+                  primcell_counter = 0
+                  do n1 = 0, do_phonon_supercell_fine(1)-1
+                     do n2 = 0, do_phonon_supercell_fine(2)-1
+                        do n3= 0, do_phonon_supercell_fine(3)-1
+                           do j = 1, at_in%N
+                              primcell_counter = primcell_counter + 1
+                              jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+
+                              fine_force_const(i,alpha,jn,beta) = -(fp0_fine(beta,jn,alpha,i)-fm0_fine(beta,jn,alpha,i))/(2.0_dp*dx)
+                          enddo ! j
+                        enddo ! n3
+                     enddo ! n2
+                  enddo ! n1
+               enddo ! beta
+            enddo ! alpha
+         enddo ! i
+
+         print *, do_phonon_supercell_fine(1)*do_phonon_supercell_fine(2)*do_phonon_supercell_fine(3)*at_in%N
+
+         loop_n1i: do n1i = 0, do_phonon_supercell_fine(1)-1
+         do n2i = 0, do_phonon_supercell_fine(2)-1
+         do n3i = 0, do_phonon_supercell_fine(3)-1
+            do i = 1, at_in%N
+               i_n = ((n1i*do_phonon_supercell_fine(2)+n2i)*do_phonon_supercell_fine(3)+n3i)*at_in%N+i
+               primcell_counter = 0
+               do n1 = 0, do_phonon_supercell_fine(1)-1
+               do n2 = 0, do_phonon_supercell_fine(2)-1
+               do n3 = 0, do_phonon_supercell_fine(3)-1
+                  do j = 1, at_in%N
+                     jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+
+                     n1eff = mod(do_phonon_supercell_fine(1) + n1 - n1i,do_phonon_supercell_fine(1))
+                     n2eff = mod(do_phonon_supercell_fine(2) + n2 - n2i,do_phonon_supercell_fine(2))
+                     n3eff = mod(do_phonon_supercell_fine(3) + n3 - n3i,do_phonon_supercell_fine(3))
+
+                     jneff = ((n1eff*do_phonon_supercell_fine(2)+n2eff)*do_phonon_supercell_fine(3)+n3eff)*at_in%N+j
+
+                     print *, i_n, jn
+                     do alpha = 1, 3
+
+                         print *, fine_force_const(i,1,jneff,alpha), fine_force_const(i,2,jneff,alpha), &
+                               & fine_force_const(i,3,jneff,alpha)
+
+                     enddo ! beta
+
+                  enddo ! j
+               enddo ! n3
+               enddo ! n2
+               enddo ! n1
+            enddo ! i
+         enddo ! n3i
+         enddo ! n2i
+         enddo loop_n1i ! n1i
+
+
+         deallocate(fine_force_const)
+
+         print *, "Atom postions for above given force constant in format for phonopy:"
+
+         print *, "Ti"
+         print *, 1.0_dp
+         super_cell_lattice(1,:) = at_in%lattice .mult. (/do_phonon_supercell_fine(1),0,0/)
+         super_cell_lattice(2,:) = at_in%lattice .mult. (/0,do_phonon_supercell_fine(2),0/)
+         super_cell_lattice(3,:) = at_in%lattice .mult. (/0,0,do_phonon_supercell_fine(3)/)
+         do i = 1,3
+            print *, super_cell_lattice(i,:)
+         enddo
+         print *, do_phonon_supercell_fine(1)*do_phonon_supercell_fine(2)*do_phonon_supercell_fine(3)*at_in%N
+         print *, "Direct"
+
+         fract_matrix = transpose(super_cell_lattice)
+         call inverse(fract_matrix)
+         
+         do n1 = 0, do_phonon_supercell_fine(1)-1
+            do n2 = 0, do_phonon_supercell_fine(2)-1
+               do n3= 0, do_phonon_supercell_fine(3)-1
+                  do j = 1, at_in%N
+
+                     pp = at_in%lattice .mult. (/n1,n2,n3/)
+
+                     print *, (fract_matrix .mult. (at_in%pos(:,j) + pp))
+                  enddo ! j
+               enddo ! n3
+            enddo ! n2
+         enddo ! n1
+
+         print *, "Finished atom postions for above given force constant in format for phonopy:"
+      endif if_my_phonopy_force_const_mat
+! Finished phonopy force constant and atom positions
+
     
       allocate(at_in_sqrt_mass(at_in%N))
       do i = 1, at_in%N
          at_in_sqrt_mass(i) = sqrt(ElementMass(at_in%Z(i)))
       enddo
 
-      !$omp parallel default(none) private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx,at_in_sqrt_mass)
+      !$omp parallel default(none) private(dmft,evals,evecs) shared(this,at_in,do_phonon_supercell_fine,fp0_fine,fm0_fine,dx,at_in_sqrt_mass,map_at_fine)
       allocate(dmft(at_in%N*3,at_in%N*3))
       allocate(evals(at_in%N*3), evecs(at_in%N*3,at_in%N*3))
       !$omp do private(k,i,j,alpha,diff_ij,n1,n2,n3,pp,jn,dm,exp_I_k_R)
@@ -339,7 +461,8 @@ contains
                   pp = at_in%lattice .mult. (/n1,n2,n3/)
 
                   do j = 1, at_in%N
-                     jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+                     !jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+                     jn = map_at_fine(mod(j,at_in%N),n1,n2,n3)
 
                      do i = 1, at_in%N
                         diff_ij = at_in%pos(:,j) - at_in%pos(:,i) + pp
@@ -370,7 +493,7 @@ contains
          call diagonalise(dmft, evals, evecs)
          call system_timer("Phonon_fine_calc/eig")
          this%frequency(:,k) = sign(sqrt(abs(evals)),evals)/2.0_dp/PI
-         this%eigenvector(:,:,:,k) = real( reshape( evecs, (/3, at_in%N, 3*at_in%N /) ), dp )
+         this%eigenvector(:,:,:,k) = reshape( evecs, (/3, at_in%N, 3*at_in%N /) )
 
       enddo ! k
       !$omp end do
@@ -381,17 +504,19 @@ contains
       call system_timer("Phonon_fine_calc/phonon")
       
       deallocate(fp0, fp0_fine, fm0, fm0_fine, at_in_sqrt_mass)
+      deallocate(map_at_fine)
       call finalise(at,at_fine)
    endsubroutine Phonon_fine_calc
 
    subroutine Phonon_fine_calc_print(pot, at_in, dx, &
          phonon_supercell, phonon_supercell_fine, calc_args, do_parallel, &
-         phonons_path_start, phonons_path_end, phonons_path_steps, file, error)
+         phonons_path_start, phonons_path_end, phonons_path_steps, file, do_phonopy_force_const_mat, error)
 
       type(Potential), intent(inout) :: pot
       type(Atoms), intent(inout) :: at_in
       real(dp), intent(in) :: dx
       character(len=*), intent(in), optional :: calc_args
+      logical, intent(in), optional :: do_phonopy_force_const_mat
       logical, intent(in), optional :: do_parallel
       integer, dimension(3), intent(in), optional :: phonon_supercell, phonon_supercell_fine
       real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end
@@ -403,7 +528,7 @@ contains
 
       call calc(my_phonon_fine, pot, at_in, dx, &
          phonon_supercell, phonon_supercell_fine, calc_args, do_parallel, &
-         phonons_path_start, phonons_path_end, phonons_path_steps, error)
+         phonons_path_start, phonons_path_end, phonons_path_steps, do_phonopy_force_const_mat, error)
 
       call print(my_phonon_fine,file,error)
       call finalise(my_phonon_fine, error)
@@ -752,7 +877,7 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
     do i=1, 3*at%N
       effective_masses(i) = 0.0_dp
       do j=1, at%N
-	effective_masses(i) = 1.0_dp/sum(evecs(:,i)**2)
+         effective_masses(i) = 1.0_dp/sum(evecs(:,i)**2)
       end do
     end do
   endif

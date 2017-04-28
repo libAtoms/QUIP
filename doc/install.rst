@@ -22,124 +22,138 @@ Installation of QUIP and quippy
 *******************************
 
 These intructions provide more details on the compilation and
-installation of `QUIP` (Fortran library and main programs) and
-`quippy` (Python interface). They should be read in conjunction with
-the main `README
-<https://github.com/libAtoms/QUIP/blob/public/README.md>`_.
+installation of ``QUIP`` (Fortran library and main programs) and
+``quippy`` (Python interface).
 
+Compilation Instructions
+------------------------
+
+First try the quickstart below, which should work with most Linux systems.
+For Mac systems, have a look at `Installing on Mac OS X with macports`_ first.
 
 Quick start
------------
+^^^^^^^^^^^
 
-For people who don't read manuals::
+Install [#]_ the prerequisites: GCC, gfortran, Python, and the linear algebra
+libraries.  For example, on Ubuntu, do (in a terminal):
 
- $ git clone https://github.com/libAtoms/QUIP.git
- $ cd QUIP
- $ export QUIP_ARCH=linux_x86_64_gfortran
- $ make config
- $ make
- $ make quippy
- $ make install-quippy
+::
 
-Then add the installation directory to your :envvar:`PYTHONPATH`.
+    $ sudo apt-get install gcc gfortran python python-pip libblas-dev liblapack-dev
 
-Requirements
-------------
+For other systems, replace the ``apt-get`` part with your system package manager.
+Beware that the packages might also have slightly different names; these can
+usually be found with a quick search.
 
-Essential:
- * `Python 2.6 <http://www.python.org>`_ or later
- * `numpy`_  - version 1.2.1 or later
- * A working fortran compiler:
+Don't forget the ``quippy`` prerequisites:
 
-   * ifort 10 or later (tested with 10.1.015 and 11.0.084)
-   * gfortran 4.3.3 or later
-   * Others that should work but haven't been tested: `pathf95`, `g95`, `pgf95`, `xlf95`
+::
 
-Optional:
- * `ipython <http://ipython.scipy.org>`_ makes using python interactively 
-   much more productive.
- * `matplotlib <http://matplotlib.sourceforge.net>`_ is a useful plotting library which integrates well with ipython
- * `AtomEye <http://mt.seas.upenn.edu/Archive/Graphics/A3/A3.html>`_
-   atomistic configuration viewer.  A modified version of AtomEye
-   which integrates with quippy is available from my `GitHub
-   repository <https://www.github.com/jameskermode/AtomEye>`_
- * `scipy <http://www.scipy.org>`_ provides more scientific
-   functionality e.g. least squares fitting, optimisation, etc.
+    $ pip install numpy
+    $ pip install ase
 
-Getting quippy
---------------
 
-You can download QUIP and quippy from our public `GitHub repository
-<https://www.github.com/libAtoms/QUIP>`_ ::
+Now you can get the code and compile:
 
-  git clone https://github.com/libAtoms/QUIP.git
+::
 
-We'll use the environment variable :envvar:`QUIP_ROOT` to refer
-to the root of the QUIP tree::
+    $ git clone --recursive https://github.com/libAtoms/QUIP.git
+    $ export QUIP_ARCH=linux_x86_64_gfortran
+    $ export QUIPPY_INSTALL_OPTS=--user  # omit for a system-wide installation
+    $ make config
 
-  export QUIP_ROOT=~/QUIP/
+Answer all the questions with their defaults (by pressing enter) for now, just
+to get things working.
 
-The :file:`libAtoms`, :file:`QUIP_Core`, :file:`QUIP_Util` and
-:file:`QUIP_Programs` directories contain Fortran 95 source
-code. quippy itself lives in the :file:`{QUIP_ROOT}/Tools/quippy`
-directory.
+::
 
-Configuring quippy
-------------------
+    $ make
+    $ make install-quippy
 
-Before compiling quippy, you need to set the environment variable
-:envvar:`QUIP_ARCH`. This sets the architecture for the QUIP framework which
-quippy wraps. Architectures are defined by creating a file
-:file:`${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH}` which describes which
-compilers and libraries should be used and where they can be found. quippy has
-been tested on the following architectures::
+And now open a Python terminal and see if it works:
 
-  darwin_x86_64_gfortran
-  linux_x86_64_gfortran
-  linux_x86_64_ifort_gcc_serial
-  linux_x86_64_pgi
+::
 
-If you're on one of these platforms then just set :envvar:`QUIP_ARCH`
-appropriately, for example on 64-bit Mac OS X with gfortran you would
-do::
+    $ python
+    >>> import quippy
+    >>>
 
-  $ export QUIP_ARCH=darwin_x86_64_gfortran
+If the import completes successfully (i.e. with no output) then the
+installation was successful.  You may want to continue with `Installing the
+Jupyter notebook`_ to run the interactive tutorials.
 
-Otherwise you'll have to make a new :file:`Makefile.${QUIP_ARCH}`,
-containing some of the variables defined below. The next step is to
-answer a number of questions about your system::
+.. [#] If this isn't your machine and you don't have root access, these
+   packages might already be installed by the system administrator.  If not,
+   ask them.
 
-  $ make config
 
-This generates a configurtion file `build/${QUIP_ARCH}/Makefile.inc`
-which you can subsequently edit if you need to customize any of the
-options described below.
+Step by step
+^^^^^^^^^^^^
+
+If that didn't work, try these step-by-step instructions
+instructions excerpted from the top-level `README
+<https://github.com/libAtoms/QUIP/blob/public/README.md>`_.  The ``README`` file
+is the most up-to-date source of installation information.
+
+  .. include:: ../README.md
+    :start-after: Compilation Instructions
+
+If that still doesn't work or you're using a nonstandard architecture, try
+looking at `Custom settings`_ and `Common Problems`_.  As a last resort you can
+consult the `issue tracker on Github`_.
+
+
+Installing the Jupyter notebook
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Jupyter`_ is an environment for interactive computing that makes using Python
+much easier and more intuitive.  Especially useful is its notebook environment,
+which provides a handy way to experiment with code, see the results, and have a
+record of your progress.  The interactive getting-started tutorial is a Jupyter
+notebook that you can run and modify yourself.
+
+To get Jupyter up and running, the following should suffice [#]_:
+
+::
+
+    $ pip install jupyter
+    $ jupyter notebook
+
+This will open a new window in your browser that you can use to navigate
+through your filesystem.  To access the interactive tutorials, you can run the
+``jupyter notebook`` command from your ``QUIP/doc/Examples`` directory (or any
+enclosing directory) then navigate to the notebooks and open
+``Introduction.ipynb`` to get started.
+
+.. [#] This assumes you've already run ``sudo apt-get install python-pip; pip
+   install numpy; pip install ase`` as in the `Quick start`_.
+
 
 Custom settings
-^^^^^^^^^^^^^^^
+---------------
 
 :makevar:`MATHS_LINKOPTS`
    Library options needed to link to BLAS and LAPACK libraries. Any working
    BLAS/LAPACK installation is fine. If you are using Linux, ATLAS is
    a good option, and you should use something like the following::
- 
+
      -L/usr/local/atlas -llapack -lf77blas -lcblas -latlas
 
    On Mac OS X, there are build in LAPACK libraries in the Accelerate
    framework, which you can use by entering
-    
+
      -framework Accelerate
 
 :makevar:`FOX_LIBDIR`, :makevar:`FOX_INCDIR` and :makevar:`FOX_LIBS`
-  Directories containing FoX libraries and header files, and required link options. 
+  Directories containing FoX libraries and header files, and required link options.
   Should be read automatically from QUIP Makefiles.
 
 :makevar:`QUIPPY_FCOMPILER`
    Fortran compiler to use. The shell command::
 
-     $ f2py -c --help-fcompiler 
+     $ f2py -c --help-fcompiler
 
-   will print a list of detected compilers on your system. Use ``gnu95`` for gfortran, 
+   will print a list of detected compilers on your system. Use ``gnu95`` for gfortran,
    ``intel`` for ifort on 32-bit platforms and ``intelem`` for ifort on 64-bit platforms.
 
 :makevar:`QUIPPY_DEFINES` Preprocessor macros which should be defined
@@ -148,7 +162,7 @@ Custom settings
    important to put all the `-D` options needed here and not in
    :makevar:`QUIPPY_F90FLAGS`.
 
-	    
+
 :makevar:`QUIPPY_F90FLAGS` and :makevar:`QUIPPY_F77FLAGS`
    Extra flags to pass to Fortran 90 and 77 compilers
 
@@ -156,15 +170,15 @@ Custom settings
    Optimisation settings for Fortran compiler
 
 :makevar:`QUIPPY_DEBUG`
-   Set this to `1` to include debugging information in the compiled extension code. 
+   Set this to `1` to include debugging information in the compiled extension code.
    This also disables optimisation.
 
 :makevar:`QUIPPY_CPP`
    Fortran preprocessor to use. Default is system `cpp`.
 
 :makevar:`QUIPPY_INSTALL_OPTS`
-   Installation options, e.g. specify ``--home=${HOME}``
-   or ``--prefix=${PREFIX}`` to install in a non-default location.
+   Installation options, e.g. specify ``--user`` to install for the current
+   user ``--prefix=${PREFIX}`` to install in a non-default location.
 
 :makevar:`QUIPPY_NO_TOOLS`
    If set to 1, omit compilation of extra tools such as the elasticity module.
@@ -179,111 +193,9 @@ Custom settings
   If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP.
 
 :makevar:`NETCDF_LIBDIR`, :makevar:`NETCDF_INCDIR`, :makevar:`NETCDF_LIBS` and :makevar:`NETCDF4_LIBS`
-  Directories containing NetCDF libraries and header files, and required link options. 
+  Directories containing NetCDF libraries and header files, and required link options.
   Should be read automatically from QUIP.
 
-
-Compilation
------------
-
-It's best to compile QUIP before trying to compile quippy. This will
-compile the FoX Fortran XML library as well as generating the required
-Makefiles. To compile QUIP, run `make` from the :envvar:`QUIP_ROOT`
-directory after setting :envvar:`QUIP_ARCH` appropriately, e.g. ::
-
-  cd ${QUIP_ROOT}
-  export QUIP_ARCH=linux_x86_64_gfortran
-  make
-
-After this, it's time to compile quippy itself ::
-
-  make quippy
-  
-to compile quippy. The compilation process is quite long; here is an
-overview of the various steps that are performed.
-
-- :mod:`patch_f2py` is invoked to patch the :mod:`numpy.f2py`
-  package at runtime to make several changes to the f2py-generated
-  C code. This will fail if you don't have :mod:`numpy` 1.2.1 or
-  later.
-
-- Fortran sources are imported from the :file:`libAtoms`, :file:`QUIP_Core`, 
-  :file:`QUIP_Utils` (if :makevar:`QUIPPY_NO_TOOLS` is not set) 
-  and :file:`QUIP_Programs` (if :makevar:`QUIPPY_NO_CRACK` is not set)
-  directories. At this stage the sources are preprocessed with the
-  :makevar:`QUIPPY_CPP` preprocessor. This removes ``#ifdef`` sections
-  so that the tools which read the Fortran source do not get confused
-  by multiple version of routines.
-
-- The :mod:`f90doc` module is used to parse Fortran sources and
-  analyse all the types, subroutines and functions.
-
-- Using the definitions read by :mod:`f90doc`, the
-  :mod:`f2py_wrapper_gen` module writes a Fortran wrapper file for
-  each source file that we're going to wrap. These files are named
-  :file:`quippy_${STEM}_wrap.f90` and are designed to use the
-  restricted set of Fortran 90 features understood by f2py.
-
-- The :file:`quippy_${STEM}_wrap.f90` files are passed to f2py, which 
-  generates a Python extension module :mod:`_quippy`. This is a low-level
-  module which allows all the Fortran functions to be called from Python,
-  but doesn't know anything about derived-types. See :ref:`wrapping-fortran-90-code`
-  for more details.
-
-- All the Fortran sources - both those imported and the generated
-  wrappers - are compiled using the Fortran compiler specified in
-  the :makevar:`QUIPPY_FCOMPILER` Makefile variable. The :mod:`_quippy`
-  C extension module is also compiled.
-
-- Finally all the object files are linked, together with external
-  libraries such as NetCDF and LAPACK, to create
-  :file:`_quippy.so`, the Python extension module. 
-
-If the compilation fails with an error message, please send the full
-output to me at j.r.kermode@warwick.ac.uk and I'll do my best to work
-out what's going wrong.
-
-Testing
--------
-
-Once quippy is successfully compiled, you should run the test suite to 
-check everything is working correctly::
-
-   make test
-
-The tests themselves can be found in :file:`${QUIP_ROOT}/tests/test*.py`.
-If any of the tests fail please send me (j.r.kermode@warwick.ac.uk) the output.
-
-Installation
-------------
-
-Once all the tests have passed, run ::
-
-   make install-quippy
-
-to install in the standard place for Python extension modules on your
-system (this will probably be something like
-:file:`/usr/local/lib/python-2.{x}/site-packages`). To install
-elsewhere, edit the `Makefile.inc` to include the line::
-
-  QUIPPY_INSTALL_OPTIONS=--prefix=PREFIX
-
-to install to a specific location such as :file:`/usr/local` or your
-home directory. You will need to add the installation directory
-containing the Python modules to your :envvar:`PYTHONPATH` environment
-variable, e.g. by adding the following line your your `~/.bashrc` or
-`~/.profile` file::
-
-To test if the installation was successful, change out of the source
-directory, start Python and try to import everything from the quippy
-package::
-
-   $ cd $HOME
-   $ python
-   >>> from quippy import *
-
-If you have any problems as this stage such as unresolved linking
-dependencies, consult the list of :ref:`install_faq` below.
 
 .. _install_faq:
 
@@ -299,8 +211,8 @@ the :envvar:`QUIP_ARCH` gets through to the install script, e.g. ::
    sudo QUIP_ARCH=darwin_x86_64_gfortran make install-quippy
 
 
-Installating on Mac OS X with macports
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Installing on Mac OS X with macports
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Macports requires various packages to be installed to compile
 everything, and may require extra linking arguments. See the
@@ -359,15 +271,15 @@ If you get an :exc:`ImportError` with a message ::
    Expected in: flat namespace
    in /Users/silvia/lib/python/_atomeye.so
 
-be sure that the gfortran libraries are properly set in :makevar:`ATOMEYE_LIBS` in Makefile.atomeye 
+be sure that the gfortran libraries are properly set in :makevar:`ATOMEYE_LIBS` in Makefile.atomeye
 
 Error compiling IPModel_GAP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you get the following error during compilation::
 
-   /QUIP/QUIP_Core/IPModel_GAP.f95:51.22:
-   
+   /src/Potentials/IPModel_GAP.f95:51.22:
+
    use descriptors_module
                          1
    Fatal Error: Can't open module file 'descriptors_module.mod' for reading at (1): No such file or directory
@@ -380,8 +292,8 @@ The `GAP_predict` module is not publicly available, so the
 Warning about :mod:`quippy.castep` when importing quippy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you get the following warning message when importin quippy::
-   
+If you get the following warning message when importing quippy::
+
    $ python
    >>> from quippy import *
    WARNING:root:quippy.castep import quippy.failed.
@@ -397,7 +309,7 @@ If you see an error like the following when using the Intel fortran compiler::
 
    fortcom: Severe: **Internal compiler error: internal abort** Please
    report this error along with the circumstances in which it occurred
-   in a Software Problem Report. 
+   in a Software Problem Report.
     Note: File and line given may not be explicit cause of this error.
 
    ifort: error #10014: problem during multi-file optimization compilation (code 3)
@@ -416,7 +328,7 @@ errors like this::
 
    collect2: ld returned 1 exit status ld: in
    /QUIP/build.darwin_x86_64_gfortran/libquiputils.a, malformed
-   archive TOC entry for  ___elasticity_module_MOD_einstein_frequencies, 
+   archive TOC entry for  ___elasticity_module_MOD_einstein_frequencies,
    offset 1769103734 is beyond end of file 1254096
 
 This seems to be a Mac OS X Lion problem with rebuilding static
@@ -425,6 +337,14 @@ libraries (.a files). Removing the static libraries with `rm
 problem.
 
 
+Segmentation Faults with OpenBLAS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The threading in OpenBLAS can interfere with the OpenMP resulting in
+segfaults. Either recompile OpenBLAS with ``USE_OPENMP=1`` or disable
+threading with ``export OPENBLAS_NUM_THREADS=1`` at runtime.
 
 
+.. _`issue tracker on Github`: https://github.com/libAtoms/QUIP/issues
+.. _`Jupyter`: http://jupyter.org/
 

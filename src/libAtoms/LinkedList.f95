@@ -45,7 +45,7 @@ module linkedlist_module
   implicit none
 
   type LinkedList_i
-     integer, allocatable :: data
+     integer :: data
      type(LinkedList_i), pointer :: next => null()
   endtype LinkedList_i
 

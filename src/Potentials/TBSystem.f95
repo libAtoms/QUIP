@@ -52,7 +52,7 @@ use dictionary_module, only : dictionary, initialise, finalise
 use paramreader_module, only : param_register, param_read_line
 use atoms_module, only : atoms, n_neighbours, neighbour, assignment(=)
 
-! use Functions_module 
+! use Functions_module
 use QUIP_Common_module ! , only : xml_t, dictionary_t, pauli_sigma
 use ScaLAPACK_module, only : scalapack, initialise
 use TB_Common_module
@@ -60,7 +60,7 @@ use TBModel_module, only : tbmodel, initialise, finalise, print, &
    n_orb_sets_of_Z, orb_type_of_orb_set_of_Z, n_orbs_of_orb_set_of_Z, n_orbs_of_Z, n_elecs_of_Z, &
    get_HS_blocks, get_dHS_blocks, get_dHS_masks
 use Matrix_module, only : matrixd, initialise, finalise, zero
-use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices
+use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices, copy
 use TB_KPoints_module, only : kpoints, initialise, finalise, calc_phase, print, init_mpi, ksum_distrib_inplace
 use TB_mixing_module, only : do_mix_simple, do_ridders_residual, do_mix_broyden
 use ewald_module, only : add_madelung_matrix, add_dmadelung_matrix, add_dmadelung_matrix_dr
@@ -141,7 +141,7 @@ type Self_Consistency
 
   integer :: N = 0, N_atoms = 0, N_manifolds = 0
 
-  real(dp) :: global_U 
+  real(dp) :: global_U
   real(dp), allocatable :: U(:), stoner_param(:,:)
 
   type(Self_Consistency_Term), allocatable :: terms(:)
@@ -374,6 +374,11 @@ public :: initialise_kpoints
 interface initialise_kpoints
   module procedure TBSystem_initialise_kpoints
 end interface initialise_kpoints
+
+public :: copy_matrices
+interface copy_matrices
+  module procedure TBSystem_copy_matrices
+end interface copy_matrices
 
 contains
 subroutine TBSystem_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_obj)
@@ -665,7 +670,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, erro
     end do
   end do
 
-  ! set last orb of last manifold 
+  ! set last orb of last manifold
   this%first_orb_of_manifold(this%N_manifolds+1) = this%first_orb_of_manifold(this%N_manifolds) + &
     n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(this%N_atoms), n_orb_sets_of_Z(this%tbmodel, at_Z(this%N_atoms)))
 
@@ -1365,6 +1370,18 @@ subroutine TBSystem_Print(this,file)
 
 end subroutine TBSystem_Print
 
+subroutine TBSystem_copy_matrices(this, Hd, Sd, Hz, Sz, index)
+   type(TBSystem), intent(in) :: this
+   real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
+   complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+   integer, intent(in), optional :: index
+
+   if (present(Hd)) call copy(this%H, Hd, index=index)
+   if (present(Hz)) call copy(this%H, Hz, index=index)
+   if (present(Sd)) call copy(this%S, Sd, index=index)
+   if (present(Sz)) call copy(this%S, Sz, index=index)
+end subroutine TBSystem_copy_matrices
+
 subroutine Self_Consistency_Initialise_str(this, args_str, param_str)
   type(Self_Consistency), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
@@ -1717,9 +1734,9 @@ subroutine TBSystem_scf_get_global_N(this, global_N)
 end subroutine TBSystem_scf_get_global_N
 
 subroutine SC_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_self_consistency) then
     if (name == "self_consistency") then
@@ -1729,9 +1746,9 @@ subroutine SC_endElement_handler(URI, localname, name)
 end subroutine SC_endElement_handler
 
 subroutine SC_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -1820,9 +1837,9 @@ subroutine Self_Consistency_read_params_xml(this, in)
 end subroutine Self_Consistency_read_params_xml
 
 subroutine DM_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_dipole_model) then
     if (name == "dipole_model") then
@@ -1832,9 +1849,9 @@ subroutine DM_endElement_handler(URI, localname, name)
 end subroutine DM_endElement_handler
 
 subroutine DM_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -1894,14 +1911,14 @@ subroutine DM_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort('TB_Dipole_Model_read_params_xml cannot find orb_set_phase attribute ' // status)
     read (value, *) parse_dipole_model%orb_set_phase(1:parse_dipole_model%n_orb_sets(i_type),i_type)
 
-  endif 
+  endif
 
 end subroutine DM_startElement_handler
 
 subroutine SO_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_spin_orbit_coupling) then
     if (name == "spin_orbit_coupling") then
@@ -1911,9 +1928,9 @@ subroutine SO_endElement_handler(URI, localname, name)
 end subroutine SO_endElement_handler
 
 subroutine SO_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -1969,7 +1986,7 @@ subroutine SO_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort('TB_Dipole_Model_read_params_xml cannot find SO_params attribute ' // status)
     read (value, *) parse_spin_orbit_coupling%SO_param(1:parse_spin_orbit_coupling%n_orb_sets(i_type),i_type)
 
-  endif 
+  endif
 
 end subroutine SO_startElement_handler
 
@@ -2550,8 +2567,8 @@ function TBSystem_update_orb_local_pot(this, at, iter, global_at_weight, new_orb
   if (allocated(this%scf%terms)) then
      do i_term=1, size(this%scf%terms)
         last_dof = cur_dof + this%scf%terms(i_term)%n_dof - 1
-        ! SCF_SPIN_DIR isn't self consistent, so always update 
-        if ((.not. done) .or. this%scf%terms(i_term)%type == SCF_SPIN_DIR) then 
+        ! SCF_SPIN_DIR isn't self consistent, so always update
+        if ((.not. done) .or. this%scf%terms(i_term)%type == SCF_SPIN_DIR) then
            call set_vec(this%scf%terms(i_term), new_control_vec(cur_dof:last_dof))
         end if
         cur_dof = last_dof+1
@@ -3137,7 +3154,7 @@ function dftb_s(u_a, u_b, R)
       exp(-tau_b*R)* ( (tau_a**4 * tau_b) / (2.0_dp * (tau_b**2 - tau_a**2)**2) -  &
 		       (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R * (tau_b**2-tau_a**2)**3) )
   else
-    dftb_s = & 
+    dftb_s = &
       exp(-tau_a*R) * (48.0_dp + 33.0_dp * tau_a * R + 9.0_dp * (tau_a*R)**2 + (tau_a*R)**3) / &
 		      (48.0_dp * R)
   endif
@@ -3189,7 +3206,7 @@ function nrl_tb_s_deriv(u_a, u_b, R)
 
     a = PI/2.0D0 * u_a**2
     c = PI/2.0D0 * u_b**2
-    
+
     nrl_tb_s_deriv = -1.0D0/R**2 - ( (a*c)**1.5D0 / PI**3 ) * &
         2.0D0*PI**2.5D0 / (a*c*sqrt(a+c)) * dF0(a,c,R)
 end function nrl_tb_s_deriv
@@ -3780,7 +3797,7 @@ subroutine get_SO_block(this, tbm, Z, block_SO)
     do j_orb_dir=1, n_orbs_of_orb_set_of_Z(tbm, Z, i_orb_set)
       i_offset = offset_base + i_orb_dir - 1
       j_offset = offset_base + j_orb_dir - 1
-      V = spin_orbit_function(i_orb_type, i_orb_dir, j_orb_dir) 
+      V = spin_orbit_function(i_orb_type, i_orb_dir, j_orb_dir)
       block_SO(2*i_offset+1:2*i_offset+2,2*j_offset+1:2*j_offset+2) = this%SO_param(i_orb_set, i_type) * V(1:2,1:2)
     end do
     end do

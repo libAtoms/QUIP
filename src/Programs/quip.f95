@@ -57,8 +57,9 @@ implicit none
 
   character(len=STRING_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
-	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
-             & do_fine_phonons, do_EvsV, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
+           & do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_phonopy_force_const_mat, &
+           & do_parallel_phonons, do_dipole_moment, do_absorption, &
+           & do_fine_phonons, do_EvsV, do_cij_relax_initial, relax_hydrostatic_strain ! , relax_constant_volume
   integer :: EvsV_NdVsteps
   real(dp) :: EvsV_dVfactor
   real(dp) :: relax_lattice_fix(9)
@@ -74,8 +75,8 @@ implicit none
   real(dp) :: precond_e_scale, precond_len_scale, precond_cutoff, precond_res2, precond_infoverride, precond_bulk_modulus,precond_number_density
   logical::precond_auto_mu
   real(dp) :: tau(3)
-  character(len=STRING_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=STRING_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args, bulk_scale_file, dimer_at_file
+  character(len=STRING_LENGTH) :: relax_print_filename, linmin_method, minim_method
+  character(len=STRING_LENGTH) init_args, calc_args, atoms_filename, param_filename, extra_calc_args, pre_relax_calc_args, bulk_scale_filename, dimer_atoms_filename
   integer relax_iter, relax_print_interval
   real(dp) :: relax_tol, relax_eps, relax_rattle
   type(CInOutput) :: relax_io
@@ -140,8 +141,8 @@ implicit none
 
   call initialise(cli_params)
   call param_register(cli_params, 'timing', 'F', do_timing, help_string="Enable system timer")
-  call param_register(cli_params, 'at_file', 'stdin', at_file, help_string="input file for atoms, xyz or nc format")
-  call param_register(cli_params, 'param_file', 'quip_params.xml', param_file, help_string="input file for potential xml parameters")
+  call param_register(cli_params, 'atoms_filename', 'stdin', atoms_filename, help_string="input file for atoms, xyz or nc format")
+  call param_register(cli_params, 'param_filename', 'quip_params.xml', param_filename, help_string="input file for potential xml parameters")
   call param_register(cli_params, 'E', 'F', do_E, help_string="Calculate energy")
   call param_register(cli_params, 'energy', 'F', do_E, help_string="Calculate energy")
   call param_register(cli_params, 'F', 'F', do_F, help_string="Calculate forces")
@@ -162,6 +163,7 @@ implicit none
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
   call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation, help_string="project out rotation components from phonons?")
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat, help_string="print out force constant matrix from phonon calculation?")
+  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons, help_string="compute phonons in parallel?")
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment, help_string="compute dipole moment?")
   call param_register(cli_params, 'absorption', 'F', do_absorption, help_string="compute absorption spectrum (electronic, TB only)?")
@@ -169,20 +171,20 @@ implicit none
   call param_register(cli_params, 'absorption_freq_range', '0.1 1.0 0.1', absorption_freq_range, help_string="frequency range in which to compute absorption spectrum")
   call param_register(cli_params, 'absorption_gamma', '0.01', absorption_gamma, help_string="energy broadening for absorption calculation")
   call param_register(cli_params, 'phonons_dx', '0.01', phonons_dx, help_string="Cartesian displacement size to use for phonon calculations")
-  call param_register(cli_params, 'phonon_supercell', '1 1 1', phonon_supercell,help_string="supercell in which to do phonon computation", has_value_target=do_fine_phonons)
-  call param_register(cli_params, 'phonon_supercell_fine', '1 1 1', phonon_supercell_fine,help_string="supercell in which to do phonon computation", has_value_target=has_phonon_supercell_fine)
+  call param_register(cli_params, 'phonon_supercell', '1 1 1', phonon_supercell,help_string="Supercell in which to do the force calculations in a phonon computation", has_value_target=do_fine_phonons)
+  call param_register(cli_params, 'phonon_supercell_fine', '1 1 1', phonon_supercell_fine,help_string="Supercell in which to compute phonons. It should be greater or equal to phonon_supercell.", has_value_target=has_phonon_supercell_fine)
   call param_register(cli_params, 'test', 'F', do_test, help_string="test consistency of forces/virial by comparing to finite differences")
   call param_register(cli_params, 'n_test', 'F', do_n_test, help_string="test consistency of forces/virial by comparing to finite differences using Noam's method")
   call param_register(cli_params, 'test_dir_field', '', test_dir_field, help_string="field containing vectors along which to displace atoms for gradient test")
   call param_register(cli_params, 'relax', 'F', do_relax, help_string="relax configuration with respect to positions (if F/forces is set) and unit cell vectors (if V/virial is set)")
-  call param_register(cli_params, 'relax_print_file', '', relax_print_file, help_string="file to print positions along relaxation trajectory, xyz or nc format")
+  call param_register(cli_params, 'relax_print_filename', '', relax_print_filename, help_string="file to print positions along relaxation trajectory, xyz or nc format")
   call param_register(cli_params, 'relax_iter', '1000', relax_iter, help_string="max number of iterations for relaxation")
   call param_register(cli_params, 'relax_tol', '0.001', relax_tol, help_string="tolerance for convergence of relaxation")
   call param_register(cli_params, 'relax_eps', '0.0001', relax_eps, help_string="estimate of energy reduction for first step of relaxation")
   call param_register(cli_params, 'relax_rattle', '0.0', relax_rattle, help_string="rattle the atomic positions with a uniform random variate of this magnitude before relaxing")
   call param_register(cli_params, 'relax_print_interval', '1', relax_print_interval, help_string="Frequency for printing trajectory")
   call param_register(cli_params, 'init_args', '', init_args, help_string="string arguments for initializing potential")
-  call param_register(cli_params, 'bulk_scale', '', bulk_scale_file, help_string="optional bulk structure for calculating space and energy rescaling", has_value_target=has_bulk_scale)
+  call param_register(cli_params, 'bulk_scale_filename', '', bulk_scale_filename, help_string="optional bulk structure for calculating space and energy rescaling", has_value_target=has_bulk_scale)
   call param_register(cli_params, 'calc_args', '', calc_args, help_string="string arguments for potential calculation")
   call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args, help_string="string arguments for call to potential_calc that happens before relax.  Useful if first call should generate something like PSF file, but later calls should use the previously generated file")
   ! call param_register(cli_params, 'relax_constant_volume', 'F', relax_constant_volume, help_string="if virial and relax are set, constrain to constant volume")
@@ -204,7 +206,7 @@ implicit none
   call param_register(cli_params, 'precond_res2', '1e-5', precond_res2, help_string="residual^2 error for preconditioner inversion")
   call param_register(cli_params, 'precond_infoverride', '0.5', precond_infoverride, help_string="override the max inf norm of the step in precon_minim, can be decreased to avoid stepping into non-physical configurations if necessary")
   call param_register(cli_params, 'precond_conv_method', '2norm', precond_conv_method, help_string="Switch to 'infnorm' if desired")
-  call param_register(cli_params, 'dimer_at', '', dimer_at_file, help_string="second endpoint for dimer initialization", has_value_target=has_dimer_at)
+  call param_register(cli_params, 'dimer_at', '', dimer_atoms_filename, help_string="second endpoint for dimer initialization", has_value_target=has_dimer_at)
   call param_register(cli_params, 'minim_method', 'cg', minim_method, help_string="method for relaxation: sd, sd2, cg, pcg, lbfgs, cg_n, fire, precond")
   call param_register(cli_params, 'linmin_method', 'default', linmin_method, help_string="linmin method for relaxation (NR_LINMIN, FAST_LINMIN, LINMIN_DERIV for minim_method=cg, standard or basic for minim_method=precon)")
   call param_register(cli_params, 'iso_pressure', '0.0', iso_pressure, help_string="hydrostatic pressure for relaxation", has_value_target=has_iso_pressure)
@@ -232,7 +234,7 @@ implicit none
 
 
   if (.not. param_read_args(cli_params, task="quip CLI arguments", did_help=did_help)) then
-    call print("Usage: quip [at_file=file(stdin)] [param_file=file(quip_params.xml)]",PRINT_ALWAYS)
+    call print("Usage: quip [atoms_filename=file(stdin)] [param_filename=file(quip_params.xml)]",PRINT_ALWAYS)
     call print("  [E|energy] [F|forces] [V|virial] ...", PRINT_ALWAYS)
     call print("", PRINT_ALWAYS)
     call print("There are lots of other options, type `quip --help' for a full list.", PRINT_ALWAYS)
@@ -275,25 +277,25 @@ implicit none
 #endif
   else
      ! we are calculating potentials, so lets try to open the XML file
-     inquire(file=trim(param_file), exist=param_file_exists)
-     if( .not. param_file_exists ) call system_abort(trim(param_file)//" does not exist")
+     inquire(file=trim(param_filename), exist=param_file_exists)
+     if( .not. param_file_exists ) call system_abort(trim(param_filename)//" does not exist")
 
      call print ("Using calc args: " // trim(calc_args))
      call print ("Using pre-relax calc args: " // trim(pre_relax_calc_args))
-     call print ("Using param_file: " // trim(param_file))
+     call print ("Using param_filename: " // trim(param_filename))
      call print ("Using init args: " // trim(init_args))
      if(has_bulk_scale) then
-        call initialise(infile, trim(bulk_scale_file))
+        call initialise(infile, trim(bulk_scale_filename))
         call read(bulk_scale, infile, error=error)
         call finalise(infile)
-        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_filename, mpi_obj=mpi_glob, bulk_scale=bulk_scale)
         call finalise(bulk_scale)
      else
-        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
+        call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_filename, mpi_obj=mpi_glob)
      end if
   end if
  if(has_dimer_at) then
-        call initialise(infile, trim(dimer_at_file))
+        call initialise(infile, trim(dimer_atoms_filename))
         call read(dimer_at, infile, error=error)
         call finalise(infile)
   else
@@ -304,7 +306,7 @@ implicit none
     end if
   end if
   
-  call initialise(infile, trim(at_file), mpi=mpi_glob)
+  call initialise(infile, trim(atoms_filename), mpi=mpi_glob)
 
   if( count( (/has_iso_pressure, has_diag_pressure, has_pressure/) ) > 1 ) call system_abort('External pressure specified in an ambiguous way')
   external_pressure = 0.0_dp
@@ -424,8 +426,8 @@ implicit none
 	if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
 	if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
   
-        if (len_trim(relax_print_file) > 0) then
-           call initialise(relax_io, relax_print_file, OUTPUT, netcdf4=netcdf4)
+        if (len_trim(relax_print_filename) > 0) then
+           call initialise(relax_io, relax_print_filename, OUTPUT, netcdf4=netcdf4)
       if(trim(minim_method) == 'precond') then
 #ifdef HAVE_PRECON
               call system_timer('quip/precon_minim')
@@ -641,10 +643,12 @@ implicit none
         if (has_phonons_path_start .and. has_phonons_path_end) then
            call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
                 & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
-                & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, phonons_path_steps=phonons_path_steps)
+                & phonons_path_start=phonons_path_start, phonons_path_end=phonons_path_end, &
+                & phonons_path_steps=phonons_path_steps, do_phonopy_force_const_mat=do_phonopy_force_const_mat)
         else
            call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
-                & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine)
+                & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
+                & do_phonopy_force_const_mat=do_phonopy_force_const_mat)
         endif
      endif ! do_fine_phonons
 
