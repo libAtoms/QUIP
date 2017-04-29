@@ -48,6 +48,8 @@ def infer_format(file, format, lookup):
                 base, ext = os.path.splitext(base)
                 if ext == '':
                     format = base
+		elif base == 'vasprun':
+		    format = base + ext
                 else:
                     format = ext[1:]
         else:
