@@ -54,8 +54,10 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
-use units_module, only : QPI => PI, QBOHR => BOHR
+use units_module, only : QPI => PI, QBOHR => BOHR, HARTREE
+#ifdef HAVE_MBD
 use MBD_UTILS
+#endif
 
 use mpi_context_module
 use QUIP_Common_module
@@ -72,7 +74,7 @@ type IPModel_MBD
   real(dp) :: mbd_cfdm_dip_cutoff = 100.d0 ! Angstrom
   real(dp) :: mbd_supercell_cutoff= 25.d0  ! Angstrom
   real(dp) :: mbd_scs_dip_cutoff  = 120.0  ! Angstrom
-  logical, dimension(3) :: mbd_scs_vacuum_axis = {.false., .false., .false.}
+  logical :: mbd_scs_vacuum_axis(3)
 
 end type IPModel_MBD
 
@@ -113,14 +115,18 @@ subroutine IPModel_MBD_Initialise_str(this, args_str, param_str, error)
   call param_register(params, 'cfdm_dip_cutoff', '100.0', this%mbd_cfdm_dip_cutoff, help_string='MBD dipole field integration cutoff')
   call param_register(params, 'scs_dip_cutoff', '120.0', this%mbd_scs_dip_cutoff, help_string='Periodic SCS integration cutoff - important for low-dim systems')
   call param_register(params, 'supercell_cutoff', '25.0', this%mbd_supercell_cutoff, help_string='Radius used to make periodic supercell - important convergence parameter')
-  call param_register(params, 'scs_vacuum_axis', '{.false., .false., .false.}', this%mbd_scs_vacuum_axis, help_string='Which directions should be treated as vacuum instead of periodic')
+  call param_register(params, 'vacuum_x', 'false', this%mbd_scs_vacuum_axis(1), help_string='Which directions should be treated as vacuum instead of periodic: X')
+  call param_register(params, 'vacuum_y', 'false', this%mbd_scs_vacuum_axis(2), help_string='Which directions should be treated as vacuum instead of periodic: Y')
+  call param_register(params, 'vacuum_z', 'false', this%mbd_scs_vacuum_axis(3), help_string='Which directions should be treated as vacuum instead of periodic: Z')
   if(.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Initialise args_str')) then
      RAISE_ERROR("IPModel_MBD_Init failed to parse args_str='"//trim(args_str)//"'", error)
   end if
   call finalise(params)
 
+#ifdef HAVE_MBD
   ! MBD pi = QUIP Units pi
   pi = QPI
+  bohr = QBOHR ! Used in the code - nasty arithmetic errors if uninitialized
   three_by_pi = 3.0 / pi
   flag_xc = this%xc
   mbd_cfdm_dip_cutoff = this%mbd_cfdm_dip_cutoff
@@ -132,6 +138,7 @@ subroutine IPModel_MBD_Initialise_str(this, args_str, param_str, error)
   ! MPI stuff:
   ! Um, this was supposed to be set in MPI_INIT but I can't find a way to access it
   mpiierror = 0
+#endif
 
 end subroutine IPModel_MBD_Initialise_str
 
@@ -154,16 +161,22 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    integer, intent(out), optional :: error
 
    real(dp), pointer, dimension(:) :: my_hirshfeld_volume
-   real(dp)                        :: energy
+   real(dp)                        :: energy = 0.0_dp
+   integer                         :: at_idx
 
    INIT_ERROR(error)
 
+#ifdef HAVE_MBD
+   n_atoms = at%N
    if (present(mpi)) then
        myid = mpi%my_proc
        n_tasks = mpi%n_procs
        call allocate_task()
+   else
+       myid = 1
+       n_tasks = 1
+       call allocate_task()
    endif
-   n_atoms = at%N
 
    ! Note many variables included from the MBD_UTILS module
    if(.not.allocated(coords))                 allocate(coords(3,n_atoms))
@@ -174,14 +187,17 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    !      though UTILS only distinguishes 0 and >0
    n_periodic = 3 ! I think this means use PBC
    coords = at%pos / QBOHR
-   atom_name = at%species ! This might not actually work - character arrays; consider iteration
-   ! Allow the property name to be specified
+   do at_idx = 1, at%N
+       atom_name(at_idx) = at%species(1, at_idx) // at%species(2, at_idx)
+   enddo
+   ! TODO Allow the property name to be specified
    call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
    hirshfeld_volume = my_hirshfeld_volume
 
    call MBD_at_rsSCS(energy)
+#endif
 
-   if (present(e)) e = energy
+   if (present(e)) e = energy * HARTREE
    if (present(local_e)) then
        !TODO lammps usually asks for this though - is there another way?
        RAISE_ERROR("IPModel_MBD does not have local energies", error)
@@ -190,6 +206,9 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    if (present(f) .or. present(virial) .or. present(local_virial)) then
        RAISE_ERROR("IPModel_MBD does not yet provide analytical gradients", error)
    endif
+
+   ! TODO pass MPI error
+   ! TODO deallocate
 end subroutine IPModel_MBD_Calc
 
 
@@ -199,7 +218,7 @@ subroutine IPModel_MBD_Print(this, file)
 
   call Print("IPModel_MBD : Many-body dispersion", file=file)
   call Print("IPModel_MBD : mbd_supercell_cutoff = " // this%mbd_supercell_cutoff, file=file)
-  ! And a few more
+  ! TODO And a few more
 
 end subroutine IPModel_MBD_Print
 
