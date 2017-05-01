@@ -48,8 +48,8 @@ def infer_format(file, format, lookup):
                 base, ext = os.path.splitext(base)
                 if ext == '':
                     format = base
-		elif base == 'vasprun':
-		    format = base + ext
+                elif base == 'vasprun':
+                    format = base + ext
                 else:
                     format = ext[1:]
         else:
@@ -78,7 +78,7 @@ def parse_params(s):
    return dict(p)
 
 args_str_to_dict = parse_params # synonym for parse_params() function
-   
+
 
 def parse_comma_colon_list(L):
     """Parse a comma or colon seperated string into a list, converting each entry to lower-case."""
@@ -191,7 +191,7 @@ def time_ordered_glob(pattern):
    """
    Return a list of files matching `pattern` sorted by modification time
    """
-   
+
    return sorted(glob.glob(pattern), key=lambda f: os.stat(f).st_mtime)
 
 def most_recent_file(pattern):
@@ -257,13 +257,13 @@ def write_timings(out, timings, order='calls', wall_only=True, cpu_only=False, r
         return value['wall']['sum']
 
     def sort_by_total_cpu_time(item):
-        key, value = item            
+        key, value = item
         return value['wall']['sum']
 
     def sort_by_mean_wall_time(item):
         key, value = item
         return value['wall']['mean']
-    
+
     def sort_by_mean_cpu_time(item):
         key, value = item
         return value['cpu']['mean']
