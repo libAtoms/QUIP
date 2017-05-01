@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.io &mdash; quippy b3b171c+ documentation</title>
+  <title>quippy.io &mdash; quippy 3839ced+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy b3b171c+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 3839ced+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                b3b171c+
+                3839ced+
               </div>
             
           
@@ -917,6 +917,7 @@
 
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">)</span>
 <span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;cfg&#39;</span><span class="p">)</span>
+<span class="nd">@atoms_reader</span><span class="p">(</span><span class="s1">&#39;vasprun.xml&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ASEReader</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Helper routine to load from ASE trajectories</span>
@@ -928,7 +929,8 @@
     <span class="n">format_converter</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;POSCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp&#39;</span><span class="p">,</span>
         <span class="s1">&#39;CONTCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;OUTCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp-out&#39;</span>
+        <span class="s1">&#39;OUTCAR&#39;</span><span class="p">:</span> <span class="s1">&#39;vasp-out&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;vasprun.xml&#39;</span><span class="p">:</span><span class="s1">&#39;vasp-xml&#39;</span>
         <span class="p">}</span>
     <span class="nb">format</span> <span class="o">=</span> <span class="n">format_converter</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">format</span><span class="p">,</span> <span class="nb">format</span><span class="p">)</span>
     <span class="n">images</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span>
@@ -1169,7 +1171,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'b3b171c+',
+            VERSION:'3839ced+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

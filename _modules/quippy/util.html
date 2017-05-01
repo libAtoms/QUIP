@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.util &mdash; quippy b3b171c+ documentation</title>
+  <title>quippy.util &mdash; quippy 3839ced+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy b3b171c+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 3839ced+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                b3b171c+
+                3839ced+
               </div>
             
           
@@ -228,6 +228,8 @@
                 <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
                     <span class="nb">format</span> <span class="o">=</span> <span class="n">base</span>
+                <span class="k">elif</span> <span class="n">base</span> <span class="o">==</span> <span class="s1">&#39;vasprun&#39;</span><span class="p">:</span>
+                    <span class="nb">format</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">ext</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">format</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -256,7 +258,7 @@
    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
 
 <span class="n">args_str_to_dict</span> <span class="o">=</span> <span class="n">parse_params</span> <span class="c1"># synonym for parse_params() function</span>
-   
+
 
 <div class="viewcode-block" id="parse_comma_colon_list"><a class="viewcode-back" href="../../util.html#quippy.util.parse_comma_colon_list">[docs]</a><span class="k">def</span> <span class="nf">parse_comma_colon_list</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse a comma or colon seperated string into a list, converting each entry to lower-case.&quot;&quot;&quot;</span>
@@ -369,7 +371,7 @@
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Return a list of files matching `pattern` sorted by modification time</span>
 <span class="sd">   &quot;&quot;&quot;</span>
-   
+
    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="most_recent_file"><a class="viewcode-back" href="../../util.html#quippy.util.most_recent_file">[docs]</a><span class="k">def</span> <span class="nf">most_recent_file</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
@@ -435,13 +437,13 @@
         <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;wall&#39;</span><span class="p">][</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">sort_by_total_cpu_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>            
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
         <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;wall&#39;</span><span class="p">][</span><span class="s1">&#39;sum&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">sort_by_mean_wall_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
         <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
         <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;wall&#39;</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span>
-    
+
     <span class="k">def</span> <span class="nf">sort_by_mean_cpu_time</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
         <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
         <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span>
@@ -503,7 +505,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'b3b171c+',
+            VERSION:'3839ced+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
