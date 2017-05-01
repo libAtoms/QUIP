@@ -56,6 +56,9 @@ git config --global user.email "build@travis.org"
 # These commands are moved from docpush/Makefile
 cd ${PAGES_DIR}
 git add -A
-git commit -m docpush
+# If there is nothing to commit, git exits with an error code of 1
+# To stop this triggering the set -e, negate any errors (what else 
+# could go wrong?)
+git commit -m docpush || true
 git push origin gh-pages --quiet
 
