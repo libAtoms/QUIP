@@ -160,11 +160,40 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
+   type(Dictionary)                :: params
    real(dp), pointer, dimension(:) :: my_hirshfeld_volume
+   character(STRING_LENGTH)        :: hirshfeld_vol_name
    real(dp)                        :: energy = 0.0_dp
    integer                         :: at_idx
 
    INIT_ERROR(error)
+
+   if (present(e)) e = 0.0_dp
+   if (present(local_e)) then
+       !TODO lammps usually asks for this though - is there another way?
+       RAISE_ERROR("IPModel_MBD does not have local energies", error)
+   endif
+   ! Need finite differences for forces and virials
+   if (present(f) .or. present(virial) .or. present(local_virial)) then
+       RAISE_ERROR("IPModel_MBD does not yet provide analytical gradients", error)
+   endif
+
+   if (present(args_str)) then
+       if (len_trim(args_str) > 0) then
+           call initialise(params)
+           call param_register(params, 'hirshfeld_vol_name', 'hirshfeld_rel_volume', hirshfeld_vol_name, &
+                               help_string='Name of the Atoms property containing relative Hirshfeld volumes $v/v_{free}$')
+
+           if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Calc args_str')) then
+               RAISE_ERROR("IPModel_MBD_Calc failed to parse args_str '"//trim(args_str)//"'", error)
+           endif
+           call finalise(params)
+           call assign_property_pointer(at, trim(hirshfeld_vol_name), my_hirshfeld_volume, error)
+           PASS_ERROR_WITH_INFO("IPModel_MBD_Calc could not find '"//trim(hirshfeld_vol_name)//"' property in the Atoms object", error)
+        endif
+   else
+       call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
+   endif
 
 #ifdef HAVE_MBD
    n_atoms = at%N
@@ -178,37 +207,36 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
        call allocate_task()
    endif
 
-   ! Note many variables included from the MBD_UTILS module
+   ! Note: many of these variables come from the MBD_UTILS module
    if(.not.allocated(coords))                 allocate(coords(3,n_atoms))
    if(.not.allocated(atom_name))              allocate(atom_name(n_atoms))
    if(.not.allocated(hirshfeld_volume))       allocate(hirshfeld_volume(n_atoms))
-   lattice_vector = at%lattice / QBOHR  ! Check whether this is transposed
+   lattice_vector = at%lattice / QBOHR
    ! TODO maybe this should count the number of periodic dimensions - even
-   !      though UTILS only distinguishes 0 and >0
+   !      though MBD_UTILS only distinguishes 0 and >0
+   ! Related: Maybe want to support non-periodic calculations if all the lattice
+   ! directions are specified as vacuum
    n_periodic = 3 ! I think this means use PBC
    coords = at%pos / QBOHR
    do at_idx = 1, at%N
        atom_name(at_idx) = at%species(1, at_idx) // at%species(2, at_idx)
    enddo
-   ! TODO Allow the property name to be specified
-   call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
    hirshfeld_volume = my_hirshfeld_volume
 
    call MBD_at_rsSCS(energy)
 #endif
+#ifdef _MPI
+   PASS_MPI_ERROR(mpiierror, error)
+#endif
 
+#ifdef HAVE_MBD
    if (present(e)) e = energy * HARTREE
-   if (present(local_e)) then
-       !TODO lammps usually asks for this though - is there another way?
-       RAISE_ERROR("IPModel_MBD does not have local energies", error)
-   endif
-   ! Need finite differences for forces and virials
-   if (present(f) .or. present(virial) .or. present(local_virial)) then
-       RAISE_ERROR("IPModel_MBD does not yet provide analytical gradients", error)
-   endif
 
-   ! TODO pass MPI error
-   ! TODO deallocate
+   if (allocated(coords))           deallocate(coords)
+   if (allocated(atom_name))        deallocate(atom_name)
+   if (allocated(hirshfeld_volume)) deallocate(hirshfeld_volume)
+#endif
+
 end subroutine IPModel_MBD_Calc
 
 
@@ -217,8 +245,20 @@ subroutine IPModel_MBD_Print(this, file)
   type(Inoutput), intent(inout),optional :: file
 
   call Print("IPModel_MBD : Many-body dispersion", file=file)
+  select case(this%xc)
+    case(1)
+    call Print("IPModel_MBD : xc type PBE", file=file)
+    case(2)
+    call Print("IPModel_MBD : xc type PBE0", file=file)
+    case(3)
+    call Print("IPModel_MBD : xc type HSE", file=file)
+    case default
+    call Print("IPModel_MBD : xc type unknown", file=file)
+  end select
   call Print("IPModel_MBD : mbd_supercell_cutoff = " // this%mbd_supercell_cutoff, file=file)
-  ! TODO And a few more
+  call Print("IPModel_MBD : mbd_scs_dip_cutoff = " // this%mbd_scs_dip_cutoff, file=file)
+  call Print("IPModel_MBD : mbd_cfdm_dip_cutoff = " // this%mbd_cfdm_dip_cutoff, file=file)
+  call Print("IPModel_MBD : mbd_scs_vacuum_axis = " // this%mbd_scs_vacuum_axis, file=file)
 
 end subroutine IPModel_MBD_Print
 
