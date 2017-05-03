@@ -71,6 +71,10 @@ endif
 
 MODULES += libAtoms
 
+ifeq (${HAVE_MBD},1)
+   THIRDPARTY_LIBS += MBD # depends on libAtoms, so can't go through ThirdParty
+endif
+
 # add GAP modules if we have them - they need to come before other modules, except for libAtoms
 ifeq (${HAVE_GAP},1)
 MODULES += GAP
@@ -154,7 +158,16 @@ ifeq (${HAVE_GAP_FILLER},1)
 GAP-filler: libAtoms GAP Potentials Utils
 endif
 
-Potentials: libAtoms  ${GAP}
+ifeq (${HAVE_MBD},1)
+libmbd.a: libAtoms
+	cp ${PWD}/src/ThirdParty/MBD/Makefile.QUIP ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/ThirdParty/MBD -I${PWD} -I${PWD}/arch $@
+MBD=libmbd.a
+else
+MBD=
+endif
+
+Potentials: libAtoms  ${GAP} ${MBD}
 Utils:  libAtoms ${GAP} Potentials
 FilePot_drivers:  libAtoms  Potentials Utils
 Programs: libAtoms ${GAP} Potentials Utils
