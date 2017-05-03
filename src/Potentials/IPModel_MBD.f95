@@ -40,6 +40,7 @@
 !% TODO the Makefile should automatically patch their UTILS.F90 and compile it
 !%      in
 !%
+!% For more information on the method and parameters see ThirdParty/MBD/README
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -224,10 +225,10 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    hirshfeld_volume = my_hirshfeld_volume
 
    call MBD_at_rsSCS(energy)
-#endif
 #ifdef _MPI
    PASS_MPI_ERROR(mpiierror, error)
-#endif
+#endif /*MPI*/
+#endif /*MBD*/
 
 #ifdef HAVE_MBD
    if (present(e)) e = energy * HARTREE
