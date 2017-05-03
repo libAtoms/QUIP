@@ -160,7 +160,7 @@ endif
 
 ifeq (${HAVE_MBD},1)
 libmbd.a: libAtoms
-	cp ${PWD}/src/ThirdParty/MBD/Makefile ${BUILDDIR}/Makefile
+	cp ${PWD}/src/ThirdParty/MBD/Makefile.QUIP ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/ThirdParty/MBD -I${PWD} -I${PWD}/arch $@
 MBD=libmbd.a
 else
