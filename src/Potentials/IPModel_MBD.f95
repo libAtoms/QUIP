@@ -75,8 +75,7 @@ type IPModel_MBD
   real(dp) :: mbd_cfdm_dip_cutoff = 100.d0 ! Angstrom
   real(dp) :: mbd_supercell_cutoff= 25.d0  ! Angstrom
   real(dp) :: mbd_scs_dip_cutoff  = 120.0  ! Angstrom
-  logical :: mbd_scs_vacuum_axis(3)
-
+  logical  :: mbd_scs_vacuum_axis(3)
 end type IPModel_MBD
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -159,6 +158,7 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
+   logical                         :: mpi_active
    integer, intent(out), optional :: error
 
    type(Dictionary)                :: params
@@ -197,12 +197,20 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
    endif
 
 #ifdef HAVE_MBD
-   n_atoms = at%N
+   mpi_active = .false.
    if (present(mpi)) then
+       if (mpi%active) then
+           mpi_active = .true.
+       endif
+   endif
+
+   n_atoms = at%N
+   if (mpi_active) then
+       mpicomm = mpi%communicator
        myid = mpi%my_proc
        n_tasks = mpi%n_procs
        call allocate_task()
-   else
+   else ! assume serial
        myid = 1
        n_tasks = 1
        call allocate_task()
