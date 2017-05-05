@@ -52,12 +52,15 @@ export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 
 # create modules list
 
-MODULES=
-# add any third party packages first
+MODULES = libAtoms
+
+# add any third party packages first, but after libAtoms in case they want to
+# use it
 ifeq (${HAVE_THIRDPARTY},1)
    THIRDPARTY = ThirdParty
    MODULES += ThirdParty
    THIRDPARTY_LIBS := libthirdparty.a
+
 ifeq (${HAVE_FX},1)
    THIRDPARTY_LIBS += libfx.a
 endif
@@ -67,13 +70,12 @@ endif
 ifeq (${HAVE_MTP},1)
    THIRDPARTY_LIBS += libmtp.a
 endif
-endif
-
-MODULES += libAtoms
-
 ifeq (${HAVE_MBD},1)
-   THIRDPARTY_LIBS += MBD # depends on libAtoms, so can't go through ThirdParty
+   THIRDPARTY_LIBS += libmbd.a
 endif
+
+endif
+
 
 # add GAP modules if we have them - they need to come before other modules, except for libAtoms
 ifeq (${HAVE_GAP},1)
@@ -90,7 +92,6 @@ endif
 
 # now add the rest of the modules
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
-
 
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
@@ -158,16 +159,8 @@ ifeq (${HAVE_GAP_FILLER},1)
 GAP-filler: libAtoms GAP Potentials Utils
 endif
 
-ifeq (${HAVE_MBD},1)
-libmbd.a: libAtoms
-	cp ${PWD}/src/ThirdParty/MBD/Makefile.QUIP ${BUILDDIR}/Makefile
-	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/ThirdParty/MBD -I${PWD} -I${PWD}/arch $@
-MBD=libmbd.a
-else
-MBD=
-endif
-
-Potentials: libAtoms  ${GAP} ${MBD}
+ThirdParty: libAtoms
+Potentials: libAtoms  ${GAP}
 Utils:  libAtoms ${GAP} Potentials
 FilePot_drivers:  libAtoms  Potentials Utils
 Programs: libAtoms ${GAP} Potentials Utils
