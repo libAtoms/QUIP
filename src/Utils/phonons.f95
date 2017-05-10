@@ -169,7 +169,8 @@ contains
       type(Atoms), intent(inout) :: at_in
       real(dp), intent(in) :: dx
       character(len=*), intent(in), optional :: calc_args
-      logical, intent(in) :: do_phonopy_force_const_mat
+      logical, intent(in), optional :: do_phonopy_force_const_mat
+      logical :: my_phonopy_force_const_mat
       logical, intent(in), optional :: do_parallel
       integer, dimension(3), intent(in), optional :: phonon_supercell, phonon_supercell_fine
       real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end
@@ -204,6 +205,8 @@ contains
       INIT_ERROR(error)
     
       call finalise(this, error)
+
+      my_phonopy_force_const_mat = optional_default(.false., do_phonopy_force_const_mat)
 
       do_phonon_supercell = optional_default((/1,1,1/),phonon_supercell)
       do_phonon_supercell_fine = optional_default(do_phonon_supercell,phonon_supercell_fine)
@@ -340,7 +343,7 @@ contains
       call print("Starting phonon calculations")
 
 ! Printing out the force constant and atomic positions in the phonopy format:
-      if_do_phonopy_force_const_mat: if (do_phonopy_force_const_mat) then
+      if_my_phonopy_force_const_mat: if (my_phonopy_force_const_mat) then
          call print_warning("phonopy_force_const_mat: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
          call print("Force constant matrix using supercell/supercell fine:")
 
@@ -436,7 +439,7 @@ contains
          enddo ! n1
 
          print *, "Finished atom postions for above given force constant in format for phonopy:"
-      endif if_do_phonopy_force_const_mat
+      endif if_my_phonopy_force_const_mat
 ! Finished phonopy force constant and atom positions
 
     
@@ -513,7 +516,7 @@ contains
       type(Atoms), intent(inout) :: at_in
       real(dp), intent(in) :: dx
       character(len=*), intent(in), optional :: calc_args
-      logical, intent(in) :: do_phonopy_force_const_mat
+      logical, intent(in), optional :: do_phonopy_force_const_mat
       logical, intent(in), optional :: do_parallel
       integer, dimension(3), intent(in), optional :: phonon_supercell, phonon_supercell_fine
       real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end

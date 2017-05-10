@@ -66,7 +66,8 @@ private
     logical :: use_fortran_random
     character(len=STRING_LENGTH) :: verbosity
     logical :: netcdf4
-logical :: NPT_NB
+    real(dp):: avgtime
+    logical :: NPT_NB
   end type md_params
 
 public :: get_params, print_params, do_prints, initialise_md_thermostat, update_md_thermostat
@@ -100,6 +101,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_value_target=has_N_steps, help_string="Number of MD steps to perform")
   call param_register(md_params_dict, 'max_time', '-1.0', params%max_time, help_string="Maximum simulation time (femtoseconds)")
   call param_register(md_params_dict, 'dt', '1.0', params%dt, help_string="Time step of the verlet iteration (femtoseconds)")
+  call param_register(md_params_dict, 'avgtime', '100.0', params%avgtime, help_string="time constant used to calculate running average of positions")
   call param_register(md_params_dict, 'all_purpose_thermostat', 'F', params%all_purpose_thermostat, help_string="if true, use new all purpose thermostat")
   call param_register(md_params_dict, 'all_purpose_thermostat_massive', 'F', params%all_purpose_thermostat_massive, help_string="if true, use massive N-H in all purpose thermostat")
   call param_register(md_params_dict, 'all_purpose_thermostat_NHL_tau', '0.0', params%all_purpose_thermostat_NHL_tau, help_string="tau of Langevin part of NHL in all purpose thermostat")
@@ -677,6 +679,8 @@ implicit none
     endif
   endif
 
+  ds%avg_time = params%avgtime
+  
   call finalise(at_in)
 
   call init_restraints_constraints(ds, string(params_es))
@@ -699,6 +703,7 @@ implicit none
 
   call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_skin)
 
+  
   ! start with p(t), v(t)
   ! calculate f(t)
   call calc_connect(ds%atoms)
