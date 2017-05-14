@@ -623,7 +623,7 @@ self_interaction=False.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -650,7 +650,7 @@ then only neighbours closer than this cutoff are included.</p>
 <li><strong>i</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>max_dist</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>max_factor</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -712,14 +712,14 @@ if <span class="math">\(i &gt; j\)</span>, it is an index into <code class="docu
 <li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
 <li><strong>i</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>distance</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>diff</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cosines</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>index</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>distance</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>diff</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>cosines</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>index</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
 <li><strong>max_dist</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>jn</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em></em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>jn</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -741,7 +741,7 @@ if <span class="math">\(i &gt; j\)</span>, it is an index into <code class="docu
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>i</strong> (<em>input int</em>) &#8211; </li>
 <li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em></em>) &#8211; </li>
+<li><strong>shift</strong> (<em>rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
 <li><strong>index</strong> (<a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a>) &#8211; </li>
 <li><strong>ret_j</strong> (<a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a>) &#8211; </li>
 </ul>
