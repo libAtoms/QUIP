@@ -191,6 +191,8 @@ mod_files = [ modfile for (modname, modfile) in spec['wrap_modules'] ]
 python_wrappers = ['periodictable', 'table', 'potential',
                    'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
                    'extendable_str', 'structures', 'elasticity']
+if 'HAVE_GAP' in QUIP_MAKEFILE:
+    python_wrappers.append('descriptors')
 modules_name_map = {}
 for mod in python_wrappers:
     if mod in mod_names:
@@ -234,6 +236,11 @@ __all__.extend(quippy.cinoutput.__all__)
 import quippy.dynamicalsystem
 from quippy.dynamicalsystem import *
 __all__.extend(quippy.dynamicalsystem.__all__)
+
+if 'HAVE_GAP' in QUIP_MAKEFILE:
+    import quippy.descriptors
+    from quippy.descriptors import *
+    __all__.extend(quippy.descriptors.__all__)
 
 import quippy.potential
 from quippy.potential import *
