@@ -142,6 +142,7 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
    real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
+   type(Dictionary) :: params
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
