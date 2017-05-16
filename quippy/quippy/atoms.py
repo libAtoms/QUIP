@@ -16,18 +16,19 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+from __future__ import print_function
+
 import os
 import weakref
 import copy
-import sys
 import logging
-from math import pi, sqrt
 
 import numpy as np
 
 from quippy import _atoms
 from quippy._atoms import *
 
+from quippy.compat import string_types
 from quippy.dictionary import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
                                T_INTEGER_A2, T_REAL_A2)
 from quippy.table import TABLE_STRING_LENGTH
@@ -256,7 +257,7 @@ class PropertiesWrapper(DictMixin):
         if value.shape[0] != at.n:
             atomslog.debug(('Assignment to arrays["%s"]: changing size '+
                            ' from %d to %d') % (key, at.n, value.shape[0]))
-            for p in at.properties.keys():
+            for p in list(at.properties):
                 at.remove_property(p)
             at.n = value.shape[0]
             at.nbuffer = at.n
@@ -278,7 +279,7 @@ class PropertiesWrapper(DictMixin):
 
     def keys(self):
         at = self.atref()
-        return [at.rev_name_map.get(key, key) for key in at.properties.keys()]
+        return [at.rev_name_map.get(key, key) for key in list(at.properties)]
 
 
 class Atoms(_atoms.Atoms, ase.Atoms):
@@ -311,7 +312,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 'numbers'         : 'Z',
                 'charges'         : 'charge'}
 
-    rev_name_map = dict(zip(name_map.values(), name_map.keys()))
+    rev_name_map = {value: key for key, value in name_map.items()}
 
     def __init__(self, symbols=None, positions=None, numbers=None, tags=None,
                  momenta=None, masses=None, magmoms=None, charges=None,
@@ -575,7 +576,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         expected to be an iterator returning :class:`Atoms` objects.
         """
 
-        if isinstance(source, basestring) and '@' in os.path.basename(source):
+        if isinstance(source, string_types) and '@' in os.path.basename(source):
             source, frame = source.split('@')
             if source.endswith('.db'):
                 source = source+'@'+frame
@@ -597,12 +598,12 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             source = AtomsReaders[format](source, format=format, **kwargs)
             opened = True
 
-        if isinstance(source, basestring):
+        if isinstance(source, string_types):
             raise IOError("Don't know how to read from file '%s'" % source)
         if not hasattr(source, '__iter__'):
             raise IOError('Cannot read from %r - not an iterator' % source)
 
-        at = iter(source).next()
+        at = next(iter(source))
         if not isinstance(at, cls):
             raise ValueError('Object %r read from  %r is not Atoms instance'
                              % (at, source))
@@ -694,7 +695,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                                properties=self.properties, params=self.params)
 
         # copy any normal (not Fortran) attributes
-        for k, v in self.__dict__.iteritems():
+        for k, v in self.__dict__.items():
             if not k.startswith('_') and k not in other.__dict__:
                 other.__dict__[k] = v
 
@@ -738,7 +739,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',
                                    'momenta', 'tags', 'magmoms' ]
 
-            for ase_name, value in other.arrays.iteritems():
+            for ase_name, value in other.arrays.items():
                 quippy_name = self.name_map.get(ase_name, ase_name)
                 if ase_name not in standard_ase_arrays:
                     self.add_property(quippy_name, np.transpose(value))
@@ -749,7 +750,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
             raise TypeError('can only copy from instances of quippy.Atoms or ase.Atoms')
 
         # copy any normal (not Fortran) attributes
-        for k, v in other.__dict__.iteritems():
+        for k, v in other.__dict__.items():
             if not k.startswith('_') and k not in self.__dict__:
                 self.__dict__[k] = v
 
@@ -839,7 +840,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         atom = {}
         atom['_index'] = i
         atom['atoms'] = self
-        for k in self.properties.keys():
+        for k in self.properties:
             v = self.properties[k][...,i]
             if isinstance(v,np.ndarray):
                 if v.dtype.kind == 'S':
@@ -856,7 +857,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         title = title + '\n' + '-'*len(title)+'\n\n'
         fields = ['%-15s =  %s' % (k,at[k]) for k in sorted(at.keys())
                                             if k not in ['_index', 'atoms']]
-        print title+'\n'.join(fields)
+        print(title+'\n'.join(fields))
 
     def density(self):
         """Density in units of :math:`g/m^3`. If `mass` property exists,
@@ -982,7 +983,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         n2 = len(other)
 
         # first make a copy of self.arrays so that we can resize Atoms
-        arrays = dict([ (key, value.copy()) for (key, value) in self.arrays.items() ])
+        arrays = dict([(key, value.copy()) for (key, value) in self.arrays.items()])
 
         atomslog.debug('old arrays %r' % arrays)
 
@@ -1025,7 +1026,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         n = len(self)
 
         # first make a copy of self.arrays so that we can resize Atoms
-        arrays = dict([ (key, value.copy()) for (key, value) in self.arrays.items() ])
+        arrays = dict([(key, value.copy()) for (key, value) in self.arrays.items()])
 
         for name, a in arrays.items():
             self.arrays[name] = np.tile(a, (M,) + (1,) * (len(a.shape) - 1))
