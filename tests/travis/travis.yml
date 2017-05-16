@@ -143,8 +143,10 @@ script:
       make test;
     fi
 after_success:
+  # There is no notification if the docs fail to build,
+  # so cause a failure by timeout using a long sleep :)
   - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then
-      tests/travis/build_docs.sh;
+      tests/travis/build_docs.sh || sleep 11m ;
     fi
 notifications:
   email:

@@ -737,6 +737,7 @@ def time_ordered_series(source, dt=None):
 
 @atoms_reader('traj')
 @atoms_reader('cfg')
+@atoms_reader('vasprun.xml')
 def ASEReader(source, format=None):
     """
     Helper routine to load from ASE trajectories
@@ -748,7 +749,8 @@ def ASEReader(source, format=None):
     format_converter = {
         'POSCAR': 'vasp',
         'CONTCAR': 'vasp',
-        'OUTCAR': 'vasp-out'
+        'OUTCAR': 'vasp-out',
+        'vasprun.xml':'vasp-xml'
         }
     format = format_converter.get(format, format)
     images = read(source, index=slice(None,None,None), format=format)
@@ -764,7 +766,7 @@ def ASEReader(source, format=None):
 
         e = None
         try:
-            e = at.get_potential_energy()
+            e = at.get_potential_energy(force_consistent=True)
         except RuntimeError:
             pass
 
@@ -833,7 +835,7 @@ def dict2atoms(row):
 
     e = None
     try:
-        e = at.get_potential_energy()
+        e = at.get_potential_energy(force_consistent=True)
     except RuntimeError:
         pass
 
