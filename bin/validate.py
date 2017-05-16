@@ -29,13 +29,17 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from xml.parsers.xmlproc import xmlproc
-from xml.parsers.xmlproc import xmlval
-from xml.parsers.xmlproc import xmldtd
+"""
+XML Validator.
+"""
+
+from __future__ import print_function, unicode_literals
+
+# Standard library
 import sys
+from xml.etree import ElementTree
 
-p = xmlval.XMLValidator()
-p.parse_resource(sys.argv[1])
+# Errors if unable to parse
+ElementTree.fromstring(open(sys.argv[1]).read())
 
-
-print 'No errors found.'
+print('No errors found.')

@@ -20,11 +20,13 @@
    and writing to an output file.
 """
 
-from quippy import *
+from __future__ import print_function, unicode_literals
+
+from quippy import AtomsList
 import sys
 
 if len(sys.argv[1:]) != 2:
-   print 'Usage: addprop.py <INPUT> <OUTPUT>'
+   print('Usage: addprop.py <INPUT> <OUTPUT>')
    sys.exit(1)
 
 frames = AtomsList(sys.argv[1])

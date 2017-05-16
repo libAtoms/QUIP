@@ -35,7 +35,7 @@
 !%
 !% ``Describing bond-breaking processes by reactive potentials: 
 !%   Importance of an environment-dependent interaction range.''
-!% Lars Pastewka, Pablo Pou, Rubén Pérez, Peter Gumbsch, Michael Moseler.
+!% Lars Pastewka, Pablo Pou, RubÃ©n PÃ©rez, Peter Gumbsch, Michael Moseler.
 !% Phys. Rev. B (2008) vol. 78 (16) pp. 4
 !% http://dx.doi.org/10.1103/PhysRevB.78.161402
 !%

@@ -18,14 +18,14 @@
 
 
 """
-This module contains utility functions for use with the ASAP code, which is developed
-by Paul Tangney and Sandro Scandolo.
+This module contains utility functions for use with the ASAP code, which is
+developed by Paul Tangney and Sandro Scandolo.
 """
 
-from math import ceil
+from __future__ import print_function, absolute_import, division
+
 import time, os, itertools, sys
-from StringIO import StringIO
-from farray import *
+from .farray import farray, fzeros, frange
 
 from quippy.atoms import Atoms
 from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
@@ -34,10 +34,13 @@ from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA
 
 __all__ = ['PosCelWriter', 'PosCelReader']
 
+
 class PosCelWriter(object):
 
-    def __init__(self, basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in', step_name='',
-                 species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False, rydberg=True):
+    def __init__(self, basename=None, pos='pos.in', cel='cel.in',
+                 force='force.in', energy='energy.in', stress='stress.in',
+                 step_name='', species_map={'O':1, 'Si':2}, cel_angstrom=False,
+                 pos_angstrom=False, rydberg=True):
         if basename == 'stdout':
             pos = cel = energy = stress = force = sys.stdout
         elif basename is not None:
@@ -145,10 +148,11 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
     if doforce:  force  = iter(force)
     if dostress: stress = iter(stress)
 
-    pos.next()    # throw away blank line at start
-    if doforce:  force.next()
+    next(pos)    # throw away blank line at start
+    if doforce:
+        next(force)
 
-    rev_species_map = dict(zip(species_map.values(), species_map.keys()))
+    rev_species_map = dict(list(zip(list(species_map.values()), list(species_map.keys()))))
 
     while True:
 
@@ -300,7 +304,7 @@ def triangle(n):
 
 def inv_trig(t):
     """Given the nth triangular number t_n, return n by inverting t_n = 1/2 n (n+1)"""
-    return int(0.5*(sqrt(1+8*t)-1))
+    return int(0.5*(((1+8*t)**0.5)-1))
 
 output_converters = {
    (real, 'triangle(nspecies)'): lambda v: '\n'.join(['%E '*n for n in triangle(inv_trig(len(v)))]) % tuple(v),
@@ -326,7 +330,9 @@ for line in param_format_gen:
 def read_traj_gen(format, gen_file, defaults={}):
 
     lines = list(gen_file)
-    lines = filter(lambda x: not (x.strip().startswith('--') or x.strip().startswith('**') or x.strip().startswith('%%')), lines)
+    lines = [x for x in lines if not (x.strip().startswith('--')
+                                      or x.strip().startswith('**')
+                                      or x.strip().startswith('%%'))]
 
     lengths = [ len(x) for x in format ]
 
@@ -510,7 +516,7 @@ def param_to_str(format, params):
 
 def param_to_xml(params, encoding='iso-8859-1'):
     from xml.sax.saxutils import XMLGenerator
-    from StringIO import StringIO
+    from io import StringIO
     output = StringIO()
     xml = XMLGenerator(output, encoding)
     xml.startDocument()
@@ -575,12 +581,12 @@ def update_vars(params, opt_vars, param_str, verbose=False):
     for var, value in zip(opt_vars, opt_values):
         if isinstance(var, str):
             if var not in out_params: raise ValueError('var %s missing' % var)
-            if verbose: print '%s   %f -> %f' % (var, params[var], value)
+            if verbose: print('%s   %f -> %f' % (var, params[var], value))
             out_params[var] = value
         else:
             key, idx = var
             if key not in out_params: raise ValueError('var %s missing' % key)
-            if verbose: print '%s[%d] %f -> %f' % (key, idx, params[key][idx], value)
+            if verbose: print('%s[%d] %f -> %f' % (key, idx, params[key][idx], value))
             out_params[key][idx] = value
 
     return out_params
@@ -605,7 +611,7 @@ def save_ref_config(config_list):
 
 def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447):
 
-    normweight = sqrt(wf*wf + ws*ws + we*we)
+    normweight = (wf*wf + ws*ws + we*we)**0.5
     wf /= normweight
     ws /= normweight
     we /= normweight
@@ -641,9 +647,9 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
             norm_e += diff_ai**2.0
             dist_e += (diff_md - diff_ai)**2.0
 
-    dist_f = sqrt(dist_f / norm_f)
-    dist_s = sqrt(dist_s / norm_s)
-    dist_e = sqrt(dist_e / norm_e)
+    dist_f = (dist_f / norm_f)**0.5
+    dist_s = (dist_s / norm_s)**0.5
+    dist_e = (dist_e / norm_e)**0.5
 
     return config_list, (wf*dist_f + ws*dist_s + we*dist_e, dist_f, dist_s, dist_e)
 
@@ -656,7 +662,7 @@ def read_gen_and_param_files(gen_file, param_file, verbose=True):
     gen_params, opt_vars = read_traj_gen(param_format_gen, gen_file)
     params.update(gen_params)
 
-    if verbose: print 'opt_vars = ', opt_vars
+    if verbose: print('opt_vars = ', opt_vars)
 
     params = update_vars(params, opt_vars, param_file, verbose=verbose)
 
@@ -677,11 +683,11 @@ def read_minimisation_progress(file):
     costs = []
     while True:
         try:
-            line = file.next() # skip blank line
+            line = next(file) # skip blank line
             if not line:
                 break
-            costs.append([float(x) for x in file.next().split()[1:]])
-            params.append([float(x) for x in (file.next() + file.next()).split()])
+            costs.append([float(x) for x in next(file).split()[1:]])
+            params.append([float(x) for x in (next(file) + next(file)).split()])
         except StopIteration:
             break
 

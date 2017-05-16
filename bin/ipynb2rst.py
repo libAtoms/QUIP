@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import print_function, unicode_literals
+
 import sys
-import os
+import os.path
 import glob
 
 if len(sys.argv[1:]) == 0:
@@ -9,9 +11,9 @@ if len(sys.argv[1:]) == 0:
 else:
     dirs = sys.argv[1:]
 
-for dir in dirs:
-    for notebook in glob.glob(os.path.join(dir, '*.ipynb')):
+for directory in dirs:
+    for notebook in glob.glob(os.path.join(directory, '*.ipynb')):
         cmd = 'ipython nbconvert --to rst {0}'.format(notebook)
-        print cmd
+        print(cmd)
         os.system(cmd)
 
