@@ -22,6 +22,18 @@ if [ -s "${QUIP_ROOT}/src/GAP/GAP_VERSION" ]; then
    echo -ne $(cat ${QUIP_ROOT}/src/GAP/GAP_VERSION)
    exit 0
 elif [ -d ${QUIP_ROOT}/.git ]; then
+   # first output latest file to stderr
+   for I in $GAP_FILES
+   do
+      if [ -d ${QUIP_ROOT}/$(dirname $I) ]
+      then
+         cd ${QUIP_ROOT}/$(dirname $I)
+         echo -n "$I "
+         git_date $(basename $I)
+         cd - >/dev/null
+      fi
+   done | sort -k2n | tail -1 | awk '{print $1}' 1>&2
+   # now output time of latest file to stdout
    for I in $GAP_FILES
    do
       if [ -d ${QUIP_ROOT}/$(dirname $I) ]
