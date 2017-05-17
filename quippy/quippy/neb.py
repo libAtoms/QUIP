@@ -29,7 +29,7 @@ def pbc_diff(a, b):
 class StoredValuesCalculator:
     """Return forces and energies stored in Atoms' arrays dictionary"""
 
-    def get_potential_energy(self, at):
+    def get_potential_energy(self, at, force_consistent=False):
         return float(at.params['energy'])
 
     def get_forces(self, at):
@@ -348,7 +348,7 @@ class NEB:
                 self.forces['spring'][i] = f_s
                 self.forces['neb'][i] = f_r_perp + f_s
 
-    def get_potential_energy(self):
+    def get_potential_energy(self, force_consistent=False):
         """Return the energy of the top energy image."""
         return self.emax
 
