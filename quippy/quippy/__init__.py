@@ -147,7 +147,7 @@ QUIP_MAKEFILE = spec['quip_makefile']
 if 'netcdf' in disabled_modules:
     disabled_modules.append('netcdf')
 else:
-    if 'HAVE_NETCDF' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_NETCDF'] == 1:
+    if QUIP_MAKEFILE.get('HAVE_NETCDF'):
         available_modules.append('netcdf')
     else:
         unavailable_modules.append('netcdf')
@@ -191,6 +191,8 @@ mod_files = [ modfile for (modname, modfile) in spec['wrap_modules'] ]
 python_wrappers = ['periodictable', 'table', 'potential',
                    'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
                    'extendable_str', 'structures', 'elasticity']
+if QUIP_MAKEFILE.get('HAVE_GAP'):
+    python_wrappers.append('descriptors')
 modules_name_map = {}
 for mod in python_wrappers:
     if mod in mod_names:
@@ -234,6 +236,11 @@ __all__.extend(quippy.cinoutput.__all__)
 import quippy.dynamicalsystem
 from quippy.dynamicalsystem import *
 __all__.extend(quippy.dynamicalsystem.__all__)
+
+if QUIP_MAKEFILE.get('HAVE_GAP'):
+    import quippy.descriptors
+    from quippy.descriptors import *
+    __all__.extend(quippy.descriptors.__all__)
 
 import quippy.potential
 from quippy.potential import *
@@ -283,7 +290,7 @@ import quippy.vasp
 import quippy.dan
 import quippy.qbox
 
-if 'HAVE_CP2K' in QUIP_MAKEFILE and QUIP_MAKEFILE['HAVE_CP2K'] == 1:
+if QUIP_MAKEFILE.get('HAVE_CP2K'):
     import quippy.cp2k
     from quippy.cp2k import *
     __all__.extend(quippy.cp2k.__all__)

@@ -179,6 +179,41 @@ subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,
 
 endsubroutine quip_wrapper
 
+subroutine quip_wrapper_castep(N,lattice,frac_pos,symbol, &
+      quip_param_file,quip_param_file_len,init_args_str,init_args_str_len,calc_args_str,calc_args_str_len, &
+      energy,force,virial,do_energy,do_force,do_virial,output_unit)
+
+  use system_module, only : dp
+  use quip_unified_wrapper_module
+  
+  implicit none
+
+  integer, intent(in) :: N
+  real(dp), dimension(3,N), intent(in) :: frac_pos
+  real(dp), dimension(3,3), intent(inout) :: lattice
+  character(len=3), dimension(N), intent(in) :: symbol
+  integer, intent(in) :: quip_param_file_len
+  character(len=quip_param_file_len) :: quip_param_file
+  integer, intent(in) :: init_args_str_len
+  character(len=init_args_str_len) :: init_args_str
+  integer, intent(in) :: calc_args_str_len
+  character(len=calc_args_str_len) :: calc_args_str
+  real(dp), intent(out) :: energy
+  real(dp), dimension(3,N), intent(out) :: force
+  real(dp), dimension(3,3), intent(out) :: virial
+  logical, intent(in) :: do_energy, do_force, do_virial
+  integer, intent(in), optional :: output_unit
+
+  call quip_unified_wrapper(N=N,frac_pos=frac_pos,lattice=lattice,symbol=symbol, &
+     quip_param_file=quip_param_file, quip_param_file_len=quip_param_file_len, &
+     init_args_str=init_args_str,init_args_str_len=init_args_str_len, &
+     calc_args_str=calc_args_str,calc_args_str_len=calc_args_str_len, &
+     energy=energy,force=force,virial=virial,&
+     do_energy=do_energy,do_force=do_force,do_virial=do_virial,output_unit=output_unit)
+
+
+endsubroutine quip_wrapper_castep
+
 subroutine quip_wrapper_simple(N,lattice,Z,pos,energy,force,virial)
 
   use system_module, only : dp

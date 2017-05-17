@@ -211,7 +211,7 @@ subroutine IPModel_MBD_Calc(this, at, e, local_e, f, virial, local_virial, args_
        n_tasks = mpi%n_procs
        call allocate_task()
    else ! assume serial
-       myid = 1
+       myid = 0
        n_tasks = 1
        call allocate_task()
    endif

@@ -16,12 +16,14 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import descriptors as _descriptors #TODO rename fortran-wrapped module to _descriptors
+from quippy import _descriptors #as _descriptors #TODO rename fortran-wrapped module to _descriptors
 from quippy.oo_fortran import update_doc_string
 from quippy.farray import fzeros
 from ase.atoms import Atoms as ASEAtoms
 from quippy.atoms import Atoms
 import numpy as np
+
+__all__ = ['Descriptor']
 
 class DescriptorCalcResult:
     """
@@ -60,14 +62,20 @@ class Descriptor(_descriptors.Descriptor):
         permutations.
         """
         _descriptors.Descriptor.__init__(self, args_str)
-        self.n_dim = self.dimensions()
-        self.n_p = self.n_permutations()
+        self._n_dim = self.dimensions()
+        self._n_perm = self.n_permutations()
+
+    n_dim = property(lambda self: self._n_dim)
+    n_perm = property(lambda self: self._n_perm)
+
+    def __len__(self):
+        return self.n_dim
 
     def permutations(self):
         """
         Returns array containing all valid permutations of this descriptor.
         """
-        perm = _descriptors.Descriptor.permutations(self, self.n_dim, self.n_p)
+        perm = _descriptors.Descriptor.permutations(self, self.n_dim, self.n_perm)
         return np.array(perm).T
 
     @convert_atoms_types_iterable_method
