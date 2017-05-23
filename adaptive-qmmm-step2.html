@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 2907e96+ documentation</title>
+  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html"/>
         <link rel="prev" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -270,7 +270,7 @@ crack-specific functionality come from <cite>quippy</cite>.</p>
 </div>
 <div class="section" id="definition-of-the-simulation-parameters">
 <h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this headline">¶</a></h3>
-<p id="parameters2">Let&#8217;s define the simulation parameters. The meaning of each parameter is explained
+<p id="parameters2">Let’s define the simulation parameters. The meaning of each parameter is explained
 in the comments on the right of each line:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;crack.xyz&#39;</span>         <span class="c1"># File from which to read crack slab structure</span>
 <span class="n">sim_T</span> <span class="o">=</span> <span class="mf">300.0</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span>           <span class="c1"># Simulation temperature</span>
@@ -361,7 +361,7 @@ all atoms. We will attach this to the dynamics in step 2.2 below.</p>
 <h3>Setup of the potential<a class="headerlink" href="#setup-of-the-potential" title="Permalink to this headline">¶</a></h3>
 <p>Before starting the MD simulation, the SW classical potential must be
 initialised and attached to the <cite>atoms</cite> object.  As in <cite>Step 1</cite>, we
-use quippy&#8217;s <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> class, but now we
+use quippy’s <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> class, but now we
 need to pass the <cite>cutoff_skin</cite> parameter, which is used to decide when
 the neighbour list needs to be updated (see the attribute
 <code class="xref py py-attr docutils literal"><span class="pre">cutoff_skin</span></code>). Moreover, we request
@@ -405,7 +405,7 @@ arguments: the atoms and the time step (which should come from the
 </div>
 <div class="section" id="printing-status-information">
 <h3>Printing status information<a class="headerlink" href="#printing-status-information" title="Permalink to this headline">¶</a></h3>
-<p>Let&#8217;s also define a function that prints the relevant information at
+<p>Let’s also define a function that prints the relevant information at
 each time step of the MD simulation. The information can be saved
 inside the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.info" title="quippy.atoms.Atoms.info"><code class="xref py py-attr docutils literal"><span class="pre">info</span></code></a> dictionary, so that it
 also gets saved to the trajectory file <cite>traj_file</cite>.</p>
@@ -499,7 +499,7 @@ molecular dynamics methodology</a> for more information):</p>
 <div class="section" id="milestone-2-2">
 <h3>Milestone 2.2<a class="headerlink" href="#milestone-2-2" title="Permalink to this headline">¶</a></h3>
 <p>If you have problems you can look at the complete version of the
-<a class="reference internal" href="adaptive-qmmm-solutions.html#run-crack-classical"><span class="std std-ref">Step 2 solution &#8212; run_crack_classical.py</span></a> script. Leave your classical MD simulation
+<a class="reference internal" href="adaptive-qmmm-solutions.html#run-crack-classical"><span class="std std-ref">Step 2 solution — run_crack_classical.py</span></a> script. Leave your classical MD simulation
 running and move on to the next section of the tutorial.</p>
 <p>The first few lines produced by the <code class="docutils literal"><span class="pre">run_crack_classical.py</span></code> script should
 look something like this:</p>
@@ -551,10 +551,10 @@ window containing a visual representation of your crack system (as before
 <code class="docutils literal"><span class="pre">fortran_indexing=False</span></code> is used to number the atoms starting from zero). You
 can use the <cite>Insert</cite> and <cite>Delete</cite> keys to move forwards or backwards through the
 trajectory, or <cite>Ctrl+Insert</cite> and <cite>Ctrl+Delete</cite> to jump to the first or last
-frame &#8211; note that the focus must be on the AtomEye viewer window when you use
+frame – note that the focus must be on the AtomEye viewer window when you use
 any keyboard shortcuts. The current frame number is shown in the title bar of
 the window.</p>
-<p>The function <a class="reference internal" href="qlab.html#qlab.gcat" title="qlab.gcat"><code class="xref py py-func docutils literal"><span class="pre">gcat()</span></code></a> (short for &#8220;get current atoms&#8221;) returns a
+<p>The function <a class="reference internal" href="qlab.html#qlab.gcat" title="qlab.gcat"><code class="xref py py-func docutils literal"><span class="pre">gcat()</span></code></a> (short for “get current atoms”) returns a
 reference to the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object currently being visualised (i.e. to the
 current frame from the trajectory file). Similarly, the <a class="reference internal" href="qlab.html#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal"><span class="pre">gcv()</span></code></a>
 function returns a reference to the entire trajectory currently being viewed as
@@ -675,7 +675,7 @@ i.e.</p>
 to a value of 1.3 in the <code class="docutils literal"><span class="pre">make_crack.py</span></code> script. This factor acts as
 a multipler for the covalent radii of the atomic species, taken from
 the <code class="xref py py-attr docutils literal"><span class="pre">quippy.periodictable.ElementCovRad</span></code> array. You can check
-the maximum Si&#8211;Si bond-length this corresponds to with:</p>
+the maximum Si–Si bond-length this corresponds to with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="mf">1.3</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">ElementCovRad</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -732,13 +732,13 @@ angular dependence is given by the set of universal functions
 <p>You can verify this by comparing the position detected by
 <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a>,  stored in the
 <cite>crack_pos</cite> attribute, with the positions of atoms that visually look
-to be near the tip &#8212; <cite>right click</cite> on atoms in the AtomEye
+to be near the tip — <cite>right click</cite> on atoms in the AtomEye
 viewer window to print information about them, including their
 positions.</p>
 <p>Compare the automatically detected crack position (printed as the
 <cite>crack_pos_x</cite> parameter when you change frames in the AtomEye viewer,
 or available via <code class="docutils literal"><span class="pre">gcat().info['crack_pos_x']</span></code>) with what a visual
-inspection of the crack system would tell you. Do you think it&#8217;s
+inspection of the crack system would tell you. Do you think it’s
 accurate enough to use as the basis for selecting a region around the
 crack tip to be treated at the QM level?</p>
 </div>
@@ -773,9 +773,9 @@ second vertical axis can be produced with the
 <p>In this case the crack actually arrests for a while at around <span class="math">\(t
 = 6\)</span> ps. This is another characteristic feature of non-brittle
 fracture, indicating that our simulation is failing to match well
-with experiment. According to Griffith&#8217;s criterion, fracture should
+with experiment. According to Griffith’s criterion, fracture should
 initiate at <span class="math">\(2\gamma \sim 2.7\)</span> J/m<sup>2</sup>, whereas we
-don&#8217;t see any motion of the crack tip until <span class="math">\(G \sim 11\)</span> J/m<sup>2</sup>. How much of this difference do you think is due to
+don’t see any motion of the crack tip until <span class="math">\(G \sim 11\)</span> J/m<sup>2</sup>. How much of this difference do you think is due to
 the high strain rate and small system used here, and how much to the
 choice of interatomic potential? How would you check this?</p>
 </div>
@@ -796,7 +796,7 @@ match the expected Maxwell-Boltzmann distribution of atomic
 velocities, given by</p>
 <div class="math">
 \[f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v\]</div>
-<p>Here&#8217;s a Python function which implements this formula:</p>
+<p>Here’s a Python function which implements this formula:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
    <span class="s2">&quot;Maxwell-Boltmann distribution of speeds at temperature T for particles of mass m&quot;</span>
    <span class="k">return</span> <span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="o">*</span><span class="n">T</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="o">*</span><span class="n">T</span><span class="p">))</span>
@@ -923,7 +923,7 @@ components computed using the two methods change much?</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

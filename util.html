@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Utility functions &mdash; quippy 2907e96+ documentation</title>
+  <title>Utility functions &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Visualisation Tools" href="visualisation.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -262,10 +262,10 @@
 <td>Parse a comma or colon seperated string into a list, converting each entry to lower-case.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.util.quip_xml_parameters" title="quippy.util.quip_xml_parameters"><code class="xref py py-obj docutils literal"><span class="pre">quip_xml_parameters</span></code></a>(name[,&nbsp;label])</td>
-<td>Search for an QUIP XML parameter set matching <cite>name&#8217; and, optionally `label</cite>.</td>
+<td>Search for an QUIP XML parameter set matching <cite>name’ and, optionally `label</cite>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.util.is_interactive_shell" title="quippy.util.is_interactive_shell"><code class="xref py py-obj docutils literal"><span class="pre">is_interactive_shell</span></code></a>()</td>
-<td>Return True if we&#8217;re running in an interactive shell (including IPython)</td>
+<td>Return True if we’re running in an interactive shell (including IPython)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.util.parse_params" title="quippy.util.parse_params"><code class="xref py py-obj docutils literal"><span class="pre">parse_params</span></code></a>(s)</td>
 <td>Read key=value pairs from a string or list of string and return a standard Python dictionary</td>
@@ -285,7 +285,7 @@
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.util.analyse_timings" title="quippy.util.analyse_timings"><code class="xref py py-obj docutils literal"><span class="pre">analyse_timings</span></code></a>(lines)</td>
 <td>Analyse QUIP timing information.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.util.write_timings" title="quippy.util.write_timings"><code class="xref py py-obj docutils literal"><span class="pre">write_timings</span></code></a>(out,&nbsp;timings[,&nbsp;order,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.util.write_timings" title="quippy.util.write_timings"><code class="xref py py-obj docutils literal"><span class="pre">write_timings</span></code></a>(out,&nbsp;timings[,&nbsp;order,&nbsp;…])</td>
 <td>Write a formatted summary of QUIP <cite>timings</cite> data to <cite>out</cite>.</td>
 </tr>
 </tbody>
@@ -325,19 +325,19 @@ look for file extension in <cite>lookup</cite>.</p>
 <dl class="function">
 <dt id="quippy.util.quip_xml_parameters">
 <code class="descclassname">quippy.util.</code><code class="descname">quip_xml_parameters</code><span class="sig-paren">(</span><em>name</em>, <em>label=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/util.html#quip_xml_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.quip_xml_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Search for an QUIP XML parameter set matching <cite>name&#8217; and, optionally `label</cite>.</p>
+<dd><p>Search for an QUIP XML parameter set matching <cite>name’ and, optionally `label</cite>.</p>
 <p>Result is the XML stanza as a string. Looks under
 ${QUIP_ROOT}/share/Parameters for a file matching <cite>name</cite>,
 <cite>name</cite>.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If
 <cite>label</cite> is given, it should be a text string matching the label
 attribute of a QUIP &lt;params&gt; XML stanza. If a matching parameter
-set can&#8217;t be found, we raise an <code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code>.</p>
+set can’t be found, we raise an <code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.util.is_interactive_shell">
 <code class="descclassname">quippy.util.</code><code class="descname">is_interactive_shell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/util.html#is_interactive_shell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.is_interactive_shell" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return True if we&#8217;re running in an interactive shell (including IPython)</p>
+<dd><p>Return True if we’re running in an interactive shell (including IPython)</p>
 </dd></dl>
 
 <dl class="function">
@@ -366,7 +366,7 @@ set can&#8217;t be found, we raise an <code class="xref py py-exc docutils liter
 
 <dl class="function">
 <dt id="quippy.util.most_recent_files">
-<code class="descclassname">quippy.util.</code><code class="descname">most_recent_files</code><span class="sig-paren">(</span><em>dir_pattern</em>, <em>file_pattern</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/util.html#most_recent_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.most_recent_files" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.util.</code><code class="descname">most_recent_files</code><span class="sig-paren">(</span><em>dir_pattern</em>, <em>file_pattern</em>, <em>suffix=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/util.html#most_recent_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.most_recent_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the most recent file matching file_pattern in each of the directories matching dir_pattern</p>
 </dd></dl>
 
@@ -377,14 +377,14 @@ set can&#8217;t be found, we raise an <code class="xref py py-exc docutils liter
 <p>Lines should be list of lines read from output file, with
 e.g. readlines().  Returns two dictionaries (timings,
 summary). <cite>timings</cite> contains entries for each TIMING line, with
-&#8220;wall&#8221; and &#8220;cpu&#8221; keys. <cite>summary</cite> collapses repeated entries and adds
-statistics for th enumber of calls (&#8220;len&#8221; key), total time (&#8220;sum&#8221;), and
-average time per call (&#8220;mean&#8221;).</p>
+“wall” and “cpu” keys. <cite>summary</cite> collapses repeated entries and adds
+statistics for th enumber of calls (“len” key), total time (“sum”), and
+average time per call (“mean”).</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="quippy.util.write_timings">
-<code class="descclassname">quippy.util.</code><code class="descname">write_timings</code><span class="sig-paren">(</span><em>out</em>, <em>timings</em>, <em>order='calls'</em>, <em>wall_only=True</em>, <em>cpu_only=False</em>, <em>reverse=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/util.html#write_timings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.write_timings" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.util.</code><code class="descname">write_timings</code><span class="sig-paren">(</span><em>out</em>, <em>timings</em>, <em>order=’calls’</em>, <em>wall_only=True</em>, <em>cpu_only=False</em>, <em>reverse=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/util.html#write_timings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.util.write_timings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a formatted summary of QUIP <cite>timings</cite> data to <cite>out</cite>.</p>
 </dd></dl>
 
@@ -432,7 +432,7 @@ average time per call (&#8220;mean&#8221;).</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

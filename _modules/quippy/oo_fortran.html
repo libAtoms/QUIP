@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.oo_fortran &mdash; quippy 2907e96+ documentation</title>
+  <title>quippy.oo_fortran &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -625,6 +625,10 @@
         <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elements</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subobjs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmp_skip_fields</span><span class="p">:</span>
                 <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">el</span><span class="p">):</span>
+                <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;element in self but not other </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">el</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
 
             <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">el</span><span class="p">):</span>
                 <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;element mismatch </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">el</span><span class="p">)</span>
@@ -1954,7 +1958,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

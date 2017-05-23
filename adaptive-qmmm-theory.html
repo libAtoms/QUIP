@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Theoretical background &mdash; quippy 2907e96+ documentation</title>
+  <title>Theoretical background &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html"/>
         <link rel="prev" title="Introduction" href="adaptive-qmmm-step0.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -111,7 +111,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Theoretical background</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#introduction-to-atomic-scale-modelling-of-fracture">Introduction to Atomic-scale Modelling of Fracture</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#classical-interatomic-potentials-for-silicon">Classical interatomic potentials for silicon</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">QM/MM Force Mixing and the &#8216;Learn on the Fly&#8217; scheme</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">QM/MM Force Mixing and the ‘Learn on the Fly’ scheme</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step1.html">Step 1: Setup of the Silicon model system</a></li>
@@ -250,7 +250,7 @@ respectively. Image credit: <a class="reference external" href="http://pwatlas.m
 </div>
 <p>In brittle fracture, there is no plastic deformation, and failure occurs along
 particular low-energy cleavage planes. In contrast, ductile materials such as
-steel tend to fail with a large amount of plastic deformation (or &#8216;necking&#8217;),
+steel tend to fail with a large amount of plastic deformation (or ‘necking’),
 pulling apart to leave rough fracture surfaces. The same patterns are evident
 upon closer examination: brittle cracks are found to be atomically sharp,
 proceeding bond by bond, while ductile cracks remain rough at the microscale,
@@ -282,7 +282,7 @@ theoretical stress needed to break their chemical bonds For example,
 in glass, the theoretical strength is given by</p>
 <div class="math">
 \[\sigma_{theoretical} = \sqrt{\frac{E\gamma}{a}} \sim 10,000\;\mathrm{MPa}\]</div>
-<p>where <span class="math">\(E\)</span>, <span class="math">\(\gamma\)</span> and <span class="math">\(a\)</span> are the Young&#8217;s modulus, surface
+<p>where <span class="math">\(E\)</span>, <span class="math">\(\gamma\)</span> and <span class="math">\(a\)</span> are the Young’s modulus, surface
 energy and bond length, respectively.</p>
 <p>For a slowly-moving crack of length <cite>c</cite> in an infinite plane, the
 well-known Griffith criterion for fracture propagation is based on thermodynamic
@@ -321,7 +321,7 @@ the crack tip exceeds the cost of creating two new surfaces.</p>
 <p>Much work has been done to understand fracture at the continuum level
 (see, e.g.  <a class="reference internal" href="adaptive-qmmm-references.html#freund1998" id="id3">[Freund1998]</a> and <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id4">[Lawn1993]</a>), but here we would like to
 simulate fracture at the atomic level, to examine the combined effects
-of stress and chemistry (&#8216;chemomechanics&#8217;). A first approach would be
+of stress and chemistry (‘chemomechanics’). A first approach would be
 to use classical interatomic potentials to carry out molecular
 dynamics (MD). However, as we will see in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span class="std std-ref">Step 2: Classical MD simulation of fracture in Si</span></a>, most classical
 potentials fail to accurately reproduce brittle fracture. This is due
@@ -372,7 +372,7 @@ capabilities of most QM approaches. Fracture is perhaps the
 archetypical coupled multiscale problem, with thousands of atoms
 contributing to the elastic relaxation of the near-tip region. We will
 describe how classical and QM descriptions can be coupled to study
-problems in fracture using the &#8216;Learn on the Fly&#8217; (LOTF) approach in
+problems in fracture using the ‘Learn on the Fly’ (LOTF) approach in
 <a class="reference internal" href="#theory3"><span class="std std-ref">more detail</span></a> later in this tutorial.</p>
 <div class="figure align-center" id="id32">
 <a class="reference internal image-reference" href="_images/multiscale-coupling.png"><img alt="_images/multiscale-coupling.png" src="_images/multiscale-coupling.png" style="width: 500px;" /></a>
@@ -399,7 +399,7 @@ in uniaxial tension: <span class="math">\(\epsilon_{yy} \to \epsilon_0\)</span> 
 per unit thickness far ahead of the crack tip is</p>
 <div class="math">
 \[W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}\]</div>
-<p>where <span class="math">\(E'\)</span> is the effective Young&#8217;s modulus.</p>
+<p>where <span class="math">\(E'\)</span> is the effective Young’s modulus.</p>
 <p>Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
 unit distance, a vertical strip of material with energy density
@@ -411,13 +411,13 @@ so the energy release rate is simply</p>
 \[G = W_\infty = \frac{\delta^2 E'}{h}\]</div>
 <p>In our simulations we will use periodic boundary conditions in the <span class="math">\(z\)</span>
 direction, so we have plane strain loading (<span class="math">\(\epsilon_{zz} = 0\)</span>), which
-means that the effective Young&#8217;s modulus <span class="math">\(E'\)</span> is given by
-<span class="math">\(E/(1-\nu^2)\)</span>, where <span class="math">\(E\)</span> is the Young&#8217;s modulus in the <span class="math">\(y\)</span> relevant
+means that the effective Young’s modulus <span class="math">\(E'\)</span> is given by
+<span class="math">\(E/(1-\nu^2)\)</span>, where <span class="math">\(E\)</span> is the Young’s modulus in the <span class="math">\(y\)</span> relevant
 direction and <span class="math">\(\nu\)</span> is the Poisson ratio, so finally we have</p>
 <div class="math" id="thin-strip-equation">
 \[G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}\]</div>
 <p>We can see that, in order to relate the strain we apply to the system
-with the energy release rate, we will need to calculate the Young&#8217;s
+with the energy release rate, we will need to calculate the Young’s
 modulus and Poisson ratio for our model material. We will see how to
 do this from the elastic constant matrix <span class="math">\(C_{ij}\)</span> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span class="std std-ref">below</span></a>.</p>
 </div>
@@ -458,13 +458,13 @@ multiscale QM/MM approach, where only an accurate description of the
 Si crystal far from the crack tip is required.</p>
 <p>In this step, we will use the SW potential to perform a classical MD
 simulation of the crack propagation in the NVE ensemble. The velocity
-Verlet scheme <a class="reference internal" href="adaptive-qmmm-references.html#frenkelsmit2001" id="id11">[FrenkelSmit2001]</a> will be used to integrate Newton&#8217;s
+Verlet scheme <a class="reference internal" href="adaptive-qmmm-references.html#frenkelsmit2001" id="id11">[FrenkelSmit2001]</a> will be used to integrate Newton’s
 equations of motion.</p>
 </div>
 <div class="section" id="qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">
-<span id="theory3"></span><h2>QM/MM Force Mixing and the &#8216;Learn on the Fly&#8217; scheme<a class="headerlink" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme" title="Permalink to this headline">¶</a></h2>
+<span id="theory3"></span><h2>QM/MM Force Mixing and the ‘Learn on the Fly’ scheme<a class="headerlink" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme" title="Permalink to this headline">¶</a></h2>
 <p>In this last part of the tutorial, we will perform an accurate MD simulation of
-Si fracture using the &#8220;Learn on the fly&#8221; (LOTF) hybrid QM/MM technique
+Si fracture using the “Learn on the fly” (LOTF) hybrid QM/MM technique
 <a class="reference internal" href="adaptive-qmmm-references.html#devita1998" id="id12">[DeVita1998]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#csanyi2004" id="id13">[Csanyi2004]</a>. In the present case, all atoms that are not suitably described by
 the <a class="reference internal" href="adaptive-qmmm-references.html#stillinger1985" id="id14">[Stillinger1985]</a> potential (our MM scheme) will be treated
 quantum-mechanically with the DFTB method <a class="reference internal" href="adaptive-qmmm-references.html#elstner1998" id="id15">[Elstner1998]</a>. These atoms are
@@ -478,7 +478,7 @@ for a particular system, that takes care of the interaction between the two regi
 While this approach allows the definition of a total energy which is
 conserved during the dynamics, the forces used to propagate the MD are not accurate
 enough because of the spurious effects due to the presence of the boundary
-between the QM and the MM regions. Moreover, the necessity to suitably &#8220;terminate&#8221;
+between the QM and the MM regions. Moreover, the necessity to suitably “terminate”
 the QM region, does not allow the QM region to move during the simulation, which
 is, however, required if we want to follow the motion of a crack tip.</p>
 <p>The LOTF scheme adopts a force-based scheme instead, which allows the
@@ -501,10 +501,10 @@ would be calculated by carving the QM region out of the system and chemically
 terminating the resulting Si dangling bonds, for instance with H atoms. Even by
 using more complex termination strategies, it is generally not possible to
 mimic the presence of the surrounding MM system, and the forces on the atoms
-close to the artificially created &#8220;QM surface&#8221; are not accurate.</p>
+close to the artificially created “QM surface” are not accurate.</p>
 <p>To solve this problem, at the expense of an increased computational
-cost, we increase the size of the QM region by adding a &#8220;buffer
-region&#8221;, as illustrated below. The calculation of the QM forces is
+cost, we increase the size of the QM region by adding a “buffer
+region”, as illustrated below. The calculation of the QM forces is
 carried out on a cluster made from the QM + buffer regions, after
 suitable termination with H atoms.</p>
 <div class="figure align-center" id="id33">
@@ -548,7 +548,7 @@ generation due to atoms whose description changes from MM to QM, or vice-versa
 <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id23">[Bernstein2009]</a>. This change of description is inevitable when the QM region
 moves with the crack tip. However, solutions have to be found to minimise
 fluctuations due to oscillation.</p>
-<p>A robust way to minimise fluctuations is to employ a &#8220;hysteretic&#8221; algorithm for
+<p>A robust way to minimise fluctuations is to employ a “hysteretic” algorithm for
 the QM selection process <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id24">[Bernstein2009]</a>. In the context of a fracture
 simulation, atoms have to come within a certain <em>inner
 radius</em> <span class="math">\(r_\mathrm{-}\)</span> from the crack tip to become selected as QM active
@@ -582,12 +582,12 @@ will use only the hysteretic selection technique.</p>
 <p>The QM/MM forces calculated as just explained, using a buffered QM region, can
 be directly used to perform an MD simulation, provided that the total sum of the
 forces is constrained to be zero, as explained above. However, in many cases,
-and in particular in this Si crack case, we can use yet another &#8220;trick&#8221; to speed
+and in particular in this Si crack case, we can use yet another “trick” to speed
 up our MD simulation, by at least a factor 10.</p>
 <p>We first introduce a new Hamiltonian, which is the sum of the MM potential (the
 SW potential here) and of a so called <em>adjustable potential</em>. This potential has
 a general analytical expression and a set of parameters that can be adjusted. In
-this case, we will use a simple two-body linear &#8216;spring&#8217; potential with the form</p>
+this case, we will use a simple two-body linear ‘spring’ potential with the form</p>
 <div class="math">
 \[V_\mathrm{adj} = \sum_{\mathrm{pairs}\; ij} \alpha_{ij} r_{ij}\]</div>
 <p>where <span class="math">\(i\)</span> and <span class="math">\(j\)</span> indicate a pair of atoms which are closer than an
@@ -624,7 +624,7 @@ change very slowly with respect to the changing atomic positions. This
 means that the same parameters can be used for a small number of steps
 (e.g. 10 in our case), after which the expensive QM forces are
 recomputed, and then used to retune the parameters. This is the
-philosophy behind the &#8216;Learn on the Fly&#8217; approach.</p>
+philosophy behind the ‘Learn on the Fly’ approach.</p>
 <p>The predictor-corrector scheme works as follows, with reference to the illustration below:</p>
 <blockquote>
 <div><p>1. <strong>Initialisation.</strong> The QM region is selected, the buffered QM/MM forces are
@@ -701,7 +701,7 @@ this tutorial to do exactly that.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

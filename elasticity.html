@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Elasticity calculations &mdash; quippy 2907e96+ documentation</title>
+  <title>Elasticity calculations &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="CP2K I/O and driver" href="cp2k.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -265,7 +265,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></code></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></code></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;…])</td>
 <td>Compute atomistic strain field and linear elastic stress response.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.graphene_elastic" title="quippy.elasticity.graphene_elastic"><code class="xref py py-obj docutils literal"><span class="pre">graphene_elastic</span></code></a>(pot,[args_str,cb])</td>
@@ -289,10 +289,10 @@
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.stress_vector" title="quippy.elasticity.stress_vector"><code class="xref py py-obj docutils literal"><span class="pre">stress_vector</span></code></a>(stress_matrix)</td>
 <td>Form a 6 component stress vector in Voight notation from a 3x3 matrix</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.fit_elastic_constants" title="quippy.elasticity.fit_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">fit_elastic_constants</span></code></a>(configs[,&nbsp;symmetry,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.fit_elastic_constants" title="quippy.elasticity.fit_elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">fit_elastic_constants</span></code></a>(configs[,&nbsp;symmetry,&nbsp;…])</td>
 <td>quippy.elasticity.fit_elastic_constants() deprecated, please use</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_constants" title="quippy.elasticity.elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">elastic_constants</span></code></a>(pot,&nbsp;at[,&nbsp;sym,&nbsp;relax,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_constants" title="quippy.elasticity.elastic_constants"><code class="xref py py-obj docutils literal"><span class="pre">elastic_constants</span></code></a>(pot,&nbsp;at[,&nbsp;sym,&nbsp;relax,&nbsp;…])</td>
 <td>quippy.elasticity.elastic_contants() deprecated, please use</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.atomic_strain" title="quippy.elasticity.atomic_strain"><code class="xref py py-obj docutils literal"><span class="pre">atomic_strain</span></code></a>(at,&nbsp;r0[,&nbsp;crystal_factor])</td>
@@ -309,7 +309,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></code></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-obj docutils literal"><span class="pre">elastic_fields</span></code></a>(at[,&nbsp;a,&nbsp;bond_length,&nbsp;c,&nbsp;…])</td>
 <td>Compute atomistic strain field and linear elastic stress response.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.transform_elasticity" title="quippy.elasticity.transform_elasticity"><code class="xref py py-obj docutils literal"><span class="pre">transform_elasticity</span></code></a>(c,&nbsp;R)</td>
@@ -322,7 +322,7 @@
 </table>
 <dl class="class">
 <dt id="quippy.elasticity.AtomResolvedStressField">
-<em class="property">class </em><code class="descclassname">quippy.elasticity.</code><code class="descname">AtomResolvedStressField</code><span class="sig-paren">(</span><em>bulk=None</em>, <em>a=None</em>, <em>cij=None</em>, <em>method='fortran'</em>, <em>**extra_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.elasticity.</code><code class="descname">AtomResolvedStressField</code><span class="sig-paren">(</span><em>bulk=None</em>, <em>a=None</em>, <em>cij=None</em>, <em>method=’fortran’</em>, <em>**extra_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Calculator interface to <a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields_fortran()</span></code></a> and <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></code></a></p>
 <p>Computes local stresses from atom resolved strain tensor and linear elasticity.</p>
@@ -343,11 +343,11 @@
 <p><strong>cij</strong> : array_like, optional</p>
 <blockquote>
 <div><p>6 x 6 matrix of elastic constants <span class="math">\(C_{ij}\)</span>.
-Can be obtained with :meth:<a href="#id1"><span class="problematic" id="id2">`</span></a>.Potential.get_elastic_constants&#8217;.</p>
+Can be obtained with :meth:<a href="#id1"><span class="problematic" id="id2">`</span></a>.Potential.get_elastic_constants’.</p>
 </div></blockquote>
 <p><strong>method</strong> : str</p>
 <blockquote>
-<div><p>Which routine to use: one of &#8220;fortran&#8221; or &#8220;python&#8221;.</p>
+<div><p>Which routine to use: one of “fortran” or “python”.</p>
 </div></blockquote>
 <p><strong>**extra_args</strong> : dict</p>
 <blockquote class="last">
@@ -416,7 +416,7 @@ for non-cubic cells.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_w_e</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_w_e</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -427,7 +427,7 @@ for non-cubic cells.</p>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_fields">
-<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_fields" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system=’tetrahedric’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute atomistic strain field and linear elastic stress response.</p>
 <p>Stress and strain are stored in compressed Voigt notation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_xx</span><span class="p">,</span><span class="n">e_yy</span><span class="p">,</span><span class="n">e_zz</span><span class="p">,</span><span class="n">e_yz</span><span class="p">,</span><span class="n">e_xz</span><span class="p">,</span><span class="n">e_xy</span><span class="p">]</span>
@@ -467,7 +467,7 @@ principal eigenvalue and eigenvector are <cite>stress_evals[1,:]</cite> and
 <dd><p>Calculate in-plane elastic constants of a graphene sheet with lattice
 parameter <code class="docutils literal"><span class="pre">a</span></code> using the Potential <code class="docutils literal"><span class="pre">pot</span></code>. On exit, <code class="docutils literal"><span class="pre">poisson</span></code>
 will contain the in plane poisson ratio (dimensionless) and <code class="docutils literal"><span class="pre">young</span></code> the
-in plane Young&#8217;s modulus (GPa).</p>
+in plane Young’s modulus (GPa).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -480,7 +480,7 @@ in plane Young&#8217;s modulus (GPa).</p>
 <blockquote>
 <div><p>arg_str for potential_calc</p>
 </div></blockquote>
-<p class="last"><strong>cb</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p class="last"><strong>cb</strong> :  in/output rank-0 array(float,’d’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -501,9 +501,9 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cc</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (6,6)</p>
-<p><strong>l</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>m</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cc</strong> :  input rank-2 array(‘d’) with bounds (6,6)</p>
+<p><strong>l</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>m</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_v</strong> :  float</p>
@@ -526,8 +526,8 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>c</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (6,6)</p>
-<p><strong>l</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>c</strong> :  input rank-2 array(‘d’) with bounds (6,6)</p>
+<p><strong>l</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_e</strong> :  float</p>
@@ -574,7 +574,7 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_constants">
-<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_constants</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>sym='cubic'</em>, <em>relax=True</em>, <em>verbose=True</em>, <em>graphics=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_constants" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_constants</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>sym=’cubic’</em>, <em>relax=True</em>, <em>verbose=True</em>, <em>graphics=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_constants" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>quippy.elasticity.elastic_contants() deprecated, please use</dt>
 <dd>matscipy.elasticity.fit_elastic_constants() instead</dd>
@@ -600,7 +600,7 @@ Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford Un
 <p><strong>c11</strong> :  input float, optional</p>
 <p><strong>c12</strong> :  input float, optional</p>
 <p><strong>c44</strong> :  input float, optional</p>
-<p class="last"><strong>cij</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (6,6), optional</p>
+<p class="last"><strong>cij</strong> :  input rank-2 array(‘d’) with bounds (6,6), optional</p>
 </td>
 </tr>
 </tbody>
@@ -611,7 +611,7 @@ Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford Un
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system=’tetrahedric’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Compute atomistic strain field and linear elastic stress response.</p>
 <p>Stress and strain are stored in compressed Voigt notation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_xx</span><span class="p">,</span><span class="n">e_yy</span><span class="p">,</span><span class="n">e_zz</span><span class="p">,</span><span class="n">e_yz</span><span class="p">,</span><span class="n">e_xz</span><span class="p">,</span><span class="n">e_xy</span><span class="p">]</span>
@@ -649,7 +649,7 @@ principal eigenvalue and eigenvector are <cite>stress_evals[1,:]</cite> and
 <dt id="quippy.elasticity.transform_elasticity">
 <code class="descclassname">quippy.elasticity.</code><code class="descname">transform_elasticity</code><span class="sig-paren">(</span><em>c</em>, <em>R</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#transform_elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.transform_elasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform c as a rank-4 tensor by the rotation matrix R.</p>
-<p>Returns the new representation c&#8217;. If c is a 6x6 matrix it is first
+<p>Returns the new representation c’. If c is a 6x6 matrix it is first
 converted to 3x3x3x3 form, and then converted back after the
 transformation.</p>
 </dd></dl>
@@ -716,7 +716,7 @@ Rayleight speed returned is along the first (x) axis.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

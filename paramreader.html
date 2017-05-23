@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command line argument parser &mdash; quippy 2907e96+ documentation</title>
+  <title>Command line argument parser &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Fortran input/output" href="fortranio.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -251,7 +251,7 @@ options set by the parameter file.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_read_line" title="quippy.paramreader.param_read_line"><code class="xref py py-obj docutils literal"><span class="pre">param_read_line</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_read_line" title="quippy.paramreader.param_read_line"><code class="xref py py-obj docutils literal"><span class="pre">param_read_line</span></code></a>(…)</td>
 <td>Read and parse line and update the key/value pairs stored by in a Dictionary object.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_print_help" title="quippy.paramreader.param_print_help"><code class="xref py py-obj docutils literal"><span class="pre">param_print_help</span></code></a>(dict,[verbosity,out])</td>
@@ -274,7 +274,7 @@ options set by the parameter file.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_print" title="quippy.paramreader.param_print"><code class="xref py py-obj docutils literal"><span class="pre">param_print</span></code></a>(dict,[verbosity,out])</td>
 <td>Print key/value pairs.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_read_args" title="quippy.paramreader.param_read_args"><code class="xref py py-obj docutils literal"><span class="pre">param_read_args</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_read_args" title="quippy.paramreader.param_read_args"><code class="xref py py-obj docutils literal"><span class="pre">param_read_args</span></code></a>(…)</td>
 <td>Read <code class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></code> pairs from command line and set entries in this <code class="docutils literal"><span class="pre">dict</span></code>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_register" title="quippy.paramreader.param_register"><code class="xref py py-obj docutils literal"><span class="pre">param_register</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -341,7 +341,7 @@ the line.</p>
 <div><p>If true, check for missing mandatory parameters</p>
 </div></blockquote>
 <p><strong>task</strong> :  input string(len=-1), optional</p>
-<p><strong>did_help</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>did_help</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_status</strong> :  int</p>
@@ -388,7 +388,7 @@ of missing keys as a string.</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
-<p><strong>missing_keys</strong> :  in/output rank-0 array(string(len=-1),&#8217;c&#8217;), optional</p>
+<p><strong>missing_keys</strong> :  in/output rank-0 array(string(len=-1),’c’), optional</p>
 <blockquote>
 <div><p>On exit, string list of missing mandatory keys,
 separated by spaces.</p>
@@ -455,7 +455,7 @@ separated by spaces.</p>
 <code class="descclassname">quippy.paramreader.</code><code class="descname">param_read_args</code><span class="sig-paren">(</span><em>dict</em><span class="optional">[</span>, <em>args</em>, <em>check_mandatory</em>, <em>ignore_unknown</em>, <em>task</em>, <em>command_line</em>, <em>did_help</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_read_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read <code class="docutils literal"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></code> pairs from command line and set entries in this
 <code class="docutils literal"><span class="pre">dict</span></code>. Array <code class="docutils literal"><span class="pre">args</span></code> is a list of the indices of command line
-arguments that we should look at, in order, if it&#8217;s not given we look
+arguments that we should look at, in order, if it’s not given we look
 at all arguments.  Returns false if fails, or if optional check that
 all mandatory values have been specified fails.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -466,7 +466,7 @@ all mandatory values have been specified fails.</p>
 <blockquote>
 <div><p>Dictionary of registered key/value pairs</p>
 </div></blockquote>
-<p><strong>args</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>args</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 <blockquote>
 <div><p>Argument indices to use</p>
 </div></blockquote>
@@ -479,8 +479,8 @@ all mandatory values have been specified fails.</p>
 <div><p>If true, ignore unknown keys in line</p>
 </div></blockquote>
 <p><strong>task</strong> :  input string(len=-1), optional</p>
-<p><strong>command_line</strong> :  in/output rank-0 array(string(len=-1),&#8217;c&#8217;), optional</p>
-<p><strong>did_help</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>command_line</strong> :  in/output rank-0 array(string(len=-1),’c’), optional</p>
+<p><strong>did_help</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_status</strong> :  int</p>
@@ -496,11 +496,11 @@ all mandatory values have been specified fails.</p>
 <dt id="quippy.paramreader.param_register">
 <code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.paramreader.param_register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded interface to register a parameter in a Dictionary object.
-&#8216;key&#8217; is the key name and &#8216;value&#8217; the default value. For a mandatory
-parameter use a value of &#8216;PARAM_MANDATORY&#8217;. The last argument to Register
+‘key’ is the key name and ‘value’ the default value. For a mandatory
+parameter use a value of ‘PARAM_MANDATORY’. The last argument to Register
 should be a pointer to the variable that the value of  the parameter should
-be copied to after parsing by &#8216;param_read_line&#8217;, &#8216;param_read_file&#8217;
-or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parsed, do not specify a target.</p>
+be copied to after parsing by ‘param_read_line’, ‘param_read_file’
+or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not specify a target.</p>
 <p>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">param_register</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -511,12 +511,12 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>char_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>'c'</em><em>)</em>) &#8211; </li>
-<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>char_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>’c’</em><em>)</em>) – </li>
+<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -533,12 +533,12 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>int_target_array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>int_target_array</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -555,12 +555,12 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>int_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) &#8211; </li>
-<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>int_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em>) – </li>
+<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -577,12 +577,12 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>real_target_array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>real_target_array</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -599,12 +599,12 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>logical_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) &#8211; </li>
-<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>logical_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em>) – </li>
+<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -621,12 +621,12 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>real_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em>) &#8211; </li>
-<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>real_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>’d’</em><em>)</em>) – </li>
+<li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -643,8 +643,8 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
+<li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -700,7 +700,7 @@ or &#8216;param_read_args&#8217;. For a parameter which shouldn&#8217;t be parse
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

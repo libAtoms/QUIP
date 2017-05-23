@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>CP2K I/O and driver &mdash; quippy 2907e96+ documentation</title>
+  <title>CP2K I/O and driver &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Elasticity calculations" href="elasticity.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -261,7 +261,7 @@
 <tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.read_psf" title="quippy.cp2k.read_psf"><code class="xref py py-obj docutils literal"><span class="pre">read_psf</span></code></a>(psf[,&nbsp;rev_sort_index])</td>
 <td>Read the PSF topology file from the filename <cite>psf</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.apply_cp2k_sort_order" title="quippy.cp2k.apply_cp2k_sort_order"><code class="xref py py-obj docutils literal"><span class="pre">apply_cp2k_sort_order</span></code></a>(at[,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.apply_cp2k_sort_order" title="quippy.cp2k.apply_cp2k_sort_order"><code class="xref py py-obj docutils literal"><span class="pre">apply_cp2k_sort_order</span></code></a>(at[,&nbsp;…])</td>
 <td>Reorder atoms in <cite>at</cite> so that they match rev_sort_index read from file.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.bonds_from_avgpos" title="quippy.cp2k.bonds_from_avgpos"><code class="xref py py-obj docutils literal"><span class="pre">bonds_from_avgpos</span></code></a>(at)</td>
@@ -306,7 +306,7 @@ of triplets <cite>(i, j, k)</cite>. Order is same as that in PSF file</p>
 
 <dl class="function">
 <dt id="quippy.cp2k.apply_cp2k_sort_order">
-<code class="descclassname">quippy.cp2k.</code><code class="descname">apply_cp2k_sort_order</code><span class="sig-paren">(</span><em>at</em>, <em>rev_sort_index_filename='quip_rev_sort_index'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#apply_cp2k_sort_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.apply_cp2k_sort_order" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.cp2k.</code><code class="descname">apply_cp2k_sort_order</code><span class="sig-paren">(</span><em>at</em>, <em>rev_sort_index_filename=’quip_rev_sort_index’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#apply_cp2k_sort_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.apply_cp2k_sort_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reorder atoms in <cite>at</cite> so that they match rev_sort_index read from file.</p>
 <p>Returns sort_index and rev_sort_index arrays.</p>
 </dd></dl>
@@ -321,7 +321,7 @@ object. Returns list of bonds as a set.</p>
 
 <dl class="function">
 <dt id="quippy.cp2k.qmmm_link_bonds">
-<code class="descclassname">quippy.cp2k.</code><code class="descname">qmmm_link_bonds</code><span class="sig-paren">(</span><em>at</em>, <em>run_suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#qmmm_link_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.qmmm_link_bonds" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.cp2k.</code><code class="descname">qmmm_link_bonds</code><span class="sig-paren">(</span><em>at</em>, <em>run_suffix=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#qmmm_link_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.qmmm_link_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of QM/MM link bonds in <cite>at</cite>.</p>
 <p>Bonds are computed from average positions using <cite>bonds_from_avgpos()</cite>.
 <cite>run_suffix</cite> is used to find the relevant <cite>cluster_mark</cite> property.</p>
@@ -336,7 +336,7 @@ object. Returns list of bonds as a set.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.calc_charge_lsd" title="quippy.cp2k_driver.calc_charge_lsd"><code class="xref py py-obj docutils literal"><span class="pre">calc_charge_lsd</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.calc_charge_lsd" title="quippy.cp2k_driver.calc_charge_lsd"><code class="xref py py-obj docutils literal"><span class="pre">calc_charge_lsd</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -351,7 +351,7 @@ object. Returns list of bonds as a set.</p>
 <td><p class="rubric">args_str options</p>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.read_output" title="quippy.cp2k_driver.read_output"><code class="xref py py-obj docutils literal"><span class="pre">read_output</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.read_output" title="quippy.cp2k_driver.read_output"><code class="xref py py-obj docutils literal"><span class="pre">read_output</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -362,7 +362,7 @@ object. Returns list of bonds as a set.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.cp2k_state_change" title="quippy.cp2k_driver.cp2k_state_change"><code class="xref py py-obj docutils literal"><span class="pre">cp2k_state_change</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.cp2k_state_change" title="quippy.cp2k_driver.cp2k_state_change"><code class="xref py py-obj docutils literal"><span class="pre">cp2k_state_change</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -394,14 +394,14 @@ object. Returns list of bonds as a set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>qm_list_a</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>qm_list_a</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 <p><strong>charge</strong> :  int</p>
 <p><strong>do_lsd</strong> :  int</p>
 <p><strong>n_hydrogen</strong> :  input int</p>
 <p><strong>hydrogen_charge</strong> :  input float</p>
 <p><strong>n_extra_electrons</strong> :  input int</p>
 <p><strong>use_mm_charges</strong> :  input int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -735,7 +735,7 @@ virial in</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>f</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>f</strong> :  rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
 <p><strong>n0</strong> :  input int</p>
 <blockquote>
 <div><p>shape(qp_f,0)</p>
@@ -746,7 +746,7 @@ virial in</td>
 </div></blockquote>
 <p><strong>e</strong> :  float</p>
 <p><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -763,12 +763,12 @@ virial in</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>qm_list_a</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
-<p><strong>cur_qmmm_qm_abc</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>qm_list_a</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
+<p><strong>cur_qmmm_qm_abc</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>run_dir</strong> :  input string(len=-1)</p>
 <p><strong>proj</strong> :  input string(len=-1)</p>
 <p><strong>e</strong> :  float</p>
-<p><strong>f</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2)</p>
+<p><strong>f</strong> :  rank-2 array(‘d’) with bounds (qp_n1,qp_n2)</p>
 <p><strong>n1</strong> :  input int</p>
 <blockquote>
 <div><p>shape(qp_f,0)</p>
@@ -781,7 +781,7 @@ virial in</td>
 <p><strong>do_calc_virial</strong> :  input int</p>
 <p><strong>save_reordering_index</strong> :  input int</p>
 <p><strong>out_i</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -799,9 +799,9 @@ virial in</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>to</strong> :  input string(len=-1)</p>
-<p><strong>from_list</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(*))</p>
+<p><strong>from_list</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
 <p><strong>ignore_failure</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -818,11 +818,11 @@ virial in</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>qm_list_a</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>qm_list_a</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 <p><strong>qm_vacuum</strong> :  input float</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_qmmm_qm_abc</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_qmmm_qm_abc</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -875,7 +875,7 @@ virial in</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

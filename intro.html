@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction to quippy &mdash; quippy 2907e96+ documentation</title>
+  <title>Introduction to quippy &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="next" title="Installation of QUIP and quippy" href="install.html"/>
         <link rel="prev" title="QUIP and quippy documentation" href="index.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -307,14 +307,14 @@ to libAtoms and QUIP.</li>
 <li>Tersoff (silicon, carbon)</li>
 </ul>
 <p>Plus several tight binding parameterisations (Bowler, DFTB, GSP,
-NRL-TB, ...)</p>
+NRL-TB, …)</p>
 <p>External packages:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">CASTEP</span></code>&#8212; DFT, planewaves, ultrasoft pseudopotentials</li>
-<li><code class="docutils literal"><span class="pre">CP2K</span></code> &#8212; DFT, mixed Gaussian/planewave basis set, various pseudopotentials.
+<li><code class="docutils literal"><span class="pre">CASTEP</span></code>— DFT, planewaves, ultrasoft pseudopotentials</li>
+<li><code class="docutils literal"><span class="pre">CP2K</span></code> — DFT, mixed Gaussian/planewave basis set, various pseudopotentials.
 Our <code class="docutils literal"><span class="pre">CP2K</span></code> Driver supports QM, MM and QM/MM.</li>
-<li><code class="docutils literal"><span class="pre">MOLPRO</span></code> &#8212; All electron quantum chemistry code. DFT, CCSD(T), MP2</li>
-<li><code class="docutils literal"><span class="pre">VASP</span></code> &#8212; DFT, planewaves, PAW or ultrasoft pseudopotentials</li>
+<li><code class="docutils literal"><span class="pre">MOLPRO</span></code> — All electron quantum chemistry code. DFT, CCSD(T), MP2</li>
+<li><code class="docutils literal"><span class="pre">VASP</span></code> — DFT, planewaves, PAW or ultrasoft pseudopotentials</li>
 <li>Interface to <a class="reference external" href="http://www.openkim.org">OpenKIM</a> project</li>
 <li>Relatively easy to add new codes</li>
 </ul>
@@ -322,7 +322,7 @@ Our <code class="docutils literal"><span class="pre">CP2K</span></code> Driver s
 Environment, <a class="reference external" href="https://wiki.fysik.dtu.dk/ase">ASE</a></p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">ASE</span></code> adds support for several more codes e.g. <code class="docutils literal"><span class="pre">ABINIT</span></code>, <code class="docutils literal"><span class="pre">Elk</span></code>,
-<code class="docutils literal"><span class="pre">Exciting</span></code>, <code class="docutils literal"><span class="pre">GPAW</span></code>, <code class="docutils literal"><span class="pre">SIESTA</span></code>, ...</li>
+<code class="docutils literal"><span class="pre">Exciting</span></code>, <code class="docutils literal"><span class="pre">GPAW</span></code>, <code class="docutils literal"><span class="pre">SIESTA</span></code>, …</li>
 <li><code class="docutils literal"><span class="pre">ASE</span></code> also works with the <a class="reference external" href="https://wiki.fysik.dtu.dk/cmr">CMR</a> database system</li>
 </ul>
 </div>
@@ -333,7 +333,7 @@ Environment, <a class="reference external" href="https://wiki.fysik.dtu.dk/ase">
 <h3>Benefits of scripting interfaces<a class="headerlink" href="#benefits-of-scripting-interfaces" title="Permalink to this headline">¶</a></h3>
 <p>A scripting interface provides access to all the functionality of a
 code written in a low level language (e.g. Fortran, C) via a high
-level language (e.g. Java, Python, Perl, TCL, ...).</p>
+level language (e.g. Java, Python, Perl, TCL, …).</p>
 <ul class="simple">
 <li>Can be generated either automatically or manually from
 the source code of the low level code</li>
@@ -393,7 +393,7 @@ recent years, due to</p>
 scientific tools, principally <a class="reference external" href="http://www.numpy.org">numpy</a> and
 <a class="reference external" href="http://www.scipy.org">scipy</a> but now also many more.</li>
 </ul>
-<p>But aren&#8217;t interpreted languages like Python really slow?</p>
+<p>But aren’t interpreted languages like Python really slow?</p>
 <ul class="simple">
 <li>Providing numerically intensive parts are vectorised, Python code
 can run surprisingly fast</li>
@@ -623,7 +623,7 @@ machine.</p>
 <li>Global minimisation with basin or minima hopping via =ASE=</li>
 <li>Symmetry analysis via <a class="reference external" href="http://spglib.sourceforge.net">spglib</a></li>
 <li>Phonon band structure via <a class="reference external" href="http://phonopy.sourceforge.net">phonopy</a></li>
-<li>...</li>
+<li>…</li>
 </ul>
 </li>
 </ul>
@@ -634,7 +634,7 @@ machine.</p>
 <p>For verification and validation, we would often like to compare structural
 properties predicted by a number of DFT codes</p>
 <ul class="simple">
-<li>Let&#8217;s try this with the H<sub>2</sub> molecule for a few codes</li>
+<li>Let’s try this with the H<sub>2</sub> molecule for a few codes</li>
 <li>PBE XC-functional</li>
 <li>Basis set parameters have been converged for each code</li>
 </ul>
@@ -801,7 +801,7 @@ calculations</li>
 <h2>Summary and Conclusions<a class="headerlink" href="#summary-and-conclusions" title="Permalink to this headline">¶</a></h2>
 <p>Advantages of <code class="docutils literal"><span class="pre">quippy</span></code>:</p>
 <ul class="simple">
-<li>General purpose &#8212; arbitrary, extensible data model</li>
+<li>General purpose — arbitrary, extensible data model</li>
 <li>All speed critical code is in Fortran, so it’s fast and
 scales well to large systems (~10<sup>6</sup> atoms)</li>
 <li>Interactive visualisation with <code class="docutils literal"><span class="pre">AtomEye</span></code> plugin
@@ -832,7 +832,7 @@ electronic structure codes</li>
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[LOTF]</a></td><td>Csányi, G., Albaret, T., Payne, M., &amp; De Vita,
-A. &#8216;Learn on the Fly&#8217;: A Hybrid Classical and Quantum-Mechanical
+A. ‘Learn on the Fly’: A Hybrid Classical and Quantum-Mechanical
 Molecular Dynamics Simulation. Physical Review Letters,
 93(17), 175503. (2004) <a class="reference external" href="http://prl.aps.org/abstract/PRL/v93/i17/e175503">http://prl.aps.org/abstract/PRL/v93/i17/e175503</a>&gt;</td></tr>
 </tbody>
@@ -921,7 +921,7 @@ Modified version: <a class="reference external" href="http://jrkermode.co.uk/Ato
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

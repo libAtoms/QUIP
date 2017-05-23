@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 2907e96+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -258,10 +258,10 @@ manipulate it use an <a class="reference internal" href="#quippy.io.AtomsList" t
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-obj docutils literal"><span class="pre">AtomsReader</span></code></a>(source[,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-obj docutils literal"><span class="pre">AtomsReader</span></code></a>(source[,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;…])</td>
 <td>An <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></code></a> reads a series of <code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code> objects</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-obj docutils literal"><span class="pre">AtomsList</span></code></a>([source,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-obj docutils literal"><span class="pre">AtomsList</span></code></a>([source,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;…])</td>
 <td>An <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a> is just like an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></code></a> except that all frames are read in on initialiased and then stored in memory.</td>
 </tr>
 </tbody>
@@ -306,10 +306,10 @@ manipulate it use an <a class="reference internal" href="#quippy.io.AtomsList" t
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><code class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></code></a></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsWriters" title="quippy.io.AtomsWriters"><code class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></code></a></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -321,10 +321,10 @@ from the trajectory <cite>source</cite> which should be one of the following:</p
 <blockquote>
 <div><ul class="simple">
 <li>a filename - in this case <cite>format</cite> is inferred from the file
-extension &#8211; see <a class="reference internal" href="#fileformats"><span class="std std-ref">Supported File Formats</span></a></li>
-<li>a shell-style glob pattern e.g. <cite>&#8220;*.xyz&#8221;</cite></li>
-<li>a list of filenames or glob patterns e.g. <cite>[&#8220;foo*.xyz&#8221;,
-&#8220;bar*.xyz&#8221;]</cite></li>
+extension – see <a class="reference internal" href="#fileformats"><span class="std std-ref">Supported File Formats</span></a></li>
+<li>a shell-style glob pattern e.g. <cite>“*.xyz”</cite></li>
+<li>a list of filenames or glob patterns e.g. <cite>[“foo*.xyz”,
+“bar*.xyz”]</cite></li>
 <li>an open file or file-like object (e.g. a <code class="xref py py-class docutils literal"><span class="pre">CInOutput</span></code>
 object)</li>
 <li>any Python <a class="reference external" href="http://docs.python.org/library/stdtypes.html#iterator-types">iterator</a>
@@ -356,7 +356,7 @@ the contents using a <a class="reference external" href="https://docs.python.org
 </div>
 <p>In addition to iteration, some sources allow random access. To find
 out if an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal"><span class="pre">AtomsReader</span></code></a> supports random access, either try
-to get it&#8217;s length with <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#len" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">len()</span></code></a>, or check if the
+to get it’s length with <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#len" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">len()</span></code></a>, or check if the
 <a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><code class="xref py py-attr docutils literal"><span class="pre">random_access</span></code></a> property is true. If <cite>cache_limit</cite> is large
 enough to store all the frames in the file, all
 <a class="reference internal" href="#quippy.io.AtomsReaders" title="quippy.io.AtomsReaders"><code class="xref py py-class docutils literal"><span class="pre">AtomsReaders</span></code></a> will allow random access once the entire
@@ -665,7 +665,7 @@ reading from or writing to XYZ or NetCDF files.</p>
 columns to be present in the file for additonal per-atom properties as
 well as standardising the format of the comment line to include the
 cell lattice and other per-frame parameters.</p>
-<p>It&#8217;s easiest to describe the format with an example.  Here is a
+<p>It’s easiest to describe the format with an example.  Here is a
 standard XYZ file containing a bulk cubic 8 atom silicon cell</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">8</span>
 <span class="n">Cubic</span> <span class="n">bulk</span> <span class="n">silicon</span> <span class="n">cell</span>
@@ -682,7 +682,7 @@ standard XYZ file containing a bulk cubic 8 atom silicon cell</p>
 <p>The first line is the number of atoms, followed by a comment and
 then one line per atom, giving the element symbol and cartesian
 x y, and z coordinates in Angstroms.</p>
-<p>Here&#8217;s the same configuration in extended XYZ format</p>
+<p>Here’s the same configuration in extended XYZ format</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">8</span>
 <span class="n">Lattice</span><span class="o">=</span><span class="s2">&quot;5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44&quot;</span> <span class="n">Properties</span><span class="o">=</span><span class="n">species</span><span class="p">:</span><span class="n">S</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">pos</span><span class="p">:</span><span class="n">R</span><span class="p">:</span><span class="mi">3</span> <span class="n">Time</span><span class="o">=</span><span class="mf">0.0</span>
 <span class="n">Si</span>        <span class="mf">0.00000000</span>      <span class="mf">0.00000000</span>      <span class="mf">0.00000000</span>
@@ -700,8 +700,8 @@ key/value pairs.  The keys should be strings and values can be
 integers, reals, logicals (denoted by <cite>T</cite> and <cite>F</cite> for true and false)
 or strings. Quotes are required if a value contains any spaces (like
 <cite>Lattice</cite> above).  There are two mandatory parameters that any
-extended XYZ: <cite>Lattice</cite> and <cite>Properties</cite>. Other parameters &#8211;
-e.g. <cite>Time</cite> in the example above &#8212; can be added to the parameter line
+extended XYZ: <cite>Lattice</cite> and <cite>Properties</cite>. Other parameters –
+e.g. <cite>Time</cite> in the example above — can be added to the parameter line
 as needed.</p>
 <p><cite>Lattice</cite> is a Cartesian 3x3 matrix representation of the cell
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><code class="xref py py-attr docutils literal"><span class="pre">lattice</span></code></a> vectors, with each vector stored
@@ -764,8 +764,8 @@ from the Extended XYZ format is the names of some properties:</p>
 </tbody>
 </table>
 <p>This mapping is handled automatically by, but if you access the data
-directly you&#8217;ll need to be aware of it.</p>
-<p>NetCDF versions 3 and 4 are supported. If version 4 is used then it&#8217;s
+directly you’ll need to be aware of it.</p>
+<p>NetCDF versions 3 and 4 are supported. If version 4 is used then it’s
 possible to use zlib compression, which greatly reduces the file size.</p>
 <div class="section" id="netcdf-convention">
 <h3>NetCDF Convention<a class="headerlink" href="#netcdf-convention" title="Permalink to this headline">¶</a></h3>
@@ -790,9 +790,9 @@ possible to use zlib compression, which greatly reduces the file size.</p>
 <p>Global variables</p>
 <blockquote>
 <div><ul class="simple">
-<li><cite>spatial (spatial)</cite> - character, equal to <cite>(&#8216;x&#8217;,&#8217;y&#8217;,&#8217;z&#8217;)</cite></li>
-<li><cite>cell_spatial (cell_spatial)</cite> - character, equal to <cite>(&#8216;a&#8217;,&#8217;b&#8217;,&#8217;c&#8217;)</cite></li>
-<li><cite>cell_angular (cell_angular, label)</cite> - character, equal to <cite>(&#8216;alpha&#8217;, &#8216;beta&#8217;, &#8216;gamma&#8217;)</cite></li>
+<li><cite>spatial (spatial)</cite> - character, equal to <cite>(‘x’,’y’,’z’)</cite></li>
+<li><cite>cell_spatial (cell_spatial)</cite> - character, equal to <cite>(‘a’,’b’,’c’)</cite></li>
+<li><cite>cell_angular (cell_angular, label)</cite> - character, equal to <cite>(‘alpha’, ‘beta’, ‘gamma’)</cite></li>
 </ul>
 </div></blockquote>
 <p>Parameters (per-frame variables)</p>
@@ -847,10 +847,10 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.CInOutputReader" title="quippy.cinoutput.CInOutputReader"><code class="xref py py-obj docutils literal"><span class="pre">CInOutputReader</span></code></a>(source[,&nbsp;frame,&nbsp;range,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.CInOutputReader" title="quippy.cinoutput.CInOutputReader"><code class="xref py py-obj docutils literal"><span class="pre">CInOutputReader</span></code></a>(source[,&nbsp;frame,&nbsp;range,&nbsp;…])</td>
 <td>Class to read atoms from a CInOutput.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.CInOutputWriter" title="quippy.cinoutput.CInOutputWriter"><code class="xref py py-obj docutils literal"><span class="pre">CInOutputWriter</span></code></a>(dest[,&nbsp;append,&nbsp;netcdf4,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.CInOutputWriter" title="quippy.cinoutput.CInOutputWriter"><code class="xref py py-obj docutils literal"><span class="pre">CInOutputWriter</span></code></a>(dest[,&nbsp;append,&nbsp;netcdf4,&nbsp;…])</td>
 <td>Class to write atoms sequentially to a CInOutput stream</td>
 </tr>
 </tbody>
@@ -948,9 +948,9 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_dirname_extendable_str</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_dirname_extendable_str</strong> – <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
 </tr>
 </tbody>
 </table>
@@ -964,9 +964,9 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_dirname_char</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_dirname_char</strong> – <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
 </tr>
 </tbody>
 </table>
@@ -988,7 +988,7 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) – </td>
 </tr>
 </tbody>
 </table>
@@ -1002,7 +1002,7 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -1024,9 +1024,9 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_basename_extendable_str</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_basename_extendable_str</strong> – <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
 </tr>
 </tbody>
 </table>
@@ -1040,9 +1040,9 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_basename_char</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_basename_char</strong> – <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</td>
 </tr>
 </tbody>
 </table>
@@ -1069,7 +1069,7 @@ by Paul Tangney and Sandro Scandolo.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atomeyewriter.AtomEyeWriter" title="quippy.atomeyewriter.AtomEyeWriter"><code class="xref py py-obj docutils literal"><span class="pre">AtomEyeWriter</span></code></a>(image[,&nbsp;width,&nbsp;height,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atomeyewriter.AtomEyeWriter" title="quippy.atomeyewriter.AtomEyeWriter"><code class="xref py py-obj docutils literal"><span class="pre">AtomEyeWriter</span></code></a>(image[,&nbsp;width,&nbsp;height,&nbsp;…])</td>
 <td>Write atoms to image file (png/eps/jpg) using AtomEye</td>
 </tr>
 </tbody>
@@ -1109,7 +1109,7 @@ by Paul Tangney and Sandro Scandolo.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.check_pspots" title="quippy.castep.check_pspots"><code class="xref py py-obj docutils literal"><span class="pre">check_pspots</span></code></a>(cluster,&nbsp;cell,&nbsp;param,&nbsp;orig_dir)</td>
 <td>Check pseudopotential files are present, and that we have one for each element present in cluster.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.run_castep" title="quippy.castep.run_castep"><code class="xref py py-obj docutils literal"><span class="pre">run_castep</span></code></a>(cell,&nbsp;param,&nbsp;stem,&nbsp;castep[,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.run_castep" title="quippy.castep.run_castep"><code class="xref py py-obj docutils literal"><span class="pre">run_castep</span></code></a>(cell,&nbsp;param,&nbsp;stem,&nbsp;castep[,&nbsp;…])</td>
 <td>Invoke castep and return True if it completed successfully</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.read_formatted_potential" title="quippy.castep.read_formatted_potential"><code class="xref py py-obj docutils literal"><span class="pre">read_formatted_potential</span></code></a>(filename)</td>
@@ -1147,7 +1147,7 @@ by Paul Tangney and Sandro Scandolo.</p>
 
 <dl class="method">
 <dt id="quippy.castep.CastepCell.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>cellfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>cellfile=&lt;open file ‘&lt;stdout&gt;’</em>, <em>mode ‘w’&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write CASTEP .cell file. cellfile can be a filename or an open file</p>
 </dd></dl>
 
@@ -1189,7 +1189,7 @@ by Paul Tangney and Sandro Scandolo.</p>
 
 <dl class="method">
 <dt id="quippy.castep.CastepParam.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>paramfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>paramfile=&lt;open file ‘&lt;stdout&gt;’</em>, <em>mode ‘w’&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write CASTEP .param file</p>
 </dd></dl>
 
@@ -1250,7 +1250,7 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">Atoms</span></code>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;...)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">Atoms</span></code>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;…)</td>
 <td>Representation of an atomic configuration and its associated properties</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.vasp.VASPWriter" title="quippy.vasp.VASPWriter"><code class="xref py py-obj docutils literal"><span class="pre">VASPWriter</span></code></a>(out[,&nbsp;species_list])</td>
@@ -1295,25 +1295,25 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">AtomsReaders</span></code></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">AtomsWriters</span></code></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ase</span></code></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">np</span></code></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="index.html#module-quippy" title="quippy"><code class="xref py py-attr docutils literal"><span class="pre">quippy</span></code></a></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">re</span></code></td>
-<td>&lt;module &#8216;re&#8217; from &#8216;/home/travis/virtualenv/python2.7.13/lib/python2.7/re.pyc&#8217;&gt;</td>
+<td>&lt;module ‘re’ from ‘/home/travis/virtualenv/python2.7.13/lib/python2.7/re.pyc’&gt;</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">sys</span></code></td>
-<td>&lt;module &#8216;sys&#8217; (built-in)&gt;</td>
+<td>&lt;module ‘sys’ (built-in)&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -1449,7 +1449,7 @@ which can be used to simplify the registration process:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

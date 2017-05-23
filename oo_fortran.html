@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran 90 derived-type support &mdash; quippy 2907e96+ documentation</title>
+  <title>Fortran 90 derived-type support &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Appendix: wrapping Fortran 90 Code" href="fortran_wrapper.html"/>
         <link rel="prev" title="patch_f2py — modify numpy.f2py at runtime" href="patch_f2py.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -106,9 +106,9 @@
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> &#8212; Fortran 90 source code scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> &#8212; modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Fortran 90 derived-type support</a><ul class="simple">
 </ul>
 </li>
@@ -248,7 +248,7 @@ providing the Fortran source code was built using
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.oo_fortran.wrap_all" title="quippy.oo_fortran.wrap_all"><code class="xref py py-obj docutils literal"><span class="pre">wrap_all</span></code></a>(fobj,&nbsp;spec,&nbsp;mods,&nbsp;merge_mods,&nbsp;...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.oo_fortran.wrap_all" title="quippy.oo_fortran.wrap_all"><code class="xref py py-obj docutils literal"><span class="pre">wrap_all</span></code></a>(fobj,&nbsp;spec,&nbsp;mods,&nbsp;merge_mods,&nbsp;…)</td>
 <td>Returns tuple <cite>(classes, routines, params)</cite> suitable for importing into top-level package namespace.</td>
 </tr>
 </tbody>
@@ -266,7 +266,7 @@ providing the Fortran source code was built using
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><a class="reference internal" href="#quippy.oo_fortran.FortranDerivedTypes" title="quippy.oo_fortran.FortranDerivedTypes"><code class="xref py py-attr docutils literal"><span class="pre">FortranDerivedTypes</span></code></a></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -405,14 +405,14 @@ in <code class="xref py py-class docutils literal"><span class="pre">quippy.extr
 <dl class="method">
 <dt id="quippy.oo_fortran.FortranDerivedType._get_array_shape">
 <code class="descname">_get_array_shape</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/oo_fortran.html#FortranDerivedType._get_array_shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.oo_fortran.FortranDerivedType._get_array_shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method can be used to override Fortran&#8217;s idea of the shape of
+<dd><p>This method can be used to override Fortran’s idea of the shape of
 arrays within derived types, for example to present only a partial
 view of an array. This is used in <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">quippy.table.Table</span></code></a>
 to allow the sizes of arrays within the Table class to correspond to the
 current extent of the Table, rather than the size of the allocated storage
 which will usually be larger.</p>
 <p>If this method returns <code class="docutils literal"><span class="pre">None</span></code> then the full array is presented, otherwise
-the return value should be a tuple <cite>(N_1, N_2, ..., N_d)</cite> where <cite>d</cite>
+the return value should be a tuple <cite>(N_1, N_2, …, N_d)</cite> where <cite>d</cite>
 is the number of dimensions of the array and <cite>N_1, N_2</cite> etc. are the lengths
 of each dimension.</p>
 </dd></dl>
@@ -452,7 +452,7 @@ form.</p>
 where <cite>value</cite> is a newly defined subclass of
 <a class="reference internal" href="#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">FortranDerivedType</span></code></a> or newly wrapped routine respectively.
 <cite>params</cite> is a Python dictionary of Fortran parameters (constants).</p>
-<p>Here&#8217;s how this function is used in quippy&#8217;s <code class="file docutils literal"><span class="pre">__init.py__</span></code> to
+<p>Here’s how this function is used in quippy’s <code class="file docutils literal"><span class="pre">__init.py__</span></code> to
 import the new classes, routines and params into the top-level quippy
 namespace:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">classes</span><span class="p">,</span> <span class="n">routines</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">wrap_all</span><span class="p">(</span><span class="n">_quippy</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;wrap_modules&#39;</span><span class="p">],</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">])</span>
@@ -519,7 +519,7 @@ classes derived from <a class="reference internal" href="#quippy.oo_fortran.Fort
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

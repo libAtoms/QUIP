@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy 2907e96+ documentation</title>
+  <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
         <link rel="next" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="prev" title="Introductory Tutorial" href="tutorial.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -110,7 +110,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#starting-a-fracture-simulation">Starting a fracture simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quartz-primitive-unit-cell">Quartz Primitive Unit Cell</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#calculating-elastic-properties">Calculating Elastic Properties</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#young-s-modulus-and-poisson-ratio">Young&#8217;s Modulus and Poisson Ratio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#young-s-modulus-and-poisson-ratio">Young’s Modulus and Poisson Ratio</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#surface-energy">Surface Energy</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#energy-release-rate-for-static-fracture">Energy Release Rate for Static Fracture</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#calculating-g-for-a-thin-strip">Calculating <cite>G</cite> for a thin strip</a></li>
@@ -247,11 +247,11 @@ Trieste, May 2011.</p>
 Interatomic Potentials) code, which is a molecular dynamics code
 written in Fortran 95 and equipped with a Python interface named
 <a class="reference external" href="http://www.jrkermode.co.uk/quippy">quippy</a>.</p>
-<p>As well as working with the standard unix command line we&#8217;ll also be
+<p>As well as working with the standard unix command line we’ll also be
 using <cite>ipython</cite>, an interactive Python shell. In the listings below,
 shell commands are prefixed by a <cite>$</cite> to identify them; everything else
 is a Python command which should be typed into the <cite>ipython</cite> shell. If
-you&#8217;re not familiar with Python don&#8217;t worry, it&#8217;s quite easy to pickup
+you’re not familiar with Python don’t worry, it’s quite easy to pickup
 and the syntax is very similar to Fortran.</p>
 <p>This tutorial assumes you have installed <cite>QUIP</cite> and <cite>quippy</cite>; see the
 <a class="reference internal" href="install.html#installation"><span class="std std-ref">Installation of QUIP and quippy</span></a> section if you need some help on doing this.</p>
@@ -260,7 +260,7 @@ and the syntax is very similar to Fortran.</p>
 <h2>Starting a fracture simulation<a class="headerlink" href="#starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
 <p>To maximise the amount of progress that we can make in the hands-on
 session, the first task is to get a fracture simulation running.</p>
-<p>We&#8217;re going to be modelling a crack in <span class="math">\(\alpha\)</span>-quartz opening
+<p>We’re going to be modelling a crack in <span class="math">\(\alpha\)</span>-quartz opening
 on the basal plane <span class="math">\((0001)\)</span>, with the crack front parallel to
 the <span class="math">\([\bar{1}10]\)</span> direction. The input structure is an
 <a class="reference download internal" href="_downloads/quartz_crack.xyz" download=""><code class="xref download docutils literal"><span class="pre">XYZ</span> <span class="pre">file</span></code></a> contains a <span class="math">\(150~\AA
@@ -301,11 +301,11 @@ e.g. <code class="docutils literal"><span class="pre">~/bin</span></code>.</p>
 <p>It is highly recommended to change the name when copying the <cite>eval</cite> prgram to a
 directory on <span class="target" id="index-3"></span><a class="reference external" href="http://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v2.0.2)"><code class="xref std std-envvar docutils literal"><span class="pre">PATH</span></code></a> to avoid a clash with the builtin <code class="docutils literal"><span class="pre">eval</span></code> command.</p>
 <p>Start the simulation by running the <cite>crack</cite> program, which takes
-the &#8220;stem&#8221; of the input filenames as its only argument:</p>
+the “stem” of the input filenames as its only argument:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ crack quartz_crack &gt; quartz_crack.out &amp;
 </pre></div>
 </div>
-<p>Note that we&#8217;re redirecting the output to <cite>quartz_crack.out</cite> and
+<p>Note that we’re redirecting the output to <cite>quartz_crack.out</cite> and
 running <cite>crack</cite> in the background. As well as outputting status
 information to <cite>quartz_crack.out</cite>, the simulation will periodically
 write the MD trajectory to a file named <cite>quartz_crack_movie_1.xyz</cite>.</p>
@@ -327,7 +327,7 @@ particular, you might find this <a class="reference download internal" href="_do
 useful (copy to <cite>~/.A</cite> to use).</p>
 <p>Have a look at the output in <cite>quartz_crack.out</cite>. To see how the
 simulation is progressing, you can search this for lines starting with
-&#8220;D&#8221;:</p>
+“D”:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ grep &quot;^D &quot; quartz_crack.out
 </pre></div>
 </div>
@@ -356,7 +356,7 @@ job!).</p>
 <h2>Quartz Primitive Unit Cell<a class="headerlink" href="#quartz-primitive-unit-cell" title="Permalink to this headline">¶</a></h2>
 <p>While the fracture simulation is running, we will try to predict the
 expected behaviour of a crack in quartz according to continuum
-elasticity. We&#8217;ll start by performing some calculations on the quartz
+elasticity. We’ll start by performing some calculations on the quartz
 primitive cell using <cite>quippy</cite>.</p>
 <p>Start <cite>ipython</cite> and import all the <cite>quippy</cite> routines:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ ipython
@@ -395,7 +395,7 @@ name following by a question mark, e.g.</p>
 well as a brief description of what <code class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></code> does. If
 you are interested in learning more about using <cite>QUIP</cite> and <cite>quippy</cite>,
 you could take a look at the online <a class="reference internal" href="tutorial.html#tutorial-intro"><span class="std std-ref">Introductory Tutorial</span></a>.</p>
-<p>Keep your <cite>ipython</cite> session open as we&#8217;ll need it later. Open the
+<p>Keep your <cite>ipython</cite> session open as we’ll need it later. Open the
 <cite>quartz.xyz</cite> file you created with <cite>AtomEye</cite>. You should see something
 like this:</p>
 <a class="reference internal image-reference" href="_images/quartz.png"><img alt="_images/quartz.png" class="align-center" src="_images/quartz.png" style="width: 300px;" /></a>
@@ -413,7 +413,7 @@ vectors (<cite>a</cite> and <cite>b</cite>) resulting in 36 atoms.</p>
 <div class="section" id="calculating-elastic-properties">
 <h2>Calculating Elastic Properties<a class="headerlink" href="#calculating-elastic-properties" title="Permalink to this headline">¶</a></h2>
 <p>In order to predict the onset and velocity of fracture, we need to
-determine the values of the Young&#8217;s modulus <span class="math">\(E\)</span>, the Poisson
+determine the values of the Young’s modulus <span class="math">\(E\)</span>, the Poisson
 ratio <span class="math">\(\nu\)</span>, surface energy density <span class="math">\(\gamma\)</span> and the
 Rayleigh Wave speed <span class="math">\(c_R\)</span>. These are all properties of the
 classical potential which in this case is a short-ranged version of
@@ -446,7 +446,7 @@ Yukawa-screened Coulomb interaction and dipole polarisability. For
 example you can see that oxygen (atomic number 8) is polarisable in
 this model and silicon (atomic number 14) is not.</p>
 <p>Make a file called <cite>cij.dat</cite> containing the matrix output by <cite>eval</cite>
-(remove the &#8220;CIJ&#8221; at the beginning of each line). You can load this
+(remove the “CIJ” at the beginning of each line). You can load this
 matrix into <cite>quippy</cite> using the command</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;cij.dat&quot;</span><span class="p">)</span>
 </pre></div>
@@ -482,8 +482,8 @@ allowed (use the <cite>c0ij</cite> option to the <cite>eval</cite> program). Why
 think some components are particularily sensitive to internal
 relaxation?</p>
 <div class="section" id="young-s-modulus-and-poisson-ratio">
-<h3>Young&#8217;s Modulus and Poisson Ratio<a class="headerlink" href="#young-s-modulus-and-poisson-ratio" title="Permalink to this headline">¶</a></h3>
-<p>To calculate the effective Young&#8217;s modulus and Poisson ratio for our
+<h3>Young’s Modulus and Poisson Ratio<a class="headerlink" href="#young-s-modulus-and-poisson-ratio" title="Permalink to this headline">¶</a></h3>
+<p>To calculate the effective Young’s modulus and Poisson ratio for our
 quartz fracture simulation, we need to rotate the elastic constant
 matrix to align it with the axes of our <span class="math">\((0001)[\bar{1}10]\)</span>
 fracture geometry. You can create the required rotation matrix using:</p>
@@ -502,7 +502,7 @@ stress and strain is <span class="math">\(\sigma_{ij} = c_{ijkl} \epsilon_{kl}\)
 meaning that the transformed tensor is</p>
 <div class="math">
 \[c'_{ijkl} = \sum_{p,q,r,s = 1}^{3} R_{pi}R_{qj}R_{rk}R_{sl} c_{pqrs}\]</div>
-<p>Finally we can work out the values of the effective Young&#8217;s modulus
+<p>Finally we can work out the values of the effective Young’s modulus
 and Poisson ratio in the standard way from the components of the
 compliance matrix:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">S_eff</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
@@ -594,7 +594,7 @@ in uniaxial tension: <span class="math">\(\epsilon_{yy} \to \epsilon_0\)</span> 
 per unit thickness far ahead of the crack tip is</p>
 <div class="math">
 \[W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}\]</div>
-<p>where <span class="math">\(E'\)</span> is the effective Young&#8217;s modulus.</p>
+<p>where <span class="math">\(E'\)</span> is the effective Young’s modulus.</p>
 <p>Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
 unit distance, a vertical strip of material with energy density
@@ -606,12 +606,12 @@ so the energy release rate is simply</p>
 \[G = W_\infty = \frac{\delta^2 E'}{h}\]</div>
 <p>In our simulations we will use periodic boundary conditions in the <span class="math">\(z\)</span>
 direction, so we have plane strain loading (<span class="math">\(\epsilon_{zz} = 0\)</span>),
-which means that the effective Young&#8217;s modulus <span class="math">\(E'\)</span> is given by
-<span class="math">\(E/(1-\nu^2)\)</span>, where <span class="math">\(E\)</span> is the Young&#8217;s modulus in the <span class="math">\(y\)</span> relevant
+which means that the effective Young’s modulus <span class="math">\(E'\)</span> is given by
+<span class="math">\(E/(1-\nu^2)\)</span>, where <span class="math">\(E\)</span> is the Young’s modulus in the <span class="math">\(y\)</span> relevant
 direction and <span class="math">\(\nu\)</span> is the Poisson ratio, so finally we have</p>
 <div class="math">
 \[G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}\]</div>
-<p>Use your values for the Young&#8217;s modulus, Poisson ratio and surface
+<p>Use your values for the Young’s modulus, Poisson ratio and surface
 energy to calculate the value of <span class="math">\(G\)</span> (in units of J/m<sup>2</sup>)
 and strain <span class="math">\(\epsilon\)</span> at which a sample of <span class="math">\(\alpha\)</span>-quartz
 with a height of 50 <span class="math">\(\AA\)</span> is expected to fracture according to
@@ -643,7 +643,7 @@ system. Load this file into <cite>quippy</cite> and rescale it as follows:</p>
 </div>
 <p>Replace <cite>new_strain</cite> with the target strain which should be between
 0.15 and 0.30. If you inspect the new file <cite>quartz_crack_rescaled.xyz</cite>
-you should see it&#8217;s identical to the orignal apart from the rescaling
+you should see it’s identical to the orignal apart from the rescaling
 in the <cite>x</cite> and <cite>y</cite> directions (not along <cite>z</cite> since the system is
 periodic in that direction). Copy the bulk cell and XML parameters and
 start a new crack simulation:</p>
@@ -686,7 +686,7 @@ directions. For our case, the value turns out to be <span class="math">\(c_R \si
 TS classical potential.</p>
 <p>How does your measured value for the crack velocity compare to that
 predicted by the Freund equation of motion for the same <cite>G</cite>?</p>
-<p>At the end of the session we will try to combine everybody&#8217;s results
+<p>At the end of the session we will try to combine everybody’s results
 to produce a plot of <span class="math">\(V(G)\)</span>.</p>
 </div>
 <div class="section" id="extension-tasks">
@@ -721,7 +721,7 @@ using code based on the following:</p>
 to <cite>sig_yy</cite> as function of <cite>eps_yy</cite>. How good is the approximation
 we used above?</p>
 </li>
-<li><p class="first">It&#8217;s important to bear in mind that what we&#8217;ve done here is
+<li><p class="first">It’s important to bear in mind that what we’ve done here is
 necessarily very approximate for a number of reasons:</p>
 <ul class="simple">
 <li>This is a very small system</li>
@@ -795,7 +795,7 @@ limitations be overcome in a more complete simulation?</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

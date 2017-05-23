@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Descriptors for atomic environments &mdash; quippy 2907e96+ documentation</title>
+  <title>Descriptors for atomic environments &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -237,13 +237,14 @@
 <h1>Descriptors for atomic environments<a class="headerlink" href="#descriptors-for-atomic-environments" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="quippy.descriptors.Descriptor">
-<em class="property">class </em><code class="descclassname">quippy.descriptors.</code><code class="descname">Descriptor</code><span class="sig-paren">(</span><em>args_str</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<em class="property">class </em><code class="descclassname">quippy.descriptors.</code><code class="descname">Descriptor</code><span class="sig-paren">(</span><em>args_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pythonic wrapper for GAP descriptor module</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -258,55 +259,20 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">calc_grad</span></code></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">calc_array</span></code></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">cutoff</span></code></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">descriptor_sizes</span></code></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">dimensions</span></code></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">mpi_setup</span></code></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">n_permutations</span></code></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">permutations</span></code></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">sizes</span></code></td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">count</span></code></td>
 <td></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.calc">
-<code class="descname">calc</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>descriptor_out</em>, <em>grad_descriptor_out</em>, <em>grad_descriptor_index</em>, <em>grad_descriptor_pos</em>, <em>args_str</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.calc" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
-<p><strong>descriptor_out</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>grad_descriptor_out</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3), optional</p>
-<p><strong>grad_descriptor_index</strong> :  in/output rank-2 array(&#8216;i&#8217;) with bounds (qp_n4,qp_n5), optional</p>
-<p><strong>grad_descriptor_pos</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n6), optional</p>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_array</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<code class="descname">calc</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates all descriptors of this type in the Atoms object, and
+returns the array of descriptor values. Does not compute gradients; use
+calc_grad() for that.</p>
 </dd></dl>
 
 <dl class="method">
@@ -317,12 +283,12 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
-<p><strong>descriptor_out</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>grad_descriptor_out</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3), optional</p>
-<p><strong>grad_descriptor_index</strong> :  in/output rank-2 array(&#8216;i&#8217;) with bounds (qp_n4,qp_n5), optional</p>
-<p><strong>grad_descriptor_pos</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n6), optional</p>
+<p><strong>descriptor_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
+<p><strong>grad_descriptor_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
+<p><strong>grad_descriptor_index</strong> :  in/output rank-2 array(‘i’) with bounds (qp_n4,qp_n5), optional</p>
+<p><strong>grad_descriptor_pos</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n6), optional</p>
 <p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -332,13 +298,28 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </dd></dl>
 
 <dl class="method">
+<dt id="quippy.descriptors.Descriptor.calc_grad">
+<code class="descname">calc_grad</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc_grad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_grad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates all descriptors of this type in the Atoms object, and
+returns a DescriptorCalcResult object that contains the descriptor
+values, the gradients, and the indices to the involved atoms.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.descriptors.Descriptor.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns how many descriptors of this type are found in the Atoms
+object.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="quippy.descriptors.Descriptor.cutoff">
 <code class="descname">cutoff</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.cutoff" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_descriptor_cutoff</strong> :  float</td>
 </tr>
@@ -358,8 +339,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -376,7 +357,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ret_descriptor_dimensions</strong> :  int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -398,10 +379,10 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <blockquote>
 <div><p>shape(qp_mpi_mask,0)</p>
 </div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>mpi_mask</strong> :  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>mpi_mask</strong> :  rank-1 array(‘i’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -418,7 +399,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ret_descriptor_n_permutations</strong> :  int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -429,29 +410,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.permutations">
-<code class="descname">permutations</code><span class="sig-paren">(</span><em>n0</em>, <em>n1</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.permutations" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_permutations,0)</p>
-</div></blockquote>
-<p><strong>n1</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_permutations,1)</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>permutations</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_permutations</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<code class="descname">permutations</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.permutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.permutations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns array containing all valid permutations of this descriptor.</p>
 </dd></dl>
 
 <dl class="method">
@@ -464,14 +424,26 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.descriptors.Descriptor.n_dim">
+<code class="descname">n_dim</code><a class="headerlink" href="#quippy.descriptors.Descriptor.n_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of dimensions</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="quippy.descriptors.Descriptor.n_perm">
+<code class="descname">n_perm</code><a class="headerlink" href="#quippy.descriptors.Descriptor.n_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of permutations</p>
 </dd></dl>
 
 </dd></dl>
@@ -526,7 +498,7 @@ expanded function</td>
 <td>None</td>
 <td>False</td>
 <td>Place a Gaussian reference for all atom
-species densities.&#8221;// &#8220;By default (F)
+species densities.”// “By default (F)
 only consider when neighbour is the
 same species as centre</td>
 </tr>
@@ -606,7 +578,7 @@ was created</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -627,7 +599,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">descriptor_sizes</span></code></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">sizes</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">sizes</span></code></td>
 <td></td>
 </tr>
 </tbody>
@@ -639,7 +620,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_soap_cutoff</strong> :  float</td>
 </tr>
@@ -659,8 +640,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -679,8 +660,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -726,7 +707,7 @@ descriptors</td>
 <td>str</td>
 <td>PARAM_MANDATORY</td>
 <td>Atomic numbers of monomer one, format
-{Z1 Z2 Z3 ...}</td>
+{Z1 Z2 Z3 …}</td>
 </tr>
 <tr class="row-odd"><td>strict</td>
 <td>None</td>
@@ -741,7 +722,7 @@ to monomer</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -774,7 +755,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_general_monomer_cutoff</strong> :  float</td>
 </tr>
@@ -794,8 +775,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -814,8 +795,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -863,7 +844,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

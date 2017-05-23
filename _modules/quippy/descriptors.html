@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>quippy.descriptors &mdash; quippy 967e02c+ documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="../../_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                967e02c+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+    <p></p>
+    <ul>
+        <li><a href="../../genindex.html">Index</a></li>
+        <li><a href="../../py-modindex.html">Module Index</a></li>
+        <li><a href="../../search.html">Search Page</a></li>
+        <li><a href="../index.html">Module Source Code</a></li>
+    </ul>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">quippy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>quippy.descriptors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for quippy.descriptors</h1><div class="highlight"><pre>
+<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   Copyright ST John 2017</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   These portions of the source code are released under the GNU General</span>
+<span class="c1"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   If you would like to license the source code under different terms,</span>
+<span class="c1"># HQ X   please contact James Kermode, james.kermode@gmail.com</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   When using this software, please cite the following reference:</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="k">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">ASEAtoms</span>
+
+<span class="kn">from</span> <span class="nn">quippy._descriptors</span> <span class="k">import</span> <span class="n">Descriptor</span> <span class="k">as</span> <span class="n">RawDescriptor</span>
+<span class="kn">from</span> <span class="nn">quippy._descriptors</span> <span class="k">import</span> <span class="n">Soap</span><span class="p">,</span> <span class="n">General_monomer</span>
+<span class="kn">from</span> <span class="nn">quippy.oo_fortran</span> <span class="k">import</span> <span class="n">update_doc_string</span>
+<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">fzeros</span>
+<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Descriptor&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">DescriptorCalcResult</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Results of a descriptor calculation with gradients.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">grad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="c1">#self.i_desc, self.i_atom, self.i_coord = index</span>
+
+
+<span class="k">def</span> <span class="nf">convert_atoms_types_iterable_method</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator to transparently convert ASEAtoms objects into quippy Atoms, and</span>
+<span class="sd">    to transparently iterate over a list of Atoms objects...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ASEAtoms</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atelement</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="k">for</span> <span class="n">atelement</span> <span class="ow">in</span> <span class="n">at</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<div class="viewcode-block" id="Descriptor"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor">[docs]</a><span class="k">class</span> <span class="nc">Descriptor</span><span class="p">(</span><span class="n">RawDescriptor</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span>
+        <span class="n">RawDescriptor</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+        <span class="sd">&quot;&quot;&quot;Pythonic wrapper for GAP descriptor module&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">signature</span><span class="o">=</span><span class="s1">&#39;Descriptor(args_str)&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args_str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises Descriptor object and calculate number of dimensions and</span>
+<span class="sd">        permutations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">RawDescriptor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args_str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_perm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permutations</span><span class="p">()</span>
+
+    <span class="c1">#: Number of dimensions</span>
+    <span class="n">n_dim</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span>
+    <span class="c1">#: Number of permutations</span>
+    <span class="n">n_perm</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_perm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span>
+
+<div class="viewcode-block" id="Descriptor.permutations"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.permutations">[docs]</a>    <span class="k">def</span> <span class="nf">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns array containing all valid permutations of this descriptor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_perm</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+<div class="viewcode-block" id="Descriptor.count"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.count">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns how many descriptors of this type are found in the Atoms</span>
+<span class="sd">        object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Descriptor.calc"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.calc">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates all descriptors of this type in the Atoms object, and</span>
+<span class="sd">        returns the array of descriptor values. Does not compute gradients; use</span>
+<span class="sd">        calc_grad() for that.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_desc</span><span class="p">,</span> <span class="n">n_cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="n">n_desc</span><span class="p">))</span>
+        <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+<div class="viewcode-block" id="Descriptor.calc_grad"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.calc_grad">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">calc_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates all descriptors of this type in the Atoms object, and</span>
+<span class="sd">        returns a DescriptorCalcResult object that contains the descriptor</span>
+<span class="sd">        values, the gradients, and the indices to the involved atoms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># what do we want to get out of it?</span>
+        <span class="n">n_desc</span><span class="p">,</span> <span class="n">n_cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="n">n_desc</span><span class="p">))</span>
+        <span class="c1"># n_cross is number of cross-terms, proportional to n_desc</span>
+        <span class="n">data_grad</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">n_cross</span><span class="p">))</span>
+        <span class="n">data_index</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">n_cross</span><span class="p">),</span> <span class="s1">&#39;i&#39;</span><span class="p">)</span>
+        <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_grad</span><span class="p">,</span> <span class="n">data_index</span><span class="p">)</span>
+        <span class="c1"># TODO: convert to numpy arrays and expose in suitable fashion</span>
+        <span class="k">return</span> <span class="n">DescriptorCalcResult</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_grad</span><span class="p">,</span> <span class="n">data_index</span><span class="p">)</span></div></div>
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'967e02c+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

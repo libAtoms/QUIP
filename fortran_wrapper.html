@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Appendix: wrapping Fortran 90 Code &mdash; quippy 2907e96+ documentation</title>
+  <title>Appendix: wrapping Fortran 90 Code &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="next" title="f90doc — Fortran 90 source code scanner" href="f90doc.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -105,9 +105,9 @@
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Appendix: wrapping Fortran 90 Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> &#8212; Fortran 90 source code scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> &#8212; modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
 <li class="toctree-l2"><a class="reference internal" href="oo_fortran.html">Fortran 90 derived-type support</a></li>
 </ul>
 </li>
@@ -221,7 +221,7 @@
 <span id="wrapping-fortran-90-code"></span><h1>Appendix: wrapping Fortran 90 Code<a class="headerlink" href="#appendix-wrapping-fortran-90-code" title="Permalink to this headline">¶</a></h1>
 <p>This section describes the machinery involved in connecting between
 Python and Fortran. You should only read it if you want to extend
-or modify quippy, or if you&#8217;re interested in how it works.</p>
+or modify quippy, or if you’re interested in how it works.</p>
 <p>There are four steps in the process of wrapping a QUIP Fortran
 routine to allow it to be called from quippy. The first two take place
 at compile-time (and so these modules do not form part of the
@@ -246,13 +246,13 @@ variables, converting arguments back and forth automatically.</li>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> &#8212; Fortran 90 source code scanner</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="f90doc.html#command-line-usage">Command line usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="f90doc.html#module-usage">Module usage</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> &#8212; modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="oo_fortran.html">Fortran 90 derived-type support</a><ul class="simple">
 </ul>
 </li>
@@ -311,7 +311,7 @@ variables, converting arguments back and forth automatically.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

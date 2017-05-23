@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Structure building routines &mdash; quippy 2907e96+ documentation</title>
+  <title>Structure building routines &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -284,7 +284,7 @@
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.sh2" title="quippy.structures.sh2"><code class="xref py py-obj docutils literal"><span class="pre">sh2</span></code></a>(a,c,[z])</td>
 <td>Creates a 2-atom simple hexagonal lattice with lattice constants of <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">c</span></code></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_compatible_supercells" title="quippy.structures.find_compatible_supercells"><code class="xref py py-obj docutils literal"><span class="pre">find_compatible_supercells</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_compatible_supercells" title="quippy.structures.find_compatible_supercells"><code class="xref py py-obj docutils literal"><span class="pre">find_compatible_supercells</span></code></a>(…)</td>
 <td>find supercells of two lattices that are compatible (i.e.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.imma" title="quippy.structures.imma"><code class="xref py py-obj docutils literal"><span class="pre">imma</span></code></a>(a,b,c,u,[z])</td>
@@ -312,7 +312,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_motif" title="quippy.structures.find_motif"><code class="xref py py-obj docutils literal"><span class="pre">find_motif</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_motif" title="quippy.structures.find_motif"><code class="xref py py-obj docutils literal"><span class="pre">find_motif</span></code></a>(…)</td>
 <td>Subgraph isomorphism identifier based on J.R.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.diamond" title="quippy.structures.diamond"><code class="xref py py-obj docutils literal"><span class="pre">diamond</span></code></a>(a,[z])</td>
@@ -338,10 +338,10 @@
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.bulk" title="quippy.structures.bulk"><code class="xref py py-obj docutils literal"><span class="pre">bulk</span></code></a>(lat_type,a,[c,u,x,y,z,atnum])</td>
 <td>Construct a bulk primitive cell with a given lattice type and lattice parameters</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.supercell" title="quippy.structures.supercell"><code class="xref py py-obj docutils literal"><span class="pre">supercell</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.supercell" title="quippy.structures.supercell"><code class="xref py py-obj docutils literal"><span class="pre">supercell</span></code></a>(…)</td>
 <td>Replicates the unit cell <code class="docutils literal"><span class="pre">n1*n2*n3</span></code> times along the lattice vectors.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.structure_from_file" title="quippy.structures.structure_from_file"><code class="xref py py-obj docutils literal"><span class="pre">structure_from_file</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.structure_from_file" title="quippy.structures.structure_from_file"><code class="xref py py-obj docutils literal"><span class="pre">structure_from_file</span></code></a>(…)</td>
 <td>create a supercell of a structure, read from a file, with chosen</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.map_nearest_atoms" title="quippy.structures.map_nearest_atoms"><code class="xref py py-obj docutils literal"><span class="pre">map_nearest_atoms</span></code></a>(at1,at2,types)</td>
@@ -517,7 +517,7 @@
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.diamond2" title="quippy.structures.diamond2"><code class="xref py py-obj docutils literal"><span class="pre">diamond2</span></code></a>(a,[z1,z2])</td>
 <td>Creates a 2-atom diamond-structure with cubic lattice constant of <code class="docutils literal"><span class="pre">a</span></code></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.surface_unit_cell" title="quippy.structures.surface_unit_cell"><code class="xref py py-obj docutils literal"><span class="pre">surface_unit_cell</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.surface_unit_cell" title="quippy.structures.surface_unit_cell"><code class="xref py py-obj docutils literal"><span class="pre">surface_unit_cell</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -531,7 +531,7 @@
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.slab" title="quippy.structures.slab"><code class="xref py py-obj docutils literal"><span class="pre">slab</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">slab</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.orthorhombic_slab" title="quippy.structures.orthorhombic_slab"><code class="xref py py-obj docutils literal"><span class="pre">orthorhombic_slab</span></code></a>(at[,&nbsp;tol,&nbsp;min_nrep,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.orthorhombic_slab" title="quippy.structures.orthorhombic_slab"><code class="xref py py-obj docutils literal"><span class="pre">orthorhombic_slab</span></code></a>(at[,&nbsp;tol,&nbsp;min_nrep,&nbsp;…])</td>
 <td>Try to construct an orthorhombic cell equivalent to the primitive cell <cite>at</cite>, using supercells up to at most <cite>max_nrep</cite> repeats.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.rotation_matrix" title="quippy.structures.rotation_matrix"><code class="xref py py-obj docutils literal"><span class="pre">rotation_matrix</span></code></a>(unit,&nbsp;y[,&nbsp;z,&nbsp;x,&nbsp;tol])</td>
@@ -567,7 +567,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">quartz_params</span></code></td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -619,7 +619,7 @@
 <dt>Negative indices can be denoted by:</dt>
 <dd><ol class="first last arabic simple">
 <li>leading minus sign, e.g. <code class="docutils literal"><span class="pre">[11-2]</span></code></li>
-<li>trailing <code class="docutils literal"><span class="pre">b</span></code> (for &#8216;bar&#8217;), e.g. <code class="docutils literal"><span class="pre">112b</span></code></li>
+<li>trailing <code class="docutils literal"><span class="pre">b</span></code> (for ‘bar’), e.g. <code class="docutils literal"><span class="pre">112b</span></code></li>
 <li>LaTeX <code class="docutils literal"><span class="pre">\bar{}</span></code>, e.g. <code class="docutils literal"><span class="pre">[11\bar{2}]</span></code> (which renders as <span class="math">\([11\bar{2}]\)</span> in LaTeX)</li>
 </ol>
 </dd>
@@ -647,8 +647,8 @@ i.e. <code class="docutils literal"><span class="pre">[001]</span></code>, <code
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>grid_size</strong> :  input float</p>
 <p><strong>cutoff</strong> :  input float</p>
-<p><strong>grid</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
-<p class="last"><strong>radii</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n2)</p>
+<p><strong>grid</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
+<p class="last"><strong>radii</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n2)</p>
 </td>
 </tr>
 </tbody>
@@ -690,14 +690,14 @@ i.e. <code class="docutils literal"><span class="pre">[001]</span></code>, <code
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>r</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>r</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>n0</strong> :  input int</p>
 <blockquote>
 <div><p>shape(qp_closest_list,0)</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>closest_list</strong> :  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>closest_list</strong> :  rank-1 array(‘i’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -737,11 +737,11 @@ equal or parallel vectors to some tolerance)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>l1</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>l1</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 <blockquote>
 <div><p>lattices of 1st and 2nd structures</p>
 </div></blockquote>
-<p><strong>l2</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>l2</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 <blockquote>
 <div><p>lattices of 1st and 2nd structures</p>
 </div></blockquote>
@@ -749,17 +749,17 @@ equal or parallel vectors to some tolerance)</p>
 <blockquote>
 <div><p>tolerange for good enough match.</p>
 </div></blockquote>
-<p><strong>n1</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (3,3)</p>
+<p><strong>n1</strong> :  rank-2 array(‘i’) with bounds (3,3)</p>
 <blockquote>
 <div><p>output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )</p>
 </div></blockquote>
-<p><strong>n2</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (3,3)</p>
+<p><strong>n2</strong> :  rank-2 array(‘i’) with bounds (3,3)</p>
 <blockquote>
 <div><p>output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )</p>
 </div></blockquote>
 <p><strong>fix_l2</strong> :  input int, optional</p>
 <blockquote>
-<div><p>if true, don&#8217;t allow supercells of l2</p>
+<div><p>if true, don’t allow supercells of l2</p>
 </div></blockquote>
 <p><strong>max_m1</strong> :  input int, optional</p>
 <blockquote>
@@ -769,7 +769,7 @@ equal or parallel vectors to some tolerance)</p>
 <blockquote>
 <div><p>max range of supercells to check (bigger is slower)</p>
 </div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 <blockquote class="last">
 <div><p>if present, error status return</p>
 </div></blockquote>
@@ -849,7 +849,7 @@ equal or parallel vectors to some tolerance)</p>
 <dd><p>Subgraph isomorphism identifier based on J.R. Ullmann, JACM 23(1) 31-42 (1976)</p>
 <p>Slight modifications are that if we include two unconnected vertices in the subgraph
 then the corresponding vertices in the isomorphism MUST also be disconnected.
-i.e. if we don``t include a bond between two atoms it is because it really isn``t there.</p>
+i.e. if we don“t include a bond between two atoms it is because it really isn“t there.</p>
 <p>Pattern matching problems are combinatorial in time required, so the routine itself
 has seven different escape routes; the first six try to quickly fail and prevent the
 main part of the algorithm from executing at all.</p>
@@ -897,7 +897,7 @@ molecule from being re-identified as an OH, and then later as two hydrogens.</p>
 are returned.  Useful for situations where things are ambiguous and need to be resolved
 with more information outside this routine</p>
 <p>The routine could optionally find hysteretically defined connections between neighbours,
-if the alt_connect&#8217;s cutoff were the same as at.cutoff(_break)</p>
+if the alt_connect’s cutoff were the same as at.cutoff(_break)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -906,7 +906,7 @@ if the alt_connect&#8217;s cutoff were the same as at.cutoff(_break)</p>
 <blockquote>
 <div><p>The atoms structure to search</p>
 </div></blockquote>
-<p><strong>motif</strong> :  input rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+<p><strong>motif</strong> :  input rank-2 array(‘i’) with bounds (qp_n0,qp_n1)</p>
 <blockquote>
 <div><p>The motif to search for</p>
 </div></blockquote>
@@ -918,13 +918,13 @@ if the alt_connect&#8217;s cutoff were the same as at.cutoff(_break)</p>
 <blockquote>
 <div><p>Start and End atomic indices for search</p>
 </div></blockquote>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n2), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n2), optional</p>
 <blockquote>
 <div><p>If present only masked atoms are searched</p>
 </div></blockquote>
 <p><strong>find_all_possible_matches</strong> :  input int, optional</p>
 <blockquote>
-<div><p>if true, don&#8217;t exclude matches that overlap</p>
+<div><p>if true, don’t exclude matches that overlap</p>
 </div></blockquote>
 <p><strong>nneighb_only</strong> :  input int, optional</p>
 <p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
@@ -961,7 +961,7 @@ and atomic number <code class="docutils literal"><span class="pre">Z</span></cod
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>z</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
@@ -989,9 +989,9 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axes</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axes</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 <p><strong>a</strong> :  input float</p>
-<p><strong>atnum</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>atnum</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 <p><strong>lat_type</strong> :  input string(len=-1), optional</p>
 <p><strong>c</strong> :  input float, optional</p>
 <p><strong>u</strong> :  input float, optional</p>
@@ -1039,7 +1039,7 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>distance</strong> :  input float</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1069,7 +1069,7 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <p><strong>x</strong> :  input float, optional</p>
 <p><strong>y</strong> :  input float, optional</p>
 <p><strong>z</strong> :  input float, optional</p>
-<p><strong>atnum</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>atnum</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 <blockquote>
 <div><p>Optionally specify atomic numbers</p>
 </div></blockquote>
@@ -1100,7 +1100,7 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <p><strong>n2</strong> :  input int</p>
 <p><strong>n3</strong> :  input int</p>
 <p><strong>supercell_index_name</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>aa</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
@@ -1121,7 +1121,7 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <dd><p>create a supercell of a structure, read from a file, with chosen
 volume per atom or volume per unit cell, with desired supercell
 repeats, and specified Z values.
-file may contain default Z values as a property Z_values=``Z1 Z2 ...``
+file may contain default Z values as a property Z_values=“Z1 Z2 …“
 structures that begin with . or / are searched for as paths,
 and everything else is searched for in <code class="docutils literal"><span class="pre">QUIP_ARCH/structures/struct.xyz</span></code>
 or in <code class="docutils literal"><span class="pre">HOME/share/quip_structures/struct.xyz</span></code></p>
@@ -1132,9 +1132,9 @@ or in <code class="docutils literal"><span class="pre">HOME/share/quip_structure
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>struct</strong> :  input string(len=-1)</p>
 <p><strong>vol_per_atom</strong> :  input float, optional</p>
 <p><strong>vol_per_unit_cell</strong> :  input float, optional</p>
-<p><strong>repeat</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>repeat</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>z_values_str</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dup_cell</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
@@ -1155,7 +1155,7 @@ or in <code class="docutils literal"><span class="pre">HOME/share/quip_structure
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at1</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>at2</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>types</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>types</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_map_nearest_atoms</strong> :  float</p>
@@ -1301,7 +1301,7 @@ surface are aligned with the cell boundaries</p>
 <blockquote>
 <div><p>Input</p>
 </div></blockquote>
-<p><strong>t</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>t</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>at_out</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
@@ -1643,9 +1643,9 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lat</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lat</strong> :  input rank-2 array(‘d’) with bounds (3,3)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_reduced_lat</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_reduced_lat</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
 </tr>
 </tbody>
 </table>
@@ -1683,9 +1683,9 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>p</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>l</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>b</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>p</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>l</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>b</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p class="last"><strong>close_threshold</strong> :  input float, optional</p>
 </td>
 </tr>
@@ -1771,11 +1771,11 @@ giving the correct density at 300K</p>
 <blockquote>
 <div><p>Input (small) cell</p>
 </div></blockquote>
-<p><strong>i1</strong> :  input rank-2 array(&#8216;i&#8217;) with bounds (3,3)</p>
+<p><strong>i1</strong> :  input rank-2 array(‘i’) with bounds (3,3)</p>
 <blockquote>
 <div><p>combination of primitive lattice vectors to create supercell (a_out.lattice = a_in.lattice . i1).  column i specifies output pbc vector i.</p>
 </div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 <blockquote>
 <div><p>if present, returned error status</p>
 </div></blockquote>
@@ -1822,11 +1822,11 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>surf_v</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>surf_v</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <blockquote>
 <div><p>surface vector</p>
 </div></blockquote>
-<p><strong>lat</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>lat</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 <blockquote>
 <div><p>lattice</p>
 </div></blockquote>
@@ -1835,7 +1835,7 @@ giving the correct density at 300K</p>
 <p><strong>max_n</strong> :  input int, optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>i_out</strong> :  rank-2 array(&#8216;i&#8217;) with bounds (3,3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>i_out</strong> :  rank-2 array(‘i’) with bounds (3,3)</p>
 <blockquote class="last">
 <div><p>combination of primitive lattice vectors to create supercell (surf_lattice = latt . i_out).  column i specifies output pbc vector i.</p>
 </div></blockquote>
@@ -1860,22 +1860,22 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axes</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>a</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>nx</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>ny</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>nz</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>atnum</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>lat_type</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>'c'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>c</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>u</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>x</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>y</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>z</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>axes</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </li>
+<li><strong>a</strong> (<em>input float</em>) – </li>
+<li><strong>nx</strong> (<em>input int</em>) – </li>
+<li><strong>ny</strong> (<em>input int</em>) – </li>
+<li><strong>nz</strong> (<em>input int</em>) – </li>
+<li><strong>atnum</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>lat_type</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>’c’</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>c</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>u</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>x</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>y</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>z</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myslab</strong> &#8211; <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myslab</strong> – <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 </td>
 </tr>
 </tbody>
@@ -1891,24 +1891,24 @@ giving the correct density at 300K</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axes</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>a</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>width</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>height</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>nz</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>atnum</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>lat_type</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>c</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>u</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>x</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>y</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>z</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>even_nx</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>even_ny</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>axes</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </li>
+<li><strong>a</strong> (<em>input float</em>) – </li>
+<li><strong>width</strong> (<em>input float</em>) – </li>
+<li><strong>height</strong> (<em>input float</em>) – </li>
+<li><strong>nz</strong> (<em>input int</em>) – </li>
+<li><strong>atnum</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>lat_type</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>c</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>u</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>x</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>y</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>z</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>even_nx</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>even_ny</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myslab</strong> &#8211; <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myslab</strong> – <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 </td>
 </tr>
 </tbody>
@@ -2010,7 +2010,7 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

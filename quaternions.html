@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quaternions and rotation &mdash; quippy 2907e96+ documentation</title>
+  <title>Quaternions and rotation &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Linear algebra routines" href="linearalgebra.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -355,9 +355,9 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>r</strong> (<em>input float</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>r</strong> (<em>input float</em>) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>q</strong> &#8211; <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>q</strong> – <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object</td>
 </tr>
 </tbody>
 </table>
@@ -371,7 +371,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vect</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -446,7 +446,7 @@ This assumes that the rotation quaternion is properly normalised</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q_in</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_a</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_a</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
 </tr>
 </tbody>
 </table>
@@ -464,7 +464,7 @@ This assumes that the rotation quaternion is properly normalised</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>q</strong> : <a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object</p>
 <p><strong>theta</strong> :  float</p>
-<p class="last"><strong>axis</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p class="last"><strong>axis</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -486,10 +486,10 @@ unless <code class="docutils literal"><span class="pre">correct_angle</span></co
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a1</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>b1</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>a2</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>b2</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a1</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>b1</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>a2</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>b2</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>correct_angle</strong> :  input int, optional</p>
 </td>
 </tr>
@@ -513,7 +513,7 @@ rotate using <span class="math">\(q_3 = q_2 \times q_1\)</span></p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axis</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axis</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>angle</strong> :  input float</p>
 </td>
 </tr>
@@ -540,8 +540,8 @@ rotate using <span class="math">\(q_3 = q_2 \times q_1\)</span></p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>qr</strong> (<a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object) &#8211; </li>
+<li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>qr</strong> (<a class="reference internal" href="#quippy.quaternions.Quaternion" title="quippy.quaternions.Quaternion"><code class="xref py py-class docutils literal"><span class="pre">Quaternion</span></code></a> object) – </li>
 </ul>
 </td>
 </tr>
@@ -561,10 +561,10 @@ rotation on <cite>origin</cite></p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>field</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>axis</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>angle</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>origin</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>field</strong> (<em>in/output rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>axis</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>angle</strong> (<em>input float</em>) – </li>
+<li><strong>origin</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -620,7 +620,7 @@ rotation on <cite>origin</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

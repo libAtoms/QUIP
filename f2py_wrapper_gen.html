@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>f2py_wrapper_gen — Fortran 90 source code wrapping &mdash; quippy 2907e96+ documentation</title>
+  <title>f2py_wrapper_gen — Fortran 90 source code wrapping &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Appendix: wrapping Fortran 90 Code" href="fortran_wrapper.html"/>
         <link rel="next" title="patch_f2py — modify numpy.f2py at runtime" href="patch_f2py.html"/>
         <link rel="prev" title="f90doc — Fortran 90 source code scanner" href="f90doc.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -107,9 +107,9 @@
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> &#8212; Fortran 90 source code scanner</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> &#8212; modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
 <li class="toctree-l2"><a class="reference internal" href="oo_fortran.html">Fortran 90 derived-type support</a></li>
 </ul>
 </li>
@@ -168,7 +168,7 @@
         
           <li><a href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a> &raquo;</li>
         
-      <li><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> &#8212; Fortran 90 source code wrapping</li>
+      <li><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -222,7 +222,7 @@
 }
 </style>
 <div class="section" id="module-f2py_wrapper_gen">
-<span id="f2py-wrapper-gen-fortran-90-source-code-wrapping"></span><h1><a class="reference internal" href="#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><code class="xref py py-mod docutils literal"><span class="pre">f2py_wrapper_gen</span></code></a> &#8212; Fortran 90 source code wrapping<a class="headerlink" href="#module-f2py_wrapper_gen" title="Permalink to this headline">¶</a></h1>
+<span id="f2py-wrapper-gen-fortran-90-source-code-wrapping"></span><h1><a class="reference internal" href="#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><code class="xref py py-mod docutils literal"><span class="pre">f2py_wrapper_gen</span></code></a> — Fortran 90 source code wrapping<a class="headerlink" href="#module-f2py_wrapper_gen" title="Permalink to this headline">¶</a></h1>
 <p>This module is used to write intermediary Fortran 90 wrapper files
 to allow a code which makes use of derived types to be wrapped with f2py.</p>
 <p>All routines which accept derived types arguments are wrapped by
@@ -255,10 +255,10 @@ details see the
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mod</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_module</span></code> instance</li>
-<li><strong>type_map</strong> &#8211; dictionary</li>
-<li><strong>out</strong> &#8211; file-like object or None</li>
-<li><strong>kindlines</strong> &#8211; list of strings</li>
+<li><strong>mod</strong> – <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_module</span></code> instance</li>
+<li><strong>type_map</strong> – dictionary</li>
+<li><strong>out</strong> – file-like object or None</li>
+<li><strong>kindlines</strong> – list of strings</li>
 </ul>
 </td>
 </tr>
@@ -276,7 +276,7 @@ names to the names of the Fortran modules in which they are defined.</p>
 the generated module to import any Fortran kind definitions that are needed
 from other modules.</p>
 <p>The <cite>spec</cite> dictionary returned by this function is combined with those
-of other modules and saved to disk by quippy&#8217;s <code class="file docutils literal"><span class="pre">setup.py</span></code> script.</p>
+of other modules and saved to disk by quippy’s <code class="file docutils literal"><span class="pre">setup.py</span></code> script.</p>
 </dd></dl>
 
 </div>
@@ -325,7 +325,7 @@ of other modules and saved to disk by quippy&#8217;s <code class="file docutils 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

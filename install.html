@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation of QUIP and quippy &mdash; quippy 2907e96+ documentation</title>
+  <title>Installation of QUIP and quippy &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="next" title="Examples" href="Examples/index.html"/>
         <link rel="prev" title="Introduction to quippy" href="intro.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -253,7 +253,7 @@ libraries.  For example, on Ubuntu, do (in a terminal):</p>
 <p>For other systems, replace the <code class="docutils literal"><span class="pre">apt-get</span></code> part with your system package manager.
 Beware that the packages might also have slightly different names; these can
 usually be found with a quick search.</p>
-<p>Don&#8217;t forget the <code class="docutils literal"><span class="pre">quippy</span></code> prerequisites:</p>
+<p>Don’t forget the <code class="docutils literal"><span class="pre">quippy</span></code> prerequisites:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install numpy
 $ pip install ase
 </pre></div>
@@ -283,7 +283,7 @@ Jupyter notebook</a> to run the interactive tutorials.</p>
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>If this isn&#8217;t your machine and you don&#8217;t have root access, these
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>If this isn’t your machine and you don’t have root access, these
 packages might already be installed by the system administrator.  If not,
 ask them.</td></tr>
 </tbody>
@@ -291,7 +291,7 @@ ask them.</td></tr>
 </div>
 <div class="section" id="step-by-step">
 <h3>Step by step<a class="headerlink" href="#step-by-step" title="Permalink to this headline">¶</a></h3>
-<p>If that didn&#8217;t work, try these step-by-step instructions
+<p>If that didn’t work, try these step-by-step instructions
 instructions excerpted from the top-level <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>.  The <code class="docutils literal"><span class="pre">README</span></code> file
 is the most up-to-date source of installation information.</p>
 <blockquote>
@@ -306,7 +306,7 @@ reference versions <code class="docutils literal"><span class="pre">libblas-dev<
 </ul>
 </li>
 <li><p class="first">Clone the QUIP repository from GitHub. The <code class="docutils literal"><span class="pre">--recursive</span></code> option
-brings in submodules automatically (If you don&#8217;t do this, then
+brings in submodules automatically (If you don’t do this, then
 you will need to run <code class="docutils literal"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span> <span class="pre">--init</span></code>
 from the top-level QUIP directory after cloning)</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">libAtoms</span><span class="o">/</span><span class="n">QUIP</span><span class="o">.</span><span class="n">git</span>
@@ -329,7 +329,7 @@ more exotic systems.</p>
 <p>Makefile.config will create a build directory, <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}</span></code>,
 and all the building happen there. First it will ask you some
 questions about where you keep libraries and other stuff, if you
-don&#8217;t use something it is asking for, just leave it blank. The
+don’t use something it is asking for, just leave it blank. The
 answers will be stored in <code class="docutils literal"><span class="pre">Makefile.inc</span></code> in the <code class="docutils literal"><span class="pre">build/${QUIP_ARCH}</span></code>
 directory, and you can edit them later (e.g. to change optimisation
 or debug options).</p>
@@ -348,7 +348,7 @@ called directly from that directory.</p>
 <p>Other useful make targets include:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></code> : copies all compiled programs it can find to
-<code class="docutils literal"><span class="pre">QUIP_INSTALLDIR</span></code>, if it&#8217;s defined and is a directory (full path
+<code class="docutils literal"><span class="pre">QUIP_INSTALLDIR</span></code>, if it’s defined and is a directory (full path
 required), and copies bundled structures to <code class="docutils literal"><span class="pre">QUIP_STRUCTS_DIR</span></code>
 if it is defined.</li>
 <li><code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code>:   Compile QUIP as a library and link to it.
@@ -453,7 +453,7 @@ into library form, and then follow the instructions in the
 </li>
 </ol>
 </div></blockquote>
-<p>If that still doesn&#8217;t work or you&#8217;re using a nonstandard architecture, try
+<p>If that still doesn’t work or you’re using a nonstandard architecture, try
 looking at <a class="reference internal" href="#custom-settings">Custom settings</a> and <a class="reference internal" href="#common-problems">Common Problems</a>.  As a last resort you can
 consult the <a class="reference external" href="https://github.com/libAtoms/QUIP/issues">issue tracker on Github</a>.</p>
 </div>
@@ -477,7 +477,7 @@ enclosing directory) then navigate to the notebooks and open
 <table class="docutils footnote" frame="void" id="id4" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td>This assumes you&#8217;ve already run <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python-pip;</span> <span class="pre">pip</span>
+<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td>This assumes you’ve already run <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python-pip;</span> <span class="pre">pip</span>
 <span class="pre">install</span> <span class="pre">numpy;</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ase</span></code> as in the <a class="reference internal" href="#quick-start">Quick start</a>.</td></tr>
 </tbody>
 </table>
@@ -511,7 +511,7 @@ Should be read automatically from QUIP Makefiles.</dd>
 </dd>
 <dt><strong class="makevar">QUIPPY_DEFINES</strong> Preprocessor macros which should be defined</dt>
 <dd>when compiling quippy. Note that since the Fortran source files are
-preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, it&#8217;s
+preprocessed <em>before</em> being scanned by <a class="reference internal" href="f90doc.html#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a>, it’s
 important to put all the <cite>-D</cite> options needed here and not in
 <strong class="makevar">QUIPPY_F90FLAGS</strong>.</dd>
 <dt><strong class="makevar">QUIPPY_F90FLAGS</strong> and <strong class="makevar">QUIPPY_F77FLAGS</strong></dt>
@@ -579,7 +579,7 @@ or by applying <a class="reference external" href="http://projects.scipy.org/num
 <h3>ImportError when importing<a class="headerlink" href="#importerror-when-importing" title="Permalink to this headline">¶</a></h3>
 <p>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message about unresolved
 dependancies then something went wrong with the linking process -
-check that all the libraries you&#8217;re linking against are correct. You
+check that all the libraries you’re linking against are correct. You
 can used <cite>ldd</cite> on Linux of <cite>otool -L</cite> on Mac OS X to check which
 libraries the <code class="file docutils literal"><span class="pre">_quippy.so</span></code> Python extension is linked against.</p>
 </div>
@@ -633,7 +633,7 @@ If not make clean and recompile again</p>
 WARNING:root:quippy.castep import quippy.failed.
 </pre></div>
 </div>
-<p>then don&#8217;t worry, the quippy.castep module is not redistributed with
+<p>then don’t worry, the quippy.castep module is not redistributed with
 the main code. The rest of quippy works fine without it.</p>
 </div>
 <div class="section" id="internal-compiler-error-with-ifort">
@@ -720,7 +720,7 @@ threading with <code class="docutils literal"><span class="pre">export</span> <s
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

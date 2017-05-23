@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Phonon calculation &mdash; quippy 2907e96+ documentation</title>
+  <title>Phonon calculation &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Tools for electrostatic embedding" href="electrostaticembed.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -262,7 +262,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonon_fine_calc_print" title="quippy.phonons.phonon_fine_calc_print"><code class="xref py py-obj docutils literal"><span class="pre">phonon_fine_calc_print</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonon_fine_calc_print" title="quippy.phonons.phonon_fine_calc_print"><code class="xref py py-obj docutils literal"><span class="pre">phonon_fine_calc_print</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -284,7 +284,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonons_all" title="quippy.phonons.phonons_all"><code class="xref py py-obj docutils literal"><span class="pre">phonons_all</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonons_all" title="quippy.phonons.phonons_all"><code class="xref py py-obj docutils literal"><span class="pre">phonons_all</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -321,7 +321,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 </tbody>
 </table>
@@ -335,7 +335,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.calc" title="quippy.phonons.Phonon_fine.calc"><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.calc" title="quippy.phonons.Phonon_fine.calc"><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -369,15 +369,15 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
 <p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
-<p><strong>phonon_supercell</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
-<p><strong>phonon_supercell_fine</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>phonon_supercell</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
+<p><strong>phonon_supercell_fine</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>calc_args</strong> :  input string(len=-1), optional</p>
 <p><strong>do_parallel</strong> :  input int, optional</p>
-<p><strong>phonons_path_start</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>phonons_path_end</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>phonons_path_start</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>phonons_path_end</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
 <p><strong>phonons_path_steps</strong> :  input int, optional</p>
 <p><strong>do_phonopy_force_const_mat</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -394,7 +394,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -415,16 +415,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
 <p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
-<p><strong>phonon_supercell</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
-<p><strong>phonon_supercell_fine</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>phonon_supercell</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
+<p><strong>phonon_supercell_fine</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>calc_args</strong> :  input string(len=-1), optional</p>
 <p><strong>do_parallel</strong> :  input int, optional</p>
-<p><strong>phonons_path_start</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>phonons_path_end</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>phonons_path_start</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>phonons_path_end</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
 <p><strong>phonons_path_steps</strong> :  input int, optional</p>
 <p><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
 <p><strong>do_phonopy_force_const_mat</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -443,7 +443,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
 <p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
-<p><strong>evec</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<p><strong>evec</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
 <p><strong>calc_args</strong> :  input string(len=-1), optional</p>
 </td>
 </tr>
@@ -470,17 +470,17 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <blockquote>
 <div><p>shape(qp_evals,0)</p>
 </div></blockquote>
-<p><strong>evecs</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n1,qp_n2), optional</p>
-<p><strong>effective_masses</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n3), optional</p>
+<p><strong>evecs</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n1,qp_n2), optional</p>
+<p><strong>effective_masses</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n3), optional</p>
 <p><strong>calc_args</strong> :  input string(len=-1), optional</p>
-<p><strong>ir_intensities</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n4), optional</p>
+<p><strong>ir_intensities</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n4), optional</p>
 <p><strong>do_parallel</strong> :  input int, optional</p>
 <p><strong>zero_translation</strong> :  input int, optional</p>
 <p><strong>zero_rotation</strong> :  input int, optional</p>
-<p><strong>force_const_mat</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n5,qp_n6), optional</p>
+<p><strong>force_const_mat</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n5,qp_n6), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>evals</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>evals</strong> :  rank-1 array(‘d’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -533,7 +533,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

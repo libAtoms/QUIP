@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 2907e96+ documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -378,7 +378,7 @@ implemented in Fortran it can only store a restricted range of
 data types.  Keys much be strings and values must be one of the
 types above.</p>
 <p>Trying to store any other type of data will raise a <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code>.</p>
-<p>For Atoms&#8217; <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.params" title="quippy.atoms.Atoms.params"><code class="xref py py-attr docutils literal"><span class="pre">params</span></code></a> entries, there are
+<p>For Atoms’ <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.params" title="quippy.atoms.Atoms.params"><code class="xref py py-attr docutils literal"><span class="pre">params</span></code></a> entries, there are
 further restrictions imposed by the implementation of the XYZ and
 NetCDF I/O routines. The only types of data that can be stored here
 are:</p>
@@ -531,7 +531,7 @@ files:</p>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal"><span class="pre">swap</span></code></a>(key1,key2,[case_sensitive,error])</td>
 <td>Swap the positions of two entries in the dictionary.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.write_string" title="quippy.dictionary.Dictionary.write_string"><code class="xref py py-obj docutils literal"><span class="pre">write_string</span></code></a>(…)</td>
 <td>Write a string representation of this dictionary</td>
 </tr>
 </tbody>
@@ -549,10 +549,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-3 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) – </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -569,10 +569,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -589,10 +589,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -609,10 +609,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘D’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -629,10 +629,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -649,10 +649,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -669,10 +669,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -689,10 +689,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input float</em>) – </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -709,10 +709,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -729,10 +729,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -749,10 +749,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -769,10 +769,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=1</em><em>)</em>) &#8211; </li>
-<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=1</em><em>)</em>) – </li>
+<li><strong>len2</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -789,10 +789,10 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>len</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input float</em>) – </li>
+<li><strong>len</strong> (<em>input int</em>) – </li>
+<li><strong>overwrite</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -829,7 +829,7 @@ files:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>from</strong> : <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -859,13 +859,13 @@ files:</p>
 <code class="descname">expand_string</code><span class="sig-paren">(</span><em>in</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.expand_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy extendable string from <code class="docutils literal"><span class="pre">in</span></code> to <code class="docutils literal"><span class="pre">out</span></code>, expanding variables formatted
 as <code class="docutils literal"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary. An error
-is raised if a key is not found, or if the string ends with a dollar sign or braces aren&#8217;t matched</p>
+is raised if a key is not found, or if the string ends with a dollar sign or braces aren’t matched</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>in</strong> : <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>out</strong> : <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object</p>
@@ -891,7 +891,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>key</strong> :  string(len=1024)</p>
@@ -919,8 +919,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>key</strong> :  input string(len=-1)</p>
 <p><strong>type</strong> :  int</p>
 <p><strong>thesize</strong> :  int</p>
-<p><strong>thesize2</strong> :  rank-1 array(&#8216;i&#8217;) with bounds (2)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>thesize2</strong> :  rank-1 array(‘i’) with bounds (2)</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1004,7 +1004,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <blockquote>
 <div><p>If true, append to dictionary (default false)</p>
 </div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1043,8 +1043,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1061,8 +1061,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) – </li>
 </ul>
 </td>
 </tr>
@@ -1079,8 +1079,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-3 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1097,8 +1097,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘D’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1115,8 +1115,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1133,8 +1133,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1150,7 +1150,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -1165,8 +1165,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1183,8 +1183,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1201,8 +1201,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>(</em><em>*</em><em>)</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>(</em><em>*</em><em>)</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1219,8 +1219,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1237,8 +1237,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1255,8 +1255,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
 </ul>
 </td>
 </tr>
@@ -1273,8 +1273,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1291,8 +1291,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input float</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input float</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1317,8 +1317,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1335,8 +1335,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1353,8 +1353,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘D’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1371,8 +1371,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1389,8 +1389,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1407,8 +1407,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1425,8 +1425,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-3 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1449,7 +1449,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>key1</strong> :  input string(len=-1)</p>
 <p><strong>key2</strong> :  input string(len=-1)</p>
 <p><strong>case_sensitive</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1482,7 +1482,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <blockquote>
 <div><p>Character to use to quote output fields containing whitespace, default is <code class="docutils literal"><span class="pre">&quot;</span></code></p>
 </div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dictionary_write_string</strong> :  string(len=10240)</p>
@@ -1527,9 +1527,9 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>mpi</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object) &#8211; </li>
-<li><strong>dict</strong> (<a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>mpi</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object) – </li>
+<li><strong>dict</strong> (<a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1546,10 +1546,10 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>mpi</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object) &#8211; </li>
-<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
-<li><strong>test_out</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>mpi</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object) – </li>
+<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) – </li>
+<li><strong>test_out</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1598,7 +1598,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

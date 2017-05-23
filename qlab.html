@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 2907e96+ documentation</title>
+  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Visualisation Tools" href="visualisation.html"/>
         <link rel="prev" title="Visualisation Tools" href="visualisation.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -236,7 +236,7 @@ especially in conjunction with <a class="reference external" href="http://www.ip
 <h2>Viewing Atoms<a class="headerlink" href="#viewing-atoms" title="Permalink to this headline">¶</a></h2>
 <p>The most important function defined in this module is <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a>, which is
 used to open a new viewer or to update what is displayed in an existing viewer.
-Here&#8217;s an example session to give some ideas of how <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> can be used:</p>
+Here’s an example session to give some ideas of how <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> can be used:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">qlab</span> <span class="k">import</span> <span class="o">*</span>    <span class="c1"># Import all numpy, quippy and atomeye functions</span>
 
 <span class="n">d</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span> <span class="c1"># Make an 8-atom silicon unit cell</span>
@@ -304,7 +304,7 @@ stress tensor:</p>
 <div class="section" id="viewing-trajectories">
 <h2>Viewing Trajectories<a class="headerlink" href="#viewing-trajectories" title="Permalink to this headline">¶</a></h2>
 <p>You can also pass a list of Atoms objects or a trajectory filename to
-<a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> to visualise a sequence of frames. For example, here&#8217;s a
+<a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> to visualise a sequence of frames. For example, here’s a
 sequence of silicon unit cells with increasing lattice constant:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="p">[</span><span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="o">+</span><span class="mf">0.005</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
 <span class="n">view</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
@@ -327,10 +327,10 @@ function is useful to restrict the number of atoms loaded from disk
 and displayed, which can make visualising big systems much more
 managable.</p>
 <p>There is a <a class="reference internal" href="#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal"><span class="pre">gcv()</span></code></a> function to get a reference to the current
-viewer (short for&#8221;get current viewer&#8221;, in analogy with
+viewer (short for”get current viewer”, in analogy with
 <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.gcf" title="(in Matplotlib v2.0.2)"><code class="xref py py-func docutils literal"><span class="pre">gcf()</span></code></a> and <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.gca" title="(in Matplotlib v2.0.2)"><code class="xref py py-func docutils literal"><span class="pre">gca()</span></code></a>
 in <a class="reference external" href="http://matplotlib.org/api/pyplot_api.html#module-matplotlib.pyplot" title="(in Matplotlib v2.0.2)"><code class="xref py py-mod docutils literal"><span class="pre">pylab</span></code></a>), and a similarily named <a class="reference internal" href="#qlab.gcat" title="qlab.gcat"><code class="xref py py-func docutils literal"><span class="pre">gcat()</span></code></a>
-(&#8220;get current atoms&#8221;) to get a reference to the current Atoms being viewed.
+(“get current atoms”) to get a reference to the current Atoms being viewed.
 For a trajectory with multiple frames, this corresponds to the current frame.</p>
 <p>You can set the current frame to 10 directly with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">set_frame</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -384,7 +384,7 @@ a 1 ps MD and render the movie of every 10th frame:</p>
 group of atoms, e.g. to manually define an initial QM region for a
 <a class="reference internal" href="adaptive-qmmm.html#qmmm-tutorial"><span class="std std-ref">QM/MM calculation</span></a>. After invoking the function, right
 clicking on atoms you want to select. They will be highlighted in red. When you
-are done, press <cite>Enter</cite>. Here&#8217;s an example <cite>ipython</cite> session:</p>
+are done, press <cite>Enter</cite>. Here’s an example <cite>ipython</cite> session:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">view</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="n">Reusing</span> <span class="n">viewer</span> <span class="n">named</span> <span class="n">at</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">AtomsViewer</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x10b9f19d0</span> <span class="n">fpointer</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">33474560</span><span class="p">,</span> <span class="mi">32762</span><span class="p">)</span><span class="o">&gt;</span>
@@ -462,7 +462,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.AtomsListViewer" title="qlab.AtomsListViewer"><code class="xref py py-obj docutils literal"><span class="pre">AtomsListViewer</span></code></a>([source,&nbsp;name,&nbsp;rename])</td>
 <td>Subclass of AtomsList and AtomEyeViewer</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#qlab.AtomsReaderViewer" title="qlab.AtomsReaderViewer"><code class="xref py py-obj docutils literal"><span class="pre">AtomsReaderViewer</span></code></a>([source,&nbsp;name,&nbsp;cache,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#qlab.AtomsReaderViewer" title="qlab.AtomsReaderViewer"><code class="xref py py-obj docutils literal"><span class="pre">AtomsReaderViewer</span></code></a>([source,&nbsp;name,&nbsp;cache,&nbsp;…])</td>
 <td>Subclass of AtomsReader and AtomEyeViewer</td>
 </tr>
 </tbody>
@@ -474,7 +474,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-obj docutils literal"><span class="pre">view</span></code></a>(source[,&nbsp;name,&nbsp;recycle,&nbsp;loadall,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-obj docutils literal"><span class="pre">view</span></code></a>(source[,&nbsp;name,&nbsp;recycle,&nbsp;loadall,&nbsp;…])</td>
 <td>Read atoms from <cite>source</cite> and open in an AtomEye viewer window.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.gcv" title="qlab.gcv"><code class="xref py py-obj docutils literal"><span class="pre">gcv</span></code></a>()</td>
@@ -508,19 +508,19 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <td>Close the current viewer window.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.setp" title="qlab.setp"><code class="xref py py-obj docutils literal"><span class="pre">setp</span></code></a>(self,&nbsp;key,&nbsp;value)</td>
-<td>Run the AtomEye command &#8220;set key value&#8221;</td>
+<td>Run the AtomEye command “set key value”</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.save_script" title="qlab.save_script"><code class="xref py py-obj docutils literal"><span class="pre">save_script</span></code></a>(filename)</td>
 <td>Save AtomEye viewer settings to a file.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.toggle_coordination_coloring" title="qlab.toggle_coordination_coloring"><code class="xref py py-obj docutils literal"><span class="pre">toggle_coordination_coloring</span></code></a>()</td>
-<td>Turn on or off colouring by coordination number (key &#8220;k&#8221;)</td>
+<td>Turn on or off colouring by coordination number (key “k”)</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.translate" title="qlab.translate"><code class="xref py py-obj docutils literal"><span class="pre">translate</span></code></a>(axis,&nbsp;delta)</td>
-<td>Translate system along <cite>axis</cite> by an amount <cite>delta</cite> (key &#8220;Ctrl+left/right/up/down&#8221;)</td>
+<td>Translate system along <cite>axis</cite> by an amount <cite>delta</cite> (key “Ctrl+left/right/up/down”)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.shift_xtal" title="qlab.shift_xtal"><code class="xref py py-obj docutils literal"><span class="pre">shift_xtal</span></code></a>(axis,&nbsp;delta)</td>
-<td>Shift crystal within periodic boundaries along <cite>axis</cite> by <cite>delta</cite> (key &#8220;Shift+left/right/up/down&#8221;).</td>
+<td>Shift crystal within periodic boundaries along <cite>axis</cite> by <cite>delta</cite> (key “Shift+left/right/up/down”).</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.rotate" title="qlab.rotate"><code class="xref py py-obj docutils literal"><span class="pre">rotate</span></code></a>(axis,&nbsp;theta)</td>
 <td>Rotate around <cite>axis</cite> by angle <cite>theta</cite>.</td>
@@ -553,7 +553,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <td>Toggle between two different behaviours for when cell is smaller than r_cut/2:  1.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.normal_coloring" title="qlab.normal_coloring"><code class="xref py py-obj docutils literal"><span class="pre">normal_coloring</span></code></a>()</td>
-<td>Return to normal colouring of the atoms (key &#8220;o&#8221;).</td>
+<td>Return to normal colouring of the atoms (key “o”).</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.aux_property_coloring" title="qlab.aux_property_coloring"><code class="xref py py-obj docutils literal"><span class="pre">aux_property_coloring</span></code></a>(auxprop)</td>
 <td>Colour the currently viewed atoms according to <cite>auxprop</cite>.</td>
@@ -574,7 +574,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <td>Toggle between floating and rigid aux property thresholds when moving between frames</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.rcut_patch" title="qlab.rcut_patch"><code class="xref py py-obj docutils literal"><span class="pre">rcut_patch</span></code></a>(sym1,&nbsp;sym2,&nbsp;value[,&nbsp;absolute])</td>
-<td>Change the cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds by <cite>delta</cite>.</td>
+<td>Change the cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds by <cite>delta</cite>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.select_gear" title="qlab.select_gear"><code class="xref py py-obj docutils literal"><span class="pre">select_gear</span></code></a>(gear)</td>
 <td>Change the AtomEye gear to <cite>gear</cite></td>
@@ -648,7 +648,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <tr class="row-even"><td><a class="reference internal" href="#qlab.change_aux_colormap" title="qlab.change_aux_colormap"><code class="xref py py-obj docutils literal"><span class="pre">change_aux_colormap</span></code></a>(n)</td>
 <td>Select the <cite>n</cite>-th auxiliary property colourmap.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#qlab.draw_arrows" title="qlab.draw_arrows"><code class="xref py py-obj docutils literal"><span class="pre">draw_arrows</span></code></a>(property[,&nbsp;scale_factor,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#qlab.draw_arrows" title="qlab.draw_arrows"><code class="xref py py-obj docutils literal"><span class="pre">draw_arrows</span></code></a>(property[,&nbsp;scale_factor,&nbsp;…])</td>
 <td>Draw arrows on each atom, based on a vector property</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#qlab.wait" title="qlab.wait"><code class="xref py py-obj docutils literal"><span class="pre">wait</span></code></a>()</td>
@@ -663,7 +663,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.select_atoms" title="qlab.select_atoms"><code class="xref py py-obj docutils literal"><span class="pre">select_atoms</span></code></a>([reset,&nbsp;markname,&nbsp;value])</td>
 <td>Select atoms by clicking on them.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-obj docutils literal"><span class="pre">render_movie</span></code></a>(moviefile[,&nbsp;start,&nbsp;stop,&nbsp;step,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-obj docutils literal"><span class="pre">render_movie</span></code></a>(moviefile[,&nbsp;start,&nbsp;stop,&nbsp;step,&nbsp;…])</td>
 <td>Render a movie for the trajectory.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.set_cutoffs" title="qlab.set_cutoffs"><code class="xref py py-obj docutils literal"><span class="pre">set_cutoffs</span></code></a>([nneighb_only])</td>
@@ -703,7 +703,7 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.QuippyViewer.clip_visible" title="qlab.QuippyViewer.clip_visible"><code class="xref py py-obj docutils literal"><span class="pre">clip_visible</span></code></a>([orig_index])</td>
 <td>Remove atoms outside the visible window from the Atoms object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#qlab.QuippyViewer.render_movie" title="qlab.QuippyViewer.render_movie"><code class="xref py py-obj docutils literal"><span class="pre">render_movie</span></code></a>(moviefile[,&nbsp;start,&nbsp;stop,&nbsp;step,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#qlab.QuippyViewer.render_movie" title="qlab.QuippyViewer.render_movie"><code class="xref py py-obj docutils literal"><span class="pre">render_movie</span></code></a>(moviefile[,&nbsp;start,&nbsp;stop,&nbsp;step,&nbsp;…])</td>
 <td>Render a movie for the trajectory.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#qlab.QuippyViewer.select_atoms" title="qlab.QuippyViewer.select_atoms"><code class="xref py py-obj docutils literal"><span class="pre">select_atoms</span></code></a>([reset,&nbsp;markname,&nbsp;value])</td>
@@ -722,16 +722,16 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.render_movie">
-<code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder='ffmpeg -i %s -r 25 -b 30M %s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.render_movie" title="Permalink to this definition">¶</a></dt>
+<code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder=’ffmpeg -i %s -r 25 -b 30M %s’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.render_movie" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render a movie for the trajectory.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.select_atoms">
-<code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname='selection_mark'</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.select_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname=’selection_mark’</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.select_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select atoms by clicking on them. Returns a list of atom indices.</p>
 <p>Specify reset=False to modify an existing property. The name of the
-property is <cite>markname</cite> (default &#8220;selection_mark&#8221;) and the value of
+property is <cite>markname</cite> (default “selection_mark”) and the value of
 clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 </dd></dl>
 
@@ -748,9 +748,9 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <dt id="qlab.QuippyViewer.show">
 <code class="descname">show</code><span class="sig-paren">(</span><em>property=None</em>, <em>frame=None</em>, <em>arrows=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update what is shown in this AtomEye viewer window.</p>
-<p><cite>property</cite> should be the name of the auxiliary property used to colour the atoms (e.g. &#8220;charge&#8221;)
+<p><cite>property</cite> should be the name of the auxiliary property used to colour the atoms (e.g. “charge”)
 <cite>frame</cite> is the (zero-based) index of the frame to show.
-<cite>arrows</cite> is the name of a vector property to use to draw arrows on the atoms (e.g. &#8220;force&#8221;)</p>
+<cite>arrows</cite> is the name of a vector property to use to draw arrows on the atoms (e.g. “force”)</p>
 <p>When called with no arguments, show() is equivalent to redraw().</p>
 </dd></dl>
 
@@ -988,7 +988,7 @@ Default is <code class="docutils literal"><span class="pre">[0.,1.,0.]</span></c
 
 <dl class="function">
 <dt id="qlab.highlight_qm_region">
-<code class="descclassname">qlab.</code><code class="descname">highlight_qm_region</code><span class="sig-paren">(</span><em>at=None</em>, <em>run_suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#highlight_qm_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.highlight_qm_region" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">qlab.</code><code class="descname">highlight_qm_region</code><span class="sig-paren">(</span><em>at=None</em>, <em>run_suffix=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#highlight_qm_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.highlight_qm_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Highlight QM region by replacing Si atoms with Al,
 and O atoms with N, and changing colour of QM atoms to dark blue. Can be used as
 a hook function to render_movie().</p>
@@ -1023,7 +1023,7 @@ a hook function to render_movie().</p>
 <dl class="function">
 <dt id="qlab.normal_coloring">
 <code class="descclassname">qlab.</code><code class="descname">normal_coloring</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#normal_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.normal_coloring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return to normal colouring of the atoms (key &#8220;o&#8221;).</p>
+<dd><p>Return to normal colouring of the atoms (key “o”).</p>
 </dd></dl>
 
 <dl class="function">
@@ -1036,13 +1036,13 @@ a hook function to render_movie().</p>
 <dl class="function">
 <dt id="qlab.rcut_patch">
 <code class="descclassname">qlab.</code><code class="descname">rcut_patch</code><span class="sig-paren">(</span><em>sym1</em>, <em>sym2</em>, <em>value</em>, <em>absolute=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#rcut_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.rcut_patch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Change the cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds by <cite>delta</cite>.</p>
+<dd><p>Change the cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds by <cite>delta</cite>.</p>
 <p>e.g. to increase cutoff for Si-Si bonds by 0.5 A use:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>With <cite>absolute</cite> set to True, <cite>value</cite> is used to set the
-absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.g.:</p>
+absolute cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds, e.g.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">2.50</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1056,7 +1056,7 @@ absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.
 
 <dl class="function">
 <dt id="qlab.render_movie">
-<code class="descclassname">qlab.</code><code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder='ffmpeg -i %s -r 25 -b 30M %s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.render_movie" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">qlab.</code><code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder=’ffmpeg -i %s -r 25 -b 30M %s’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.render_movie" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render a movie for the trajectory.</p>
 </dd></dl>
 
@@ -1117,10 +1117,10 @@ absolute cutoff distance for <cite>sym1</cite>&#8211;<cite>sym2</cite> bonds, e.
 
 <dl class="function">
 <dt id="qlab.select_atoms">
-<code class="descclassname">qlab.</code><code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname='selection_mark'</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.select_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">qlab.</code><code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname=’selection_mark’</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.select_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select atoms by clicking on them. Returns a list of atom indices.</p>
 <p>Specify reset=False to modify an existing property. The name of the
-property is <cite>markname</cite> (default &#8220;selection_mark&#8221;) and the value of
+property is <cite>markname</cite> (default “selection_mark”) and the value of
 clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <p>See also <a class="reference internal" href="#qlab-select-atoms"><span class="std std-ref">Selecting Atoms</span></a></p>
 </dd></dl>
@@ -1156,7 +1156,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <dl class="function">
 <dt id="qlab.setp">
 <code class="descclassname">qlab.</code><code class="descname">setp</code><span class="sig-paren">(</span><em>self</em>, <em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#setp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.setp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the AtomEye command &#8220;set key value&#8221;</p>
+<dd><p>Run the AtomEye command “set key value”</p>
 </dd></dl>
 
 <dl class="function">
@@ -1174,7 +1174,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <dl class="function">
 <dt id="qlab.shift_xtal">
 <code class="descclassname">qlab.</code><code class="descname">shift_xtal</code><span class="sig-paren">(</span><em>axis</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#shift_xtal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.shift_xtal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shift crystal within periodic boundaries along <cite>axis</cite> by <cite>delta</cite> (key &#8220;Shift+left/right/up/down&#8221;).</p>
+<dd><p>Shift crystal within periodic boundaries along <cite>axis</cite> by <cite>delta</cite> (key “Shift+left/right/up/down”).</p>
 </dd></dl>
 
 <dl class="function">
@@ -1198,7 +1198,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <dl class="function">
 <dt id="qlab.toggle_coordination_coloring">
 <code class="descclassname">qlab.</code><code class="descname">toggle_coordination_coloring</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#toggle_coordination_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.toggle_coordination_coloring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Turn on or off colouring by coordination number (key &#8220;k&#8221;)</p>
+<dd><p>Turn on or off colouring by coordination number (key “k”)</p>
 </dd></dl>
 
 <dl class="function">
@@ -1223,7 +1223,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 <dl class="function">
 <dt id="qlab.translate">
 <code class="descclassname">qlab.</code><code class="descname">translate</code><span class="sig-paren">(</span><em>axis</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.translate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Translate system along <cite>axis</cite> by an amount <cite>delta</cite> (key &#8220;Ctrl+left/right/up/down&#8221;)</p>
+<dd><p>Translate system along <cite>axis</cite> by an amount <cite>delta</cite> (key “Ctrl+left/right/up/down”)</p>
 </dd></dl>
 
 <dl class="function">
@@ -1301,7 +1301,7 @@ lattice vectors.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

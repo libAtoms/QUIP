@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Cluster carving routines &mdash; quippy 2907e96+ documentation</title>
+  <title>Cluster carving routines &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Identification of atoms on surfaces" href="find_surface_atoms.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -245,34 +245,34 @@
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.estimate_origin_extent" title="quippy.clusters.estimate_origin_extent"><code class="xref py py-obj docutils literal"><span class="pre">estimate_origin_extent</span></code></a>(at,active,cluster_radius)</td>
 <td>Return estimated <cite>(origin, extent)</cite> for hysteretic connectivity calculator to include all atoms within a distance <cite>cluster_radius</cite> of an atom in the <cite>active</cite> array.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_pos_or_list_centred_hybrid_region" title="quippy.clusters.create_pos_or_list_centred_hybrid_region"><code class="xref py py-obj docutils literal"><span class="pre">create_pos_or_list_centred_hybrid_region</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_pos_or_list_centred_hybrid_region" title="quippy.clusters.create_pos_or_list_centred_hybrid_region"><code class="xref py py-obj docutils literal"><span class="pre">create_pos_or_list_centred_hybrid_region</span></code></a>(…)</td>
 <td>Use hysteretic connectivity calculator so we can work with relative cutoffs Updates the core QM flags saved in <code class="docutils literal"><span class="pre">hybrid</span></code> and <code class="docutils literal"><span class="pre">hybrid_mark</span></code> properties.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_embed_and_fit_lists" title="quippy.clusters.create_embed_and_fit_lists"><code class="xref py py-obj docutils literal"><span class="pre">create_embed_and_fit_lists</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_embed_and_fit_lists" title="quippy.clusters.create_embed_and_fit_lists"><code class="xref py py-obj docutils literal"><span class="pre">create_embed_and_fit_lists</span></code></a>(…)</td>
 <td>Given an Atoms structure with an active region marked in the mark_name (default <code class="docutils literal"><span class="pre">hybrid_mark</span></code>) property using <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code>, grow the embed region by <code class="docutils literal"><span class="pre">fit_hops</span></code> bond hops to form a fit region.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.discard_non_min_images" title="quippy.clusters.discard_non_min_images"><code class="xref py py-obj docutils literal"><span class="pre">discard_non_min_images</span></code></a>(list)</td>
 <td>Given an input list with 4 integer columns for atomic indices</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.get_hybrid_list" title="quippy.clusters.get_hybrid_list"><code class="xref py py-obj docutils literal"><span class="pre">get_hybrid_list</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.get_hybrid_list" title="quippy.clusters.get_hybrid_list"><code class="xref py py-obj docutils literal"><span class="pre">get_hybrid_list</span></code></a>(…)</td>
 <td>return list of atoms that have various subsets of hybrid marks set</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.construct_hysteretic_region" title="quippy.clusters.construct_hysteretic_region"><code class="xref py py-obj docutils literal"><span class="pre">construct_hysteretic_region</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.construct_hysteretic_region" title="quippy.clusters.construct_hysteretic_region"><code class="xref py py-obj docutils literal"><span class="pre">construct_hysteretic_region</span></code></a>(…)</td>
 <td>Given an atoms object, and a point <code class="docutils literal"><span class="pre">centre</span></code> or a list of atoms <code class="docutils literal"><span class="pre">core</span></code>, fill the <code class="docutils literal"><span class="pre">region</span></code> table with all atoms hysteretically within <code class="docutils literal"><span class="pre">inner_radius</span> <span class="pre">--</span> <span class="pre">outer_radius</span></code> of the <code class="docutils literal"><span class="pre">centre</span></code> or any <code class="docutils literal"><span class="pre">core</span></code> atom, which can be reached by connectivity hopping.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_hybrid_weights" title="quippy.clusters.create_hybrid_weights"><code class="xref py py-obj docutils literal"><span class="pre">create_hybrid_weights</span></code></a>(at,args_str,[error])</td>
 <td>Given an atoms structure with a <code class="docutils literal"><span class="pre">hybrid_mark</span></code> property, set to <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code> for some atoms, this routine adds transition and buffer regions, and creates a <code class="docutils literal"><span class="pre">weight_region1</span></code> property, whose values are between 0 and 1.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.carve_cluster" title="quippy.clusters.carve_cluster"><code class="xref py py-obj docutils literal"><span class="pre">carve_cluster</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.carve_cluster" title="quippy.clusters.carve_cluster"><code class="xref py py-obj docutils literal"><span class="pre">carve_cluster</span></code></a>(…)</td>
 <td>Create cluster from atoms and cluster information table (which which should be generated by a call to <code class="xref py py-func docutils literal"><span class="pre">create_cluster_info_from_hybrid_mark()</span></code>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.multiple_images" title="quippy.clusters.multiple_images"><code class="xref py py-obj docutils literal"><span class="pre">multiple_images</span></code></a>(list)</td>
 <td>Check if the list of indices and shifts <code class="docutils literal"><span class="pre">list</span></code> contains any repeated atomic indices.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_cluster_info_from_mark" title="quippy.clusters.create_cluster_info_from_mark"><code class="xref py py-obj docutils literal"><span class="pre">create_cluster_info_from_mark</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_cluster_info_from_mark" title="quippy.clusters.create_cluster_info_from_mark"><code class="xref py py-obj docutils literal"><span class="pre">create_cluster_info_from_mark</span></code></a>(…)</td>
 <td>Create a cluster using the mark_name (optional arg, default <code class="docutils literal"><span class="pre">hybrid_mark</span></code>) property and options in <code class="docutils literal"><span class="pre">args_str</span></code>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_cluster_simple" title="quippy.clusters.create_cluster_simple"><code class="xref py py-obj docutils literal"><span class="pre">create_cluster_simple</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.clusters.create_cluster_simple" title="quippy.clusters.create_cluster_simple"><code class="xref py py-obj docutils literal"><span class="pre">create_cluster_simple</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -283,7 +283,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_embed_and_fit_lists_from_cluster_mark" title="quippy.clusters.create_embed_and_fit_lists_from_cluster_mark"><code class="xref py py-obj docutils literal"><span class="pre">create_embed_and_fit_lists_from_cluster_mark</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.clusters.create_embed_and_fit_lists_from_cluster_mark" title="quippy.clusters.create_embed_and_fit_lists_from_cluster_mark"><code class="xref py py-obj docutils literal"><span class="pre">create_embed_and_fit_lists_from_cluster_mark</span></code></a>(…)</td>
 <td>Given an Atoms structure with an active region marked in the mark_name (default <code class="docutils literal"><span class="pre">cluster_mark</span></code>) property using <code class="docutils literal"><span class="pre">HYBRID_ACTIVE_MARK</span></code>, and buffer region marked using <code class="docutils literal"><span class="pre">HYBRID_BUFFER_MARK</span></code>, <code class="docutils literal"><span class="pre">HYBRID_TRANS_MARK</span></code> or <code class="docutils literal"><span class="pre">HYBRID_BUFFER_OUTER_LAYER_MARK</span></code>, simply returns the embedlist and fitlist according to <code class="docutils literal"><span class="pre">cluster_mark</span></code>.</td>
 </tr>
 </tbody>
@@ -313,9 +313,9 @@
 <td>1</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">hybrid_mark_name</span></code></td>
-<td>[&#8216;h_none    &#8216; &#8216;h_active  &#8216; &#8216;h_buffer  &#8216; &#8216;h_trans   &#8216; &#8216;h_term    &#8216;</td>
+<td>[‘h_none    ‘ ‘h_active  ‘ ‘h_buffer  ‘ ‘h_trans   ‘ ‘h_term    ‘</td>
 </tr>
-<tr class="row-odd"><td>&#8216;h_outer_l &#8216; &#8216;h_fit     &#8216;]</td>
+<tr class="row-odd"><td>‘h_outer_l ‘ ‘h_fit     ‘]</td>
 <td>&#160;</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">HYBRID_TERM_MARK</span></code></td>
@@ -343,10 +343,10 @@ of an atom in the <cite>active</cite> array.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>active</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<p><strong>active</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 <p><strong>cluster_radius</strong> :  input float</p>
-<p><strong>origin</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p class="last"><strong>extent</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>origin</strong> :  rank-1 array(‘d’) with bounds (3)</p>
+<p class="last"><strong>extent</strong> :  rank-2 array(‘d’) with bounds (3,3)</p>
 </td>
 </tr>
 </tbody>
@@ -373,7 +373,7 @@ optionally correct selected region with heuristics (as coded in
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>my_atoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>r_inner</strong> :  input float</p>
 <p><strong>r_outer</strong> :  input float</p>
-<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
 <p><strong>atomlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
 <p><strong>use_avgpos</strong> :  input int, optional</p>
 <p><strong>add_only_heavy_atoms</strong> :  input int, optional</p>
@@ -382,11 +382,11 @@ optionally correct selected region with heuristics (as coded in
 <p><strong>min_images_only</strong> :  input int, optional</p>
 <p><strong>use_create_cluster_info</strong> :  input int, optional</p>
 <p><strong>create_cluster_info_args</strong> :  input string(len=-1), optional</p>
-<p><strong>list_changed</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>list_changed</strong> :  in/output rank-0 array(int,’i’), optional</p>
 <p><strong>mark_postfix</strong> :  input string(len=-1), optional</p>
 <p><strong>ignore_silica_residue</strong> :  input int, optional</p>
 <p><strong>res_num_silica</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -413,7 +413,7 @@ periodic shifts.</p>
 <p><strong>cluster_hopping_nneighb_only</strong> :  input int, optional</p>
 <p><strong>min_images_only</strong> :  input int, optional</p>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -453,7 +453,7 @@ and shifts, keep only the minimum images of each atom</p>
 </div></blockquote>
 <p><strong>all_but_term</strong> :  input int, optional</p>
 <blockquote>
-<div><p>if present and true, select all marked atoms that aren&#8217;t TERM</p>
+<div><p>if present and true, select all marked atoms that aren’t TERM</p>
 </div></blockquote>
 <p><strong>active_trans_only</strong> :  input int, optional</p>
 <blockquote>
@@ -464,7 +464,7 @@ exactly one of all_but_term and active_trans_only must be present and true</p>
 <blockquote>
 <div><p>if present, property to check, default cluster_mark</p>
 </div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>hybrid_list</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
@@ -496,7 +496,7 @@ Optionally use only heavy atom selection.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>region</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
 <p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>core</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object, optional</p>
-<p><strong>centre</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
+<p><strong>centre</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
 <p><strong>loop_atoms_no_connectivity</strong> :  input int, optional</p>
 <p><strong>inner_radius</strong> :  input float</p>
 <p><strong>outer_radius</strong> :  input float</p>
@@ -509,7 +509,7 @@ Optionally use only heavy atom selection.</p>
 <p><strong>debugfile</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
 <p><strong>ignore_silica_residue</strong> :  input int, optional</p>
 <p><strong>res_num_silica</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -695,7 +695,7 @@ region: hop_ramp or distance_ramp</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -763,7 +763,7 @@ termination bond lengths</dd>
 </td>
 <td>Fix the cluster lattice to be cubic
 with given 3 lengths. useful with DFT
-codes where one doesn&#8217;t pay for vacuum.</td>
+codes where one doesn’t pay for vacuum.</td>
 </tr>
 <tr class="row-even"><td>cluster_round_lattice</td>
 <td>float</td>
@@ -774,7 +774,7 @@ lattice (default is 3.0 A)</td>
 <tr class="row-odd"><td>cluster_same_lattice</td>
 <td>bool</td>
 <td>False</td>
-<td>Don&#8217;t modify cluster cell vectors from
+<td>Don’t modify cluster cell vectors from
 incoming cell vectors</td>
 </tr>
 <tr class="row-even"><td>cluster_vacuum</td>
@@ -843,7 +843,7 @@ not override mark_name argument</td>
 <p><strong>args_str</strong> :  input string(len=-1)</p>
 <p><strong>cluster_info</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>cluster</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
@@ -912,7 +912,7 @@ various heuristics</td>
 <td>bool</td>
 <td>True</td>
 <td>Apply is_nearest_neighbor test to bonds
-when deciding what&#8217;s bonded for
+when deciding what’s bonded for
 heuristics. If false, uses connectivity
 object as is</td>
 </tr>
@@ -935,24 +935,24 @@ is</td>
 <td>bool</td>
 <td>False</td>
 <td>Do not add vaccum along x, so as to
-make cluster&#8217;s cell vectors periodic</td>
+make cluster’s cell vectors periodic</td>
 </tr>
 <tr class="row-odd"><td>cluster_periodic_y</td>
 <td>bool</td>
 <td>False</td>
 <td>Do not add vaccum along y, so as to
-make cluster&#8217;s cell vectors periodic</td>
+make cluster’s cell vectors periodic</td>
 </tr>
 <tr class="row-even"><td>cluster_periodic_z</td>
 <td>bool</td>
 <td>False</td>
 <td>Do not add vaccum along z, so as to
-make cluster&#8217;s cell vectors periodic</td>
+make cluster’s cell vectors periodic</td>
 </tr>
 <tr class="row-odd"><td>cluster_same_lattice</td>
 <td>bool</td>
 <td>False</td>
-<td>Don&#8217;t modify cluster cell vectors from
+<td>Don’t modify cluster cell vectors from
 incoming cell vectors</td>
 </tr>
 <tr class="row-even"><td>combined_protein_heuristics</td>
@@ -990,7 +990,7 @@ disable termination clash heuristic</td>
 <td>bool</td>
 <td>False</td>
 <td>Use hysteretic connect object to decide
-what&#8217;s bonded. Usually goes with
+what’s bonded. Usually goes with
 cluster_*_nneighb_only=F.</td>
 </tr>
 <tr class="row-odd"><td>in_out_in</td>
@@ -1004,8 +1004,8 @@ equivalent to reduce_n_cut_bonds.</td>
 <td>str</td>
 <td>all</td>
 <td>Mode to use for in_out_in heuristic -
-can be either &#8216;all&#8217; or &#8216;any&#8217;. Default
-is &#8216;all&#8217;.</td>
+can be either ‘all’ or ‘any’. Default
+is ‘all’.</td>
 </tr>
 <tr class="row-odd"><td>keep_whole_molecules</td>
 <td>bool</td>
@@ -1062,13 +1062,13 @@ no point H passivating bonds with an H</td>
 <td>True</td>
 <td>Apply heuristic protecting double bonds
 from being cut (based one some
-heuristic idea of what&#8217;s a double bond</td>
+heuristic idea of what’s a double bond</td>
 </tr>
 <tr class="row-even"><td>protect_peptide_bonds</td>
 <td>bool</td>
 <td>False</td>
 <td>Apply heuristic protecting peptide
-bonds from being cut (RO-C...N-RR)</td>
+bonds from being cut (RO-C…N-RR)</td>
 </tr>
 <tr class="row-odd"><td>reduce_n_cut_bonds</td>
 <td>bool</td>
@@ -1115,7 +1115,7 @@ bonds</td>
 the cluster.  See create_cluster() documentation.</p>
 </div></blockquote>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_cluster_info</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
@@ -1137,7 +1137,7 @@ the cluster.  See create_cluster() documentation.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>args_str</strong> :  input string(len=-1)</p>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>cluster</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
@@ -1164,7 +1164,7 @@ according to <code class="docutils literal"><span class="pre">cluster_mark</span
 <p><strong>embedlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
 <p><strong>fitlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1217,7 +1217,7 @@ according to <code class="docutils literal"><span class="pre">cluster_mark</span
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

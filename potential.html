@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Potential objects &mdash; quippy 2907e96+ documentation</title>
+  <title>Potential objects &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -408,13 +408,13 @@ directory of the QUIP git repository.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-obj docutils literal"><span class="pre">Potential</span></code></a>(init_args[,&nbsp;pot1,&nbsp;pot2,&nbsp;param_str,&nbsp;...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-obj docutils literal"><span class="pre">Potential</span></code></a>(init_args[,&nbsp;pot1,&nbsp;pot2,&nbsp;param_str,&nbsp;…)</td>
 <td>Provides interface to all energy/force/virial calculating schemes, including actual calculations, as well as abstract hybrid schemes such as LOTF, Force Mixing, ONIOM, and the local energy scheme.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-obj docutils literal"><span class="pre">Minim</span></code></a>(atoms[,&nbsp;restart,&nbsp;relax_positions,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-obj docutils literal"><span class="pre">Minim</span></code></a>(atoms[,&nbsp;restart,&nbsp;relax_positions,&nbsp;…])</td>
 <td>Minimise forces and/or virial tensor components wrt atomic positions and/or cell.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.ForceMixingPotential" title="quippy.potential.ForceMixingPotential"><code class="xref py py-obj docutils literal"><span class="pre">ForceMixingPotential</span></code></a>(pot1,&nbsp;pot2[,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.potential.ForceMixingPotential" title="quippy.potential.ForceMixingPotential"><code class="xref py py-obj docutils literal"><span class="pre">ForceMixingPotential</span></code></a>(pot1,&nbsp;pot2[,&nbsp;…])</td>
 <td>Subclass of <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> for mixing forces from two Potentials</td>
 </tr>
 </tbody>
@@ -546,7 +546,7 @@ cutoff of this Potential: if it is less than this it will be increased
 automatically and a warning will be printed.
 The neighbour lists are updated automatically with the
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.calc_connect" title="quippy.atoms.Atoms.calc_connect"><code class="xref py py-meth docutils literal"><span class="pre">calc_connect()</span></code></a> routine. For efficiency,
-it&#8217;s a good idea to set at.cutoff_skin greater than zero to decrease
+it’s a good idea to set at.cutoff_skin greater than zero to decrease
 the frequency at which the connectivity needs to be rebuilt.</p>
 <p>A Potential can be used to optimise the geometry of an
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> structure, using the <a class="reference internal" href="#quippy.potential.Potential.minim" title="quippy.potential.Potential.minim"><code class="xref py py-meth docutils literal"><span class="pre">minim()</span></code></a> routine,
@@ -587,13 +587,13 @@ to mix 2 other potentials</td>
 <tr class="row-odd"><td>ForceMixing</td>
 <td>None</td>
 <td>false</td>
-<td>Potential that&#8217;s force-mixing of 2
+<td>Potential that’s force-mixing of 2
 other potentials</td>
 </tr>
 <tr class="row-even"><td>Local_E_Mix</td>
 <td>None</td>
 <td>false</td>
-<td>Potential that&#8217;s local energy mixing of
+<td>Potential that’s local energy mixing of
 2 other potentials</td>
 </tr>
 <tr class="row-odd"><td>ONIOM</td>
@@ -605,7 +605,7 @@ other potential energies</td>
 <tr class="row-even"><td>Sum</td>
 <td>None</td>
 <td>false</td>
-<td>Potential that&#8217;s a sum of 2 other
+<td>Potential that’s a sum of 2 other
 potentials</td>
 </tr>
 <tr class="row-odd"><td>calc_args</td>
@@ -681,13 +681,13 @@ match</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>args_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
-<li><strong>pot1</strong> (<a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object, optional) &#8211; Optional first Potential upon which this Potential is based</li>
-<li><strong>pot2</strong> (<a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object, optional) &#8211; Optional second potential</li>
-<li><strong>param_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; contents of xml parameter file for potential initializers, if needed</li>
-<li><strong>bulk_scale</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) &#8211; optional bulk structure for calculating space and E rescaling</li>
-<li><strong>mpi_obj</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>args_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
+<li><strong>pot1</strong> (<a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object, optional) – Optional first Potential upon which this Potential is based</li>
+<li><strong>pot2</strong> (<a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object, optional) – Optional second potential</li>
+<li><strong>param_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – contents of xml parameter file for potential initializers, if needed</li>
+<li><strong>bulk_scale</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) – optional bulk structure for calculating space and E rescaling</li>
+<li><strong>mpi_obj</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -704,11 +704,11 @@ match</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>args_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
-<li><strong>io_obj</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; name of xml parameter inoutput for potential initializers</li>
-<li><strong>bulk_scale</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) &#8211; optional bulk structure for calculating space and E rescaling</li>
-<li><strong>mpi_obj</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>args_str</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – Valid arguments are <code class="docutils literal"><span class="pre">Sum</span></code>, <code class="docutils literal"><span class="pre">ForceMixing</span></code>, <code class="docutils literal"><span class="pre">EVB</span></code>, <code class="docutils literal"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal"><span class="pre">ONIOM</span></code>, and any type of simple_potential</li>
+<li><strong>io_obj</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) – name of xml parameter inoutput for potential initializers</li>
+<li><strong>bulk_scale</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object, optional) – optional bulk structure for calculating space and E rescaling</li>
+<li><strong>mpi_obj</strong> (<a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -750,7 +750,7 @@ the <cite>calculator</cite> argument to the <a class="reference internal" href="
 </div>
 <p><cite>atoms</cite> if given, is used to set the calculator associated
 with <cite>atoms</cite> to the new <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> instance, by calling
-:meth:&#8217;.Atoms.set_calculator`.</p>
+:meth:’.Atoms.set_calculator`.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">QUIP potentials do not compute stress and per-atom stresses
@@ -841,14 +841,14 @@ array in <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.array
 <code class="descname">calc</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>energy</em>, <em>force</em>, <em>virial</em>, <em>local_energy</em>, <em>local_virial</em>, <em>args_str</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.calc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply this Potential to the Atoms object
 <code class="docutils literal"><span class="pre">at</span></code>. Atoms.calc_connect is automatically called to update the
-connecticvity information &#8211; if efficiency is important to you,
+connecticvity information – if efficiency is important to you,
 ensure that at.cutoff_skin is set to a non-zero value to decrease
 the frequence of connectivity updates.
 optional arguments determine what should be calculated and how
 it will be returned. Each physical quantity has a
 corresponding optional argument, which can either be an <code class="docutils literal"><span class="pre">True</span></code>
 to store the result inside the Atoms object (i.e. in
-Atoms.params`` or in <a href="#id1"><span class="problematic" id="id2">``</span></a>Atoms.properties&#8217; with the
+Atoms.params“ or in <a href="#id1"><span class="problematic" id="id2">``</span></a>Atoms.properties’ with the
 default name, a string to specify a different property or
 parameter name, or an array of the the correct shape to
 receive the quantity in question, as set out in the table
@@ -980,13 +980,13 @@ default arguments.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>energy</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
-<p><strong>force</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>virial</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
-<p><strong>local_energy</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (qp_n2), optional</p>
-<p><strong>local_virial</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n3,qp_n4), optional</p>
+<p><strong>energy</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<p><strong>force</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
+<p><strong>virial</strong> :  in/output rank-2 array(‘d’) with bounds (3,3), optional</p>
+<p><strong>local_energy</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n2), optional</p>
+<p><strong>local_virial</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n3,qp_n4), optional</p>
 <p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1014,11 +1014,11 @@ default arguments.</p>
 <blockquote>
 <div><p>Optional args_str to pass to <code class="docutils literal"><span class="pre">minim</span></code></p>
 </div></blockquote>
-<p><strong>c</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (6,6), optional</p>
+<p><strong>c</strong> :  in/output rank-2 array(‘d’) with bounds (6,6), optional</p>
 <blockquote>
 <div><p>Elastic constants (with relaxation)</p>
 </div></blockquote>
-<p><strong>c0</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (6,6), optional</p>
+<p><strong>c0</strong> :  in/output rank-2 array(‘d’) with bounds (6,6), optional</p>
 <blockquote>
 <div><p>Elastic constants (without relaxation)</p>
 </div></blockquote>
@@ -1061,13 +1061,13 @@ default arguments.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>cluster</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>mark_name</strong> :  input string(len=-1)</p>
-<p><strong>ngrid</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
-<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>extent</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>real_grid</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
-<p><strong>pot</strong> :  in/output rank-3 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3,qp_n4)</p>
+<p><strong>ngrid</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
+<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>extent</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>real_grid</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
+<p><strong>pot</strong> :  in/output rank-3 array(‘d’) with bounds (qp_n2,qp_n3,qp_n4)</p>
 <p><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1093,27 +1093,27 @@ This always triggers a force calculation, since the elements for dH and dS are a
 <blockquote>
 <div><p>Additional arguments to pass to TB <cite>calc()</cite> routine</p>
 </div></blockquote>
-<p><strong>hd</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1), optional</p>
+<p><strong>hd</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
 <blockquote>
 <div><p>Hamiltonian and overlap for real wavefunctions (gamma point)</p>
 </div></blockquote>
-<p><strong>sd</strong> :  in/output rank-2 array(&#8216;d&#8217;) with bounds (qp_n2,qp_n3), optional</p>
+<p><strong>sd</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
 <blockquote>
 <div><p>Hamiltonian and overlap for real wavefunctions (gamma point)</p>
 </div></blockquote>
-<p><strong>hz</strong> :  in/output rank-2 array(&#8216;D&#8217;) with bounds (qp_n4,qp_n5), optional</p>
+<p><strong>hz</strong> :  in/output rank-2 array(‘D’) with bounds (qp_n4,qp_n5), optional</p>
 <blockquote>
 <div><p>Complex Hamiltonian and overlap (multiple kpoints)</p>
 </div></blockquote>
-<p><strong>sz</strong> :  in/output rank-2 array(&#8216;D&#8217;) with bounds (qp_n6,qp_n7), optional</p>
+<p><strong>sz</strong> :  in/output rank-2 array(‘D’) with bounds (qp_n6,qp_n7), optional</p>
 <blockquote>
 <div><p>Complex Hamiltonian and overlap (multiple kpoints)</p>
 </div></blockquote>
-<p><strong>dh</strong> :  in/output rank-4 array(&#8216;d&#8217;) with bounds (qp_n8,qp_n9,qp_n10,qp_n11), optional</p>
+<p><strong>dh</strong> :  in/output rank-4 array(‘d’) with bounds (qp_n8,qp_n9,qp_n10,qp_n11), optional</p>
 <blockquote>
 <div><p>Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
 </div></blockquote>
-<p><strong>ds</strong> :  in/output rank-4 array(&#8216;d&#8217;) with bounds (qp_n12,qp_n13,qp_n14,qp_n15), optional</p>
+<p><strong>ds</strong> :  in/output rank-4 array(‘d’) with bounds (qp_n12,qp_n13,qp_n14,qp_n15), optional</p>
 <blockquote>
 <div><p>Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
 </div></blockquote>
@@ -1144,14 +1144,14 @@ This always triggers a force calculation, since the elements for dH and dS are a
 <code class="descname">cutoff</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.cutoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the cutoff of this <code class="docutils literal"><span class="pre">Potential</span></code>, in Angstrom. This is the
 minimum neighbour connectivity cutoff that should be used: if
-you``re doing MD you``ll want to use a slightly larger cutoff so
-that new neighbours don&#8217;t drift in to range between connectivity
+you“re doing MD you“ll want to use a slightly larger cutoff so
+that new neighbours don’t drift in to range between connectivity
 updates</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_potential_cutoff</strong> :  float</td>
 </tr>
@@ -1181,7 +1181,7 @@ updates</p>
 <div><p>optional bulk structure for calculating space and E rescaling</p>
 </div></blockquote>
 <p><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1314,7 +1314,7 @@ explanation):</p>
 </div></blockquote>
 <p><strong>do_print</strong> :  input int, optional</p>
 <blockquote>
-<div><p>if true, print configurations using minim&#8217;s hook()</p>
+<div><p>if true, print configurations using minim’s hook()</p>
 </div></blockquote>
 <p><strong>print_inoutput</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
 <blockquote>
@@ -1348,13 +1348,13 @@ explanation):</p>
 <blockquote>
 <div><p>if using fire minim, max value for time step</p>
 </div></blockquote>
-<p><strong>external_pressure</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>external_pressure</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
 <p><strong>use_precond</strong> :  input int, optional</p>
 <p><strong>hook_print_interval</strong> :  input int, optional</p>
 <blockquote>
 <div><p>how often to print xyz from hook function</p>
 </div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 <blockquote>
 <div><p>set to 1 if an error occurred during minimisation</p>
 </div></blockquote>
@@ -1398,7 +1398,7 @@ explanation):</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1463,7 +1463,7 @@ computed can be obtained from the <cite>calc_energy</cite>, <cite>calc_local_e</
 should be returned either as <cite>at.params</cite> entries (for energy and
 virial) or by adding new atomic properties (for forces and local
 energy).</p>
-<p>Here&#8217;s an example implementation of a simple callback:</p>
+<p>Here’s an example implementation of a simple callback:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_callback</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">at</span><span class="o">.</span><span class="n">calc_energy</span><span class="p">:</span>
        <span class="n">at</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
@@ -1493,8 +1493,8 @@ energy).</p>
 <dd><p>Set label and convert label to directory and prefix.</p>
 <p>Examples:</p>
 <ul class="simple">
-<li>label=&#8217;abc&#8217;: (directory=&#8217;.&#8217;, prefix=&#8217;abc&#8217;)</li>
-<li>label=&#8217;dir1/abc&#8217;: (directory=&#8217;dir1&#8217;, prefix=&#8217;abc&#8217;)</li>
+<li>label=’abc’: (directory=’.’, prefix=’abc’)</li>
+<li>label=’dir1/abc’: (directory=’dir1’, prefix=’abc’)</li>
 </ul>
 <p>Calculators that must write results to files with fixed names
 can overwrite this method so that the directory is set to all
@@ -1513,7 +1513,7 @@ of label.</p>
 <div><p>The atoms structure to compute energy and forces</p>
 </div></blockquote>
 <p><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1601,14 +1601,14 @@ of label.</p>
 
 <dl class="class">
 <dt id="quippy.potential.Minim">
-<em class="property">class </em><code class="descclassname">quippy.potential.</code><code class="descname">Minim</code><span class="sig-paren">(</span><em>atoms</em>, <em>restart=None</em>, <em>relax_positions=True</em>, <em>relax_cell=True</em>, <em>logfile='-'</em>, <em>trajectory=None</em>, <em>method='cg'</em>, <em>linminroutine=None</em>, <em>eps_guess=None</em>, <em>fire_dt0=None</em>, <em>fire_dt_max=None</em>, <em>external_pressure=None</em>, <em>use_precond=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Minim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Minim" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.potential.</code><code class="descname">Minim</code><span class="sig-paren">(</span><em>atoms</em>, <em>restart=None</em>, <em>relax_positions=True</em>, <em>relax_cell=True</em>, <em>logfile=’-‘</em>, <em>trajectory=None</em>, <em>method=’cg’</em>, <em>linminroutine=None</em>, <em>eps_guess=None</em>, <em>fire_dt0=None</em>, <em>fire_dt_max=None</em>, <em>external_pressure=None</em>, <em>use_precond=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Minim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Minim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimise forces and/or virial tensor components wrt atomic
 positions and/or cell.</p>
 <p>This class is a wrapper around the
 <a class="reference internal" href="#quippy.potential.Potential.minim" title="quippy.potential.Potential.minim"><code class="xref py py-meth docutils literal"><span class="pre">quippy.potential.Potential.minim()</span></code></a> routine, compatible with
 the ASE <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html">optimizer inferface</a>.</p>
 <p><cite>method</cite> should be one of <code class="docutils literal"><span class="pre">&quot;sd&quot;</span></code>, (steepest descent), <code class="docutils literal"><span class="pre">&quot;cg&quot;</span></code>
-(conjugate gradients, the default), <code class="docutils literal"><span class="pre">&quot;cg_n&quot;</span></code> (Noam Bernstein&#8217;s conjugate gradients
+(conjugate gradients, the default), <code class="docutils literal"><span class="pre">&quot;cg_n&quot;</span></code> (Noam Bernstein’s conjugate gradients
 implementation), <code class="docutils literal"><span class="pre">&quot;pcg&quot;</span></code>, (preconditioned conjugate gradients),
 <code class="docutils literal"><span class="pre">&quot;lbfgs&quot;</span></code> (L-BFGS), or <code class="docutils literal"><span class="pre">&quot;fire&quot;</span></code> (FIRE).</p>
 <p>Example usage:</p>
@@ -1700,7 +1700,7 @@ tolerance exactly, pass a value for the <cite>convergence_tol</cite> argument.</
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

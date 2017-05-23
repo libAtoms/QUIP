@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>DomainDecomposition objects &mdash; quippy 2907e96+ documentation</title>
+  <title>DomainDecomposition objects &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -247,10 +247,10 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>decomposition</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>decomposition</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>verlet_shell</strong> :  input float, optional</p>
 <p><strong>mode</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -391,13 +391,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.disable" title="quippy.atoms.DomainDecomposition.disable"><code class="xref py py-obj docutils literal"><span class="pre">disable</span></code></a>(at,[error])</td>
 <td>Disable domain decomposition, after this call every process retains an identical copy of the system.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.enable" title="quippy.atoms.DomainDecomposition.enable"><code class="xref py py-obj docutils literal"><span class="pre">enable</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.enable" title="quippy.atoms.DomainDecomposition.enable"><code class="xref py py-obj docutils literal"><span class="pre">enable</span></code></a>(…)</td>
 <td>Enable domain decomposition, after this call every process remains only with the atoms in its local domain.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_border" title="quippy.atoms.DomainDecomposition.set_border"><code class="xref py py-obj docutils literal"><span class="pre">set_border</span></code></a>(at,border,[verlet_shell,error])</td>
 <td>Set the communication border</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_comm_property" title="quippy.atoms.DomainDecomposition.set_comm_property"><code class="xref py py-obj docutils literal"><span class="pre">set_comm_property</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.set_comm_property" title="quippy.atoms.DomainDecomposition.set_comm_property"><code class="xref py py-obj docutils literal"><span class="pre">set_comm_property</span></code></a>(…)</td>
 <td>Set which properties to communicate on which events comm_atoms:   Communicate when atom is moved to different domain.</td>
 </tr>
 </tbody>
@@ -412,8 +412,8 @@ Allocate internal buffer</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>range</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>range</strong> :  input rank-1 array(‘i’) with bounds (2), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -432,7 +432,7 @@ to the neighboring domains (former order routine)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -450,7 +450,7 @@ to the neighboring domains (former order routine)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -471,7 +471,7 @@ the border.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>new_list</strong> :  input int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -491,7 +491,7 @@ border size in BOPs.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -528,7 +528,7 @@ retains an identical copy of the system.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -548,10 +548,10 @@ remains only with the atoms in its local domain.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>mpi</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>decomposition</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
+<p><strong>decomposition</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>verlet_shell</strong> :  input float, optional</p>
 <p><strong>mode</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -571,7 +571,7 @@ remains only with the atoms in its local domain.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>border</strong> :  input float</p>
 <p><strong>verlet_shell</strong> :  input float, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -842,7 +842,7 @@ propagated on the domain they reside in only.</dd>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

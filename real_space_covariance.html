@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Real-space covariance representation of atomic environments &mdash; quippy 2907e96+ documentation</title>
+  <title>Real-space covariance representation of atomic environments &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Identification of atoms on surfaces" href="find_surface_atoms.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -244,7 +244,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance" title="quippy.real_space_covariance.RealSpaceCovariance"><code class="xref py py-obj docutils literal"><span class="pre">RealSpaceCovariance</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance" title="quippy.real_space_covariance.RealSpaceCovariance"><code class="xref py py-obj docutils literal"><span class="pre">RealSpaceCovariance</span></code></a>(…)</td>
 <td>24-point quaternion grid from centers of the cells of a</td>
 </tr>
 </tbody>
@@ -361,7 +361,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="quippy.real_space_covariance.RealSpaceCovariance.align"><code class="xref py py-obj docutils literal"><span class="pre">align</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">align</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.covariance" title="quippy.real_space_covariance.RealSpaceCovariance.covariance"><code class="xref py py-obj docutils literal"><span class="pre">covariance</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.covariance" title="quippy.real_space_covariance.RealSpaceCovariance.covariance"><code class="xref py py-obj docutils literal"><span class="pre">covariance</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -452,14 +452,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>tag1</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>tag2</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>tag1</strong> (<em>input int</em>) – </li>
+<li><strong>tag2</strong> (<em>input int</em>) – </li>
+<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>’d’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> –  rank-1 array(‘d’) with bounds (4)</p>
 </td>
 </tr>
 </tbody>
@@ -478,14 +478,14 @@ quaterion in the (4,n) array qs</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>at1</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
-<li><strong>at2</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
-<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>at1</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) – </li>
+<li><strong>at2</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) – </li>
+<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>’d’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> –  rank-1 array(‘d’) with bounds (4)</p>
 </td>
 </tr>
 </tbody>
@@ -504,14 +504,14 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
-<li><strong>tag</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>at</strong> (<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) – </li>
+<li><strong>tag</strong> (<em>input int</em>) – </li>
+<li><strong>qs</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>overlap</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>’d’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_q</strong> –  rank-1 array(‘d’) with bounds (4)</p>
 </td>
 </tr>
 </tbody>
@@ -531,10 +531,10 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at1</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>at2</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>q</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (4)</p>
-<p><strong>distance</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
-<p><strong>force_covariance</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
-<p><strong>force_difference</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
+<p><strong>q</strong> :  in/output rank-1 array(‘d’) with bounds (4)</p>
+<p><strong>distance</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<p><strong>force_covariance</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<p><strong>force_difference</strong> :  in/output rank-0 array(float,’d’), optional</p>
 <p><strong>do_align</strong> :  input int, optional</p>
 </td>
 </tr>
@@ -555,7 +555,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>force</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>force</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 <p class="last"><strong>error</strong> :  float</p>
 </td>
 </tr>
@@ -573,7 +573,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>force</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>force</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 <p class="last"><strong>error</strong> :  float</p>
 </td>
 </tr>
@@ -593,7 +593,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>crystal</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>k</strong> :  input int</p>
-<p><strong>force</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>force</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 <p class="last"><strong>error</strong> :  float</p>
 </td>
 </tr>
@@ -644,7 +644,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_random_quaternion</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (4)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_random_quaternion</strong> :  rank-1 array(‘d’) with bounds (4)</td>
 </tr>
 </tbody>
 </table>
@@ -659,8 +659,8 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
-<p><strong>am_data</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n1,(1)), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
+<p><strong>am_data</strong> :  input rank-2 array(‘S’) with bounds (qp_n1,(1)), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_overlap_func</strong> :  float</p>
@@ -694,11 +694,11 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
-<p><strong>am_data</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n1,(1)), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
+<p><strong>am_data</strong> :  input rank-2 array(‘S’) with bounds (qp_n1,(1)), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_doverlap_func</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (size(qp_x))</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_doverlap_func</strong> :  rank-1 array(‘d’) with bounds (size(qp_x))</p>
 </td>
 </tr>
 </tbody>
@@ -714,9 +714,9 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (4)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(‘d’) with bounds (4)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_rotmat_quaternion</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_rotmat_quaternion</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
 </tr>
 </tbody>
 </table>
@@ -731,9 +731,9 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (4)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(‘d’) with bounds (4)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_drotmat_dquaternion</strong> :  rank-3 array(&#8216;d&#8217;) with bounds (3,3,4)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_drotmat_dquaternion</strong> :  rank-3 array(‘d’) with bounds (3,3,4)</td>
 </tr>
 </tbody>
 </table>
@@ -785,7 +785,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

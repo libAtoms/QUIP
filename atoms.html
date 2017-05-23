@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Atoms objects &mdash; quippy 2907e96+ documentation</title>
+  <title>Atoms objects &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Quippy library reference" href="quippy.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -243,13 +243,13 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-obj docutils literal"><span class="pre">Connection</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-obj docutils literal"><span class="pre">Connection</span></code></a>(…)</td>
 <td>The Connection type stores the topology of a set of Atoms</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="domaindecomposition.html#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-obj docutils literal"><span class="pre">DomainDecomposition</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="domaindecomposition.html#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-obj docutils literal"><span class="pre">DomainDecomposition</span></code></a>(…)</td>
 <td>Initialize the domain decomposition module</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-obj docutils literal"><span class="pre">Atoms</span></code></a>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-obj docutils literal"><span class="pre">Atoms</span></code></a>([symbols,&nbsp;positions,&nbsp;numbers,&nbsp;tags,&nbsp;…)</td>
 <td>Representation of an atomic configuration and its associated properties</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">NeighbourInfo</span></code>(j,&nbsp;distance,&nbsp;diff,&nbsp;cosines,&nbsp;shift)</td>
@@ -268,7 +268,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <td>Wrapper around Fortran <code class="xref py py-func docutils literal"><span class="pre">get_lattice_params_()</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.make_lattice" title="quippy.atoms.make_lattice"><code class="xref py py-obj docutils literal"><span class="pre">make_lattice</span></code></a>(a,[b,c,alpha,beta,gamma,error])</td>
-<td>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,``b``,``c`` and the angles <code class="docutils literal"><span class="pre">alpha</span></code>, <code class="docutils literal"><span class="pre">beta</span></code> and <code class="docutils literal"><span class="pre">gamma</span></code>.</td>
+<td>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,“b“,“c“ and the angles <code class="docutils literal"><span class="pre">alpha</span></code>, <code class="docutils literal"><span class="pre">beta</span></code> and <code class="docutils literal"><span class="pre">gamma</span></code>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.divide_cell" title="quippy.atoms.divide_cell"><code class="xref py py-obj docutils literal"><span class="pre">divide_cell</span></code></a>(lattice,cutoff)</td>
 <td>Given a simulation cell defined by lattice vectors, how many</td>
@@ -288,7 +288,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.bond_length" title="quippy.atoms.bond_length"><code class="xref py py-obj docutils literal"><span class="pre">bond_length</span></code></a>(z1,z2)</td>
 <td>Returns the sum of the covalent radii of two atoms</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_in_subregion</span></code>(...)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_in_subregion</span></code>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -300,9 +300,9 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.termination_bond_rescale" title="quippy.atoms.termination_bond_rescale"><code class="xref py py-obj docutils literal"><span class="pre">termination_bond_rescale</span></code></a>(z1,z2)</td>
-<td>Calculates the rescale ratio of a Z1&#8211;H bond generate from a Z1&#8211;Z2 bond.</td>
+<td>Calculates the rescale ratio of a Z1–H bond generate from a Z1–Z2 bond.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.get_min_max_images" title="quippy.atoms.get_min_max_images"><code class="xref py py-obj docutils literal"><span class="pre">get_min_max_images</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.get_min_max_images" title="quippy.atoms.get_min_max_images"><code class="xref py py-obj docutils literal"><span class="pre">get_min_max_images</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -319,7 +319,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal"><span class="pre">map_into_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Map atomic positions into the unit cell so that lattice</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params_</span></code>(...)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params_</span></code>(…)</td>
 <td>Opposite of Make_Lattice.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.get_lattice_params" title="quippy.atoms.get_lattice_params"><code class="xref py py-obj docutils literal"><span class="pre">get_lattice_params</span></code></a>(lattice)</td>
@@ -400,12 +400,12 @@ interoperable.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
-<p><strong>lattice</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 <p><strong>properties</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object, optional</p>
 <p><strong>params</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object, optional</p>
 <p><strong>fixed_size</strong> :  input int, optional</p>
 <p><strong>nbuffer</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -471,10 +471,10 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dt id="quippy.atoms.Atoms.add_atoms">
 <code class="descname">add_atoms</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.add_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add one or more atoms to an Atoms object.
-To add a single atom, &#8216;pos&#8217; should be an array of size 3 and &#8216;z a
+To add a single atom, ‘pos’ should be an array of size 3 and ‘z a
 single integer. To add multiple atoms either arrays of length
-&#8216;n_new&#8217; should be passed, or another Atoms from which to copy data
-should be given as the &#8216;from&#8217; argument.</p>
+‘n_new’ should be passed, or another Atoms from which to copy data
+should be given as the ‘from’ argument.</p>
 <p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">add_atoms</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -485,11 +485,11 @@ should be given as the &#8216;from&#8217; argument.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pos</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>z</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>mass</strong> (<em>input float</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>travel</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>pos</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>z</strong> (<em>input int</em>) – </li>
+<li><strong>mass</strong> (<em>input float</em><em>, </em><em>optional</em>) – </li>
+<li><strong>travel</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -506,8 +506,8 @@ should be given as the &#8216;from&#8217; argument.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>from</strong> (<a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>from</strong> (<a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -524,13 +524,13 @@ should be given as the &#8216;from&#8217; argument.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pos</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>z</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em>) &#8211; </li>
-<li><strong>mass</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>velo</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>,</em><em>qp_n5</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>acc</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n6</em><em>,</em><em>qp_n7</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>travel</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n8</em><em>,</em><em>qp_n9</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>pos</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>z</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em>) – </li>
+<li><strong>mass</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>velo</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>,</em><em>qp_n5</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>acc</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n6</em><em>,</em><em>qp_n7</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>travel</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n8</em><em>,</em><em>qp_n9</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -578,7 +578,7 @@ creates a 1D property.</p>
 <p>If an array is given for <cite>value</cite> it should either have shape
 (self.n,) for a 1D property or (n_cols,self.n) for a 2D
 property.  In this case <cite>n_cols</cite> is inferred from the shape of
-the <cite>value</cite> and shouldn&#8217;t be passed as an argument.</p>
+the <cite>value</cite> and shouldn’t be passed as an argument.</p>
 <p>If <cite>property_type</cite> is present, then no attempt is made to
 infer the type from <cite>value</cite>. This is necessary to resolve
 ambiguity between integer and logical types.</p>
@@ -617,9 +617,9 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-3 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>1</em><em>)</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -636,9 +636,9 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -655,9 +655,9 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -674,9 +674,9 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -693,9 +693,9 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -712,9 +712,9 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>name</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>ptr</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -735,11 +735,11 @@ rather than allocating new space for it (as add_property does).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_l</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_l</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -835,7 +835,7 @@ already in the region, next 3 are shifts.</p>
 <p><strong>nneighb_only</strong> :  input int, optional</p>
 <blockquote>
 <div><p>If present and true, sets whether only neighbours
-within the sum of the two respective covalent radii (multiplied by the atom&#8217;s nneightol) are included,
+within the sum of the two respective covalent radii (multiplied by the atom’s nneightol) are included,
 irrespective of the cutoff in the atoms structure
 (default is true).</p>
 </div></blockquote>
@@ -849,9 +849,9 @@ minimum shift image of those found will be included. Default is false.</p>
 <div><p>if present, only neighbors within this range will be included</p>
 </div></blockquote>
 <p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
-<p><strong>property</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>property</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 <p><strong>debugfile</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>output</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
@@ -891,9 +891,9 @@ calc_dists() is called to update the stored distance tables.</p>
 <p><strong>store_is_min_image</strong> :  input int, optional</p>
 <p><strong>skip_zero_zero_bonds</strong> :  input int, optional</p>
 <p><strong>store_n_neighb</strong> :  input int, optional</p>
-<p><strong>max_pos_change</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
-<p><strong>did_rebuild</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>max_pos_change</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<p><strong>did_rebuild</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -916,7 +916,7 @@ to covalent radii).</p>
 <p class="last">Typically <code class="docutils literal"><span class="pre">alt_connect</span></code> should be set to the
 <code class="docutils literal"><span class="pre">hysteretic_connect</span></code> attribute. <code class="docutils literal"><span class="pre">origin</span></code> and <code class="docutils literal"><span class="pre">extent</span></code>
 vectors can be used to restrict the hysteretic region to only
-part of the entire system &#8211; the <code class="docutils literal"><span class="pre">estimate_origin_extent()</span></code>
+part of the entire system – the <code class="docutils literal"><span class="pre">estimate_origin_extent()</span></code>
 routine in clusters.f95 can be used to guess suitable values.</p>
 </dd>
 </dl>
@@ -927,12 +927,12 @@ routine in clusters.f95 can be used to guess suitable values.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cutoff_factor</strong> :  input float</p>
 <p><strong>cutoff_break_factor</strong> :  input float</p>
 <p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
-<p><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>extent</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3), optional</p>
+<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>extent</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
 <p><strong>own_neighbour</strong> :  input int, optional</p>
 <p><strong>store_is_min_image</strong> :  input int, optional</p>
 <p><strong>store_n_neighb</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -951,7 +951,7 @@ routine in clusters.f95 can be used to guess suitable values.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
 <p><strong>parallel</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -972,7 +972,7 @@ usually desirable to call undo_pbc_jumps and undo_CoM_motion first</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
 <p><strong>reset_msd</strong> :  input int, optional</p>
 <p class="last"><strong>persistent</strong> :  input int, optional</p>
 </td>
@@ -995,8 +995,8 @@ usually desirable to call undo_pbc_jumps and undo_CoM_motion first</p>
 <p><strong>do_w</strong> :  input int, optional</p>
 <p><strong>cutoff</strong> :  input float, optional</p>
 <p><strong>cutoff_transition_width</strong> :  input float, optional</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1059,7 +1059,7 @@ on each side.</dd>
 <dd>Axis or axes to act on.  Default: Act on all axes.</dd>
 <dt>about: float or array (default: None)</dt>
 <dd>If specified, center the atoms about &lt;about&gt;.
-I.e., about=(0., 0., 0.) (or just &#8220;about=0.&#8221;, interpreted
+I.e., about=(0., 0., 0.) (or just “about=0.”, interpreted
 identically), to center about the origin.</dd>
 </dl>
 </dd></dl>
@@ -1078,13 +1078,13 @@ calculation.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
-<p><strong>index_list</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
+<p><strong>index_list</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
 <p><strong>origin</strong> :  input int, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_com</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_com</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1100,14 +1100,14 @@ calculation.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>cell_image_na</strong> :  input int</p>
 <p><strong>cell_image_nb</strong> :  input int</p>
 <p><strong>cell_image_nc</strong> :  input int</p>
-<p><strong>mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p><strong>dist</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
-<p><strong>diff</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p><strong>dist</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<p><strong>diff</strong> :  in/output rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_closest_atom</strong> :  int</p>
@@ -1133,8 +1133,8 @@ probably needs a better subroutine name</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>seed</strong> :  input int, optional</p>
-<p><strong>is_periodic</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>is_periodic</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1184,7 +1184,7 @@ The destination will be overriden.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>src</strong> :  input int</p>
 <p><strong>dst</strong> :  input int</p>
 <p><strong>swap</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1211,7 +1211,7 @@ The destination will be overriden.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>from</strong> : <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>property_list</strong> :  input string(len=-1)</p>
 <p><strong>case_sensitive</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1234,8 +1234,8 @@ cost.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>from</strong> : <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>properties</strong> :  input string(len=-1), optional</p>
-<p><strong>properties_array</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(*)), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>properties_array</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1247,7 +1247,7 @@ cost.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.cosine">
 <code class="descname">cosine</code><span class="sig-paren">(</span><em>i</em>, <em>j</em>, <em>k</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.cosine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cosine of the angle j&#8211;i&#8211;k</p>
+<dd><p>Cosine of the angle j–i–k</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1255,7 +1255,7 @@ cost.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>j</strong> :  input int</p>
 <p><strong>k</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_cosine</strong> :  float</p>
@@ -1270,7 +1270,7 @@ cost.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.cosine_neighbour">
 <code class="descname">cosine_neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em>, <em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.cosine_neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cosine of the angle n&#8211;i&#8211;m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>n`th, :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>m`th} neighbours of i</p>
+<dd><p>Cosine of the angle n–i–m where {<span class="math">\(n,m\)</span>} are the {:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>n`th, :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>m`th} neighbours of i</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1309,10 +1309,10 @@ use that, otherwise we use <cite>z</cite> and ElementMass table.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>j</strong> :  input int</p>
-<p><strong>shift</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+<p><strong>shift</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1327,8 +1327,8 @@ use that, otherwise we use <cite>z</cite> and ElementMass table.</p>
 <dd><dl class="docutils">
 <dt>Return the minimum image difference vector between two atoms or</dt>
 <dd>positions. End points can be specified by any combination of
-atoms indices &#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#8216;u&#8217; and
-&#8216;w&#8217;.</dd>
+atoms indices ‘i’ and ‘j’ and absolute coordinates ‘u’ and
+‘w’.</dd>
 </dl>
 <p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">diff_min_image</span></code> containing multiple routines:</p>
 <blockquote>
@@ -1340,12 +1340,12 @@ atoms indices &#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#821
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>j</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>j</strong> (<em>input int</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_vec_atom</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_vec_atom</strong> –  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1361,12 +1361,12 @@ atoms indices &#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#821
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>w</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) – </li>
+<li><strong>w</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_atom_vec</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_atom_vec</strong> –  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1382,13 +1382,13 @@ atoms indices &#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#821
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>j</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) – </li>
+<li><strong>j</strong> (<em>input int</em>) – </li>
+<li><strong>shift</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_atom_atom</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_atom_atom</strong> –  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1404,12 +1404,12 @@ atoms indices &#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#821
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>w</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
+<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>w</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_vec_vec</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_diff_vec_vec</strong> –  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1431,10 +1431,10 @@ cosines of the differnece vector from <span class="math">\(i\)</span> to <span c
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>j</strong> :  input int</p>
-<p><strong>shift</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+<p><strong>shift</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_direction_cosines</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_direction_cosines</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1453,10 +1453,10 @@ cosines of the differnece vector from <span class="math">\(i\)</span> to <span c
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>j</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_direction_cosines_min_image</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_direction_cosines_min_image</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 </td>
 </tr>
 </tbody>
@@ -1495,11 +1495,11 @@ eigenvalue 1 and the other eigenvectors have eigenvalue 0.</p>
 <blockquote>
 <div><p>Indices and shifts of the other atoms relative to origin</p>
 </div></blockquote>
-<p><strong>evalues</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<p><strong>evalues</strong> :  rank-1 array(‘d’) with bounds (3)</p>
 <blockquote>
 <div><p>Eigenvalues of the directionality matrix</p>
 </div></blockquote>
-<p><strong>evectors</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<p><strong>evectors</strong> :  rank-2 array(‘d’) with bounds (3,3)</p>
 <blockquote>
 <div><p>Eigenvectors of the directionality matrix</p>
 </div></blockquote>
@@ -1508,7 +1508,7 @@ eigenvalue 1 and the other eigenvectors have eigenvalue 0.</p>
 <div><p><code class="docutils literal"><span class="pre">METHOD</span> <span class="pre">=</span> <span class="pre">1</span></code> Directionality ellipsoid method.
 <code class="docutils literal"><span class="pre">METHOD</span> <span class="pre">=</span> <span class="pre">2</span></code> Singular Value Decomposition method (default)</p>
 </div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1531,7 +1531,7 @@ of <code class="docutils literal"><span class="pre">shift</span></code>.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>j</strong> :  input int</p>
-<p><strong>shift</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (3)</p>
+<p><strong>shift</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance</strong> :  float</p>
@@ -1550,7 +1550,7 @@ of <code class="docutils literal"><span class="pre">shift</span></code>.</p>
 <dt>This interface calculates the distance between the nearest periodic images of two points (or atoms).</dt>
 <dd>Return minimum image distance between two atoms or positions.
 End points can be specified by any combination of atoms indices
-&#8216;i&#8217; and &#8216;j&#8217; and absolute coordinates &#8216;u&#8217; and &#8216;w&#8217;. If &#8216;shift&#8217; is
+‘i’ and ‘j’ and absolute coordinates ‘u’ and ‘w’. If ‘shift’ is
 present the periodic shift between the two atoms or points will
 be returned in it.</dd>
 </dl>
@@ -1564,13 +1564,13 @@ be returned in it.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>w</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>w</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_vec_vec</strong> &#8211;  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_vec_vec</strong> –  float</p>
 </td>
 </tr>
 </tbody>
@@ -1586,13 +1586,13 @@ be returned in it.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>j</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) – </li>
+<li><strong>j</strong> (<em>input int</em>) – </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_atom_atom</strong> &#8211;  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_atom_atom</strong> –  float</p>
 </td>
 </tr>
 </tbody>
@@ -1608,13 +1608,13 @@ be returned in it.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) – </li>
+<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_atom_vec</strong> &#8211;  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_atom_vec</strong> –  float</p>
 </td>
 </tr>
 </tbody>
@@ -1630,13 +1630,13 @@ be returned in it.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>j</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>v</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>j</strong> (<em>input int</em>) – </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_vec_atom</strong> &#8211;  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_distance8_vec_atom</strong> –  float</p>
 </td>
 </tr>
 </tbody>
@@ -1655,7 +1655,7 @@ be returned in it.</dd>
 when matplotlib has been pre-imported with certain
 incompatible backends and while trying to use the
 plot feature inside the interactive ase-gui. To circumvent,
-please set matplotlib.use(&#8216;gtk&#8217;) before calling this
+please set matplotlib.use(‘gtk’) before calling this
 method.</p>
 </dd></dl>
 
@@ -1790,21 +1790,21 @@ is returned.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_chemical_formula">
-<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode='hill'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode=’hill’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the chemial formula as a string based on the chemical symbols.</p>
 <p>Parameters:</p>
 <dl class="docutils">
 <dt>mode: str</dt>
 <dd><p class="first">There are three different modes available:</p>
-<p>&#8216;all&#8217;: The list of chemical symbols are contracted to at string,
-e.g. [&#8216;C&#8217;, &#8216;H&#8217;, &#8216;H&#8217;, &#8216;H&#8217;, &#8216;O&#8217;, &#8216;H&#8217;] becomes &#8216;CHHHOH&#8217;.</p>
-<p>&#8216;reduce&#8217;: The same as &#8216;all&#8217; where repeated elements are contracted
-to a single symbol and a number, e.g. &#8216;CHHHOCHHH&#8217; is reduced to
-&#8216;CH3OCH3&#8217;.</p>
-<p class="last">&#8216;hill&#8217;: The list of chemical symbols are contracted to a string
+<p>‘all’: The list of chemical symbols are contracted to at string,
+e.g. [‘C’, ‘H’, ‘H’, ‘H’, ‘O’, ‘H’] becomes ‘CHHHOH’.</p>
+<p>‘reduce’: The same as ‘all’ where repeated elements are contracted
+to a single symbol and a number, e.g. ‘CHHHOCHHH’ is reduced to
+‘CH3OCH3’.</p>
+<p class="last">‘hill’: The list of chemical symbols are contracted to a string
 following the Hill notation (alphabetical order with C and H
-first), e.g. &#8216;CHHHOCHHH&#8217; is reduced to &#8216;C2H6O&#8217; and &#8216;SOOHOHO&#8217; to
-&#8216;H2O4S&#8217;. This is default.</p>
+first), e.g. ‘CHHHOCHHH’ is reduced to ‘C2H6O’ and ‘SOOHOHO’ to
+‘H2O4S’. This is default.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1855,7 +1855,7 @@ vector=True gives the distance vector (from a to self[indices]).</p>
 <p>Ask the attached calculator to calculate the forces and apply
 constraints.  Use <em>apply_constraint=False</em> to get the raw
 forces.</p>
-<p>For molecular dynamics (md=True) we don&#8217;t apply the constraint
+<p>For molecular dynamics (md=True) we don’t apply the constraint
 to the forces but to the momenta.</p>
 </dd></dl>
 
@@ -1918,7 +1918,7 @@ amu*angstrom**2.</p>
 simulation.</p>
 <p>DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!</p>
 <p>Equivalent to len(atoms) in the standard ASE Atoms class.  You should
-normally use len(atoms) instead.  This function&#8217;s only purpose is to
+normally use len(atoms) instead.  This function’s only purpose is to
 make compatibility between ASE and Asap easier to maintain by having a
 few places in ASE use this function instead.  It is typically only
 when counting the global number of degrees of freedom or in similar
@@ -1939,12 +1939,12 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  float</p>
 </td>
 </tr>
 </tbody>
@@ -1960,12 +1960,12 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  string(len=10240)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  string(len=10240)</p>
 </td>
 </tr>
 </tbody>
@@ -1981,13 +1981,13 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_value,0)</li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_value,0)</li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  rank-1 array(‘d’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -2003,12 +2003,12 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  int</p>
 </td>
 </tr>
 </tbody>
@@ -2024,12 +2024,12 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  int</p>
 </td>
 </tr>
 </tbody>
@@ -2045,14 +2045,14 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_value,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_value,1)</li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_value,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_value,1)</li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -2068,9 +2068,9 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -2087,13 +2087,13 @@ situations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_value,0)</li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_value,0)</li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> &#8211;  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>value</strong> –  rank-1 array(‘i’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -2207,8 +2207,8 @@ there is a certain arbitrariness in defining per-atom stresses.</p>
 <dt id="quippy.atoms.Atoms.has">
 <code class="descname">has</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.has"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.has" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check for existence of array.</p>
-<p>name must be one of: &#8216;tags&#8217;, &#8216;momenta&#8217;, &#8216;masses&#8217;, &#8216;magmoms&#8217;,
-&#8216;charges&#8217;.</p>
+<p>name must be one of: ‘tags’, ‘momenta’, ‘masses’, ‘magmoms’,
+‘charges’.</p>
 </dd></dl>
 
 <dl class="method">
@@ -2290,7 +2290,7 @@ of property type is done. Property names are case-insensitive.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_is_min_image</strong> :  int</p>
@@ -2305,7 +2305,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_nearest_neighbour">
 <code class="descname">is_nearest_neighbour</code><span class="sig-paren">(</span><em>i</em>, <em>n</em><span class="optional">[</span>, <em>alt_connect</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_nearest_neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test if an atom&#8217;s :math:<a href="#id5"><span class="problematic" id="id6">`</span></a>n`th neighbour is one if its nearest neighbours</p>
+<dd><p>Test if an atom’s :math:<a href="#id5"><span class="problematic" id="id6">`</span></a>n`th neighbour is one if its nearest neighbours</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2327,7 +2327,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_nearest_neighbour_abs_index">
 <code class="descname">is_nearest_neighbour_abs_index</code><span class="sig-paren">(</span><em>i</em>, <em>j</em><span class="optional">[</span>, <em>alt_connect</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_nearest_neighbour_abs_index" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id7"><span class="problematic" id="id8">``</span></a>i``s nearest neighbours</p>
+<dd><p>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id7"><span class="problematic" id="id8">``</span></a>i“s nearest neighbours</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2362,7 +2362,7 @@ of property type is done. Property names are case-insensitive.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional</p>
 <p><strong>local_ke</strong> :  input int, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_ke</strong> :  float</p>
@@ -2383,10 +2383,10 @@ of property type is done. Property names are case-insensitive.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_kv</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_kv</strong> :  rank-2 array(‘d’) with bounds (3,3)</p>
 </td>
 </tr>
 </tbody>
@@ -2408,7 +2408,7 @@ and return them in a table <code class="docutils literal"><span class="pre">list
 <p><strong>list</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
 <p><strong>name</strong> :  input string(len=-1)</p>
 <p><strong>value</strong> :  input int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -2457,8 +2457,8 @@ if more than half its nearest neighbours are in the list.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
-<p><strong>v</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<p><strong>v</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>r</strong> :  input float</p>
 <p><strong>periodic</strong> :  input int, optional</p>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
@@ -2480,7 +2480,7 @@ if more than half its nearest neighbours are in the list.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>r</strong> :  input float</p>
 <p><strong>periodic</strong> :  input int, optional</p>
 <p><strong>mark_name</strong> :  input string(len=-1), optional</p>
@@ -2515,9 +2515,9 @@ fed to MD5 to form the hash.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>origin</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_moi</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_moi</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
 </tr>
 </tbody>
 </table>
@@ -2534,9 +2534,9 @@ Optionally only include the contribution of a subset of atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_p</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_p</strong> :  rank-1 array(‘d’) with bounds (3)</td>
 </tr>
 </tbody>
 </table>
@@ -2565,7 +2565,7 @@ connectivity information, for example <code class="docutils literal"><span class
 <p><strong>max_dist</strong> :  input float, optional</p>
 <p><strong>max_factor</strong> :  input float, optional</p>
 <p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_n</strong> :  int</p>
@@ -2599,7 +2599,7 @@ you must first iterate over the whole list (i.e. do <em>not</em> use the
 <code class="docutils literal"><span class="pre">max_dist</span></code> parameter in <code class="docutils literal"><span class="pre">atoms_n_neighbours</span></code>), then skip those
 neighbours where this function returns 0.</p>
 <p><code class="docutils literal"><span class="pre">alt_connect</span></code> has the same meaning as in <code class="docutils literal"><span class="pre">n_neighbours</span></code>.</p>
-<p>Here&#8217;s a typical loop construct in Python. Note how <cite>r</cite> and <cite>u</cite>
+<p>Here’s a typical loop construct in Python. Note how <cite>r</cite> and <cite>u</cite>
 are created before the loop: arguments which are both optional
 and <code class="docutils literal"><span class="pre">intent(out)</span></code> in Fortran are converted to <code class="docutils literal"><span class="pre">intent(in,out)</span></code> for quippy. ::</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">farray</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
@@ -2615,15 +2615,15 @@ and <code class="docutils literal"><span class="pre">intent(out)</span></code> i
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
 <p><strong>n</strong> :  input int</p>
-<p><strong>distance</strong> :  in/output rank-0 array(float,&#8217;d&#8217;), optional</p>
-<p><strong>diff</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>cosines</strong> :  in/output rank-1 array(&#8216;d&#8217;) with bounds (3), optional</p>
-<p><strong>shift</strong> :  in/output rank-1 array(&#8216;i&#8217;) with bounds (3), optional</p>
-<p><strong>index</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>distance</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<p><strong>diff</strong> :  in/output rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>cosines</strong> :  in/output rank-1 array(‘d’) with bounds (3), optional</p>
+<p><strong>shift</strong> :  in/output rank-1 array(‘i’) with bounds (3), optional</p>
+<p><strong>index</strong> :  in/output rank-0 array(int,’i’), optional</p>
 <p><strong>max_dist</strong> :  input float, optional</p>
-<p><strong>jn</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>jn</strong> :  in/output rank-0 array(int,’i’), optional</p>
 <p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_j</strong> :  int</p>
@@ -2653,7 +2653,7 @@ logger or to a specificied Inoutput object.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -2676,7 +2676,7 @@ logger or to a specificied Inoutput object.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>with_types</strong> :  input int, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_prop_names_string</strong> :  string(len=10240)</p>
@@ -2723,13 +2723,13 @@ expected to be an iterator returning <a class="reference internal" href="#quippy
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cio</strong> : <code class="xref py py-class docutils literal"><span class="pre">CInOutput</span></code> object</p>
 <p><strong>properties</strong> :  input string(len=-1), optional</p>
-<p><strong>properties_array</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(*)), optional</p>
+<p><strong>properties_array</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</p>
 <p><strong>frame</strong> :  input int, optional</p>
 <p><strong>zero</strong> :  input int, optional</p>
-<p><strong>range</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (2), optional</p>
+<p><strong>range</strong> :  input rank-1 array(‘i’) with bounds (2), optional</p>
 <p><strong>str</strong> :  input string(len=-1), optional</p>
 <p><strong>estr</strong> : <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -2755,7 +2755,7 @@ stored travel across the periodic boundary conditions.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>i</strong> :  input int</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_realpos</strong> :  rank-1 array(&#8216;d&#8217;) with bounds (3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_realpos</strong> :  rank-1 array(‘d’) with bounds (3)</td>
 </tr>
 </tbody>
 </table>
@@ -2777,8 +2777,8 @@ stored travel across the periodic boundary conditions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -2795,8 +2795,8 @@ stored travel across the periodic boundary conditions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>i</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>i</strong> (<em>input int</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -2813,8 +2813,8 @@ stored travel across the periodic boundary conditions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>atom_indices</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>atom_indices</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -2835,7 +2835,7 @@ stored travel across the periodic boundary conditions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -2869,7 +2869,7 @@ to <em>(r,r,r)</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axis</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axis</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>angle</strong> :  input float</p>
 <p><strong>rank1</strong> :  input string(len=-1), optional</p>
 <p class="last"><strong>rank2</strong> :  input string(len=-1), optional</p>
@@ -2899,8 +2899,8 @@ configuration</p>
 <dl class="docutils">
 <dt>center :</dt>
 <dd>The point to rotate about. A sequence of length 3 with the
-coordinates, or &#8216;COM&#8217; to select the center of mass, &#8216;COP&#8217; to
-select center of positions or &#8216;COU&#8217; to select center of cell.</dd>
+coordinates, or ‘COM’ to select the center of mass, ‘COP’ to
+select center of positions or ‘COU’ to select center of cell.</dd>
 <dt>phi :</dt>
 <dd>The 1st rotation angle around the z axis.</dd>
 <dt>theta :</dt>
@@ -2951,8 +2951,8 @@ If <em>a</em> is <em>None</em>, then the array is deleted.</p>
 <dt id="quippy.atoms.Atoms.set_atoms">
 <code class="descname">set_atoms</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt>Set atomic numbers (in the &#8216;z&#8217; integer property), species names</dt>
-<dd>(in &#8216;species&#8217; string property) and optionally masses (if &#8216;mass&#8217;
+<dt>Set atomic numbers (in the ‘z’ integer property), species names</dt>
+<dd>(in ‘species’ string property) and optionally masses (if ‘mass’
 property exists in the Atoms object).</dd>
 </dl>
 <p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">set_atoms</span></code> containing multiple routines:</p>
@@ -2964,7 +2964,7 @@ property exists in the Atoms object).</dd>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>z</strong> (<em>input int</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>z</strong> (<em>input int</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -2981,8 +2981,8 @@ If <code class="docutils literal"><span class="pre">mass</span></code> is not sp
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>z</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>mass</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>z</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>mass</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3191,7 +3191,7 @@ and recalculate connectivity (by default scale_positions=False).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 </tbody>
 </table>
@@ -3201,7 +3201,7 @@ and recalculate connectivity (by default scale_positions=False).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_masses">
-<code class="descname">set_masses</code><span class="sig-paren">(</span><em>masses='defaults'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_masses</code><span class="sig-paren">(</span><em>masses=’defaults’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set atomic masses.</p>
 <p>The array masses should contain a list of masses.  In case
 the masses argument is not given or for those elements of the
@@ -3228,8 +3228,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3246,8 +3246,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3264,8 +3264,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3282,8 +3282,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3300,8 +3300,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3318,8 +3318,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input float</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input float</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3336,8 +3336,8 @@ masses list that are None, standard values are set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>value</strong> (<em>input int</em>) &#8211; </li>
+<li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>value</strong> (<em>input int</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -3389,7 +3389,7 @@ applied to all atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 </tbody>
 </table>
@@ -3405,8 +3405,8 @@ applied to all atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -3423,8 +3423,8 @@ applied to all atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sort_index</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sort_index</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -3441,8 +3441,8 @@ applied to all atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sort_index</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sort_index</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -3466,10 +3466,10 @@ rank1 and rank2 arguments.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>l</strong> :  input rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>l</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
 <p><strong>rank1</strong> :  input string(len=-1), optional</p>
 <p><strong>rank2</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -3539,7 +3539,7 @@ interspersed will not work</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
 </tr>
 </tbody>
 </table>
@@ -3584,7 +3584,7 @@ Example:</p>
 absent it is inferred from the file extension or type of <cite>dest</cite>,
 as described for the <a class="reference internal" href="#quippy.atoms.Atoms.read" title="quippy.atoms.Atoms.read"><code class="xref py py-meth docutils literal"><span class="pre">read()</span></code></a> method.  If <cite>properties</cite> is
 present, it should be a list of property names to include in the
-output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
+output file, e.g. <cite>[‘species’, ‘pos’]</cite>.</p>
 <p>See <a class="reference internal" href="io.html#fileformats"><span class="std std-ref">Supported File Formats</span></a> for a list of supported file formats.</p>
 </dd></dl>
 
@@ -3597,7 +3597,7 @@ output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cio</strong> : <code class="xref py py-class docutils literal"><span class="pre">CInOutput</span></code> object</p>
 <p><strong>properties</strong> :  input string(len=-1), optional</p>
-<p><strong>properties_array</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(*)), optional</p>
+<p><strong>properties_array</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</p>
 <p><strong>prefix</strong> :  input string(len=-1), optional</p>
 <p><strong>int_format</strong> :  input string(len=-1), optional</p>
 <p><strong>real_format</strong> :  input string(len=-1), optional</p>
@@ -3606,7 +3606,7 @@ output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
 <p><strong>deflate</strong> :  input int, optional</p>
 <p><strong>deflate_level</strong> :  input int, optional</p>
 <p><strong>estr</strong> : <code class="xref py py-class docutils literal"><span class="pre">Extendable_str</span></code> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -3625,7 +3625,7 @@ output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>z</strong> :  input int</p>
 <p><strong>z_index</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_index</strong> :  int</p>
@@ -3640,8 +3640,8 @@ output file, e.g. <cite>[&#8216;species&#8217;, &#8216;pos&#8217;]</cite>.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.zero">
 <code class="descname">zero</code><span class="sig-paren">(</span><span class="optional">[</span><em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.zero" title="Permalink to this definition">¶</a></dt>
-<dd><p>Zero data in an Atoms structure &#8212;
-this doesn``t finalise it or change it``s size. We zero <code class="docutils literal"><span class="pre">this.pos</span></code>,
+<dd><p>Zero data in an Atoms structure —
+this doesn“t finalise it or change it“s size. We zero <code class="docutils literal"><span class="pre">this.pos</span></code>,
 <code class="docutils literal"><span class="pre">this.Z</span></code> and <code class="docutils literal"><span class="pre">this.species</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3674,7 +3674,7 @@ this doesn``t finalise it or change it``s size. We zero <code class="docutils li
 builder functions. This function is only supplied in order to give
 a warning if this attribute (atoms.adsorbate_info) is asked for.
 The dictionary with adsorbate information has been moved to the
-info dictionary, i.e. atoms.info[&#8216;adsorbate_info&#8217;].</p>
+info dictionary, i.e. atoms.info[‘adsorbate_info’].</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3890,7 +3890,7 @@ removed with <a class="reference internal" href="#quippy.atoms.Atoms.remove_prop
 <dl class="function">
 <dt id="quippy.atoms.make_lattice">
 <code class="descclassname">quippy.atoms.</code><code class="descname">make_lattice</code><span class="sig-paren">(</span><em>a</em><span class="optional">[</span>, <em>b</em>, <em>c</em>, <em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.make_lattice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,``b``,``c``
+<dd><p>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,“b“,“c“
 and the angles <code class="docutils literal"><span class="pre">alpha</span></code>, <code class="docutils literal"><span class="pre">beta</span></code> and <code class="docutils literal"><span class="pre">gamma</span></code>.
 One length must be supplied. Any missing angle is assumed to be 90 degrees
 and any missing length is assumed to be <code class="docutils literal"><span class="pre">a</span></code>.
@@ -3905,10 +3905,10 @@ The vectors are created in a right-handed order.</p>
 <p><strong>alpha</strong> :  input float, optional</p>
 <p><strong>beta</strong> :  input float, optional</p>
 <p><strong>gamma</strong> :  input float, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lattice</strong> :  rank-2 array(&#8216;d&#8217;) with bounds (3,3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lattice</strong> :  rank-2 array(‘d’) with bounds (3,3)</p>
 </td>
 </tr>
 </tbody>
@@ -3948,8 +3948,8 @@ The vectors are created in a right-handed order.</p>
 <dl class="function">
 <dt id="quippy.atoms.termination_bond_rescale">
 <code class="descclassname">quippy.atoms.</code><code class="descname">termination_bond_rescale</code><span class="sig-paren">(</span><em>z1</em>, <em>z2</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.termination_bond_rescale" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the rescale ratio of a Z1&#8211;H bond
-generate from a Z1&#8211;Z2 bond.</p>
+<dd><p>Calculates the rescale ratio of a Z1–H bond
+generate from a Z1–Z2 bond.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3981,9 +3981,9 @@ generate from a Z1&#8211;Z2 bond.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lattice</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lattice</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_lattice_cell_volume</strong> &#8211;  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_lattice_cell_volume</strong> –  float</td>
 </tr>
 </tbody>
 </table>
@@ -4010,9 +4010,9 @@ generate from a Z1&#8211;Z2 bond.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pos</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </li>
-<li><strong>lattice</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>g</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </li>
+<li><strong>pos</strong> (<em>in/output rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>lattice</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </li>
+<li><strong>g</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -4029,11 +4029,11 @@ generate from a Z1&#8211;Z2 bond.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pos</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>lattice</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>g</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) &#8211; </li>
-<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>mapped</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>pos</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em>) – </li>
+<li><strong>lattice</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </li>
+<li><strong>g</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>,</em><em>3</em><em>)</em>) – </li>
+<li><strong>shift</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>3</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>mapped</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -4057,7 +4057,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mask_in</strong> :  input string(len=-1)</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>atom_indices</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
@@ -4113,7 +4113,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

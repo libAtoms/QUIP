@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran Table for dynamically extendable arrays &mdash; quippy 2907e96+ documentation</title>
+  <title>Fortran Table for dynamically extendable arrays &mdash; quippy 967e02c+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 2907e96+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 967e02c+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                2907e96+
+                967e02c+
               </div>
             
           
@@ -256,7 +256,7 @@ number of reals, number of strings and number of logicals can be zero</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-obj docutils literal"><span class="pre">Table</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-obj docutils literal"><span class="pre">Table</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -314,7 +314,7 @@ number of reals, number of strings and number of logicals can be zero</p>
 <blockquote>
 <div><p>Number of rows to initially allocate</p>
 </div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -371,7 +371,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.allocate" title="quippy.table.Table.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(...)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.allocate" title="quippy.table.Table.allocate"><code class="xref py py-obj docutils literal"><span class="pre">allocate</span></code></a>(…)</td>
 <td>Allocate a <code class="docutils literal"><span class="pre">Table</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.append" title="quippy.table.Table.append"><code class="xref py py-obj docutils literal"><span class="pre">append</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -389,16 +389,16 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.find" title="quippy.table.Table.find"><code class="xref py py-obj docutils literal"><span class="pre">find</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Search the integer part of a table for a given element or array.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_indices" title="quippy.table.Table.from_atom_indices"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_indices</span></code></a>(atoms[,&nbsp;mask,&nbsp;list,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_indices" title="quippy.table.Table.from_atom_indices"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_indices</span></code></a>(atoms[,&nbsp;mask,&nbsp;list,&nbsp;…])</td>
 <td>Construct a new Table containing atomic indices from a list or mask</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.from_atom_list" title="quippy.table.Table.from_atom_list"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_list</span></code></a>(atoms,&nbsp;list[,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.from_atom_list" title="quippy.table.Table.from_atom_list"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_list</span></code></a>(atoms,&nbsp;list[,&nbsp;…])</td>
 <td>Construct a new Table from a list of atom indices</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_mask" title="quippy.table.Table.from_atom_mask"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_mask</span></code></a>(atoms,&nbsp;mask[,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.from_atom_mask" title="quippy.table.Table.from_atom_mask"><code class="xref py py-obj docutils literal"><span class="pre">from_atom_mask</span></code></a>(atoms,&nbsp;mask[,&nbsp;…])</td>
 <td>Construct a new Table from an atom mask</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.insert" title="quippy.table.Table.insert"><code class="xref py py-obj docutils literal"><span class="pre">insert</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.insert" title="quippy.table.Table.insert"><code class="xref py py-obj docutils literal"><span class="pre">insert</span></code></a>(…)</td>
 <td>insert a row at a given position</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.int_part" title="quippy.table.Table.int_part"><code class="xref py py-obj docutils literal"><span class="pre">int_part</span></code></a>(*args,&nbsp;**kwargs)</td>
@@ -438,8 +438,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.remove_columns" title="quippy.table.Table.remove_columns"><code class="xref py py-obj docutils literal"><span class="pre">remove_columns</span></code></a>(...)</td>
-<td>remove a range of columns from a table&#8217;s int or real parts</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.remove_columns" title="quippy.table.Table.remove_columns"><code class="xref py py-obj docutils literal"><span class="pre">remove_columns</span></code></a>(…)</td>
+<td>remove a range of columns from a table’s int or real parts</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.search" title="quippy.table.Table.search"><code class="xref py py-obj docutils literal"><span class="pre">search</span></code></a>(intpart)</td>
 <td>Do a binary search (faster than find) on a pre-sorted table</td>
@@ -462,7 +462,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.str_part" title="quippy.table.Table.str_part"><code class="xref py py-obj docutils literal"><span class="pre">str_part</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">str_part</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.subtable" title="quippy.table.Table.subtable"><code class="xref py py-obj docutils literal"><span class="pre">subtable</span></code></a>(...)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.subtable" title="quippy.table.Table.subtable"><code class="xref py py-obj docutils literal"><span class="pre">subtable</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -516,7 +516,7 @@ allocated accordingly.</p>
 <blockquote>
 <div><p>Number of rows to initially allocate</p>
 </div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,&#8217;i&#8217;), optional</p>
+<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
@@ -540,8 +540,8 @@ arrays or other tables.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>intpart</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>realpart</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
+<li><strong>intpart</strong> (<em>input int</em>) – </li>
+<li><strong>realpart</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -558,8 +558,8 @@ arrays or other tables.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>intpart</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>intpart</strong> (<em>input int</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -576,8 +576,8 @@ arrays or other tables.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>intpart</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>realpart</strong> (<em>input float</em>) &#8211; </li>
+<li><strong>intpart</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>realpart</strong> (<em>input float</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -593,7 +593,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -607,7 +607,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realpart</strong> (<em>input float</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realpart</strong> (<em>input float</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -621,7 +621,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<code class="xref py py-class docutils literal"><span class="pre">table</span></code> object) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<code class="xref py py-class docutils literal"><span class="pre">table</span></code> object) – </td>
 </tr>
 </tbody>
 </table>
@@ -635,7 +635,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>strpart</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>strpart</strong> (<em>input rank-3 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -649,7 +649,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logicalpart</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logicalpart</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -664,8 +664,8 @@ arrays or other tables.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>strpart</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) &#8211; </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>strpart</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>’i’</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -681,7 +681,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logicalpart</strong> (<em>input int</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logicalpart</strong> (<em>input int</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -695,7 +695,7 @@ arrays or other tables.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realpart</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realpart</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -710,15 +710,15 @@ arrays or other tables.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>intpart</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>realpart</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>strpart</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>logicalpart</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>intpart_2d</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>,</em><em>qp_n5</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>realpart_2d</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n6</em><em>,</em><em>qp_n7</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>strpart_2d</strong> (<em>input rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n8</em><em>,</em><em>qp_n9</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>logicalpart_2d</strong> (<em>input rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n10</em><em>,</em><em>qp_n11</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>blank_rows</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>intpart</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>realpart</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>strpart</strong> (<em>input rank-2 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>logicalpart</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>intpart_2d</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n4</em><em>,</em><em>qp_n5</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>realpart_2d</strong> (<em>input rank-2 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n6</em><em>,</em><em>qp_n7</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>strpart_2d</strong> (<em>input rank-3 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n8</em><em>,</em><em>qp_n9</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>logicalpart_2d</strong> (<em>input rank-2 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n10</em><em>,</em><em>qp_n11</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>blank_rows</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -735,8 +735,8 @@ arrays or other tables.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>intpart</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>realpart</strong> (<em>input float</em>) &#8211; </li>
+<li><strong>intpart</strong> (<em>input int</em>) – </li>
+<li><strong>realpart</strong> (<em>input float</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -763,9 +763,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val</strong> (<em>input int</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -782,9 +782,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val</strong> (<em>input int</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -801,9 +801,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val</strong> (<em>input string</em><em>(</em><em>len=10</em><em>)</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val</strong> (<em>input string</em><em>(</em><em>len=10</em><em>)</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -820,9 +820,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val</strong> (<em>input float</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val</strong> (<em>input float</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -839,9 +839,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val_a</strong> (<em>input rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val_a</strong> (<em>input rank-2 array</em><em>(</em><em>‘S’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>(</em><em>10</em><em>)</em><em>)</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -858,9 +858,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val_a</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val_a</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -876,7 +876,7 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object) – </td>
 </tr>
 </tbody>
 </table>
@@ -891,9 +891,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val_a</strong> (<em>input rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val_a</strong> (<em>input rank-1 array</em><em>(</em><em>‘d’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -910,9 +910,9 @@ a scalar, 1-D array (must match N rows), or other tables (must match N rows)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val_a</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>val_a</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n_cols</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>cols</strong> (<em>in/output rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>2</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -940,8 +940,8 @@ over the row to be deleted, so the order of rows is not maintained.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>n</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>keep_order</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>n</strong> (<em>input int</em>) – </li>
+<li><strong>keep_order</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -958,8 +958,8 @@ over the row to be deleted, so the order of rows is not maintained.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n0</em><em>)</em>) &#8211; </li>
-<li><strong>keep_order</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>n0</em><em>)</em>) – </li>
+<li><strong>keep_order</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -980,7 +980,7 @@ is not maintained.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</td>
 </tr>
 </tbody>
 </table>
@@ -1002,12 +1002,12 @@ is not maintained.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>n0</em><em>)</em>) &#8211; </li>
-<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>n</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>n0</em><em>)</em>) – </li>
+<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_i</strong> &#8211;  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_i</strong> –  int</p>
 </td>
 </tr>
 </tbody>
@@ -1022,9 +1022,9 @@ is not maintained.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>input int</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>input int</em>) – </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_i</strong> &#8211;  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_i</strong> –  int</td>
 </tr>
 </tbody>
 </table>
@@ -1068,10 +1068,10 @@ are converted to Fortran 1-based indexing.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pos</strong> :  input int</p>
-<p><strong>intpart</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p><strong>realpart</strong> :  input rank-1 array(&#8216;d&#8217;) with bounds (qp_n1), optional</p>
-<p><strong>strpart</strong> :  input rank-2 array(&#8216;S&#8217;) with bounds (qp_n2,(10)), optional</p>
-<p class="last"><strong>logicalpart</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n3), optional</p>
+<p><strong>intpart</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p><strong>realpart</strong> :  input rank-1 array(‘d’) with bounds (qp_n1), optional</p>
+<p><strong>strpart</strong> :  input rank-2 array(‘S’) with bounds (qp_n2,(10)), optional</p>
+<p class="last"><strong>logicalpart</strong> :  input rank-1 array(‘i’) with bounds (qp_n3), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1085,7 +1085,7 @@ are converted to Fortran 1-based indexing.</p>
 <code class="descname">int_part</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.int_part" title="Permalink to this definition">¶</a></dt>
 <dd><p>Utility function to return one or more columns from the integer part of a table.
 Since this is a function the array may be returned on the stack, so be careful
-when working with large tables &#8212; the same goes for the &#8216;real_part&#8217;
+when working with large tables — the same goes for the ‘real_part’
 interface below.</p>
 <p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">int_part</span></code> containing multiple routines:</p>
 <blockquote>
@@ -1097,12 +1097,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_column,0)</li>
+<li><strong>column</strong> (<em>input int</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_int_column,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_column</strong> &#8211;  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_column</strong> –  rank-1 array(‘i’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -1118,12 +1118,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_part,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_part,1)</li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_int_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_int_part,1)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_part</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_part</strong> –  rank-2 array(‘i’) with bounds (qp_n0,qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -1139,12 +1139,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_int_columns,0)</li>
+<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_int_columns,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_columns</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (size(qp_columns),qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_int_columns</strong> –  rank-2 array(‘i’) with bounds (size(qp_columns),qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -1162,8 +1162,8 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
-<p><strong>cols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
+<p><strong>cols</strong> :  input rank-1 array(‘i’) with bounds (qp_n1)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_int_subtable</strong> : <a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
@@ -1188,12 +1188,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_part,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_part,1)</li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_logical_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_logical_part,1)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_part</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (qp_n0,qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_part</strong> –  rank-2 array(‘i’) with bounds (qp_n0,qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -1209,12 +1209,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_columns,0)</li>
+<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_logical_columns,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_columns</strong> &#8211;  rank-2 array(&#8216;i&#8217;) with bounds (size(qp_columns),qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_columns</strong> –  rank-2 array(‘i’) with bounds (size(qp_columns),qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -1230,12 +1230,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_logical_column,0)</li>
+<li><strong>column</strong> (<em>input int</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_logical_column,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_column</strong> &#8211;  rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_logical_column</strong> –  rank-1 array(‘i’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -1260,13 +1260,13 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>file</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) &#8211; </li>
-<li><strong>real_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>int_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>str_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>logical_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
-<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) &#8211; </li>
+<li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
+<li><strong>file</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object) – </li>
+<li><strong>real_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>int_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>str_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>logical_format</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>mask</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1282,7 +1282,7 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) – </td>
 </tr>
 </tbody>
 </table>
@@ -1306,12 +1306,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_columns,0)</li>
+<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_real_columns,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_columns</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (size(qp_columns),qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_columns</strong> –  rank-2 array(‘d’) with bounds (size(qp_columns),qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -1327,12 +1327,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_part,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_part,1)</li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_real_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_real_part,1)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_part</strong> &#8211;  rank-2 array(&#8216;d&#8217;) with bounds (qp_n0,qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_part</strong> –  rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
 </td>
 </tr>
 </tbody>
@@ -1348,12 +1348,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_real_column,0)</li>
+<li><strong>column</strong> (<em>input int</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_real_column,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_column</strong> &#8211;  rank-1 array(&#8216;d&#8217;) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_real_column</strong> –  rank-1 array(‘d’) with bounds (qp_n0)</p>
 </td>
 </tr>
 </tbody>
@@ -1371,7 +1371,7 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</td>
 </tr>
 </tbody>
 </table>
@@ -1382,7 +1382,7 @@ interface below.</p>
 <dl class="method">
 <dt id="quippy.table.Table.remove_columns">
 <code class="descname">remove_columns</code><span class="sig-paren">(</span><span class="optional">[</span><em>int_col_min</em>, <em>int_col_max</em>, <em>real_col_min</em>, <em>real_col_max</em>, <em>str_col_min</em>, <em>str_col_max</em>, <em>logical_col_min</em>, <em>logical_col_max</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.table.Table.remove_columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>remove a range of columns from a table&#8217;s int or real parts</p>
+<dd><p>remove a range of columns from a table’s int or real parts</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1411,7 +1411,7 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_index</strong> :  int</td>
 </tr>
@@ -1431,8 +1431,8 @@ interface below.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <code class="xref py py-class docutils literal"><span class="pre">table</span></code> object</p>
 <p><strong>from</strong> : <code class="xref py py-class docutils literal"><span class="pre">table</span></code> object</p>
-<p><strong>row_mask</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>row_list</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
+<p><strong>row_mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>row_list</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1465,8 +1465,8 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>idx</strong> :  in/output rank-1 array(&#8216;i&#8217;) with bounds (qp_n0), optional</p>
-<p class="last"><strong>int_cols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>idx</strong> :  in/output rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<p class="last"><strong>int_cols</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
 </td>
 </tr>
 </tbody>
@@ -1488,12 +1488,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>column</strong> (<em>input int</em>) &#8211; </li>
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_column,0)</li>
+<li><strong>column</strong> (<em>input int</em>) – </li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_str_column,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_column</strong> &#8211;  rank-2 array(&#8216;S&#8217;) with bounds (qp_n0,(10))</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_column</strong> –  rank-2 array(‘S’) with bounds (qp_n0,(10))</p>
 </td>
 </tr>
 </tbody>
@@ -1509,12 +1509,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) &#8211; </li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_columns,0)</li>
+<li><strong>columns</strong> (<em>input rank-1 array</em><em>(</em><em>‘i’</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_str_columns,0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_columns</strong> &#8211;  rank-3 array(&#8216;S&#8217;) with bounds (size(qp_columns),qp_n1,(10))</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_columns</strong> –  rank-3 array(‘S’) with bounds (size(qp_columns),qp_n1,(10))</p>
 </td>
 </tr>
 </tbody>
@@ -1530,12 +1530,12 @@ interface below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n0</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_part,0)</li>
-<li><strong>n1</strong> (<em>input int</em>) &#8211; shape(qp_ret_table_str_part,1)</li>
+<li><strong>n0</strong> (<em>input int</em>) – shape(qp_ret_table_str_part,0)</li>
+<li><strong>n1</strong> (<em>input int</em>) – shape(qp_ret_table_str_part,1)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_part</strong> &#8211;  rank-3 array(&#8216;S&#8217;) with bounds (qp_n0,qp_n1,(10))</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_table_str_part</strong> –  rank-3 array(‘S’) with bounds (qp_n0,qp_n1,(10))</p>
 </td>
 </tr>
 </tbody>
@@ -1553,11 +1553,11 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n0)</p>
-<p><strong>intcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n1), optional</p>
-<p><strong>realcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n2), optional</p>
-<p><strong>strcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n3), optional</p>
-<p><strong>logicalcols</strong> :  input rank-1 array(&#8216;i&#8217;) with bounds (qp_n4), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
+<p><strong>intcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
+<p><strong>realcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n2), optional</p>
+<p><strong>strcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n3), optional</p>
+<p><strong>logicalcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n4), optional</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_subtable</strong> : <a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object</p>
@@ -1712,7 +1712,7 @@ Table was not created in that way.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2907e96+',
+            VERSION:'967e02c+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
