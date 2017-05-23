@@ -16,10 +16,13 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+Descriptors for atomic environments
+===========================================================
 
-Some utilities for topological analysis
-==================================
-
-.. automodule:: quippy.topology
-   :synopsis: utilities for topological analysis
-   :members:
+.. autofunction:: quippy.descriptors.get_descriptor_type
+.. autoclass:: quippy.descriptors.Descriptor
+	       :members:
+.. autoclass:: quippy.descriptors.Soap
+	       :members:
+.. autoclass:: quippy.descriptors.General_monomer
+	       :members:

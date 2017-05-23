@@ -43,7 +43,7 @@
 module TBSystem_module
 
 use error_module
-use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop
+use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop, verbosity_push, PRINT_ANAL
 use units_module, only : Hartree, Bohr, PI
 use periodictable_module, only : ElementName
 use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm, print
@@ -52,7 +52,7 @@ use dictionary_module, only : dictionary, initialise, finalise
 use paramreader_module, only : param_register, param_read_line
 use atoms_module, only : atoms, n_neighbours, neighbour, assignment(=)
 
-! use Functions_module 
+! use Functions_module
 use QUIP_Common_module ! , only : xml_t, dictionary_t, pauli_sigma
 use ScaLAPACK_module, only : scalapack, initialise
 use TB_Common_module
@@ -60,7 +60,7 @@ use TBModel_module, only : tbmodel, initialise, finalise, print, &
    n_orb_sets_of_Z, orb_type_of_orb_set_of_Z, n_orbs_of_orb_set_of_Z, n_orbs_of_Z, n_elecs_of_Z, &
    get_HS_blocks, get_dHS_blocks, get_dHS_masks
 use Matrix_module, only : matrixd, initialise, finalise, zero
-use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices
+use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices, copy
 use TB_KPoints_module, only : kpoints, initialise, finalise, calc_phase, print, init_mpi, ksum_distrib_inplace
 use TB_mixing_module, only : do_mix_simple, do_ridders_residual, do_mix_broyden
 use ewald_module, only : add_madelung_matrix, add_dmadelung_matrix, add_dmadelung_matrix_dr
@@ -141,7 +141,7 @@ type Self_Consistency
 
   integer :: N = 0, N_atoms = 0, N_manifolds = 0
 
-  real(dp) :: global_U 
+  real(dp) :: global_U
   real(dp), allocatable :: U(:), stoner_param(:,:)
 
   type(Self_Consistency_Term), allocatable :: terms(:)
@@ -191,6 +191,7 @@ type TBSystem
   integer, allocatable :: first_orb_of_atom(:), first_manifold_of_atom(:), first_orb_of_manifold(:)
 
   logical :: noncollinear = .false.
+  logical :: spinpol_no_scf = .false.
   logical :: complex_matrices = .false.
 
   integer :: max_block_size = 0
@@ -375,6 +376,11 @@ interface initialise_kpoints
   module procedure TBSystem_initialise_kpoints
 end interface initialise_kpoints
 
+public :: copy_matrices
+interface copy_matrices
+  module procedure TBSystem_copy_matrices
+end interface copy_matrices
+
 contains
 subroutine TBSystem_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_obj)
   type(TBSystem), intent(inout) :: this
@@ -452,6 +458,7 @@ subroutine TBSystem_Initialise_from_tbsys(this, from, mpi_obj)
   this%tbmodel = from%tbmodel
   this%complex_matrices = from%complex_matrices
   this%noncollinear = from%noncollinear
+  this%spinpol_no_scf = from%spinpol_no_scf
 
   this%kpoints = from%kpoints
   this%kpoints_generate_dynamically = from%kpoints_generate_dynamically
@@ -559,10 +566,10 @@ function TBSystem_n_elec(this, at, w_n)
   end do
 end function TBSystem_n_elec
 
-subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi_obj, error)
+subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, spinpol_no_scf, args_str, mpi_obj, error)
   type(TBSystem), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  logical, intent(in), optional :: noncollinear
+  logical, intent(in), optional :: noncollinear, spinpol_no_scf
   character(len=*), intent(in), optional :: args_str
   type(MPI_context), intent(in), optional :: mpi_obj
   integer, intent(out), optional :: error
@@ -575,7 +582,7 @@ subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi
     call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
     this%kpoints_generate_dynamically = this%kpoints_generate_next_dynamically
   endif
-  call setup_atoms(this, at%N, at%Z, noncollinear, error=error)
+  call setup_atoms(this, at%N, at%Z, noncollinear, spinpol_no_scf, error=error)
   PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_atoms_from_atoms
@@ -587,15 +594,15 @@ subroutine TBSystem_Setup_atoms_from_tbsys(this, from, error)
 
   INIT_ERROR(error)
 
-  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, error=error)
+  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, from%spinpol_no_scf, error=error)
   PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_Atoms_from_tbsys
 
-subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, error)
+subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, spinpol_no_scf, error)
   type(TBSystem), intent(inout) :: this
   integer, intent(in) :: at_N, at_Z(:)
-  logical, intent(in), optional :: noncollinear
+  logical, intent(in), optional :: noncollinear, spinpol_no_scf
   integer, intent(out), optional :: error
 
   integer :: i_at, i_man, man_offset, last_man_offset
@@ -606,6 +613,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, erro
   call Wipe(this)
 
   this%noncollinear = optional_default(this%noncollinear, noncollinear)
+  this%spinpol_no_scf = optional_default(this%spinpol_no_scf, spinpol_no_scf)
 
   this%N_atoms = at_N
   allocate(this%at_Z(this%N_atoms))
@@ -665,7 +673,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, erro
     end do
   end do
 
-  ! set last orb of last manifold 
+  ! set last orb of last manifold
   this%first_orb_of_manifold(this%N_manifolds+1) = this%first_orb_of_manifold(this%N_manifolds) + &
     n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(this%N_atoms), n_orb_sets_of_Z(this%tbmodel, at_Z(this%N_atoms)))
 
@@ -795,21 +803,33 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
   allocate(block_H(this%max_block_size, this%max_block_size))
   allocate(block_S(this%max_block_size, this%max_block_size))
   allocate(block_dipole(this%max_block_size, this%max_block_size,3))
+  block_H = 0.0_dp
+  block_S = 0.0_dp
+  block_dipole = 0.0_dp
   if (this%complex_matrices) then
     allocate(block_H_z(this%max_block_size, this%max_block_size))
     allocate(block_S_z(this%max_block_size, this%max_block_size))
     allocate(block_dipole_z(this%max_block_size, this%max_block_size,3))
+    block_H_z = 0.0_dp
+    block_S_z = 0.0_dp
+    block_dipole_z = 0.0_dp
     if (this%kpoints%non_gamma) then
       allocate(block_H_z_phase(this%max_block_size, this%max_block_size))
       allocate(block_S_z_phase(this%max_block_size, this%max_block_size))
       allocate(block_dipole_z_phase(this%max_block_size, this%max_block_size,3))
+      block_H_z_phase = 0.0_dp
+      block_S_z_phase = 0.0_dp
+      block_dipole_z_phase = 0.0_dp
     endif
   endif
   if (this%noncollinear) then
     allocate(block_H_up(this%max_block_size, this%max_block_size))
     allocate(block_H_down(this%max_block_size, this%max_block_size))
+    block_H_up = 0.0_dp
+    block_H_down = 0.0_dp
     if (this%SO%active) then
       allocate(block_SO(this%max_block_size, this%max_block_size))
+      block_SO = 0.0_dp
       call check_spin_orbit_coupling_consistency(this%SO, this%tbmodel, at%Z)
     endif
   else
@@ -840,17 +860,23 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
       block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
 
       if (this%noncollinear) then
+        if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_up, block_S, i_mag=1)
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_down, block_S, i_mag=2)
 	block_H_z = 0.0_dp
-	block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up+block_H_down)
-	block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up+block_H_down)
+        if (this%spinpol_no_scf) then
+            block_H_z(1:block_nr:2,1:block_nc:2) = block_H_up(1:block_nr/2,1:block_nc/2)
+            block_H_z(2:block_nr:2,2:block_nc:2) = block_H_down(1:block_nr/2,1:block_nc/2)
+        else
+            block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
+            block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
+        endif
 	block_S_z = 0.0_dp
-	block_S_z(1:block_nr:2,1:block_nc:2) = block_S
-	block_S_z(2:block_nr:2,2:block_nc:2) = block_S
+	block_S_z(1:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+	block_S_z(2:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
 	if (u_no_S_spin) then
-	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S
-	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S
+	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
 	endif
 	if (this%SO%active .and. (i == j) .and. (dv_mag .feq. 0.0_dp)) then
 	  call get_SO_block(this%SO, this%tbmodel, at%Z(i), block_SO)
@@ -1003,7 +1029,7 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   logical, intent(out), optional, target :: diag_mask(:), offdiag_mask(:)
 
   integer :: i, ji, j, ik, ii, jj
-  real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:)
+  real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:), block_dH_up(:,:,:), block_dH_down(:,:,:)
   complex(dp), allocatable :: block_dH_z(:,:,:), block_dS_z(:,:,:)
   complex(dp), allocatable :: block_dH_z_phase(:,:,:), block_dS_z_phase(:,:,:)
   real(dp) :: dv_hat(3), dv_mag
@@ -1031,13 +1057,23 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   do_S_block = do_S .or. this%scf%active
 
   allocate(block_dH(this%max_block_size, this%max_block_size, 3))
+  allocate(block_dH_up(this%max_block_size, this%max_block_size, 3))
+  allocate(block_dH_down(this%max_block_size, this%max_block_size, 3))
   allocate(block_dS(this%max_block_size, this%max_block_size, 3))
+  block_dH = 0.0_dp
+  block_dH_up = 0.0_dp
+  block_dH_down = 0.0_dp
+  block_dS = 0.0_dp
   if (this%complex_matrices) then
     allocate(block_dH_z(this%max_block_size, this%max_block_size, 3))
     allocate(block_dS_z(this%max_block_size, this%max_block_size, 3))
+    block_dH_z = 0.0_dp
+    block_dS_z = 0.0_dp
     if (this%kpoints%non_gamma) then
       allocate(block_dH_z_phase(this%max_block_size, this%max_block_size, 3))
       allocate(block_dS_z_phase(this%max_block_size, this%max_block_size, 3))
+      block_dH_z_phase = 0.0_dp
+      block_dS_z_phase = 0.0_dp
     endif
   endif
 
@@ -1062,41 +1098,53 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
     call Zero(this%dS(3), d_mask, od_mask)
   endif
 
-  if (this%noncollinear) call system_abort("no noncollinear forces yet")
-
   do i=1, at%N
     block_nr = this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
     do ji=1, n_neighbours(at, i)
-	j = neighbour(at, i, ji, dv_mag, cosines = dv_hat, shift = shift)
-	block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+      j = neighbour(at, i, ji, dv_mag, cosines = dv_hat, shift = shift)
+      block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+
 
       if ((i == j .and. .not. d_mask(i)) .or. &
 	  (i /= j .and. .not. od_mask(i) .and. .not. od_mask(j))) then
 	cycle
       endif
 
-      block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH, block_dS)
-      if (block_active .and. this%complex_matrices) then
-	block_dH_z = block_dH
-	if (do_S_block) block_dS_z = block_dS
+      if (this%noncollinear) then
+        if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
+        if (.not. this%spinpol_no_scf) call system_abort("noncollinear forces only supported for spinpol_no_scf")
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH_up, block_dS, i_mag=1)
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH_down, block_dS, i_mag=2)
+        if (block_active .and. this%complex_matrices) then
+          block_dH_z(1:block_nr:2,1:block_nc:2,:) = block_dH_up(1:block_nr/2,1:block_nc/2,:)
+          block_dH_z(2:block_nr:2,2:block_nc:2,:) = block_dH_down(1:block_nr/2,1:block_nc/2,:)
+          if (do_S_block) then
+            block_dS_z(1:block_nr:2,1:block_nc:2,:) = block_dS(1:block_nr/2,1:block_nc/2,:)
+            block_dS_z(2:block_nr:2,2:block_nc:2,:) = block_dS(1:block_nr/2,1:block_nc/2,:)
+          endif
+        endif
+      else
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH, block_dS)
+        if (block_active .and. this%complex_matrices) then
+          block_dH_z = block_dH
+          if (do_S_block) block_dS_z = block_dS
+        endif
       endif
 
-
       if (block_active .and. this%scf%active) then
-	do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
-	do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
-	  if (this%complex_matrices) then
-	    block_dH_z(ii,jj,:) = block_dH_z(ii,jj,:) + &
-	      0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-		       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS_z(ii,jj,:)
-	  else
-	    block_dH(ii,jj,:) = block_dH(ii,jj,:) + &
-	      0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-		       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS(ii,jj,:)
-	  endif
-	end do
-	end do
-	if (this%noncollinear) call system_abort("No matrix derivatives for noncollinear yet")
+        do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
+        do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+          if (this%complex_matrices) then
+            block_dH_z(ii,jj,:) = block_dH_z(ii,jj,:) + &
+              0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS_z(ii,jj,:)
+          else
+            block_dH(ii,jj,:) = block_dH(ii,jj,:) + &
+              0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS(ii,jj,:)
+          endif
+        end do
+        end do
 	! need to add noncollinear stuff here !!!
       endif
 
@@ -1156,8 +1204,8 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
 	endif ! complex_matrices
       endif ! block_active
 
-    end do
-  end do
+    end do ! i
+  end do ! j
 
   if (allocated(block_dH)) deallocate(block_dH)
   if (allocated(block_dS)) deallocate(block_dS)
@@ -1364,6 +1412,18 @@ subroutine TBSystem_Print(this,file)
   endif
 
 end subroutine TBSystem_Print
+
+subroutine TBSystem_copy_matrices(this, Hd, Sd, Hz, Sz, index)
+   type(TBSystem), intent(in) :: this
+   real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd
+   complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz
+   integer, intent(in), optional :: index
+
+   if (present(Hd)) call copy(this%H, Hd, index=index)
+   if (present(Hz)) call copy(this%H, Hz, index=index)
+   if (present(Sd)) call copy(this%S, Sd, index=index)
+   if (present(Sz)) call copy(this%S, Sz, index=index)
+end subroutine TBSystem_copy_matrices
 
 subroutine Self_Consistency_Initialise_str(this, args_str, param_str)
   type(Self_Consistency), intent(inout) :: this
@@ -1717,9 +1777,9 @@ subroutine TBSystem_scf_get_global_N(this, global_N)
 end subroutine TBSystem_scf_get_global_N
 
 subroutine SC_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_self_consistency) then
     if (name == "self_consistency") then
@@ -1729,9 +1789,9 @@ subroutine SC_endElement_handler(URI, localname, name)
 end subroutine SC_endElement_handler
 
 subroutine SC_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -1820,9 +1880,9 @@ subroutine Self_Consistency_read_params_xml(this, in)
 end subroutine Self_Consistency_read_params_xml
 
 subroutine DM_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_dipole_model) then
     if (name == "dipole_model") then
@@ -1832,9 +1892,9 @@ subroutine DM_endElement_handler(URI, localname, name)
 end subroutine DM_endElement_handler
 
 subroutine DM_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -1894,14 +1954,14 @@ subroutine DM_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort('TB_Dipole_Model_read_params_xml cannot find orb_set_phase attribute ' // status)
     read (value, *) parse_dipole_model%orb_set_phase(1:parse_dipole_model%n_orb_sets(i_type),i_type)
 
-  endif 
+  endif
 
 end subroutine DM_startElement_handler
 
 subroutine SO_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_spin_orbit_coupling) then
     if (name == "spin_orbit_coupling") then
@@ -1911,9 +1971,9 @@ subroutine SO_endElement_handler(URI, localname, name)
 end subroutine SO_endElement_handler
 
 subroutine SO_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -1969,7 +2029,7 @@ subroutine SO_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort('TB_Dipole_Model_read_params_xml cannot find SO_params attribute ' // status)
     read (value, *) parse_spin_orbit_coupling%SO_param(1:parse_spin_orbit_coupling%n_orb_sets(i_type),i_type)
 
-  endif 
+  endif
 
 end subroutine SO_startElement_handler
 
@@ -2550,8 +2610,8 @@ function TBSystem_update_orb_local_pot(this, at, iter, global_at_weight, new_orb
   if (allocated(this%scf%terms)) then
      do i_term=1, size(this%scf%terms)
         last_dof = cur_dof + this%scf%terms(i_term)%n_dof - 1
-        ! SCF_SPIN_DIR isn't self consistent, so always update 
-        if ((.not. done) .or. this%scf%terms(i_term)%type == SCF_SPIN_DIR) then 
+        ! SCF_SPIN_DIR isn't self consistent, so always update
+        if ((.not. done) .or. this%scf%terms(i_term)%type == SCF_SPIN_DIR) then
            call set_vec(this%scf%terms(i_term), new_control_vec(cur_dof:last_dof))
         end if
         cur_dof = last_dof+1
@@ -3137,7 +3197,7 @@ function dftb_s(u_a, u_b, R)
       exp(-tau_b*R)* ( (tau_a**4 * tau_b) / (2.0_dp * (tau_b**2 - tau_a**2)**2) -  &
 		       (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R * (tau_b**2-tau_a**2)**3) )
   else
-    dftb_s = & 
+    dftb_s = &
       exp(-tau_a*R) * (48.0_dp + 33.0_dp * tau_a * R + 9.0_dp * (tau_a*R)**2 + (tau_a*R)**3) / &
 		      (48.0_dp * R)
   endif
@@ -3189,7 +3249,7 @@ function nrl_tb_s_deriv(u_a, u_b, R)
 
     a = PI/2.0D0 * u_a**2
     c = PI/2.0D0 * u_b**2
-    
+
     nrl_tb_s_deriv = -1.0D0/R**2 - ( (a*c)**1.5D0 / PI**3 ) * &
         2.0D0*PI**2.5D0 / (a*c*sqrt(a+c)) * dF0(a,c,R)
 end function nrl_tb_s_deriv
@@ -3780,7 +3840,7 @@ subroutine get_SO_block(this, tbm, Z, block_SO)
     do j_orb_dir=1, n_orbs_of_orb_set_of_Z(tbm, Z, i_orb_set)
       i_offset = offset_base + i_orb_dir - 1
       j_offset = offset_base + j_orb_dir - 1
-      V = spin_orbit_function(i_orb_type, i_orb_dir, j_orb_dir) 
+      V = spin_orbit_function(i_orb_type, i_orb_dir, j_orb_dir)
       block_SO(2*i_offset+1:2*i_offset+2,2*j_offset+1:2*j_offset+2) = this%SO_param(i_orb_set, i_type) * V(1:2,1:2)
     end do
     end do

@@ -219,7 +219,7 @@ and Gromacs, but has a number of unique features:
 
     will either install into the current virtualenv or attempt to install
     systemwide (usually fails without ``sudo``). To install only for the
-    current user (into ``~\.local``), execute the command
+    current user (into ``~/.local``), execute the command
     ``QUIPPY_INSTALL_OPTS=--user make install-quippy``,
     or use ``QUIPPY_INSTALL_OPTS=--prefix=<directory>`` to install into a
     specific directory. ``QUIPPY_INSTALL_OPTS`` can also be set in the file

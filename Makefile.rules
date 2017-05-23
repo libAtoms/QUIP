@@ -158,6 +158,10 @@ ifeq (${HAVE_MTP},1)
   DEFINES += -DHAVE_MTP
   SYSLIBS += -lmtp -lstdc++
 endif
+ifeq (${HAVE_MBD},1)
+  DEFINES += -DHAVE_MBD
+  SYSLIBS += -lmbd
+endif
 ifeq (${HAVE_LMTO_TBE},1)
   DEFINES += -DHAVE_LMTO_TBE
   INCLUDES += $(addprefix -I,${LMTO_TBE_LIBDIR}/mods)

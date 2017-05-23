@@ -363,7 +363,7 @@ module Potential_module
   public :: fix_atoms_deform_grad
   public :: prep_atoms_deform_grad
   public :: max_rij_change
-  public :: constrain_virial_post
+  public :: constrain_virial
 
 
   public :: potential_minimise
@@ -417,6 +417,13 @@ module Potential_module
   interface test_local_virial
      module procedure potential_test_local_virial
   end interface test_local_virial
+
+#ifdef HAVE_TB
+    public :: calc_TB_matrices
+    interface calc_TB_matrices
+       module procedure Potential_calc_TB_matrices
+    end interface
+#endif
 
   contains
 
@@ -1775,10 +1782,10 @@ end subroutine undo_travel
 
     f = transpose(deform_grad) .mult. f
 
+    call constrain_virial(am%minim_at, virial)
+
     call inverse(deform_grad, deform_grad_inv)
     virial = virial .mult. transpose(deform_grad_inv)
-
-    call constrain_virial_post(am%minim_at, virial)
 
     call pack_pos_dg(-f, -virial, gradient_func, 1.0_dp/am%pos_lat_preconditioner_factor)
     if (current_verbosity() >= PRINT_NERD) then
@@ -2023,10 +2030,10 @@ endif
 
     f = transpose(deform_grad) .mult. f
 
+    call constrain_virial(am%minim_at, virial)
+
     call inverse(deform_grad, deform_grad_inv)
     virial = virial .mult. transpose(deform_grad_inv)
-
-    call constrain_virial_post(am%minim_at, virial)
 
     call pack_pos_dg(-f, -virial, grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call print ("both_func gradient packed as", PRINT_NERD)
@@ -2239,6 +2246,26 @@ end subroutine pack_pos_dg
 
   end subroutine potential_set_callback
 
+#ifdef HAVE_TB
+  !% Calculate TB Hamiltonian and overlap matrices and optionally their derivatives wrt atomic positions.
+  !% This always triggers a force calculation, since the elements for dH and dS are assembled on the fly for each atom.
+  subroutine potential_calc_TB_matrices(this, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index)
+    type(Potential), intent(inout) :: this
+    type(atoms), intent(inout) :: at !% Atomic structure to use for TB matrix calculation
+    character(len=*), intent(in), optional :: args_str !% Additional arguments to pass to TB `calc()` routine
+    real(dp), intent(inout), optional, dimension(:,:) :: Hd, Sd !% Hamiltonian and overlap for real wavefunctions (gamma point)
+    complex(dp), intent(inout), optional, dimension(:,:) :: Hz, Sz !% Complex Hamiltonian and overlap (multiple kpoints)
+    real(dp), intent(inout), optional, dimension(:,:,:,:) :: dH, dS !% Derivative of H and S wrt atomic positiions. Shape is `(3, N_atoms, N_elecs, N_elecs)`
+    integer, optional, intent(in) :: index
+
+    if (this%is_simple) then
+       call calc_TB_matrices(this%simple, at, args_str, Hd, Sd, Hz, Sz, dH, dS, index=index)
+    else
+       call system_abort('potential_calc_TB_matrices() only implemented for simple Potentials.')
+    end if
+
+  end subroutine potential_calc_TB_matrices
+#endif
 
 #include "Potential_Sum_routines.f95"
 #include "Potential_ForceMixing_routines.f95"
@@ -2352,7 +2379,7 @@ end subroutine pack_pos_dg
     endif
   end subroutine constrain_DG
 
-  subroutine constrain_virial_post(at, virial)
+  subroutine constrain_virial(at, virial)
     type(Atoms), intent(in) :: at
     real(dp), intent(inout) :: virial(3,3)
 
@@ -2397,7 +2424,7 @@ end subroutine pack_pos_dg
       virial(3,3) = virial(3,3) - virial_trace/3.0
     endif
 
-  end subroutine constrain_virial_post
+  end subroutine constrain_virial
 
 
 

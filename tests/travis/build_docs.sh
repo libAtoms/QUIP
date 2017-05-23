@@ -9,11 +9,15 @@ set -e
 # builds expect this
 export QUIP_ROOT=`pwd`
 
+# need newer pip so it doesn't install incompatible
+# ipython
+pip install --upgrade pip
+
 # packages for building docs
-pip install sphinx sphinx_rtd_theme numpydoc
+pip install sphinx sphinx_rtd_theme nbsphinx numpydoc
 
 # needed to nbconvert ipynb files and to process the rst files
-pip install nbconvert\[execute\] ipython
+pip install 'nbconvert[execute]' 'ipython<6'
 
 # quippy is working, install it
 make install-quippy
@@ -52,6 +56,9 @@ git config --global user.email "build@travis.org"
 # These commands are moved from docpush/Makefile
 cd ${PAGES_DIR}
 git add -A
-git commit -m docpush
+# If there is nothing to commit, git exits with an error code of 1
+# To stop this triggering the set -e, negate any errors (what else 
+# could go wrong?)
+git commit -m docpush || true
 git push origin gh-pages --quiet
 

@@ -446,6 +446,10 @@ class FortranDerivedType(object):
             if el in self._cmp_skip_fields:
                 continue
 
+            if not hasattr(other, el):
+                wraplog.debug('element in self but not other %s' % el)
+                return False
+
             if getattr(self, el) != getattr(other, el):
                 wraplog.debug('element mismatch %s' % el)
                 return False

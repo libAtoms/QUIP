@@ -146,7 +146,7 @@ valid_dim_re = re.compile(r'^(([-0-9.e]+)|(size\([_a-zA-Z0-9\+\-\*\/]*\))|(len\(
 
 #args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_]*,\s+(['"])([a-zA-Z][a-zA-Z0-9_]*)\1,\s+(['"])(.*?)\3,\s+.+?help_string=([\'"])(.+?)\5\)""")
 
-args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_]*,\s+(['"])([a-zA-Z][a-zA-Z0-9_]*)\1,\s+(['"])(.*?)\3,\s+([a-zA-Z][a-zA-Z0-9_]*),.+?help_string=(['"])(.+?)\6\)""")
+args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_%]*\s*,\s*(['"])([a-zA-Z][a-zA-Z0-9_]*)\1\s*,\s*(['"]?)(.*?)\3\s*,\s*([a-zA-Z_][a-zA-Z0-9_%]*)\s*,.+?help_string=(['"])(.+?)\6\)""")
 
 def debug(str):
     if do_debug:
@@ -2237,6 +2237,7 @@ def check_args_str(cl,file, dest):
         return [None,cl]
     m = args_str_re.match(cl)
     if cl and m is not None:
+        print "CSG ", cl
         d = C_decl()
         d.name = m.group(2)
         d.value = m.group(4)
