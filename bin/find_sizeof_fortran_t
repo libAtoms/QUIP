@@ -14,7 +14,7 @@ include Makefile.inc
 include Makefile.rules
 
 sizeof_fortran_t: sizeof_fortran_t.f90
-	\${F90} \${F95FLAGS} \${LINKOPTS} \$< -o \$@
+	\${F90} \${F95FLAGS} \${EXTRA_LINKOPTS} \$< -o \$@
 EOF
 
 cd build/${QUIP_ARCH}

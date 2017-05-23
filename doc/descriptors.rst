@@ -19,10 +19,12 @@
 Descriptors for atomic environments
 ===========================================================
 
-.. autofunction:: quippy.descriptors.get_descriptor_type
 .. autoclass:: quippy.descriptors.Descriptor
-	       :members:
+   :members:
+   :inherited-members:
+
 .. autoclass:: quippy.descriptors.Soap
-	       :members:
+   :members:
+
 .. autoclass:: quippy.descriptors.General_monomer
-	       :members:
+   :members:

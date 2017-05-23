@@ -36,8 +36,8 @@ NETCDF_LIBS =  -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
 NETCDF4_CURL_LIBS = -lcurl
 MDCORE_LIBS = -lmdcore
-GIT_VERSION := -D'GIT_VERSION="$(shell ${QUIP_ROOT}/bin/gitversion -n ..)"'
-GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion.sh -n ..)'
+GIT_VERSION := -D'GIT_VERSION="$(shell ${QUIP_ROOT}/bin/gitversion)"'
+GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion.sh)'
 
 ifndef AR
 	AR = ar
