@@ -1,8 +1,9 @@
 language: python
+dist: trusty
 sudo: required
 env:
   matrix:
-    # Every build
+    # Every build (gcc-4.8 on Ubuntu 14.04)
     - BUILD=VANILLA
     - BUILD=VANILLA PAR=openmp
     - BUILD=VANILLA PAR=openmpi
@@ -10,31 +11,20 @@ env:
     - BUILD=ALL DOCS=true
     - BUILD=ALL PAR=openmp
     - BUILD=ALL PAR=openmpi
-    # All configurations
+    # Oldest supported compilers (gcc-4.4)
     - GCC_VERSION=4.4 BUILD=VANILLA
     - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
     - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmpi
     - GCC_VERSION=4.4 BUILD=ALL
     - GCC_VERSION=4.4 BUILD=ALL PAR=openmp
     - GCC_VERSION=4.4 BUILD=ALL PAR=openmpi
-    - GCC_VERSION=4.9 BUILD=VANILLA
-    - GCC_VERSION=4.9 BUILD=VANILLA PAR=openmp
-    - GCC_VERSION=4.9 BUILD=VANILLA PAR=openmpi
-    - GCC_VERSION=4.9 BUILD=ALL
-    - GCC_VERSION=4.9 BUILD=ALL PAR=openmp
-    - GCC_VERSION=4.9 BUILD=ALL PAR=openmpi
-    - GCC_VERSION=5 BUILD=VANILLA
-    - GCC_VERSION=5 BUILD=VANILLA PAR=openmp
-    - GCC_VERSION=5 BUILD=VANILLA PAR=openmpi
-    - GCC_VERSION=5 BUILD=ALL
-    - GCC_VERSION=5 BUILD=ALL PAR=openmp
-    - GCC_VERSION=5 BUILD=ALL PAR=openmpi
-    - GCC_VERSION=6 BUILD=VANILLA
-    - GCC_VERSION=6 BUILD=VANILLA PAR=openmp
-    - GCC_VERSION=6 BUILD=VANILLA PAR=openmpi
-    - GCC_VERSION=6 BUILD=ALL
-    - GCC_VERSION=6 BUILD=ALL PAR=openmp
-    - GCC_VERSION=6 BUILD=ALL PAR=openmpi
+    # Most up to date compilers (gcc-7)
+    - GCC_VERSION=7 BUILD=VANILLA
+    - GCC_VERSION=7 BUILD=VANILLA PAR=openmp
+    - GCC_VERSION=7 BUILD=VANILLA PAR=openmpi
+    - GCC_VERSION=7 BUILD=ALL
+    - GCC_VERSION=7 BUILD=ALL PAR=openmp
+    - GCC_VERSION=7 BUILD=ALL PAR=openmpi
   global:
     secure: "Y5dAhnGQrytV8tJX1oCQMVqAQ2LJIXilFJCgvBMxfaJrs3tORf0gRCKiG7RmUnfWrJtweKkHlXUf4oBWdfg8cCL2rqw3iwun+AV8GY70jd2zUpegv39I5AoLda+BoFaFWYkpdq5jgrFs/DmBgGGZ14dGiIljsAS02MRcGMwxBMg="
 python:
@@ -45,7 +35,7 @@ install:
   - export QUIP_ARCH=linux_x86_64_gfortran${PAR+_${PAR}}
   - echo ${QUIP_ARCH}
   # VANILLA only for each push, and on branches and forks.
-  # GCC 4.6 + GAP daily (includes building docs) [cron],
+  # GCC 4.8 + GAP daily (includes building docs) [cron],
   # Run all compiler versions on Saturday [cron]
   # Disable docs on non-build as fully built quippy is required.
   # GAP can be triggerd with [ci all] in the commit message, add [ci docs]
