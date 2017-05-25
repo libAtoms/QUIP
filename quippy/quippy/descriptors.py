@@ -16,14 +16,19 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import _descriptors #as _descriptors #TODO rename fortran-wrapped module to _descriptors
+from functools import wraps
+
+import numpy as np
+from ase.atoms import Atoms as ASEAtoms
+
+from quippy._descriptors import Descriptor as RawDescriptor
+from quippy._descriptors import Soap, General_monomer
 from quippy.oo_fortran import update_doc_string
 from quippy.farray import fzeros
-from ase.atoms import Atoms as ASEAtoms
 from quippy.atoms import Atoms
-import numpy as np
 
 __all__ = ['Descriptor']
+
 
 class DescriptorCalcResult:
     """
@@ -35,7 +40,7 @@ class DescriptorCalcResult:
         self.index = index
         #self.i_desc, self.i_atom, self.i_coord = index
 
-from functools import wraps
+
 def convert_atoms_types_iterable_method(method):
     """
     Decorator to transparently convert ASEAtoms objects into quippy Atoms, and
@@ -51,21 +56,25 @@ def convert_atoms_types_iterable_method(method):
             return [wrapper(self, atelement, *args, **kw) for atelement in at]
     return wrapper
 
-class Descriptor(_descriptors.Descriptor):
-    __doc__ = update_doc_string(_descriptors.Descriptor.__doc__, """
-    Pythonic wrapper for GAP descriptor module""",
-            signature='Descriptor(args_str)')
+
+class Descriptor(RawDescriptor):
+    __doc__ = update_doc_string(
+        RawDescriptor.__doc__,
+        """Pythonic wrapper for GAP descriptor module""",
+        signature='Descriptor(args_str)')
 
     def __init__(self, args_str):
         """
         Initialises Descriptor object and calculate number of dimensions and
         permutations.
         """
-        _descriptors.Descriptor.__init__(self, args_str)
+        RawDescriptor.__init__(self, args_str)
         self._n_dim = self.dimensions()
         self._n_perm = self.n_permutations()
 
+    #: Number of dimensions
     n_dim = property(lambda self: self._n_dim)
+    #: Number of permutations
     n_perm = property(lambda self: self._n_perm)
 
     def __len__(self):
@@ -75,7 +84,7 @@ class Descriptor(_descriptors.Descriptor):
         """
         Returns array containing all valid permutations of this descriptor.
         """
-        perm = _descriptors.Descriptor.permutations(self, self.n_dim, self.n_perm)
+        perm = RawDescriptor.permutations(self, self.n_dim, self.n_perm)
         return np.array(perm).T
 
     @convert_atoms_types_iterable_method
@@ -95,7 +104,7 @@ class Descriptor(_descriptors.Descriptor):
         """
         n_desc, n_cross = self.descriptor_sizes(at)
         data = fzeros((self.n_dim, n_desc))
-        _descriptors.Descriptor.calc(self, at, data)
+        RawDescriptor.calc(self, at, data)
         return np.array(data).T
 
     @convert_atoms_types_iterable_method
@@ -111,7 +120,7 @@ class Descriptor(_descriptors.Descriptor):
         # n_cross is number of cross-terms, proportional to n_desc
         data_grad = fzeros((self.n_dim, 3*n_cross))
         data_index = fzeros((3, 3*n_cross), 'i')
-        _descriptors.Descriptor.calc(self, at, data, data_grad, data_index)
+        RawDescriptor.calc(self, at, data, data_grad, data_index)
         # TODO: convert to numpy arrays and expose in suitable fashion
         return DescriptorCalcResult(data, data_grad, data_index)
 
