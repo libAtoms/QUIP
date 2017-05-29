@@ -26,19 +26,17 @@ from quippy._descriptors import Soap, General_monomer
 from quippy.oo_fortran import update_doc_string
 from quippy.farray import fzeros
 from quippy.atoms import Atoms
+from quippy.util import dict_to_args_str
 
 __all__ = ['Descriptor']
 
 
-class DescriptorCalcResult:
+class DescriptorCalcResult(dict):
     """
-    Results of a descriptor calculation with gradients.
+    Results of a descriptor calculation.
     """
-    def __init__(self, data, grad, index):
-        self.data = data
-        self.grad = grad
-        self.index = index
-        #self.i_desc, self.i_atom, self.i_coord = index
+    def __getattr__(self, key): return self[key]
+    def __setattr__(self, key, val): self[key] = val
 
 
 def convert_atoms_types_iterable_method(method):
@@ -63,11 +61,13 @@ class Descriptor(RawDescriptor):
         """Pythonic wrapper for GAP descriptor module""",
         signature='Descriptor(args_str)')
 
-    def __init__(self, args_str):
+    def __init__(self, args_str=None, **init_args):
         """
         Initialises Descriptor object and calculate number of dimensions and
         permutations.
         """
+        if args_str is None:
+            args_str = dict_to_args_str(init_args)
         RawDescriptor.__init__(self, args_str)
         self._n_dim = self.dimensions()
         self._n_perm = self.n_permutations()
@@ -96,31 +96,45 @@ class Descriptor(RawDescriptor):
         return self.descriptor_sizes(at)[0]
 
     @convert_atoms_types_iterable_method
-    def calc(self, at):
+    def calc_descriptor(self, at, args_str=None, **calc_args):
         """
         Calculates all descriptors of this type in the Atoms object, and
         returns the array of descriptor values. Does not compute gradients; use
-        calc_grad() for that.
+        calc(at, grad=True, ...) for that.
         """
-        n_desc, n_cross = self.descriptor_sizes(at)
-        data = fzeros((self.n_dim, n_desc))
-        RawDescriptor.calc(self, at, data)
-        return np.array(data).T
+        return self.calc(at, False, args_str, **calc_args).descriptor
 
     @convert_atoms_types_iterable_method
-    def calc_grad(self, at):
+    def calc(self, at, grad=False, args_str=None, **calc_args):
         """
         Calculates all descriptors of this type in the Atoms object, and
-        returns a DescriptorCalcResult object that contains the descriptor
-        values, the gradients, and the indices to the involved atoms.
+        gradients if grad=True. Results can be accessed dictionary- or
+        attribute-style; 'descriptor' contains descriptor values, 'grad'
+        contains gradients, 'index' contains indices to gradients
+        (descriptor, atom, coordinate).
         """
-        # what do we want to get out of it?
+        if args_str is None:
+            args_str = dict_to_args_str(calc_args)
+
         n_desc, n_cross = self.descriptor_sizes(at)
         data = fzeros((self.n_dim, n_desc))
-        # n_cross is number of cross-terms, proportional to n_desc
-        data_grad = fzeros((self.n_dim, 3*n_cross))
-        data_index = fzeros((3, 3*n_cross), 'i')
-        RawDescriptor.calc(self, at, data, data_grad, data_index)
-        # TODO: convert to numpy arrays and expose in suitable fashion
-        return DescriptorCalcResult(data, data_grad, data_index)
+
+        if grad:
+            # n_cross is number of cross-terms, proportional to n_desc
+            data_grad = fzeros((self.n_dim, 3*n_cross))
+            data_index = fzeros((3, 3*n_cross), 'i')
+
+        if not grad:
+            RawDescriptor.calc(self, at, data)
+        else:
+            RawDescriptor.calc(self, at, data, data_grad, data_index)
+
+        results = DescriptorCalcResult()
+        convert = lambda data: np.array(data).T
+        results.descriptor = convert(data)
+        if grad:
+            results.grad = convert(data_grad)
+            results.index = convert(data_index)
+
+        return results
 
