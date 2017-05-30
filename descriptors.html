@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Descriptors for atomic environments &mdash; quippy 813db0a+ documentation</title>
+  <title>Descriptors for atomic environments &mdash; quippy 05aefef+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 813db0a+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 05aefef+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                813db0a+
+                05aefef+
               </div>
             
           
@@ -259,7 +259,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">calc_grad</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">calc_descriptor</span></code></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">count</span></code></td>
@@ -271,22 +271,27 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dt id="quippy.descriptors.Descriptor.calc">
 <code class="descname">calc</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates all descriptors of this type in the Atoms object, and
-returns the array of descriptor values. Does not compute gradients; use
-calc_grad() for that.</p>
+gradients if grad=True. Results can be accessed dictionary- or
+attribute-style; ‘descriptor’ contains descriptor values, ‘grad’
+contains gradients, ‘index’ contains indices to gradients
+(descriptor, atom, coordinate). Cutoffs and gradients of cutoffs
+are also returned.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.calc_array">
-<code class="descname">calc_array</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>out</em>, <em>grad_out</em>, <em>grad_index</em>, <em>grad_pos</em>, <em>args_str</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_array" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_array</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>out</em>, <em>covariance_cutoff</em>, <em>grad_out</em>, <em>grad_index</em>, <em>grad_pos</em>, <em>grad_covariance_cutoff</em>, <em>args_str</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_array" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
 <p><strong>descriptor_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>grad_descriptor_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
-<p><strong>grad_descriptor_index</strong> :  in/output rank-2 array(‘i’) with bounds (qp_n4,qp_n5), optional</p>
-<p><strong>grad_descriptor_pos</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n6), optional</p>
+<p><strong>covariance_cutoff</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n2), optional</p>
+<p><strong>grad_descriptor_out</strong> :  in/output rank-3 array(‘d’) with bounds (qp_n3,qp_n4,qp_n5), optional</p>
+<p><strong>grad_descriptor_index</strong> :  in/output rank-2 array(‘i’) with bounds (qp_n6,qp_n7), optional</p>
+<p><strong>grad_descriptor_pos</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n8,qp_n9), optional</p>
+<p><strong>grad_covariance_cutoff</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n10,qp_n11), optional</p>
 <p><strong>args_str</strong> :  input string(len=-1), optional</p>
 <p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
@@ -298,11 +303,11 @@ calc_grad() for that.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="quippy.descriptors.Descriptor.calc_grad">
-<code class="descname">calc_grad</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc_grad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_grad" title="Permalink to this definition">¶</a></dt>
+<dt id="quippy.descriptors.Descriptor.calc_descriptor">
+<code class="descname">calc_descriptor</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc_descriptor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_descriptor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates all descriptors of this type in the Atoms object, and
-returns a DescriptorCalcResult object that contains the descriptor
-values, the gradients, and the indices to the involved atoms.</p>
+returns the array of descriptor values. Does not compute gradients; use
+calc(at, grad=True, …) for that.</p>
 </dd></dl>
 
 <dl class="method">
@@ -844,7 +849,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'813db0a+',
+            VERSION:'05aefef+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
