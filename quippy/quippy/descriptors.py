@@ -111,30 +111,38 @@ class Descriptor(RawDescriptor):
         gradients if grad=True. Results can be accessed dictionary- or
         attribute-style; 'descriptor' contains descriptor values, 'grad'
         contains gradients, 'index' contains indices to gradients
-        (descriptor, atom, coordinate).
+        (descriptor, atom, coordinate). Cutoffs and gradients of cutoffs
+        are also returned.
         """
         if args_str is None:
             args_str = dict_to_args_str(calc_args)
 
         n_desc, n_cross = self.descriptor_sizes(at)
         data = fzeros((self.n_dim, n_desc))
+        cutoff = fzeros(n_desc)
 
         if grad:
             # n_cross is number of cross-terms, proportional to n_desc
-            data_grad = fzeros((self.n_dim, 3*n_cross))
-            data_index = fzeros((3, 3*n_cross), 'i')
+            data_grad = fzeros((self.n_dim, 3 ,n_cross))
+            data_index = fzeros((2, n_cross), 'i')
+            cutoff_grad = fzeros((3 ,n_cross))
 
         if not grad:
-            RawDescriptor.calc(self, at, data)
+            RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff,
+                    args_str=args_str)
         else:
-            RawDescriptor.calc(self, at, data, data_grad, data_index)
+            RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff,
+                    grad_descriptor_out=data_grad, grad_descriptor_index=data_index,
+                    grad_covariance_cutoff=cutoff_grad,args_str=args_str)
 
         results = DescriptorCalcResult()
         convert = lambda data: np.array(data).T
         results.descriptor = convert(data)
+        results.cutoff = convert(cutoff)
         if grad:
             results.grad = convert(data_grad)
             results.index = convert(data_index)
+            results.cutoff_grad = convert(cutoff_grad)
 
         return results
 
