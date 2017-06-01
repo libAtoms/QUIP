@@ -4,7 +4,7 @@
 # used by quippy and AtomEye for Fortran<->C interoperability
 
 
-cat > build/${QUIP_ARCH}/Makefile <<EOF
+cat > "build/${QUIP_ARCH}/Makefile" <<EOF
 ifeq (\${QUIP_ARCH},)
   include Makefile.arch
 else
@@ -14,10 +14,10 @@ include Makefile.inc
 include Makefile.rules
 
 sizeof_fortran_t: sizeof_fortran_t.f90
-	\${F90} \${F95FLAGS} \${LINKOPTS} \$< -o \$@
+	\${F90} \${F95FLAGS} \${EXTRA_LINKOPTS} \$< -o \$@
 EOF
 
-cd build/${QUIP_ARCH}
+cd "build/${QUIP_ARCH}" || exit
 
 cat > sizeof_fortran_t.f90 <<EOF
 program sizeof_fortran_t
@@ -33,19 +33,29 @@ program sizeof_fortran_t
 end program sizeof_fortran_t
 EOF
 
-# Using && prevents an empty value being added to the makefile
-make -I ../../arch -I../.. sizeof_fortran_t > /dev/null && \
-    echo SIZEOF_FORTRAN_T=$(./sizeof_fortran_t)
-
-# Try to warn that something is wrong
-if [ $? -ne 0 ]; then
+# Only echo the value if everything works, otherwise report
+# errors
+if BUILD_OUTPUT=$(make -I ../../arch -I../.. sizeof_fortran_t 2>&1); then
+    if SIZEOF_FORTRAN_T=$(./sizeof_fortran_t 2>&1); then
+        echo SIZEOF_FORTRAN_T="${SIZEOF_FORTRAN_T// /}"
+    else
+        echo >&2
+        echo Unable to determine SIZEOF_FORTRAN_T >&2
+        echo Output:: >&2
+        echo "${SIZEOF_FORTRAN_T}" >&2
+        echo >&2
+        exit 1
+    fi
+else
     echo >&2
     echo Unable to determine SIZEOF_FORTRAN_T >&2
     echo Check that your compiler is working and try again! >&2
+    echo Build error: >&2
+    echo "$BUILD_OUTPUT" >&2
     echo >&2
+    exit 1
 fi
 
 rm sizeof_fortran_t.f90
 rm sizeof_fortran_t
 rm Makefile
-
