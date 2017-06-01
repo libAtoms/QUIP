@@ -113,8 +113,8 @@ implicit none
 #ifdef HAVE_GAP
   type(descriptor) :: eval_descriptor
 #endif
-  real(dp), dimension(:,:), allocatable :: descriptor_array, grad_descriptor_array
-  real(dp), dimension(:), allocatable :: grad_descriptor_pos
+  real(dp), dimension(:,:), allocatable :: descriptor_array, grad_descriptor_pos
+  real(dp), dimension(:,:,:), allocatable :: grad_descriptor_array
   integer, dimension(:,:), allocatable :: grad_descriptor_index
   character(STRING_LENGTH) :: descriptor_str
   logical :: has_descriptor_str, do_grad_descriptor
@@ -787,14 +787,14 @@ implicit none
         call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
         allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
         if(do_grad_descriptor) &
-           allocate(grad_descriptor_array(descriptor_dimensions(eval_descriptor),3*n_cross), &
-                    grad_descriptor_index(3, 3*n_cross), grad_descriptor_pos(3*n_cross) )
+           allocate(grad_descriptor_array(descriptor_dimensions(eval_descriptor),3,n_cross), &
+                    grad_descriptor_index(2, n_cross), grad_descriptor_pos(3,n_cross) )
 
         if(do_grad_descriptor) then
-           call calc(eval_descriptor,at,descriptor_array,&
+           call calc(eval_descriptor,at,descriptor_out=descriptor_array,&
              grad_descriptor_out=grad_descriptor_array,grad_descriptor_index=grad_descriptor_index,grad_descriptor_pos=grad_descriptor_pos,args_str=trim(calc_args))
         else
-           call calc(eval_descriptor,at,descriptor_array,args_str=trim(calc_args))
+           call calc(eval_descriptor,at,descriptor_out=descriptor_array,args_str=trim(calc_args))
         endif
         mainlog%prefix = "DESC"
         do i = 1, n_descriptors
@@ -802,8 +802,10 @@ implicit none
         end do
         if(do_grad_descriptor) then
            mainlog%prefix = "GRAD_DSC"
-           do i = 1, 3*n_cross
-              call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_pos(i)//"  "//grad_descriptor_array(:,i), PRINT_ALWAYS, mainlog)
+           do i = 1, n_cross
+              do j = 1, 3
+                 call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_pos(j,i)//"  "//grad_descriptor_array(:,j,i), PRINT_ALWAYS, mainlog)
+              enddo
            enddo
         endif
         mainlog%prefix = ""
