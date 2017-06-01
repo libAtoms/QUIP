@@ -69,8 +69,13 @@ type IPModel_DispTS
   integer :: n_types = 0
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp), allocatable :: c6_free(:), alpha_free(:), r_vdW_free(:)
+  logical :: only_inter_resid = .false.
 
   real(dp) :: cutoff = 0.0_dp
+
+  ! Constants for now...
+  real(dp) :: damp_steepness = 20.0_dp
+  real(dp) :: damp_scale = 0.94 !PBE
 
   character(len=STRING_LENGTH) :: label
 
@@ -136,59 +141,193 @@ end subroutine IPModel_DispTS_Finalise
 
 
 subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
-   type(IPModel_DispTS), intent(inout):: this
-   type(Atoms), intent(inout)      :: at
-   real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
-   real(dp), intent(out), optional :: virial(3,3)
-   character(len=*), optional      :: args_str
-   type(Dictionary) :: params
-   type(MPI_Context), intent(in), optional :: mpi
-   integer, intent(out), optional :: error
+    type(IPModel_DispTS), intent(inout):: this
+    type(Atoms), intent(inout)      :: at
+    real(dp), intent(out), optional :: e, local_e(:)
+    real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+    real(dp), intent(out), optional :: virial(3,3)
 
-   real(dp), pointer, dimension(:) :: my_hirshfeld_volume
-   character(STRING_LENGTH)        :: hirshfeld_vol_name
+    character(len=*), optional      :: args_str
+    type(Dictionary) :: params
+    logical :: has_atom_mask_name
+    character(STRING_LENGTH) :: atom_mask_name
+    real(dp) :: r_scale, E_scale
+    logical :: do_rescale_r, do_rescale_E
+    type(MPI_Context), intent(in), optional :: mpi
+    integer, intent(out), optional :: error
 
-   INIT_ERROR(error)
+    integer, pointer, dimension(:)  :: resid
+    real(dp), pointer, dimension(:) :: my_hirshfeld_volume
+    character(STRING_LENGTH)        :: hirshfeld_vol_name
 
-   if (present(e)) e = 0.0_dp
-   if (present(local_e)) then
-      call check_size('Local_E',local_e,(/at%N/),'IPModel_DispTS_Calc', error)
-      local_e = 0.0_dp
-   endif
-   if (present(f)) then
-      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_DispTS_Calc', error)
-      f = 0.0_dp
-   end if
-   if (present(virial)) virial = 0.0_dp
-   if (present(local_virial)) then
-      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_DispTS_Calc', error)
-      local_virial = 0.0_dp
-   endif
+    integer     :: i, j, ji, ti, tj
+    real(dp)    :: dr(3), dr_mag, de, de_dr, vi, vj
 
-   if (present(args_str)) then
-       if (len_trim(args_str) > 0) then
-           call initialise(params)
-           call param_register(params, 'hirshfeld_vol_name', 'hirshfeld_rel_volume', hirshfeld_vol_name, &
-                               help_string='Name of the Atoms property containing relative Hirshfeld volumes $v/v_{free}$')
+    INIT_ERROR(error)
 
-           if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Calc args_str')) then
-               RAISE_ERROR("IPModel_DispTS_Calc failed to parse args_str '"//trim(args_str)//"'", error)
-           endif
-           call finalise(params)
-           call assign_property_pointer(at, trim(hirshfeld_vol_name), my_hirshfeld_volume, error)
-           PASS_ERROR_WITH_INFO("IPModel_DispTS_Calc could not find '"//trim(hirshfeld_vol_name)//"' property in the Atoms object", error)
+    if (present(e)) e = 0.0_dp
+    if (present(local_e)) then
+       call check_size('Local_E',local_e,(/at%N/),'IPModel_DispTS_Calc', error)
+       local_e = 0.0_dp
+    endif
+    if (present(f)) then
+       call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_DispTS_Calc', error)
+       f = 0.0_dp
+    end if
+    if (present(virial)) virial = 0.0_dp
+    if (present(local_virial)) then
+       call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_DispTS_Calc', error)
+       local_virial = 0.0_dp
+    endif
+
+    if (this%only_inter_resid) then
+       if (.not. assign_pointer(at, "resid", resid)) then
+         RAISE_ERROR("IPModel_DispTS_Calc calculation with only_inter_resid=T requires resid field", error)
+       endif
+    end if
+
+    if (present(args_str)) then
+        if (len_trim(args_str) > 0) then
+            call initialise(params)
+            call param_register(params, 'hirshfeld_vol_name', 'hirshfeld_rel_volume', hirshfeld_vol_name, &
+                                help_string='Name of the Atoms property containing relative Hirshfeld volumes $v/v_{free}$')
+            call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+            call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
+            call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
+ 
+            if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Calc args_str')) then
+                RAISE_ERROR("IPModel_DispTS_Calc failed to parse args_str '"//trim(args_str)//"'", error)
+            endif
+            call finalise(params)
+            call assign_property_pointer(at, trim(hirshfeld_vol_name), my_hirshfeld_volume, error)
+            PASS_ERROR_WITH_INFO("IPModel_DispTS_Calc could not find '"//trim(hirshfeld_vol_name)//"' property in the Atoms object", error)
         endif
-   else
-       call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
+        if(has_atom_mask_name) then
+           RAISE_ERROR('IPModel_LJ_Calc: atom_mask_name found, but not supported', error)
+        endif
+        if (do_rescale_r .or. do_rescale_E) then
+           RAISE_ERROR("IPModel_LJ_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
+        end if
+    else
+        call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
+    endif
+
+    ! Adapted from IPModel_LJ.f95 as a general pair potential
+    do i = 1, at%N
+      do ji = 1, n_neighbours(at, i)
+        j = neighbour(at, i, ji, dr_mag, cosines = dr)
+
+        if (dr_mag .feq. 0.0_dp) cycle
+        if ((i < j)) cycle
+
+        if (this%only_inter_resid) then
+          if (resid(i) == resid(j)) cycle
+        endif
+
+        ti = get_type(this%type_of_atomic_num, at%Z(i))
+        tj = get_type(this%type_of_atomic_num, at%Z(j))
+        vi = my_hirshfeld_volume(i)
+        vj = my_hirshfeld_volume(j)
+
+        if (present(e) .or. present(local_e)) then
+          de = IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, dr_mag)
+
+          if (present(local_e)) then
+            local_e(i) = local_e(i) + 0.5_dp*de
+            if(i/=j) local_e(j) = local_e(j) + 0.5_dp*de
+          endif
+          if (present(e)) then
+            if(i==j) then
+               e = e + 0.5_dp*de
+            else
+               e = e + de
+            endif
+          endif
+        endif
+        if (present(f) .or. present(virial)) then
+          de_dr = IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, dr_mag)
+          if (present(f)) then
+            f(:,i) = f(:,i) + de_dr*dr
+            if(i/=j) f(:,j) = f(:,j) - de_dr*dr
+          endif
+          if (present(virial)) then
+             if(i==j) then
+                virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*dr_mag
+             else
+                virial = virial - de_dr*(dr .outer. dr)*dr_mag
+             endif
+          endif
+        endif
+      end do
+   end do
+
+   if (present(mpi)) then
+      if (present(e)) e = sum(mpi, e)
+      if (present(local_e)) call sum_in_place(mpi, local_e)
+      if (present(virial)) call sum_in_place(mpi, virial)
+      if (present(f)) call sum_in_place(mpi, f)
    endif
 
-   !TODO smooth cutoff
    !TODO tie in with Ewald code for long range
 
-   RAISE_ERROR('IPModel_Calc - not implemented',error)
-
 end subroutine IPModel_DispTS_Calc
+
+function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r)
+    type(IPModel_DispTS), intent(in) :: this
+    integer, intent(in) :: ti, tj
+    real(dp), intent(in) :: r, vi, vj  ! Pair distance and relative Hirshfeld volumes
+    real(dp) :: IPModel_DispTS_pairenergy
+
+    real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
+    real(dp) :: alphai, alphaj ! Polarizabilities
+    real(dp) :: rfree ! Inner cutoff distance
+    real(dp) :: damp ! Damping factor
+
+    c6i = this%c6_free(ti) * vi**2
+    if (ti /= tj) then
+        c6j = this%c6_free(tj) * vj**2
+        alphai = this%alpha_free(ti) * vi
+        alphaj = this%alpha_free(tj) * vj
+        c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
+    else
+        c6 = c6i
+    endif
+    rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
+    damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
+   !TODO smooth cutoff
+    IPModel_DispTS_pairenergy = -1.0_dp * c6 * r**(-6) * damp
+
+end function IPModel_DispTS_pairenergy
+
+
+function IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, r)
+    type(IPModel_DispTS), intent(in) :: this
+    integer, intent(in) :: ti, tj
+    real(dp), intent(in) :: r, vi, vj  ! Pair distance and relative Hirshfeld volumes
+    real(dp) :: IPModel_DispTS_pairenergy_deriv
+
+    real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
+    real(dp) :: alphai, alphaj ! Polarizabilities
+    real(dp) :: rfree ! Inner cutoff distance
+    real(dp) :: damp, dfdamp ! Derivative of damping function
+
+    c6i = this%c6_free(ti) * vi**2
+    if (ti /= tj) then
+        c6j = this%c6_free(tj) * vj**2
+        alphai = this%alpha_free(ti) * vi
+        alphaj = this%alpha_free(tj) * vj
+        c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
+    else
+        c6 = c6i
+    endif
+    rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
+    ! TODO avoid recalculating
+    damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
+    dfdamp = this%damp_steepness / (2.0_dp * this%damp_scale * rfree) &
+        / (cosh(this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)) + 1.0_dp)
+    IPModel_DispTS_pairenergy_deriv = -1.0_dp * c6 * r**(-6) * (dfdamp - 6.0_dp/r * damp)
+
+end function IPModel_DispTS_pairenergy_deriv
 
 
 subroutine IPModel_DispTS_Print(this, file)
@@ -277,6 +416,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         read (value, *), parse_ip%n_types
       else
         call system_abort("Can't find n_types in DispTS_params")
+      endif
+
+      call QUIP_FoX_get_value(attributes, 'only_inter_resid', value, status)
+      if (status == 0) then
+        read (value, *), parse_ip%only_inter_resid
+      else
+        parse_ip%only_inter_resid = .false.
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
