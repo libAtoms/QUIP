@@ -284,17 +284,13 @@ function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r)
     real(dp) :: damp ! Damping factor
 
     c6i = this%c6_free(ti) * vi**2
-    if (ti /= tj) then
-        c6j = this%c6_free(tj) * vj**2
-        alphai = this%alpha_free(ti) * vi
-        alphaj = this%alpha_free(tj) * vj
-        c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
-    else
-        c6 = c6i
-    endif
+    c6j = this%c6_free(tj) * vj**2
+    alphai = this%alpha_free(ti) * vi
+    alphaj = this%alpha_free(tj) * vj
+    c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
     rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
     damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
-   !TODO smooth cutoff
+    !TODO smooth cutoff
     IPModel_DispTS_pairenergy = -1.0_dp * c6 * r**(-6) * damp
 
 end function IPModel_DispTS_pairenergy
@@ -312,14 +308,10 @@ function IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, r)
     real(dp) :: damp, dfdamp ! Derivative of damping function
 
     c6i = this%c6_free(ti) * vi**2
-    if (ti /= tj) then
-        c6j = this%c6_free(tj) * vj**2
-        alphai = this%alpha_free(ti) * vi
-        alphaj = this%alpha_free(tj) * vj
-        c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
-    else
-        c6 = c6i
-    endif
+    c6j = this%c6_free(tj) * vj**2
+    alphai = this%alpha_free(ti) * vi
+    alphaj = this%alpha_free(tj) * vj
+    c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
     rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
     ! TODO avoid recalculating
     damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
