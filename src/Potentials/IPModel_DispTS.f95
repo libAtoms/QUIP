@@ -72,6 +72,7 @@ type IPModel_DispTS
   logical :: only_inter_resid = .false.
 
   real(dp) :: cutoff = 0.0_dp
+  real(dp) :: cutoff_transition_width = 0.5_dp
 
   ! Constants for now...
   real(dp) :: damp_steepness = 20.0_dp
@@ -162,6 +163,7 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
     integer     :: i, j, ji, ti, tj
     real(dp)    :: dr(3), dr_mag, de, de_dr, vi, vj
+    real(dp)    :: damp, dfdamp
 
     INIT_ERROR(error)
 
@@ -178,6 +180,7 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
     if (present(local_virial)) then
        call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_DispTS_Calc', error)
        local_virial = 0.0_dp
+       RAISE_ERROR("IPModel_DispTS_Calc: local_virial calculation requested but not supported yet.", error)
     endif
 
     if (this%only_inter_resid) then
@@ -229,8 +232,16 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
         vi = my_hirshfeld_volume(i)
         vj = my_hirshfeld_volume(j)
 
+        damp = 0.0_dp
+        dfdamp = 0.0_dp
+        if (present(f) .or. present(virial)) then
+            call IPModel_DispTS_fdamp(this, ti, tj, vi, vj, dr_mag, damp, dfdamp)
+        else if (present(e) .or. present(local_e)) then
+            call IPModel_DispTS_fdamp(this, ti, tj, vi, vj, dr_mag, damp)
+        endif
+
         if (present(e) .or. present(local_e)) then
-          de = IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, dr_mag)
+          de = IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, dr_mag, damp)
 
           if (present(local_e)) then
             local_e(i) = local_e(i) + 0.5_dp*de
@@ -245,7 +256,7 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
           endif
         endif
         if (present(f) .or. present(virial)) then
-          de_dr = IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, dr_mag)
+          de_dr = IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, dr_mag, damp, dfdamp)
           if (present(f)) then
             f(:,i) = f(:,i) + de_dr*dr
             if(i/=j) f(:,j) = f(:,j) - de_dr*dr
@@ -272,52 +283,73 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
 
 end subroutine IPModel_DispTS_Calc
 
-function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r)
+subroutine IPModel_DispTS_fdamp(this, ti, tj, vi, vj, r, damp, dfdamp)
     type(IPModel_DispTS), intent(in) :: this
     integer, intent(in) :: ti, tj
     real(dp), intent(in) :: r, vi, vj  ! Pair distance and relative Hirshfeld volumes
+    real(dp), intent(out), optional :: damp
+    real(dp), intent(out), optional :: dfdamp
+
+    real(dp) :: rfree ! Inner cutoff distance
+
+    rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
+    if (present(damp)) then
+        damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
+    endif
+    if (present(dfdamp)) then
+        dfdamp = this%damp_steepness / (2.0_dp * this%damp_scale * rfree) &
+            / (cosh(this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)) + 1.0_dp)
+    endif
+
+end subroutine IPModel_DispTS_fdamp
+
+
+function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r, damp)
+    type(IPModel_DispTS), intent(in) :: this
+    integer, intent(in) :: ti, tj
+    real(dp), intent(in) :: r, vi, vj  ! Pair distance and relative Hirshfeld volumes
+    real(dp), intent(in) :: damp ! Damping factor (precalculated)
     real(dp) :: IPModel_DispTS_pairenergy
 
     real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
     real(dp) :: alphai, alphaj ! Polarizabilities
     real(dp) :: rfree ! Inner cutoff distance
-    real(dp) :: damp ! Damping factor
+    real(dp) :: cut ! Smooth cutoff function
 
     c6i = this%c6_free(ti) * vi**2
     c6j = this%c6_free(tj) * vj**2
     alphai = this%alpha_free(ti) * vi
     alphaj = this%alpha_free(tj) * vj
     c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
-    rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
-    damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
-    !TODO smooth cutoff
-    IPModel_DispTS_pairenergy = -1.0_dp * c6 * r**(-6) * damp
+    cut = coordination_function(r, this%cutoff, this%cutoff_transition_width)
+    IPModel_DispTS_pairenergy = -1.0_dp * c6 * r**(-6) * damp * cut
 
 end function IPModel_DispTS_pairenergy
 
 
-function IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, r)
+function IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, r, damp, dfdamp)
     type(IPModel_DispTS), intent(in) :: this
     integer, intent(in) :: ti, tj
     real(dp), intent(in) :: r, vi, vj  ! Pair distance and relative Hirshfeld volumes
+    real(dp), intent(in) :: damp, dfdamp ! Damping function and derivative
     real(dp) :: IPModel_DispTS_pairenergy_deriv
+    real(dp) :: pairenergy
 
     real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
     real(dp) :: alphai, alphaj ! Polarizabilities
     real(dp) :: rfree ! Inner cutoff distance
-    real(dp) :: damp, dfdamp ! Derivative of damping function
+    real(dp) :: cut, dcut ! Cutoff function and derivative
 
     c6i = this%c6_free(ti) * vi**2
     c6j = this%c6_free(tj) * vj**2
     alphai = this%alpha_free(ti) * vi
     alphaj = this%alpha_free(tj) * vj
     c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
-    rfree = this%r_vdW_free(ti)*vi**(1/3.0_dp) + this%r_vdW_free(tj)*vj**(1/3.0_dp)
-    ! TODO avoid recalculating
-    damp = 1.0_dp / (1.0_dp + exp(-1.0_dp * this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)))
-    dfdamp = this%damp_steepness / (2.0_dp * this%damp_scale * rfree) &
-        / (cosh(this%damp_steepness * (r/rfree/this%damp_scale - 1.0_dp)) + 1.0_dp)
-    IPModel_DispTS_pairenergy_deriv = -1.0_dp * c6 * r**(-6) * (dfdamp - 6.0_dp/r * damp)
+    cut = coordination_function(r, this%cutoff, this%cutoff_transition_width)
+    dcut = dcoordination_function(r, this%cutoff, this%cutoff_transition_width)
+
+    IPModel_DispTS_pairenergy_deriv = -1.0_dp * c6 * r**(-6) &
+        * (dfdamp*cut + damp*dcut - 6.0_dp/r * damp*cut)
 
 end function IPModel_DispTS_pairenergy_deriv
 
@@ -329,7 +361,8 @@ subroutine IPModel_DispTS_Print(this, file)
   integer :: ti
 
   call Print("IPModel_DispTS : T-S dispersion correction potential", file=file)
-  call Print("IPModel_DispTS : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
+  call Print("IPModel_DispTS : n_types = " // this%n_types // " cutoff = " // this%cutoff // &
+             " transition width = " // this%cutoff_transition_width, file=file)
 
   do ti=1, this%n_types
     call Print("IPModel_DispTS : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
@@ -429,6 +462,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_DispTS_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
+      call QUIP_FoX_get_value(attributes, "cutoff_transition_width", value, status)
+      if (status == 0) then
+          read (value, *) parse_ip%cutoff_transition_width
+      endif
     endif
 
 
