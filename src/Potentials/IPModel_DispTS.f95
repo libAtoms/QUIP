@@ -213,10 +213,18 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
         end if
     else
         call assign_property_pointer(at, 'hirshfeld_rel_volume', my_hirshfeld_volume, error)
+        PASS_ERROR_WITH_INFO("IPModel_DispTS_Calc could not find 'hirshfeld_rel_volume' property in the Atoms object", error)
     endif
 
     ! Adapted from IPModel_LJ.f95 as a general pair potential
     do i = 1, at%N
+
+      if (present(mpi)) then
+         if (mpi%active) then
+           if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         endif
+      endif
+
       do ji = 1, n_neighbours(at, i)
         j = neighbour(at, i, ji, dr_mag, cosines = dr)
 
