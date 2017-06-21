@@ -2495,7 +2495,7 @@ contains
 
    subroutine current_times(cpu_t, wall_t, mpi_t)
       real(dp), intent(out), optional :: cpu_t, wall_t, mpi_t
-      integer wall_t_count, count_rate, max_count
+      integer(kind=8) wall_t_count, count_rate, max_count
 #ifdef _MPI
      include "mpif.h"
 #endif
