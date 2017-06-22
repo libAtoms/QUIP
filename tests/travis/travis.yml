@@ -130,6 +130,7 @@ script:
   - if [ "${RUN}" == "true" ]; then
       python --version;
       pip install ase;
+      pip install "numpy<1.13.0";
       pip freeze --all;
       make test;
     fi
