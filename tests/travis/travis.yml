@@ -130,6 +130,7 @@ script:
   - if [ "${RUN}" == "true" ]; then
       python --version;
       pip install ase;
+      pip freeze --all;
       make test;
     fi
 after_success:
