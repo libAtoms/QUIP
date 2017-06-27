@@ -115,7 +115,6 @@ install:
   # stdout is redirected as it generates too much output.
   # FIXME: numpy version mask
   - if [ "${RUN}" == "true" ]; then
-      pip install "numpy<1.13.0";
       gfortran --version;
       gcc --version;
       g++ --version;
