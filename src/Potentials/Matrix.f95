@@ -194,6 +194,11 @@ interface transpose_sub
   module procedure MatrixD_transpose_sub, MatrixZ_transpose_sub
 end interface transpose_sub
 
+public :: make_hermitian
+interface make_hermitian
+  module procedure MatrixD_make_hermitian, MatrixZ_make_hermitian
+end interface make_hermitian
+
 contains
 
 subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj)
@@ -1518,5 +1523,25 @@ subroutine MatrixZ_transpose_sub(this, m)
     this%data = transpose(m%data)
   endif
 end subroutine MatrixZ_transpose_sub
+
+subroutine MatrixD_make_hermitian(this)
+  type(MatrixD), intent(inout) :: this
+
+  if (this%ScaLAPACK_Info_obj%active) then
+    call system_abort("MatrixD_make_hermitian not yet implemented for ScaLAPACK matrices")
+  else
+    call make_hermitian(this%data)
+  endif
+end subroutine MatrixD_make_hermitian
+
+subroutine MatrixZ_make_hermitian(this)
+  type(MatrixZ), intent(inout) :: this
+
+  if (this%ScaLAPACK_Info_obj%active) then
+    call system_abort("MatrixZ_make_hermitian not yet implemented for ScaLAPACK matrices")
+  else
+    call make_hermitian(this%data)
+  endif
+end subroutine MatrixZ_make_hermitian
 
 end module matrix_module

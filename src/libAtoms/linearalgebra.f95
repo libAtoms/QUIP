@@ -115,6 +115,7 @@ module linearalgebra_module
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
   public :: is_diagonal, integerDigits
+  public :: make_hermitian
 
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
@@ -365,6 +366,12 @@ module linearalgebra_module
   private :: matrix_z_is_hermitian
   interface is_hermitian
      module procedure matrix_z_is_hermitian
+  end interface
+
+  !% Test for matrix hermiticity (with floating point equals test).
+  private :: matrix_z_make_hermitian, matrix_d_make_hermitian
+  interface make_hermitian
+     module procedure matrix_z_make_hermitian, matrix_d_make_hermitian
   end interface
 
   !% Test if matrix is square 
@@ -7461,6 +7468,50 @@ CONTAINS
 !!$
 !!$   endfunction d_ln_fermi_dirac_function
 
+    subroutine matrix_z_make_hermitian(m, error)
+        complex(dp), intent(inout)  :: m(:,:)
+        integer, intent(out), optional :: error
+        integer i, j
+
+        complex(dp) :: v
+
+        INIT_ERROR(error)
+
+        if (.not. is_square(m)) then
+            RAISE_ERROR("matrix_z_make_hermitian got non-square matrix", error)
+        endif
+
+        do i=1, size(m,1)
+            do j=i, size(m,2)
+                v = 0.5_dp*(m(i,j) + conjg(m(j,i)))
+                m(i,j) = v
+                m(j,i) = conjg(v)
+            end do
+        end do
+    end subroutine matrix_z_make_hermitian
+
+
+    subroutine matrix_d_make_hermitian(m, error)
+        real(dp), intent(inout)  :: m(:,:)
+        integer, intent(out), optional :: error
+        integer i, j
+
+        real(dp) :: v
+
+        INIT_ERROR(error)
+
+        if (.not. is_square(m)) then
+            RAISE_ERROR("matrix_d_make_hermitian got non-square matrix", error)
+        endif
+
+        do i=1, size(m,1)
+            do j=i+1, size(m,2)
+                v = 0.5_dp*(m(i,j) + m(j,i))
+                m(i,j) = v
+                m(j,i) = v
+            end do
+        end do
+    end subroutine matrix_d_make_hermitian
 
 
 end module linearalgebra_module

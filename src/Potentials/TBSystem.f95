@@ -60,7 +60,7 @@ use TBModel_module, only : tbmodel, initialise, finalise, print, &
    n_orb_sets_of_Z, orb_type_of_orb_set_of_Z, n_orbs_of_orb_set_of_Z, n_orbs_of_Z, n_elecs_of_Z, &
    get_HS_blocks, get_dHS_blocks, get_dHS_masks
 use Matrix_module, only : matrixd, initialise, finalise, zero
-use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices, copy
+use TBMatrix_module, only : tbmatrix, initialise, finalise, wipe, print, zero, add_block, sum_matrices, copy, make_hermitian
 use TB_KPoints_module, only : kpoints, initialise, finalise, calc_phase, print, init_mpi, ksum_distrib_inplace
 use TB_mixing_module, only : do_mix_simple, do_ridders_residual, do_mix_broyden
 use ewald_module, only : add_madelung_matrix, add_dmadelung_matrix, add_dmadelung_matrix_dr
@@ -1005,6 +1005,9 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
   if (allocated(block_H_z_phase)) deallocate(block_H_z_phase)
   if (allocated(block_S_z_phase)) deallocate(block_S_z_phase)
   if (allocated(block_dipole_z_phase)) deallocate(block_dipole_z_phase)
+
+  if (do_H) call make_hermitian(H)
+  if (do_S) call make_hermitian(S)
 
 end subroutine TBSystem_fill_these_matrices
 

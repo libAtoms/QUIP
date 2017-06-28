@@ -148,15 +148,41 @@ function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_
   if (orb_type_i < 0) call print("")
 
   ! workaround for (-1+Nsq) division by zero
-  if (Nsq == 1.0_dp) then
-    Lsq = 0.5e-9_dp
-    Msq = 0.5e-9_dp
-    Nsq = 1.0_dp - 1.0e-9_dp
-  endif
+  call regularize(L, M, N, Lsq, Msq, Nsq)
 
 include 'SK_vogl.h'
 
 end function angular_function
+
+subroutine regularize(L, M, N, Lsq, Msq, Nsq)
+    real(dp), intent(inout) :: L, M, N, Lsq, Msq, Nsq
+
+    real(dp), parameter :: regularization_eps = 1.0e-7
+
+    if (Nsq == 1.0_dp) then
+        L = sign(regularization_eps, N)
+        Lsq = L**2
+        M = sign(regularization_eps, N)
+        Msq = M**2
+        Nsq = (1.0_dp - Lsq - Msq)
+        N = sign(sqrt(Nsq), N)
+    else if (Msq == 1.0_dp) then
+        L = sign(regularization_eps, M)
+        Lsq = L**2
+        N = sign(regularization_eps, M)
+        Nsq = N**2
+        Msq = (1.0_dp - Lsq - Nsq)
+        M = sign(sqrt(Msq), M)
+    else if (Lsq == 1.0_dp) then
+        M = sign(regularization_eps, L)
+        Msq = M**2
+        N = sign(regularization_eps, L)
+        Nsq = N**2
+        Lsq = (1.0_dp - Nsq - Msq)
+        L = sign(sqrt(Lsq),L)
+    endif
+end subroutine regularize
+
 
 function spin_orbit_function(orb_type_i, orb_dir_i, orb_dir_j) result(V)
   integer, intent(in) :: orb_type_i, orb_dir_i, orb_dir_j
@@ -308,11 +334,7 @@ function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
   if (orb_type_i < 0) call print("")
 
   ! workaround for (-1+Nsq) division by zero
-  if (Nsq == 1.0_dp) then
-    Lsq = 0.5e-9_dp
-    Msq = 0.5e-9_dp
-    Nsq = 1.0_dp - 1.0e-9_dp
-  endif
+  call regularize(L, M, N, Lsq, Msq, Nsq)
 
 include 'SKd_vogl.h'
 

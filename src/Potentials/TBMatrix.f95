@@ -199,6 +199,12 @@ interface transpose_sub
   module procedure TBMatrix_transpose_sub
 end interface transpose_sub
 
+
+public :: make_hermitian
+interface make_hermitian
+  module procedure TBMatrix_make_hermitian
+end interface make_hermitian
+
 contains
 
 subroutine TBMatrix_sum_in_place(this, mpi)
@@ -1281,5 +1287,22 @@ subroutine TBMatrix_transpose_sub(this, m)
   end do
 
 end subroutine TBMatrix_transpose_sub
+
+subroutine TBMatrix_make_hermitian(this)
+  type(TBMatrix), intent(inout) :: this
+
+  integer :: im
+
+  if (this%is_sparse) call system_abort("Can't do TBMatrix_make_hermitian on a sparse TBMatrix")
+
+  do im=1, this%n_matrices
+    if (this%is_complex) then
+      call make_hermitian(this%data_z(im))
+    else
+      call make_hermitian(this%data_d(im))
+    endif
+  end do
+
+end subroutine TBMatrix_make_hermitian
 
 end module TBMatrix_module
