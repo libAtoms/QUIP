@@ -1006,8 +1006,8 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
   if (allocated(block_S_z_phase)) deallocate(block_S_z_phase)
   if (allocated(block_dipole_z_phase)) deallocate(block_dipole_z_phase)
 
-  if (do_H) call make_hermitian(H)
-  if (do_S) call make_hermitian(S)
+  ! if (do_H) call make_hermitian(H)
+  ! if (do_S) call make_hermitian(S)
 
 end subroutine TBSystem_fill_these_matrices
 

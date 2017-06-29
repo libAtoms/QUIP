@@ -1553,17 +1553,21 @@ CONTAINS
   
   ! the following stuff only with lapack        
   ! diagonalise matrix, only symmetric case
-  subroutine matrix_diagonalise(this,evals,evects, error)
+  subroutine matrix_diagonalise(this,evals,evects, ignore_symmetry, error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(inout), dimension(:) ::evals
     real(dp),intent(inout), target, optional, dimension(:,:) :: evects
+    logical, intent(in), optional :: ignore_symmetry
     integer, intent(out), optional :: error
 
+    logical :: use_ignore_symmetry
     real(8),allocatable::WORK(:), r8_evals(:)
     real(8), pointer :: r8_evects(:,:)
     integer::N,INFO,LWORK
 
     INIT_ERROR(error)
+
+    use_ignore_symmetry = optional_default(.false., ignore_symmetry)
 
     N=size(this,2)
     call check_size('Eigenvalue Vector',evals,N,'Matrix_Diagonalise')
@@ -1571,7 +1575,7 @@ CONTAINS
     if (present(evects)) &
       call check_size('Eigenvector Array',evects,shape(this),'Matrix_Diagonalise')
 
-    if (is_symmetric(this)) then
+    if (use_ignore_symmetry .or. is_symmetric(this)) then
 
        LWORK=3*N
        allocate(WORK(LWORK))     
@@ -1617,20 +1621,25 @@ CONTAINS
 
   ! the following stuff only with lapack        
   ! diagonalise complex matrix, only hermitian positive definite case
-  subroutine matrix_z_diagonalise(this,evals,evects,error)
+  subroutine matrix_z_diagonalise(this,evals,evects,ignore_symmetry, error)
     complex(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(inout), dimension(:) ::evals
     complex(dp),intent(inout), optional, target, dimension(:,:) :: evects
+    logical, intent(in), optional :: ignore_symmetry
     integer, intent(out), optional :: error
+
     integer::N,INFO,LWORK
     integer NB
     integer, external :: ILAENV
 
+    logical :: use_ignore_symmetry
     complex(8), pointer :: z8_evects(:,:)
     real(8), allocatable :: r8_evals(:), RWORK(:)
     complex(8), pointer :: WORK(:)
 
     INIT_ERROR(error)
+
+    use_ignore_symmetry = optional_default(.false., ignore_symmetry)
 
     N=size(this,2)
     call check_size('Eigenvalue Vector',evals,N,'Matrix_z_Diagonalise')
@@ -1638,7 +1647,7 @@ CONTAINS
     if (present(evects)) &
       call check_size('Eigenvector Array',evects,shape(this),'Matrix_z_Diagonalise')
 
-    if (is_hermitian(this)) then
+    if (use_ignore_symmetry .or. is_hermitian(this)) then
 
        NB = ILAENV(1, "ZHETRD", "U", N, N, N, N)
        LWORK=(NB+1)*N
@@ -1687,7 +1696,7 @@ CONTAINS
 
   ! generalised eigenproblem
   ! just works for symmetric systems 
-  subroutine  matrix_diagonalise_generalised(this,other,evals,evects,error)
+  subroutine matrix_diagonalise_generalised(this,other,evals,evects,error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(in), dimension(:,:) :: other
     real(dp),intent(inout), dimension(:) :: evals

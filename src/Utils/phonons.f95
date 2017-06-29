@@ -850,7 +850,7 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
   call print(dm, PRINT_NERD)
 
   ! diagonalise dynamical matrix
-  call diagonalise(dm, evals, evecs, err)
+  call diagonalise(dm, evals, evecs, error=err)
   if (err /= 0) then
     call system_abort("calc_phonons got error " // err // " in diagonalise")
   endif

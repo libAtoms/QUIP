@@ -611,11 +611,12 @@ subroutine TBMatrix_add_block_z(this, im, block, block_nr, block_nc, first_row, 
 
 end subroutine TBMatrix_add_block_z
 
-subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
+subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, ignore_symmetry, error)
   type(TBMatrix), intent(in) :: this
   type(TBMatrix), intent(in) :: overlap
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   integer i
@@ -629,27 +630,28 @@ subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   endif
   PASS_ERROR(error)
 end subroutine TBMatrix_diagonalise_gen
 
-subroutine TBMatrix_diagonalise(this, evals, evecs, error)
+subroutine TBMatrix_diagonalise(this, evals, evecs, ignore_symmetry, error)
   type(TBMatrix), intent(in) :: this
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   integer i
@@ -663,17 +665,17 @@ subroutine TBMatrix_diagonalise(this, evals, evecs, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry = ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), ignore_symmetry = ignore_symmetry, error = error)
       endif
     end do
   endif
