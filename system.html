@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-level system routines &mdash; quippy 0c5277e+ documentation</title>
+  <title>Low-level system routines &mdash; quippy 83ca28b+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 0c5277e+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 83ca28b+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="prev" title="Units and physical constants" href="units.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                0c5277e+
+                83ca28b+
               </div>
             
           
@@ -418,15 +418,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>Return this processes’ MPI ID</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.progress" title="quippy.system.progress"><code class="xref py py-obj docutils literal"><span class="pre">progress</span></code></a>(total,current,name)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
+<td>Print a progress bar</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.linebreak_string" title="quippy.system.linebreak_string"><code class="xref py py-obj docutils literal"><span class="pre">linebreak_string</span></code></a>(str,line_len)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -532,7 +524,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.verbosity_push_decrement" title="quippy.system.verbosity_push_decrement"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_push_decrement</span></code></a>([n])</td>
 <td>push the current value - n onto the stack</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.reference_false" title="quippy.system.reference_false"><code class="xref py py-obj docutils literal"><span class="pre">reference_false</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.progress_timer" title="quippy.system.progress_timer"><code class="xref py py-obj docutils literal"><span class="pre">progress_timer</span></code></a>(…)</td>
+<td>Print a progress bar with an estimate of time to completion</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.reference_false" title="quippy.system.reference_false"><code class="xref py py-obj docutils literal"><span class="pre">reference_false</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -543,7 +538,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.cmd_arg_count" title="quippy.system.cmd_arg_count"><code class="xref py py-obj docutils literal"><span class="pre">cmd_arg_count</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.cmd_arg_count" title="quippy.system.cmd_arg_count"><code class="xref py py-obj docutils literal"><span class="pre">cmd_arg_count</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -554,10 +549,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.abort_on_mpi_error" title="quippy.system.abort_on_mpi_error"><code class="xref py py-obj docutils literal"><span class="pre">abort_on_mpi_error</span></code></a>(error_code,routine_name)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.abort_on_mpi_error" title="quippy.system.abort_on_mpi_error"><code class="xref py py-obj docutils literal"><span class="pre">abort_on_mpi_error</span></code></a>(error_code,routine_name)</td>
 <td>Abort with a useful message if an MPI routine returned an error status</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.linebreak_string_length" title="quippy.system.linebreak_string_length"><code class="xref py py-obj docutils literal"><span class="pre">linebreak_string_length</span></code></a>(str,line_len)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.linebreak_string_length" title="quippy.system.linebreak_string_length"><code class="xref py py-obj docutils literal"><span class="pre">linebreak_string_length</span></code></a>(str,line_len)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -568,10 +563,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.print_warning" title="quippy.system.print_warning"><code class="xref py py-obj docutils literal"><span class="pre">print_warning</span></code></a>(message)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.print_warning" title="quippy.system.print_warning"><code class="xref py py-obj docutils literal"><span class="pre">print_warning</span></code></a>(message)</td>
 <td>Print a warning message to default mainlog, but don’t quit</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.get_cmd_arg" title="quippy.system.get_cmd_arg"><code class="xref py py-obj docutils literal"><span class="pre">get_cmd_arg</span></code></a>(i,[status])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.get_cmd_arg" title="quippy.system.get_cmd_arg"><code class="xref py py-obj docutils literal"><span class="pre">get_cmd_arg</span></code></a>(i,[status])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -582,13 +577,13 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.ran_string" title="quippy.system.ran_string"><code class="xref py py-obj docutils literal"><span class="pre">ran_string</span></code></a>(l)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.ran_string" title="quippy.system.ran_string"><code class="xref py py-obj docutils literal"><span class="pre">ran_string</span></code></a>(l)</td>
 <td>Return a random string of length l containing the characters A-Z, a-z, and 0-9</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.verbosity_unset_minimum" title="quippy.system.verbosity_unset_minimum"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_unset_minimum</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_unset_minimum" title="quippy.system.verbosity_unset_minimum"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_unset_minimum</span></code></a>()</td>
 <td>unset the minimum verbosity value, by popping value from</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.get_mainlog_errorlog_ptr" title="quippy.system.get_mainlog_errorlog_ptr"><code class="xref py py-obj docutils literal"><span class="pre">get_mainlog_errorlog_ptr</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.get_mainlog_errorlog_ptr" title="quippy.system.get_mainlog_errorlog_ptr"><code class="xref py py-obj docutils literal"><span class="pre">get_mainlog_errorlog_ptr</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -599,22 +594,22 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.verbosity_push_increment" title="quippy.system.verbosity_push_increment"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_push_increment</span></code></a>([n])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_push_increment" title="quippy.system.verbosity_push_increment"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_push_increment</span></code></a>([n])</td>
 <td>push the current value + n onto the stack</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.system_reseed_rng" title="quippy.system.system_reseed_rng"><code class="xref py py-obj docutils literal"><span class="pre">system_reseed_rng</span></code></a>(new_seed)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.system_reseed_rng" title="quippy.system.system_reseed_rng"><code class="xref py py-obj docutils literal"><span class="pre">system_reseed_rng</span></code></a>(new_seed)</td>
 <td>Reseed the random number generator.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.mpi_n_procs" title="quippy.system.mpi_n_procs"><code class="xref py py-obj docutils literal"><span class="pre">mpi_n_procs</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.mpi_n_procs" title="quippy.system.mpi_n_procs"><code class="xref py py-obj docutils literal"><span class="pre">mpi_n_procs</span></code></a>()</td>
 <td>Return the total number of MPI processes.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.ran" title="quippy.system.ran"><code class="xref py py-obj docutils literal"><span class="pre">ran</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.ran" title="quippy.system.ran"><code class="xref py py-obj docutils literal"><span class="pre">ran</span></code></a>()</td>
 <td>Return a random integer</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.lower_case" title="quippy.system.lower_case"><code class="xref py py-obj docutils literal"><span class="pre">lower_case</span></code></a>(word)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.lower_case" title="quippy.system.lower_case"><code class="xref py py-obj docutils literal"><span class="pre">lower_case</span></code></a>(word)</td>
 <td>Convert a word to lower case</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.system_set_random_seeds" title="quippy.system.system_set_random_seeds"><code class="xref py py-obj docutils literal"><span class="pre">system_set_random_seeds</span></code></a>(seed)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.system_set_random_seeds" title="quippy.system.system_set_random_seeds"><code class="xref py py-obj docutils literal"><span class="pre">system_set_random_seeds</span></code></a>(seed)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -625,13 +620,13 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.s2a" title="quippy.system.s2a"><code class="xref py py-obj docutils literal"><span class="pre">s2a</span></code></a>(s)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.s2a" title="quippy.system.s2a"><code class="xref py py-obj docutils literal"><span class="pre">s2a</span></code></a>(s)</td>
 <td>String to character array</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_push" title="quippy.system.verbosity_push"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_push</span></code></a>(val)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.verbosity_push" title="quippy.system.verbosity_push"><code class="xref py py-obj docutils literal"><span class="pre">verbosity_push</span></code></a>(val)</td>
 <td>Push a value onto the verbosity stack</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.int_format_length" title="quippy.system.int_format_length"><code class="xref py py-obj docutils literal"><span class="pre">int_format_length</span></code></a>(i)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.int_format_length" title="quippy.system.int_format_length"><code class="xref py py-obj docutils literal"><span class="pre">int_format_length</span></code></a>(i)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -642,10 +637,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.pad" title="quippy.system.pad"><code class="xref py py-obj docutils literal"><span class="pre">pad</span></code></a>(s,l,n0)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.pad" title="quippy.system.pad"><code class="xref py py-obj docutils literal"><span class="pre">pad</span></code></a>(s,l,n0)</td>
 <td>String to padded character array of length l</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.dealloc_trace" title="quippy.system.dealloc_trace"><code class="xref py py-obj docutils literal"><span class="pre">dealloc_trace</span></code></a>(str,amt)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.dealloc_trace" title="quippy.system.dealloc_trace"><code class="xref py py-obj docutils literal"><span class="pre">dealloc_trace</span></code></a>(str,amt)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -656,16 +651,16 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_real" title="quippy.system.string_to_real"><code class="xref py py-obj docutils literal"><span class="pre">string_to_real</span></code></a>(string,[error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.string_to_real" title="quippy.system.string_to_real"><code class="xref py py-obj docutils literal"><span class="pre">string_to_real</span></code></a>(string,[error])</td>
 <td>Convert an input string into a real.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.a2s" title="quippy.system.a2s"><code class="xref py py-obj docutils literal"><span class="pre">a2s</span></code></a>(a)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.a2s" title="quippy.system.a2s"><code class="xref py py-obj docutils literal"><span class="pre">a2s</span></code></a>(a)</td>
 <td>Character array to string</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.date_and_time_string" title="quippy.system.date_and_time_string"><code class="xref py py-obj docutils literal"><span class="pre">date_and_time_string</span></code></a>(values)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.date_and_time_string" title="quippy.system.date_and_time_string"><code class="xref py py-obj docutils literal"><span class="pre">date_and_time_string</span></code></a>(values)</td>
 <td>Take the values from <code class="docutils literal"><span class="pre">date_and_time</span></code> and make a nice string</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.get_timing" title="quippy.system.get_timing"><code class="xref py py-obj docutils literal"><span class="pre">get_timing</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.get_timing" title="quippy.system.get_timing"><code class="xref py py-obj docutils literal"><span class="pre">get_timing</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -676,17 +671,17 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.disable_timing" title="quippy.system.disable_timing"><code class="xref py py-obj docutils literal"><span class="pre">disable_timing</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.disable_timing" title="quippy.system.disable_timing"><code class="xref py py-obj docutils literal"><span class="pre">disable_timing</span></code></a>()</td>
 <td><p class="rubric">References</p>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.split_string_simple" title="quippy.system.split_string_simple"><code class="xref py py-obj docutils literal"><span class="pre">split_string_simple</span></code></a>(str,separators,n0,[error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.split_string_simple" title="quippy.system.split_string_simple"><code class="xref py py-obj docutils literal"><span class="pre">split_string_simple</span></code></a>(str,separators,n0,[error])</td>
 <td>split a string into fields separated by possible separators</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.is_file_readable" title="quippy.system.is_file_readable"><code class="xref py py-obj docutils literal"><span class="pre">is_file_readable</span></code></a>(filename)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.is_file_readable" title="quippy.system.is_file_readable"><code class="xref py py-obj docutils literal"><span class="pre">is_file_readable</span></code></a>(filename)</td>
 <td>Test if the file <code class="docutils literal"><span class="pre">filename</span></code> can be accessed.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.current_times" title="quippy.system.current_times"><code class="xref py py-obj docutils literal"><span class="pre">current_times</span></code></a>([cpu_t,wall_t,mpi_t])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.current_times" title="quippy.system.current_times"><code class="xref py py-obj docutils literal"><span class="pre">current_times</span></code></a>([cpu_t,wall_t,mpi_t])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -697,10 +692,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.ran_normal" title="quippy.system.ran_normal"><code class="xref py py-obj docutils literal"><span class="pre">ran_normal</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.ran_normal" title="quippy.system.ran_normal"><code class="xref py py-obj docutils literal"><span class="pre">ran_normal</span></code></a>()</td>
 <td>Return random real from Normal distribution with mean zero and standard deviation one.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.make_run_directory" title="quippy.system.make_run_directory"><code class="xref py py-obj docutils literal"><span class="pre">make_run_directory</span></code></a>(…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.make_run_directory" title="quippy.system.make_run_directory"><code class="xref py py-obj docutils literal"><span class="pre">make_run_directory</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -711,13 +706,13 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal"><span class="pre">optional_default</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal"><span class="pre">optional_default</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>takes as arguments a default value and an optional argument, and</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal"><span class="pre">string_to_numerical</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal"><span class="pre">string_to_numerical</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal"><span class="pre">string_to_numerical</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.print_" title="quippy.system.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.print_" title="quippy.system.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Overloaded interface for printing.</td>
 </tr>
 </tbody>
@@ -1681,7 +1676,8 @@ Return a string which is the real number <code class="docutils literal"><span cl
 <dl class="function">
 <dt id="quippy.system.progress">
 <code class="descclassname">quippy.system.</code><code class="descname">progress</code><span class="sig-paren">(</span><em>total</em>, <em>current</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.progress" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Print a progress bar</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1980,6 +1976,27 @@ stack and pushing 1 on to verbosity_cascade_stack</p>
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">verbosity_push_decrement</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.system.progress_timer">
+<code class="descclassname">quippy.system.</code><code class="descname">progress_timer</code><span class="sig-paren">(</span><em>total</em>, <em>current</em>, <em>name</em>, <em>elapsed_seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.progress_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a progress bar with an estimate of time to completion
+based on the elapsed time so far</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>total</strong> :  input int</p>
+<p><strong>current</strong> :  input int</p>
+<p><strong>name</strong> :  input string(len=-1)</p>
+<p class="last"><strong>elapsed_seconds</strong> :  input float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">progress_timer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3264,7 +3281,7 @@ Other user-defined types define the Print interface in the same way.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0c5277e+',
+            VERSION:'83ca28b+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
