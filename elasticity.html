@@ -322,7 +322,7 @@
 </table>
 <dl class="class">
 <dt id="quippy.elasticity.AtomResolvedStressField">
-<em class="property">class </em><code class="descclassname">quippy.elasticity.</code><code class="descname">AtomResolvedStressField</code><span class="sig-paren">(</span><em>bulk=None</em>, <em>a=None</em>, <em>cij=None</em>, <em>method=’fortran’</em>, <em>**extra_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.elasticity.</code><code class="descname">AtomResolvedStressField</code><span class="sig-paren">(</span><em>bulk=None</em>, <em>a=None</em>, <em>cij=None</em>, <em>method='fortran'</em>, <em>**extra_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#AtomResolvedStressField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.AtomResolvedStressField" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Calculator interface to <a class="reference internal" href="#quippy.elasticity.elastic_fields_fortran" title="quippy.elasticity.elastic_fields_fortran"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields_fortran()</span></code></a> and <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal"><span class="pre">elastic_fields()</span></code></a></p>
 <p>Computes local stresses from atom resolved strain tensor and linear elasticity.</p>
@@ -427,7 +427,7 @@ for non-cubic cells.</p>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_fields">
-<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system=’tetrahedric’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_fields" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute atomistic strain field and linear elastic stress response.</p>
 <p>Stress and strain are stored in compressed Voigt notation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_xx</span><span class="p">,</span><span class="n">e_yy</span><span class="p">,</span><span class="n">e_zz</span><span class="p">,</span><span class="n">e_yz</span><span class="p">,</span><span class="n">e_xz</span><span class="p">,</span><span class="n">e_xy</span><span class="p">]</span>
@@ -574,7 +574,7 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 
 <dl class="function">
 <dt id="quippy.elasticity.elastic_constants">
-<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_constants</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>sym=’cubic’</em>, <em>relax=True</em>, <em>verbose=True</em>, <em>graphics=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_constants" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_constants</code><span class="sig-paren">(</span><em>pot</em>, <em>at</em>, <em>sym='cubic'</em>, <em>relax=True</em>, <em>verbose=True</em>, <em>graphics=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.elasticity.elastic_constants" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>quippy.elasticity.elastic_contants() deprecated, please use</dt>
 <dd>matscipy.elasticity.fit_elastic_constants() instead</dd>
@@ -611,7 +611,7 @@ Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford Un
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system=’tetrahedric’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a></dt>
+<code class="descclassname">quippy.elasticity.</code><code class="descname">elastic_fields</code><span class="sig-paren">(</span><em>at</em>, <em>a=None</em>, <em>bond_length=None</em>, <em>c=None</em>, <em>c_vector=None</em>, <em>cij=None</em>, <em>save_reference=False</em>, <em>use_reference=False</em>, <em>mask=None</em>, <em>interpolate=False</em>, <em>cutoff_factor=1.2</em>, <em>system='tetrahedric'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/elasticity.html#elastic_fields"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Compute atomistic strain field and linear elastic stress response.</p>
 <p>Stress and strain are stored in compressed Voigt notation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_xx</span><span class="p">,</span><span class="n">e_yy</span><span class="p">,</span><span class="n">e_zz</span><span class="p">,</span><span class="n">e_yz</span><span class="p">,</span><span class="n">e_xz</span><span class="p">,</span><span class="n">e_xy</span><span class="p">]</span>
@@ -726,7 +726,7 @@ Rayleight speed returned is along the first (x) axis.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

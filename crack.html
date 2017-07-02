@@ -441,7 +441,7 @@
 <td>Increase the load by adding the the load displacement field to the atomic positions.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_measure_g" title="quippy.crack.crack_measure_g"><code class="xref py py-obj docutils literal"><span class="pre">crack_measure_g</span></code></a>(at,e,v,orig_height)</td>
-<td>Measure the current height of slab and calculate energy release rate <span class="math">\(G\)</span> from current and original heights and elastic constants <span class="math">\(E\)</span> and <span class="math">\(\nu\)</span>, using the equation :math:“ G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:“ where <span class="math">\(h_0\)</span> is the original height and <span class="math">\(h\)</span> the new height.</td>
+<td>Measure the current height of slab and calculate energy release rate <span class="math">\(G\)</span> from current and original heights and elastic constants <span class="math">\(E\)</span> and <span class="math">\(\nu\)</span>, using the equation :math:`` G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:`` where <span class="math">\(h_0\)</span> is the original height and <span class="math">\(h\)</span> the new height.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_k_field" title="quippy.crack.crack_k_field"><code class="xref py py-obj docutils literal"><span class="pre">crack_k_field</span></code></a>(…)</td>
 <td>Calculate Irwin K-field stresses and/or displacements for all atoms in <code class="docutils literal"><span class="pre">at</span></code>.</td>
@@ -2146,7 +2146,7 @@ from thin strip result. Quantities are:
 <code class="docutils literal"><span class="pre">E</span></code>, <span class="math">\(E\)</span>,  Young’s modulus, GPa;
 <code class="docutils literal"><span class="pre">v</span></code>, <span class="math">\(\nu\)</span>, Poisson ratio, dimensionless;
 <code class="docutils literal"><span class="pre">height</span></code>, <span class="math">\(h\)</span> AA{}, 10:math:<cite>^{-10}`~m;
-“G`</cite>, Energy release rate, J/m:math:<cite>^2</cite>.</p>
+``G`</cite>, Energy release rate, J/m:math:<cite>^2</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2530,7 +2530,7 @@ G and stores it in the atom parameter dictionary.</p>
 <dd><p>Measure the current height of slab and calculate
 energy release rate <span class="math">\(G\)</span> from current and original
 heights and elastic constants <span class="math">\(E\)</span> and <span class="math">\(\nu\)</span>, using the equation
-:math:“ G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:“
+:math:`` G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:``
 where <span class="math">\(h_0\)</span> is the original height and <span class="math">\(h\)</span> the new height.
 Otherwise, symbols and units are the same as in <code class="docutils literal"><span class="pre">crack_strain_to_g</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2805,7 +2805,7 @@ in <code class="docutils literal"><span class="pre">atoms.info</span></code> dic
 
 <dl class="function">
 <dt id="quippy.crack.irwin_modeI_crack_tip_stress_field">
-<code class="descclassname">quippy.crack.</code><code class="descname">irwin_modeI_crack_tip_stress_field</code><span class="sig-paren">(</span><em>K</em>, <em>r</em>, <em>t</em>, <em>xy_only=True</em>, <em>nu=0.5</em>, <em>stress_state=’plane strain’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#irwin_modeI_crack_tip_stress_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.irwin_modeI_crack_tip_stress_field" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">quippy.crack.</code><code class="descname">irwin_modeI_crack_tip_stress_field</code><span class="sig-paren">(</span><em>K</em>, <em>r</em>, <em>t</em>, <em>xy_only=True</em>, <em>nu=0.5</em>, <em>stress_state='plane strain'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#irwin_modeI_crack_tip_stress_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.irwin_modeI_crack_tip_stress_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Irwin singular crack tip stress field</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3172,7 +3172,7 @@ a sequence of three floats</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

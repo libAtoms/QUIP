@@ -722,13 +722,13 @@ into a single namespace, so <code class="docutils literal"><span class="pre">fro
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.render_movie">
-<code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder=’ffmpeg -i %s -r 25 -b 30M %s’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.render_movie" title="Permalink to this definition">¶</a></dt>
+<code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder='ffmpeg -i %s -r 25 -b 30M %s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.render_movie" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render a movie for the trajectory.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.select_atoms">
-<code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname=’selection_mark’</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.select_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname='selection_mark'</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.select_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select atoms by clicking on them. Returns a list of atom indices.</p>
 <p>Specify reset=False to modify an existing property. The name of the
 property is <cite>markname</cite> (default “selection_mark”) and the value of
@@ -988,7 +988,7 @@ Default is <code class="docutils literal"><span class="pre">[0.,1.,0.]</span></c
 
 <dl class="function">
 <dt id="qlab.highlight_qm_region">
-<code class="descclassname">qlab.</code><code class="descname">highlight_qm_region</code><span class="sig-paren">(</span><em>at=None</em>, <em>run_suffix=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#highlight_qm_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.highlight_qm_region" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">qlab.</code><code class="descname">highlight_qm_region</code><span class="sig-paren">(</span><em>at=None</em>, <em>run_suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#highlight_qm_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.highlight_qm_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Highlight QM region by replacing Si atoms with Al,
 and O atoms with N, and changing colour of QM atoms to dark blue. Can be used as
 a hook function to render_movie().</p>
@@ -1056,7 +1056,7 @@ absolute cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds, e.g.:<
 
 <dl class="function">
 <dt id="qlab.render_movie">
-<code class="descclassname">qlab.</code><code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder=’ffmpeg -i %s -r 25 -b 30M %s’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.render_movie" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">qlab.</code><code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder='ffmpeg -i %s -r 25 -b 30M %s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.render_movie" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render a movie for the trajectory.</p>
 </dd></dl>
 
@@ -1117,7 +1117,7 @@ absolute cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds, e.g.:<
 
 <dl class="function">
 <dt id="qlab.select_atoms">
-<code class="descclassname">qlab.</code><code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname=’selection_mark’</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.select_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">qlab.</code><code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname='selection_mark'</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.select_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select atoms by clicking on them. Returns a list of atom indices.</p>
 <p>Specify reset=False to modify an existing property. The name of the
 property is <cite>markname</cite> (default “selection_mark”) and the value of
@@ -1311,7 +1311,7 @@ lattice vectors.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -268,7 +268,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <td>Wrapper around Fortran <code class="xref py py-func docutils literal"><span class="pre">get_lattice_params_()</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.make_lattice" title="quippy.atoms.make_lattice"><code class="xref py py-obj docutils literal"><span class="pre">make_lattice</span></code></a>(a,[b,c,alpha,beta,gamma,error])</td>
-<td>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,“b“,“c“ and the angles <code class="docutils literal"><span class="pre">alpha</span></code>, <code class="docutils literal"><span class="pre">beta</span></code> and <code class="docutils literal"><span class="pre">gamma</span></code>.</td>
+<td>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,``b``,``c`` and the angles <code class="docutils literal"><span class="pre">alpha</span></code>, <code class="docutils literal"><span class="pre">beta</span></code> and <code class="docutils literal"><span class="pre">gamma</span></code>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.divide_cell" title="quippy.atoms.divide_cell"><code class="xref py py-obj docutils literal"><span class="pre">divide_cell</span></code></a>(lattice,cutoff)</td>
 <td>Given a simulation cell defined by lattice vectors, how many</td>
@@ -1811,7 +1811,7 @@ is returned.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_chemical_formula">
-<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode=’hill’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode='hill'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the chemial formula as a string based on the chemical symbols.</p>
 <p>Parameters:</p>
 <dl class="docutils">
@@ -2351,7 +2351,7 @@ of property type is done. Property names are case-insensitive.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_nearest_neighbour_abs_index">
 <code class="descname">is_nearest_neighbour_abs_index</code><span class="sig-paren">(</span><em>i</em>, <em>j</em><span class="optional">[</span>, <em>alt_connect</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_nearest_neighbour_abs_index" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id7"><span class="problematic" id="id8">``</span></a>i“s nearest neighbours</p>
+<dd><p>Test if an atom <code class="docutils literal"><span class="pre">j</span></code> is one of <a href="#id7"><span class="problematic" id="id8">``</span></a>i``s nearest neighbours</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3203,7 +3203,7 @@ and recalculate connectivity (by default scale_positions=False).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_masses">
-<code class="descname">set_masses</code><span class="sig-paren">(</span><em>masses=’defaults’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_masses</code><span class="sig-paren">(</span><em>masses='defaults'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set atomic masses.</p>
 <p>The array masses should contain a list of masses.  In case
 the masses argument is not given or for those elements of the
@@ -3643,7 +3643,7 @@ output file, e.g. <cite>[‘species’, ‘pos’]</cite>.</p>
 <dt id="quippy.atoms.Atoms.zero">
 <code class="descname">zero</code><span class="sig-paren">(</span><span class="optional">[</span><em>indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.zero" title="Permalink to this definition">¶</a></dt>
 <dd><p>Zero data in an Atoms structure —
-this doesn“t finalise it or change it“s size. We zero <code class="docutils literal"><span class="pre">this.pos</span></code>,
+this doesn``t finalise it or change it``s size. We zero <code class="docutils literal"><span class="pre">this.pos</span></code>,
 <code class="docutils literal"><span class="pre">this.Z</span></code> and <code class="docutils literal"><span class="pre">this.species</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3892,7 +3892,7 @@ removed with <a class="reference internal" href="#quippy.atoms.Atoms.remove_prop
 <dl class="function">
 <dt id="quippy.atoms.make_lattice">
 <code class="descclassname">quippy.atoms.</code><code class="descname">make_lattice</code><span class="sig-paren">(</span><em>a</em><span class="optional">[</span>, <em>b</em>, <em>c</em>, <em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.make_lattice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,“b“,“c“
+<dd><p>Make a matrix of lattice vectors from the lengths <code class="docutils literal"><span class="pre">a</span></code>,``b``,``c``
 and the angles <code class="docutils literal"><span class="pre">alpha</span></code>, <code class="docutils literal"><span class="pre">beta</span></code> and <code class="docutils literal"><span class="pre">gamma</span></code>.
 One length must be supplied. Any missing angle is assumed to be 90 degrees
 and any missing length is assumed to be <code class="docutils literal"><span class="pre">a</span></code>.
@@ -4125,7 +4125,7 @@ E.g. <code class="docutils literal"><span class="pre">&#64;1,37-39,54,99-102</sp
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

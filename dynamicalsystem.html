@@ -500,7 +500,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet"><code class="xref py py-obj docutils literal"><span class="pre">advance_verlet</span></code></a>(…)</td>
-<td>Calls“ advance_verlet2“ followed by <code class="docutils literal"><span class="pre">advance_verlet1</span></code>.</td>
+<td>Calls`` advance_verlet2`` followed by <code class="docutils literal"><span class="pre">advance_verlet1</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet1" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet1"><code class="xref py py-obj docutils literal"><span class="pre">advance_verlet1</span></code></a>(…)</td>
 <td>Advance the velocities by half the time-step <code class="docutils literal"><span class="pre">dt</span></code> and the positions by a full time-step.</td>
@@ -833,7 +833,7 @@ pressure for the case of Langevin NPT.</p>
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.advance_verlet">
 <code class="descname">advance_verlet</code><span class="sig-paren">(</span><em>ds</em>, <em>dt</em>, <em>f</em><span class="optional">[</span>, <em>virial</em>, <em>e</em>, <em>parallel</em>, <em>store_constraint_force</em>, <em>do_calc_dists</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.advance_verlet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calls“ advance_verlet2“ followed by <code class="docutils literal"><span class="pre">advance_verlet1</span></code>. Outside this routine the
+<dd><p>Calls`` advance_verlet2`` followed by <code class="docutils literal"><span class="pre">advance_verlet1</span></code>. Outside this routine the
 velocities will be half-stepped. This allows a simpler MD loop:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
     <span class="n">pot</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1787,7 +1787,7 @@ Optionalally zero the total momentum of a subset of atoms, specified by <code cl
 
 <dl class="class">
 <dt id="quippy.dynamicalsystem.Dynamics">
-<em class="property">class </em><code class="descclassname">quippy.dynamicalsystem.</code><code class="descname">Dynamics</code><span class="sig-paren">(</span><em>atoms</em>, <em>timestep</em>, <em>trajectory</em>, <em>trajectoryinterval=10</em>, <em>initialtemperature=None</em>, <em>logfile=’-‘</em>, <em>loginterval=1</em>, <em>loglabel=’D’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">quippy.dynamicalsystem.</code><code class="descname">Dynamics</code><span class="sig-paren">(</span><em>atoms</em>, <em>timestep</em>, <em>trajectory</em>, <em>trajectoryinterval=10</em>, <em>initialtemperature=None</em>, <em>logfile='-'</em>, <em>loginterval=1</em>, <em>loglabel='D'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Wrapper around <a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal"><span class="pre">DynamicalSystem</span></code></a> integrator compatible with
 ASE <code class="xref py py-class docutils literal"><span class="pre">ase.md.MolecularDynamics</span></code> interface.</p>
@@ -2417,7 +2417,7 @@ Optionally only include the contribution of a subset of atoms.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
