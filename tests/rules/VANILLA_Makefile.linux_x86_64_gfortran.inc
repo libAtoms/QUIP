@@ -1,35 +1,44 @@
-# Place to override setting elsewhere, in particular things set in Makefile.linux_x86_64_ifort_icc_openmp
-# look in /home/wjs31/QUIP/Makefiles/Makefile.linux_x86_64_ifort_icc_openmp for defaults set by arch
+# Place to override setting elsewhere, in particular things set in Makefile.linux_x86_64_gfortran
+# look in QUIP/arch/Makefile.linux_x86_64_gfortran for defaults set by arch
+# 
+# F77=gfortran
+# F90=gfortran
+# F95=gfortran
+# CC=gcc
+# CPLUSPLUS=g++
+# FPP=gfortran -E -x f95-cpp-input
+# LINKER=gfortran
+# LIBTOOL=
 # OPTIM=
 # COPTIM=
-# DEBUG=-g -traceback -DDUMP_CORE_ON_ABORT 
+# DEBUG=-O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
+# DEBUG=
 # CDEBUG=
 MATH_LINKOPTS=-llapack -lblas
-NETCDF_LIBDIR=/usr/lib
-NETCDF4=1
-NETCDF4_CURL=1
-NETCDF_INCDIR=/usr/include
-HAVE_NETCDF=0
+EXTRA_LINKOPTS=
 USE_MAKEDEP=1
 MAKEDEP=makedep.py
-HAVE_MDCORE=0
-HAVE_ASAP=0
-HAVE_KIM=0
 HAVE_CP2K=0
 HAVE_VASP=0
 HAVE_TB=0
+HAVE_PRECON=0
 HAVE_FX=0
-HAVE_GAP=0
-HAVE_GAP_FILLER=0
-HAVE_QP_PREDICT=0
-HAVE_QP_TEACH=0
-HAVE_QR=0
 HAVE_LOTF=0
 HAVE_ONIOM=0
 HAVE_LOCAL_E_MIX=0
 HAVE_QC=0
-EXTRA_LINKOPTS=
-HAVE_CGAL=0
-SIZEOF_FORTRAN_T= 2
+HAVE_GAP=0
+HAVE_GAP_FILLER=0
+HAVE_QR=0
 HAVE_THIRDPARTY=0
-HAVE_PRECON=1
+HAVE_SCME=0
+HAVE_MTP=0
+HAVE_MBD=0
+HAVE_NETCDF=0
+HAVE_MDCORE=0
+HAVE_ASAP=0
+HAVE_KIM=0
+HAVE_CGAL=0
+HAVE_METIS=0
+HAVE_LMTO_TBE=0
+SIZEOF_FORTRAN_T=2
