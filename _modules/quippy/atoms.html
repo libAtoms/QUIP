@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.atoms &mdash; quippy 19a9dcd+ documentation</title>
+  <title>quippy.atoms &mdash; quippy b0d096f+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 19a9dcd+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy b0d096f+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                19a9dcd+
+                b0d096f+
               </div>
             
           
@@ -236,6 +236,7 @@
 
 <span class="k">if</span> <span class="s1">&#39;ase&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ase</span>
+    <span class="kn">from</span> <span class="nn">ase.spacegroup</span> <span class="k">import</span> <span class="n">Spacegroup</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;mandatory dependency ase cannot be imported. Install using &#39;pip install ase&#39;.&quot;</span><span class="p">)</span>
 
@@ -913,6 +914,8 @@
                 <span class="k">if</span> <span class="s1">&#39;cutoff&#39;</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">],</span>
                                     <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cutoff_break&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spacegroup&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">Spacegroup</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;spacegroup&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;spacegroup&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">symbol</span>
 
             <span class="c1"># create extra properties for any non-standard arrays</span>
             <span class="n">standard_ase_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="s1">&#39;charges&#39;</span><span class="p">,</span>
@@ -1265,7 +1268,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'19a9dcd+',
+            VERSION:'b0d096f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

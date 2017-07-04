@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.dictionary &mdash; quippy 19a9dcd+ documentation</title>
+  <title>quippy.dictionary &mdash; quippy b0d096f+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 19a9dcd+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy b0d096f+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                19a9dcd+
+                b0d096f+
               </div>
             
           
@@ -265,6 +265,8 @@
     <span class="n">_array_types</span>  <span class="o">=</span> <span class="p">(</span><span class="n">T_INTEGER_A</span><span class="p">,</span> <span class="n">T_REAL_A</span><span class="p">,</span> <span class="n">T_COMPLEX_A</span><span class="p">,</span> <span class="n">T_CHAR_A</span><span class="p">,</span>
                      <span class="n">T_LOGICAL_A</span><span class="p">,</span> <span class="n">T_INTEGER_A2</span><span class="p">,</span> <span class="n">T_REAL_A2</span><span class="p">)</span>
 
+    <span class="n">_max_repr_length</span> <span class="o">=</span> <span class="mi">255</span>  <span class="c1"># repr on unknown types will be truncated</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
@@ -408,7 +410,14 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s2a</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">pad</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">s2a</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">pad</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">vstr</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vstr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_length</span><span class="p">:</span>
+                        <span class="n">vstr</span> <span class="o">=</span> <span class="s1">&#39;...&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">vstr</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_length</span> <span class="o">-</span> <span class="mi">15</span><span class="p">],</span>
+                                           <span class="n">vstr</span><span class="p">[</span><span class="o">-</span><span class="mi">12</span><span class="p">:]])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">vstr</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
@@ -495,7 +504,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'19a9dcd+',
+            VERSION:'b0d096f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
