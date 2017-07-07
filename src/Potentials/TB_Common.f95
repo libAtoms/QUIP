@@ -157,7 +157,7 @@ end function angular_function
 subroutine regularize(L, M, N, Lsq, Msq, Nsq)
     real(dp), intent(inout) :: L, M, N, Lsq, Msq, Nsq
 
-    real(dp), parameter :: regularization_eps = 1.0e-7
+    real(dp), parameter :: regularization_eps = 1.0e-5
 
     if (Nsq == 1.0_dp) then
         L = sign(regularization_eps, N)
