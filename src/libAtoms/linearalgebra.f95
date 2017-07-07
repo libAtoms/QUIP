@@ -3643,14 +3643,15 @@ CONTAINS
 
   end subroutine matrix_z_print
 
-  subroutine matrix_print_mathematica(this, verbosity, file)
+  subroutine matrix_print_mathematica(label, this, verbosity, file)
+    character(len=*), intent(in) :: label
     real(dp),    intent(in), dimension(:,:)  :: this
     integer, optional                           :: verbosity
     type(inoutput), intent(in), optional        :: file
 
     integer i, j
 
-    call print("M = { ", verbosity, file)
+    call print(trim(label)//"  = { ", verbosity, file)
     do i=1, size(this,1)
       call print ("{", verbosity, file)
       do j=1, size(this,1)
@@ -3669,14 +3670,15 @@ CONTAINS
     call print ("};", verbosity, file)
   end subroutine matrix_print_mathematica
 
-  subroutine matrix_z_print_mathematica(this, verbosity, file)
+  subroutine matrix_z_print_mathematica(label, this, verbosity, file)
+    character(len=*), intent(in) :: label
     complex(dp),    intent(in), dimension(:,:)  :: this
     integer, optional                           :: verbosity
     type(inoutput), intent(in), optional        :: file
 
     integer i, j
 
-    call print("M = { ", verbosity, file)
+    call print(trim(label)//" = { ", verbosity, file)
     do i=1, size(this,1)
       call print ("{", verbosity, file)
       do j=1, size(this,1)
