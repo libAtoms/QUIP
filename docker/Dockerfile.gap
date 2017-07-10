@@ -17,8 +17,8 @@ ENV QUIP_ARCH linux_x86_64_gfortran_openmp
 RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
-    && make \
-    && make install-quippy
+    && make > /dev/null \
+    && make install-quippy > /dev/null
 
 ENV PATH ${QUIP_ROOT}/build/${QUIP_ARCH}:${PATH}
 
@@ -32,7 +32,7 @@ ENV LAMMPS_PATH /opt/lammps
 RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
-    && make libquip
+    && make libquip > /dev/null
 
 RUN mkdir -p ${LAMMPS_PATH} \
     && cd ${LAMMPS_PATH} \
