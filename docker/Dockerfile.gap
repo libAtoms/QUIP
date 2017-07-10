@@ -16,7 +16,7 @@ ENV QUIP_ARCH linux_x86_64_gfortran_openmp
 
 RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
-    && cp docker/arch/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
+    && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
     && make \
     && make install-quippy
 
