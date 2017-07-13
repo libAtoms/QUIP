@@ -3,7 +3,7 @@ FROM libatomsquip/quip-base
 
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 
-# QUIP compilation - OpenMP version
+# All the QUIPs go here; added to path in the end.
 ENV QUIP_ROOT /opt/quip
 
 # To build within the image without additonal libraries use
@@ -14,14 +14,15 @@ ENV BUILD NOGAP
 # ADD . ${QUIP_ROOT}
 
 # LAMMPS compilation
+
 # lammps should be linked with SERIAL version of QUIP
 # other configurations are untested and too complicated
-# for a user
+# for a user (mixed paralleisms).
 ENV QUIP_ARCH linux_x86_64_gfortran
 ENV LAMMPS_PATH /opt/lammps
 
-# build only libquip to keep a slim image. Makefile.inc required to
-# compile lammps
+# Build only libquip for serial to keep a slim image.
+# Makefile.inc is also required to compile lammps.
 RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
@@ -33,22 +34,24 @@ RUN mkdir -p ${LAMMPS_PATH} \
     && cd ${LAMMPS_PATH} \
     && curl http://lammps.sandia.gov/tars/lammps-stable.tar.gz | tar xz --strip-components 1
 
-# Clean up Obj files immedaitely to keep image smaller
-# use 2 make jobs to hopefully speed up travis
+# Build `shlib` objects first so they have `-fPIC` then symlink the directory
+# so they can be reused to build the binaries halving the compilation time.
+# Clean up Obj files immedaitely to keep image smaller.
 RUN cd ${LAMMPS_PATH}/src \
     && make yes-all \
     && make no-lib \
-    && make yes-user-quip yes-python \
-    && make -j 2 mpi \
-    && make -j 2 mpi mode=shlib \
+    && make yes-user-quip yes-python no-user-intel \
+    && make mpi mode=shlib \
     && make install-python \
+    && ln -s Obj_shared_mpi Obj_mpi \
+    && make mpi \
     && make clean-all
 
 ENV PATH ${LAMMPS_PATH}/src/:${PATH}
 
 # TODO: mpi quip
 
-# QUIP for use
+# QUIP for general use is the OpenMP version.
 # TODO: install binaries
 
 ENV QUIP_ARCH linux_x86_64_gfortran_openmp
@@ -59,7 +62,16 @@ RUN cd ${QUIP_ROOT} \
     && make > /dev/null \
     && make install-quippy > /dev/null
 
-ENV PATH ${QUIP_ROOT}/build/${QUIP_ARCH}:${PATH}
+RUN apt-get install -y libxpm-dev libgsl0-dev
+
+# AtomEye needs to link with QUIP for xyz read-write
+RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}/src/AtomEye \
+    && cd ${QUIP_ROOT}/src/AtomEye \
+    && make \
+    && cd ${QUIP_ROOT}/src/AtomEye/Python \
+    && python setup.py install
+
+ENV PATH ${QUIP_ROOT}/build/${QUIP_ARCH}:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
