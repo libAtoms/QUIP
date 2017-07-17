@@ -58,8 +58,10 @@
 !%    \item    Customised (hardwired) potential ({\bf IPModel_Custom})
 !%    \item    Tether a selection of atoms to the origin with a spring ({\bf IPModel_Tether})
 !%    \item    Fourth-order force-constant potential ({\bf IPModel_FC4})
+!%    \item    Dispersion correction from Tkatchenko and Scheffler ({\bf IPModel_DispTS})
 !%    \item    SCME multipole model for water ({\bf IPModel_SCME})
 !%    \item    MTP potential ({\bf IPModel_MTP})
+!%    \item    Many-body dispersion ({\bf IPModel_MBD})
 !%    \item    ZBL potential ({\bf IPModel_ZBL})
 !%    \item    LinearSOAP potential ({\bf IPModel_LinearSOAP})
 !%    \item    Template potential ({\bf IPModel_Template})
@@ -99,8 +101,10 @@
 !%    \item    'IP LMTO_TBE'
 !%    \item    'IP Multipoles'
 !%    \item    'IP FC4'
+!%    \item    'IP DispTS'
 !%    \item    'IP SCME'
 !%    \item    'IP MTP'
+!%    \item    'IP MBD'
 !%    \item    'IP ZBL'
 !%    \item    'IP LinearSOAP'
 !%    \item    'IP Template'
@@ -163,8 +167,10 @@ use IPModel_Spring_module, only : ipmodel_Spring, initialise, finalise, calc, pr
 use IPModel_SW_VP_module, only : ipmodel_sw_vp, initialise, finalise, calc, print
 use IPModel_Multipoles_module, only : ipmodel_multipoles, initialise, finalise, calc, print
 use IPModel_FC4_module, only : ipmodel_fc4, initialise, finalise, calc, print
+use IPModel_DispTS_module, only : ipmodel_dispts, initialise, finalise, calc, print
 use IPModel_SCME_module, only : ipmodel_scme, initialise, finalise, calc, print
 use IPModel_MTP_module, only : ipmodel_mtp, initialise, finalise, calc, print
+use IPModel_MBD_module, only : ipmodel_mbd, initialise, finalise, calc, print
 ! Add new IP here
 
 implicit none
@@ -176,7 +182,8 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Brenner_2002 = 12, FF_ASAP = 13, FF_TS = 14, FF_FC = 15, FF_Morse = 16, FF_GLUE = 17, FF_PartridgeSchwenke = 18, &
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
      FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, FF_LMTO_TBE=31, FF_FC4 = 32, FF_Spring=33, &
-     FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, FF_ZBL=37, FF_LinearSOAP=38, & ! Add new IPs here
+     FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, FF_ZBL=37, FF_LinearSOAP=38, &
+     FF_MBD=39, FF_DispTS=40, & ! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -221,9 +228,11 @@ type IP_type
   type(IPModel_LMTO_TBE) ip_LMTO_TBE
   type(IPModel_Multipoles) ip_Multipoles
   type(IPModel_FC4) ip_fc4
+  type(IPModel_DispTS) ip_dispts
   type(IPModel_SCME) ip_SCME
   type(IPModel_MTP) ip_MTP
   type(IPModel_ZBL) ip_ZBL
+  type(IPModel_MBD) ip_MBD
   type(IPModel_LinearSOAP) ip_LinearSOAP
      ! Add new IP here
   type(IPModel_Template) ip_Template
@@ -334,7 +343,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan , &
        is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, & 
-       is_ZBL, is_LinearSOAP, &! Add new IPs here
+       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, &! Add new IPs here
        is_Template
 
   INIT_ERROR(error)
@@ -384,8 +393,10 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'LMTO_TBE', 'false', is_LMTO_TBE, help_string="Interface to LMTO empirical Tight Binding code")
   call param_register(params, 'Multipoles', 'false', is_Multipoles, help_string="Electrostatics including charges, dipoles, polarisabilities")  
   call param_register(params, 'FC4', 'false', is_FC4, help_string="Fourth-order force-constant potential of Esfarjani et al")
+  call param_register(params, 'DispTS', 'false', is_DispTS, help_string="Dispersion correction from Tkatchenko and Scheffler (PRL, 2009)")
   call param_register(params, 'SCME', 'false', is_SCME, help_string="SCME water potential")
   call param_register(params, 'MTP', 'false', is_MTP, help_string="MTP potential")
+  call param_register(params, 'MBD', 'false', is_MBD, help_string="Many-body dispersion correction")
   call param_register(params, 'ZBL', 'false', is_ZBL, help_string="ZBL potential")
   call param_register(params, 'LinearSOAP', 'false', is_LinearSOAP, help_string="LinearSOAP potential")
  ! Add new IP here
@@ -399,7 +410,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, &
-       is_Tether, is_Spring, is_LMTO_TBE, is_FC4,  is_Multipoles, is_SCME, is_MTP, is_ZBL,is_linearSOAP, & ! add new IPs here
+       is_Tether, is_Spring, is_LMTO_TBE, is_FC4, is_Multipoles, is_DispTS, is_SCME, is_MTP, is_MBD, is_ZBL,is_linearSOAP, & ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -510,12 +521,18 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_Multipoles) then
      this%functional_form = FF_Multipoles
      call Initialise(this%ip_Multipoles, args_str, param_str)
+  else if (is_DispTS) then
+    this%functional_form = FF_DispTS
+    call Initialise(this%ip_dispts, args_str, param_str)
   else if (is_SCME) then
     this%functional_form = FF_SCME
     call Initialise(this%ip_SCME, args_str, param_str) 
   else if (is_MTP) then
      this%functional_form = FF_MTP
      call Initialise(this%ip_MTP, args_str, param_str)
+  else if (is_MBD) then
+     this%functional_form = FF_MBD
+     call Initialise(this%ip_MBD, args_str, param_str)
   else if (is_ZBL) then
      this%functional_form = FF_ZBL
      call Initialise(this%ip_ZBL, args_str, param_str)
@@ -609,10 +626,14 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_FC4)
    case (FF_Multipoles)
       call Finalise(this%ip_Multipoles)
+   case (FF_DispTS)
+      call Finalise(this%ip_dispts)
    case (FF_SCME)
       call Finalise(this%ip_SCME)
    case (FF_MTP)
       call Finalise(this%ip_MTP)
+   case (FF_MBD)
+      call Finalise(this%ip_MBD)
    case (FF_ZBL)
       call Finalise(this%ip_ZBL)
    case (FF_LinearSOAP)
@@ -701,10 +722,14 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_FC4%cutoff
   case (FF_Multipoles)
      IP_cutoff = this%ip_multipoles%cutoff
+  case (FF_DispTS)
+     IP_cutoff = this%ip_dispts%cutoff
   case (FF_SCME)
      IP_cutoff = this%ip_SCME%cutoff
   case (FF_MTP)
      IP_cutoff = this%ip_MTP%cutoff
+  case (FF_MBD)
+     IP_cutoff = this%ip_MBD%cutoff
   case (FF_ZBL)
      IP_cutoff = this%ip_ZBL%cutoff
   case (FF_LinearSOAP)
@@ -820,10 +845,14 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_FC4, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_Multipoles)
       call calc(this%ip_Multipoles, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_DispTS)
+      call calc(this%ip_dispts, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_SCME)
       call calc(this%ip_SCME, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_MTP)
       call calc(this%ip_MTP, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_MBD)
+      call calc(this%ip_MBD, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_ZBL)
       call calc(this%ip_ZBL, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_LinearSOAP)
@@ -921,10 +950,14 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_FC4, file=file)
    case (FF_Multipoles)
       call Print(this%ip_Multipoles, file=file)
+   case (FF_DispTS)
+      call Print(this%ip_dispts, file=file)
    case (FF_SCME)
       call Print(this%ip_SCME, file=file)
    case (FF_MTP)
       call Print(this%ip_MTP, file=file)
+   case (FF_MBD)
+      call Print(this%ip_MBD, file=file)
    case (FF_ZBL)
       call Print(this%ip_ZBL, file=file)
    case (FF_LinearSOAP)

@@ -16,350 +16,365 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import *
-from quippy.io import *
-from quippy.netcdf import *
-import unittest, itertools, sys, quippy
-import numpy as np
-from quippytest import *
 import os
 import glob
+import unittest
+
+import numpy as np
+
+import quippy
+from quippy import available_modules
+from quippy import Atoms
+from quippy.cinoutput import CInOutput
+from quippy.extendable_str import Extendable_str
+from quippy.farray import farray, fidentity, frange
+from quippy.io import AtomsList
+from quippy.structures import diamond, alpha_quartz, supercell
+from quippy.system import INPUT, OUTPUT
+from quippytest import QuippyTestCase
+
 
 class TestCInOutput(QuippyTestCase):
+    def setUp(self):
+        self.at = supercell(diamond(5.44, 14), 2, 2, 2)
+        self.at.set_cutoff(3.0)
+        self.at.add_property('log', False)
+        self.at.log[1] = True
+        self.at.params['real'] = 1.0
+        self.at.params['int'] = 2
+        self.at.params['neg_int'] = -3
+        self.at.params['bad_neg'] = '3-4'
+        self.at.params['int_a'] = [1, 2, 3]
+        self.at.params['real_a'] = [1.0, 2.0, 3.0]
+        self.at.params['int_a2'] = farray([1, 2, 3, 4, 5, 6, 7, 8, 9]
+                                          ).reshape(3, 3)
+        self.at.params['real_a2'] = farray([1.0, 2, 3, 4, 5, 6, 7, 8, 9]
+                                           ).reshape(3, 3)
+        self.at.params['log_param'] = True
+        self.at.params['log_a'] = [True, True, False]
+        self.at.params['string'] = 'string'
+        self.at.params['string2'] = 'string with spaces'
+        self.al = AtomsList([supercell(diamond(5.44 + 0.01 * x, 14), 2, 2, 2)
+                             for x in range(5)])
+        for at in self.al:
+            at.params.update(self.at.params)
 
-   def setUp(self):
-      self.at = supercell(diamond(5.44,14), 2,2,2)
-      self.at.set_cutoff(3.0)
-      self.at.add_property('log', False)
-      self.at.log[1] = True
-      self.at.params['real'] = 1.0
-      self.at.params['int'] = 2
-      self.at.params['neg_int'] = -3
-      self.at.params['bad_neg'] = '3-4'
-      self.at.params['int_a'] = [1,2,3]
-      self.at.params['real_a'] = [1.0,2.0,3.0]
-      self.at.params['int_a2'] = farray([1,2,3,4,5,6,7,8,9]).reshape(3,3)
-      self.at.params['real_a2'] = farray([1.0,2,3,4,5,6,7,8,9]).reshape(3,3)
-      self.at.params['log_param'] = True
-      self.at.params['log_a'] = [True, True, False]
-      self.at.params['string'] = 'string'
-      self.at.params['string2'] = 'string with spaces'
-      self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
-      for at in self.al:
-         at.params.update(self.at.params)
+        self.xyz_ref = [
+            '64\n',
+            'real=1.00000000 int=2 neg_int=-3 bad_neg=3-4 int_a="1       2       3" real_a="1.00000000      2.00000000      3.00000000" int_a2="1        4        7        2        5        8        3        6        9" real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" log_param=T log_a="T T F" string=string string2="string with spaces" cutoff=3.00000000 nneightol=1.20000000 pbc="T T T" Lattice="10.88000000       0.00000000       0.00000000       0.00000000      10.88000000       0.00000000       0.00000000       0.00000000      10.88000000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
+            'Si              0.00000000      0.00000000      0.00000000      14    T\n',
+            'Si              1.36000000      1.36000000      1.36000000      14    F\n',
+            'Si              2.72000000      2.72000000      0.00000000      14    F\n',
+            'Si              4.08000000      4.08000000      1.36000000      14    F\n',
+            'Si              2.72000000      0.00000000      2.72000000      14    F\n',
+            'Si              4.08000000      1.36000000      4.08000000      14    F\n',
+            'Si              0.00000000      2.72000000      2.72000000      14    F\n',
+            'Si              1.36000000      4.08000000      4.08000000      14    F\n',
+            'Si              0.00000000      0.00000000      5.44000000      14    F\n',
+            'Si              1.36000000      1.36000000      6.80000000      14    F\n',
+            'Si              2.72000000      2.72000000      5.44000000      14    F\n',
+            'Si              4.08000000      4.08000000      6.80000000      14    F\n',
+            'Si              2.72000000      0.00000000      8.16000000      14    F\n',
+            'Si              4.08000000      1.36000000      9.52000000      14    F\n',
+            'Si              0.00000000      2.72000000      8.16000000      14    F\n',
+            'Si              1.36000000      4.08000000      9.52000000      14    F\n',
+            'Si              0.00000000      5.44000000      0.00000000      14    F\n',
+            'Si              1.36000000      6.80000000      1.36000000      14    F\n',
+            'Si              2.72000000      8.16000000      0.00000000      14    F\n',
+            'Si              4.08000000      9.52000000      1.36000000      14    F\n',
+            'Si              2.72000000      5.44000000      2.72000000      14    F\n',
+            'Si              4.08000000      6.80000000      4.08000000      14    F\n',
+            'Si              0.00000000      8.16000000      2.72000000      14    F\n',
+            'Si              1.36000000      9.52000000      4.08000000      14    F\n',
+            'Si              0.00000000      5.44000000      5.44000000      14    F\n',
+            'Si              1.36000000      6.80000000      6.80000000      14    F\n',
+            'Si              2.72000000      8.16000000      5.44000000      14    F\n',
+            'Si              4.08000000      9.52000000      6.80000000      14    F\n',
+            'Si              2.72000000      5.44000000      8.16000000      14    F\n',
+            'Si              4.08000000      6.80000000      9.52000000      14    F\n',
+            'Si              0.00000000      8.16000000      8.16000000      14    F\n',
+            'Si              1.36000000      9.52000000      9.52000000      14    F\n',
+            'Si              5.44000000      0.00000000      0.00000000      14    F\n',
+            'Si              6.80000000      1.36000000      1.36000000      14    F\n',
+            'Si              8.16000000      2.72000000      0.00000000      14    F\n',
+            'Si              9.52000000      4.08000000      1.36000000      14    F\n',
+            'Si              8.16000000      0.00000000      2.72000000      14    F\n',
+            'Si              9.52000000      1.36000000      4.08000000      14    F\n',
+            'Si              5.44000000      2.72000000      2.72000000      14    F\n',
+            'Si              6.80000000      4.08000000      4.08000000      14    F\n',
+            'Si              5.44000000      0.00000000      5.44000000      14    F\n',
+            'Si              6.80000000      1.36000000      6.80000000      14    F\n',
+            'Si              8.16000000      2.72000000      5.44000000      14    F\n',
+            'Si              9.52000000      4.08000000      6.80000000      14    F\n',
+            'Si              8.16000000      0.00000000      8.16000000      14    F\n',
+            'Si              9.52000000      1.36000000      9.52000000      14    F\n',
+            'Si              5.44000000      2.72000000      8.16000000      14    F\n',
+            'Si              6.80000000      4.08000000      9.52000000      14    F\n',
+            'Si              5.44000000      5.44000000      0.00000000      14    F\n',
+            'Si              6.80000000      6.80000000      1.36000000      14    F\n',
+            'Si              8.16000000      8.16000000      0.00000000      14    F\n',
+            'Si              9.52000000      9.52000000      1.36000000      14    F\n',
+            'Si              8.16000000      5.44000000      2.72000000      14    F\n',
+            'Si              9.52000000      6.80000000      4.08000000      14    F\n',
+            'Si              5.44000000      8.16000000      2.72000000      14    F\n',
+            'Si              6.80000000      9.52000000      4.08000000      14    F\n',
+            'Si              5.44000000      5.44000000      5.44000000      14    F\n',
+            'Si              6.80000000      6.80000000      6.80000000      14    F\n',
+            'Si              8.16000000      8.16000000      5.44000000      14    F\n',
+            'Si              9.52000000      9.52000000      6.80000000      14    F\n',
+            'Si              8.16000000      5.44000000      8.16000000      14    F\n',
+            'Si              9.52000000      6.80000000      9.52000000      14    F\n',
+            'Si              5.44000000      8.16000000      8.16000000      14    F\n',
+            'Si              6.80000000      9.52000000      9.52000000      14    F\n']
 
-      self.xyz_ref =  ['64\n', 'real=1.00000000 int=2 neg_int=-3 bad_neg=3-4 int_a="1       2       3" real_a="1.00000000      2.00000000      3.00000000" int_a2="1        4        7        2        5        8        3        6        9" real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" log_param=T log_a="T T F" string=string string2="string with spaces" cutoff=3.00000000 nneightol=1.20000000 pbc="T T T" Lattice="10.88000000       0.00000000       0.00000000       0.00000000      10.88000000       0.00000000       0.00000000       0.00000000      10.88000000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
-                       'Si              0.00000000      0.00000000      0.00000000      14    T\n',
-                       'Si              1.36000000      1.36000000      1.36000000      14    F\n',
-                       'Si              2.72000000      2.72000000      0.00000000      14    F\n',
-                       'Si              4.08000000      4.08000000      1.36000000      14    F\n',
-                       'Si              2.72000000      0.00000000      2.72000000      14    F\n',
-                       'Si              4.08000000      1.36000000      4.08000000      14    F\n',
-                       'Si              0.00000000      2.72000000      2.72000000      14    F\n',
-                       'Si              1.36000000      4.08000000      4.08000000      14    F\n',
-                       'Si              0.00000000      0.00000000      5.44000000      14    F\n',
-                       'Si              1.36000000      1.36000000      6.80000000      14    F\n',
-                       'Si              2.72000000      2.72000000      5.44000000      14    F\n',
-                       'Si              4.08000000      4.08000000      6.80000000      14    F\n',
-                       'Si              2.72000000      0.00000000      8.16000000      14    F\n',
-                       'Si              4.08000000      1.36000000      9.52000000      14    F\n',
-                       'Si              0.00000000      2.72000000      8.16000000      14    F\n',
-                       'Si              1.36000000      4.08000000      9.52000000      14    F\n',
-                       'Si              0.00000000      5.44000000      0.00000000      14    F\n',
-                       'Si              1.36000000      6.80000000      1.36000000      14    F\n',
-                       'Si              2.72000000      8.16000000      0.00000000      14    F\n',
-                       'Si              4.08000000      9.52000000      1.36000000      14    F\n',
-                       'Si              2.72000000      5.44000000      2.72000000      14    F\n',
-                       'Si              4.08000000      6.80000000      4.08000000      14    F\n',
-                       'Si              0.00000000      8.16000000      2.72000000      14    F\n',
-                       'Si              1.36000000      9.52000000      4.08000000      14    F\n',
-                       'Si              0.00000000      5.44000000      5.44000000      14    F\n',
-                       'Si              1.36000000      6.80000000      6.80000000      14    F\n',
-                       'Si              2.72000000      8.16000000      5.44000000      14    F\n',
-                       'Si              4.08000000      9.52000000      6.80000000      14    F\n',
-                       'Si              2.72000000      5.44000000      8.16000000      14    F\n',
-                       'Si              4.08000000      6.80000000      9.52000000      14    F\n',
-                       'Si              0.00000000      8.16000000      8.16000000      14    F\n',
-                       'Si              1.36000000      9.52000000      9.52000000      14    F\n',
-                       'Si              5.44000000      0.00000000      0.00000000      14    F\n',
-                       'Si              6.80000000      1.36000000      1.36000000      14    F\n',
-                       'Si              8.16000000      2.72000000      0.00000000      14    F\n',
-                       'Si              9.52000000      4.08000000      1.36000000      14    F\n',
-                       'Si              8.16000000      0.00000000      2.72000000      14    F\n',
-                       'Si              9.52000000      1.36000000      4.08000000      14    F\n',
-                       'Si              5.44000000      2.72000000      2.72000000      14    F\n',
-                       'Si              6.80000000      4.08000000      4.08000000      14    F\n',
-                       'Si              5.44000000      0.00000000      5.44000000      14    F\n',
-                       'Si              6.80000000      1.36000000      6.80000000      14    F\n',
-                       'Si              8.16000000      2.72000000      5.44000000      14    F\n',
-                       'Si              9.52000000      4.08000000      6.80000000      14    F\n',
-                       'Si              8.16000000      0.00000000      8.16000000      14    F\n',
-                       'Si              9.52000000      1.36000000      9.52000000      14    F\n',
-                       'Si              5.44000000      2.72000000      8.16000000      14    F\n',
-                       'Si              6.80000000      4.08000000      9.52000000      14    F\n',
-                       'Si              5.44000000      5.44000000      0.00000000      14    F\n',
-                       'Si              6.80000000      6.80000000      1.36000000      14    F\n',
-                       'Si              8.16000000      8.16000000      0.00000000      14    F\n',
-                       'Si              9.52000000      9.52000000      1.36000000      14    F\n',
-                       'Si              8.16000000      5.44000000      2.72000000      14    F\n',
-                       'Si              9.52000000      6.80000000      4.08000000      14    F\n',
-                       'Si              5.44000000      8.16000000      2.72000000      14    F\n',
-                       'Si              6.80000000      9.52000000      4.08000000      14    F\n',
-                       'Si              5.44000000      5.44000000      5.44000000      14    F\n',
-                       'Si              6.80000000      6.80000000      6.80000000      14    F\n',
-                       'Si              8.16000000      8.16000000      5.44000000      14    F\n',
-                       'Si              9.52000000      9.52000000      6.80000000      14    F\n',
-                       'Si              8.16000000      5.44000000      8.16000000      14    F\n',
-                       'Si              9.52000000      6.80000000      9.52000000      14    F\n',
-                       'Si              5.44000000      8.16000000      8.16000000      14    F\n',
-                       'Si              6.80000000      9.52000000      9.52000000      14    F\n']
+    def tearDown(self):
+        generated_files = glob.glob('test*.xyz*') + glob.glob('test*.nc') + [
+            'quartz.xyz', 'quartz.xyz.idx', 'quartz.nc', 'empty.xyz']
+        for filename in generated_files:
+            if os.path.exists(filename):
+                os.remove(filename)
 
-   def tearDown(self):
-      if os.path.exists('test.xyz'): os.remove('test.xyz')
-      if os.path.exists('test.nc'): os.remove('test.nc')
-      if os.path.exists('test.xyz.idx'): os.remove('test.xyz.idx')
-      if os.path.exists('test2.xyz'): os.remove('test2.xyz')
-      if os.path.exists('test2.xyz.idx'): os.remove('test2.xyz.idx')
-      if os.path.exists('quartz.xyz'): os.remove('quartz.xyz')
-      if os.path.exists('quartz.xyz.idx'): os.remove('quartz.xyz.idx')
-      if os.path.exists('quartz.nc'): os.remove('quartz.nc')
-      if os.path.exists('empty.xyz'): os.remove('empty.xyz')
-      for t in glob.glob('test*.xyz*'):
-         os.remove(t)
+    def testsinglexyz(self):
+        self.at.write('test_01.xyz')
+        at = Atoms('test_01.xyz')
+        self.assertEqual(self.at, at)
+        self.assertEqual(self.xyz_ref, open('test_01.xyz', 'r').readlines())
 
-   def testsinglexyz(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz')
-      self.assertEqual(self.at, at)
-      self.assertEqual(self.xyz_ref, open('test.xyz', 'r').readlines())
+    def testsinglexyzprefix(self):
+        self.at.write('test_02.xyz', prefix='PREFIX')
+        lines = open('test_02.xyz').readlines()
+        self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
+        lines_without_prefix = [line[len('PREFIX '):] for line in lines]
+        at = Atoms(''.join(lines_without_prefix), format='string')
+        self.assertEqual(self.at, at)
 
-   def testsinglexyzprefix(self):
-      self.at.write('test.xyz', prefix='PREFIX')
-      lines = open('test.xyz').readlines()
-      self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
-      lines_without_prefix = [line[len('PREFIX '):] for line in lines]
-      at = Atoms(''.join(lines_without_prefix), format='string')
-      self.assertEqual(self.at, at)
+    def testxyz_negative_integer(self):
+        self.at.write('test_03.xyz')
+        at = Atoms('test_03.xyz')
+        self.assertEqual(type(at.neg_int), type(1))
 
-   def testxyz_negative_integer(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz')
-      self.assertEqual(type(at.neg_int), type(1))
+    def testxyz_bad_negative_integer(self):
+        self.at.write('test_04.xyz')
+        at = Atoms('test_04.xyz')
+        self.assertEqual(type(at.bad_neg), type(''))
 
-   def testxyz_bad_negative_integer(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz')
-      self.assertEqual(type(at.bad_neg), type(''))
+    if 'netcdf' in available_modules:
+        def testsinglenc(self):
+            self.at.write('test_05.nc')
+            at = Atoms('test_05.nc')
+            self.assertEqual(self.at, at)
 
-   if 'netcdf' in available_modules:
-      def testsinglenc(self):
-         self.at.write('test.nc')
-         at = Atoms('test.nc')
-         self.assertEqual(self.at, at)
+    def testmultixyz(self):
+        self.al.write('test_06.xyz')
+        al = AtomsList('test_06.xyz')
+        self.assertEqual(len(al), 5)
+        self.assertEqual(len(self.al), len(al))
+        self.assertEqual(list(self.al), list(al))
 
-   def testmultixyz(self):
-      self.al.write('test.xyz')
-      al = AtomsList('test.xyz')
-      self.assertEqual(len(al), 5)
-      self.assertEqual(len(self.al), len(al))
-      self.assertEqual(list(self.al), list(al))
+    def testmultixyz_prefix_write(self):
+        self.al.write('test_07.xyz', prefix='PREFIX')
+        lines = open('test_07.xyz').readlines()
+        self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
 
-   def testmultixyz_prefix_write(self):
-      self.al.write('test.xyz', prefix='PREFIX')
-      lines = open('test.xyz').readlines()
-      self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
+    def testmultixyz_prefix_read(self):
+        self.al.write('test_08.xyz', prefix='PREFIX')
+        al = AtomsList('test_08.xyz')
+        self.assert_(al[0].xyz_prefix == 'PREFIX')
+        for at in al:
+            del at.params['xyz_prefix']
+        self.assertEqual(list(self.al), list(al))
 
-   def testmultixyz_prefix_read(self):
-      self.al.write('test.xyz', prefix='PREFIX')
-      al = AtomsList('test.xyz')
-      self.assert_(al[0].xyz_prefix == 'PREFIX')
-      for at in al:
-         del at.params['xyz_prefix']
-      self.assertEqual(list(self.al), list(al))
+    if 'netcdf' in available_modules:
+        def testmultinc(self):
+            self.al.write('test_09.nc')
+            al = AtomsList('test_09.nc')
+            self.assertEqual(list(self.al), list(al))
 
-   if 'netcdf' in available_modules:
-      def testmultinc(self):
-         self.al.write('test.nc')
-         al = AtomsList('test.nc')
-         self.assertEqual(list(self.al), list(al))
-
-   def testxyzlowlevel(self):
-      cio = CInOutput("test.xyz", OUTPUT, append=False)
-      for a in self.al:
-         cio.write(a)
-      cio.close()
-
-      cio = CInOutput("test.xyz")
-      a = []
-      for i in range(5):
-         a.append(cio.read())
-      self.assertEqual(a, list(self.al))
-
-   def testxyzlowlevel2(self):
-      cio = CInOutput("test.xyz", OUTPUT, append=False)
-      for a in self.al:
-         a.write(cio)
-      cio.close()
-
-      cio = CInOutput("test.xyz")
-      a = []
-      for i in range(5):
-         a.append(cio.read())
-      self.assertEqual(a, list(self.al))
-
-   if 'netcdf' in quippy.available_modules:
-
-      def testnclowlevel(self):
-         cio = CInOutput("test.nc", OUTPUT)
-         for a in self.al:
+    def testxyzlowlevel(self):
+        cio = CInOutput("test_10.xyz", OUTPUT, append=False)
+        for a in self.al:
             cio.write(a)
-         cio.close()
+        cio.close()
 
-         cio = CInOutput("test.nc")
-         a = []
-         for i in range(5):
+        cio = CInOutput("test_10.xyz")
+        a = []
+        for i in range(5):
             a.append(cio.read())
-         self.assertEqual(a, list(self.al))
+        self.assertEqual(a, list(self.al))
 
-   def testwritecio(self):
-      cio = CInOutput("test2.xyz", OUTPUT)
-      self.al.write(cio)
-      cio.close()
-      al = AtomsList("test2.xyz")
-      self.assertEqual(list(al), list(self.al))
+    def testxyzlowlevel2(self):
+        cio = CInOutput("test_11.xyz", OUTPUT, append=False)
+        for a in self.al:
+            a.write(cio)
+        cio.close()
 
-   def testreadcio(self):
-      self.al.write("test.xyz")
-      cio = CInOutput("test.xyz", INPUT)
-      al = AtomsList(cio)
-      self.assertEqual(list(al), list(self.al))
-      cio.close()
+        cio = CInOutput("test_11.xyz")
+        a = []
+        for i in range(5):
+            a.append(cio.read())
+        self.assertEqual(a, list(self.al))
 
-   def testframe_random_access(self):
-      self.al.write("test.xyz")
-      cio = CInOutput("test.xyz", INPUT)
-      error = farray(0)
-      at = cio.read(frame=4)
-      self.assertArrayAlmostEqual(at.lattice, 2*(5.44+0.01*4)*fidentity(3))
-      cio.close()
+    if 'netcdf' in quippy.available_modules:
 
-   def testframe_out_of_range(self):
-      self.al.write("test.xyz")
-      cio = CInOutput("test.xyz", INPUT)
-      self.assertRaises(EOFError, cio.read, frame=5)
-      cio.close()
+        def testnclowlevel(self):
+            cio = CInOutput("test_12.nc", OUTPUT)
+            for a in self.al:
+                cio.write(a)
+            cio.close()
 
-   def testwrite_single_xyz_properties(self):
-      self.at.write('test.xyz', properties=['species','pos'])
-      at = Atoms('test.xyz')
-      self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
-      self.assertArrayAlmostEqual(self.at.pos, at.pos)
-      self.assertEqual(list(self.at.z), list(at.z))
+            cio = CInOutput("test_12.nc")
+            a = []
+            for i in range(5):
+                a.append(cio.read())
+            self.assertEqual(a, list(self.al))
 
-   def testwrite_multi_xyz_properties(self):
-      self.al.write('test.xyz', properties=['species','pos'])
-      al = AtomsList('test.xyz')
-      for at,at_ref in zip(al, self.al):
-         self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
-         self.assertArrayAlmostEqual(at.pos, at_ref.pos)
-         self.assertEqual(list(at.z), list(at_ref.z))
+    def testwritecio(self):
+        cio = CInOutput("test_13.xyz", OUTPUT)
+        self.al.write(cio)
+        cio.close()
+        al = AtomsList("test_13.xyz")
+        self.assertEqual(list(al), list(self.al))
 
-   def test_non_orthorhombic_xyz(self):
-      from quippy.structures import quartz_params
-      aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
-      aq1.write('quartz.xyz')
-      aq2 = Atoms('quartz.xyz')
-      self.assertEqual(aq1, aq2)
+    def testreadcio(self):
+        self.al.write("test_14.xyz")
+        cio = CInOutput("test_14.xyz", INPUT)
+        al = AtomsList(cio)
+        self.assertEqual(list(al), list(self.al))
+        cio.close()
 
-   if 'netcdf' in available_modules:
-      def test_non_orthorhombic_nc(self):
-         from quippy.structures import quartz_params
-         aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
-         aq1.write('quartz.nc', netcdf4=False)
-         aq2 = Atoms('quartz.nc')
-         self.assertEqual(aq1, aq2)
+    def testframe_random_access(self):
+        self.al.write("test_15.xyz")
+        cio = CInOutput("test_15.xyz", INPUT)
+        error = farray(0)
+        at = cio.read(frame=4)
+        self.assertArrayAlmostEqual(at.lattice,
+                                    2 * (5.44 + 0.01 * 4) * fidentity(3))
+        cio.close()
 
-   def test_read_string(self):
-      s = ''.join(self.xyz_ref)
-      cio = CInOutput()
-      at = cio.read(str=s)
-      self.assertEqual(at, self.at)
+    def testframe_out_of_range(self):
+        self.al.write("test_16.xyz")
+        cio = CInOutput("test_16.xyz", INPUT)
+        self.assertRaises(EOFError, cio.read, frame=5)
+        cio.close()
 
-   def test_read_ext_string(self):
-      es = Extendable_str(''.join(self.xyz_ref))
-      cio = CInOutput()
-      at = cio.read(estr=es)
-      self.assertEqual(at, self.at)
+    def testwrite_single_xyz_properties(self):
+        self.at.write('test_17.xyz', properties=['species', 'pos'])
+        at = Atoms('test_17.xyz')
+        self.assertEqual(sorted(at.properties.keys()),
+                         sorted(['species', 'pos', 'Z']))
+        self.assertArrayAlmostEqual(self.at.pos, at.pos)
+        self.assertEqual(list(self.at.z), list(at.z))
 
-   def test_read_loop(self):
-      import resource
-      max_open_files_soft, max_open_files_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-      self.at.write('test.xyz')
-      for i in range(2*max_open_files_soft):
-         a = Atoms('test.xyz', frame=0)
+    def testwrite_multi_xyz_properties(self):
+        self.al.write('test_18.xyz', properties=['species', 'pos'])
+        al = AtomsList('test_18.xyz')
+        for at, at_ref in zip(al, self.al):
+            self.assertEqual(sorted(at.properties.keys()),
+                             sorted(['species', 'pos', 'Z']))
+            self.assertArrayAlmostEqual(at.pos, at_ref.pos)
+            self.assertEqual(list(at.z), list(at_ref.z))
 
-   def test_write_loop(self):
-      import resource
-      max_open_files_soft, max_open_files_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-      for i in range(2*max_open_files_soft):
-         self.at.write('test.xyz')
+    def test_non_orthorhombic_xyz(self):
+        from quippy.structures import quartz_params
+        aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
+        aq1.write('quartz.xyz')
+        aq2 = Atoms('quartz.xyz')
+        self.assertEqual(aq1, aq2)
 
-   def test_read_bad_range_1(self):
-      self.at.write('test.xyz')
-      self.assertRaises(RuntimeError, Atoms, 'test.xyz', range=[1,self.at.n+1])
+    if 'netcdf' in available_modules:
+        def test_non_orthorhombic_nc(self):
+            from quippy.structures import quartz_params
+            aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
+            aq1.write('quartz.nc', netcdf4=False)
+            aq2 = Atoms('quartz.nc')
+            self.assertEqual(aq1, aq2)
 
-   def test_read_bad_range_2(self):
-      self.at.write('test.xyz')
-      self.assertRaises(RuntimeError, Atoms, 'test.xyz', range=[12, 10])
+    def test_read_string(self):
+        s = ''.join(self.xyz_ref)
+        cio = CInOutput()
+        at = cio.read(str=s)
+        self.assertEqual(at, self.at)
 
-   def test_read_xyz_range_all(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz', range=[1,64])
-      self.assertEqual(at, self.at)
+    def test_read_ext_string(self):
+        es = Extendable_str(''.join(self.xyz_ref))
+        cio = CInOutput()
+        at = cio.read(estr=es)
+        self.assertEqual(at, self.at)
 
-   def test_read_xyz_range_subset(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz', range=[2,32])
-      sub = self.at.select(list=frange(2,32), orig_index=False)
-      self.assertEqual(at, sub)
+    def test_read_loop(self):
+        import resource
+        max_open_files_soft, max_open_files_hard = resource.getrlimit(
+            resource.RLIMIT_NOFILE)
+        self.at.write('test_19.xyz')
+        for i in range(2 * max_open_files_soft):
+            a = Atoms('test_19.xyz', frame=0)
 
-   def test_read_xyz_range_empty(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz', range='empty')
-      sub = self.at.select(list=[], orig_index=False)
-      self.assertEqual(at, sub)
+    def test_write_loop(self):
+        import resource
+        max_open_files_soft, max_open_files_hard = resource.getrlimit(
+            resource.RLIMIT_NOFILE)
+        for i in range(2 * max_open_files_soft):
+            self.at.write('test_20.xyz')
 
-   if 'netcdf' in available_modules:
-      def test_read_nc_range_all(self):
-         self.at.write('test.nc')
-         at = Atoms('test.nc', range=[1,64])
-         self.assertEqual(at, self.at)
+    def test_read_bad_range_1(self):
+        self.at.write('test_21.xyz')
+        self.assertRaises(RuntimeError, Atoms, 'test_21.xyz',
+                          range=[1, self.at.n + 1])
 
-      def test_read_nc_range_subset(self):
-         self.at.write('test.nc')
-         at = Atoms('test.nc', range=[2,32])
-         sub = self.at.select(list=frange(2,32), orig_index=False)
-         self.assertEqual(at, sub)
+    def test_read_bad_range_2(self):
+        self.at.write('test_22.xyz')
+        self.assertRaises(RuntimeError, Atoms, 'test_22.xyz', range=[12, 10])
 
-      def test_read_nc_range_empty(self):
-         self.at.write('test.nc')
-         at = Atoms('test.nc', range='empty')
-         sub = self.at.select(list=[], orig_index=False)
-         self.assertEqual(at, sub)
+    def test_read_xyz_range_all(self):
+        self.at.write('test_23.xyz')
+        at = Atoms('test_23.xyz', range=[1, 64])
+        self.assertEqual(at, self.at)
 
-   def test_write_ext_string(self):
-      es = Extendable_str()
-      self.at.write('', estr=es, format='xyz')
-      self.assertEqual(str(es), ''.join(self.xyz_ref))
+    def test_read_xyz_range_subset(self):
+        self.at.write('test_24.xyz')
+        at = Atoms('test_24.xyz', range=[2, 32])
+        sub = self.at.select(list=frange(2, 32), orig_index=False)
+        self.assertEqual(at, sub)
 
-   def test_cinoutput_query_frame(self):
-      al = AtomsList([Atoms(n=n, lattice=fidentity(3)*n) for n in (0,1,2,3,4)])
-      al.write('test.xyz')
-      self.assertEqual([CInOutput('test.xyz', frame=n).n_atom for n in range(5) ], [0, 1, 2, 3, 4])
+    def test_read_xyz_range_empty(self):
+        self.at.write('test_25.xyz')
+        at = Atoms('test_25.xyz', range='empty')
+        sub = self.at.select(list=[], orig_index=False)
+        self.assertEqual(at, sub)
 
-   def test_properties_parse_bug(self):
-      cio = CInOutput()
-      at = cio.read(str="""12
+    if 'netcdf' in available_modules:
+        def test_read_nc_range_all(self):
+            self.at.write('test_26.nc')
+            at = Atoms('test_26.nc', range=[1, 64])
+            self.assertEqual(at, self.at)
+
+        def test_read_nc_range_subset(self):
+            self.at.write('test_27.nc')
+            at = Atoms('test_27.nc', range=[2, 32])
+            sub = self.at.select(list=frange(2, 32), orig_index=False)
+            self.assertEqual(at, sub)
+
+        def test_read_nc_range_empty(self):
+            self.at.write('test_28.nc')
+            at = Atoms('test_28.nc', range='empty')
+            sub = self.at.select(list=[], orig_index=False)
+            self.assertEqual(at, sub)
+
+    def test_write_ext_string(self):
+        es = Extendable_str()
+        self.at.write('', estr=es, format='xyz')
+        self.assertEqual(str(es), ''.join(self.xyz_ref))
+
+    def test_cinoutput_query_frame(self):
+        al = AtomsList([Atoms(n=n, lattice=fidentity(3) * n)
+                        for n in (0, 1, 2, 3, 4)])
+        al.write('test_29.xyz')
+        self.assertEqual([CInOutput('test_29.xyz', frame=n).n_atom
+                          for n in range(5)], [0, 1, 2, 3, 4])
+
+    def test_properties_parse_bug(self):
+        cio = CInOutput()
+        at = cio.read(str="""12
 Lattice="3.679445 -0.181265 -0.219095 -0.140937 3.759568 0.175386 -0.223013 -0.011764 9.715448" Properties=species:S:1:pos:R:3:frac_pos:R:3:f:R:3 castep_run_time=40430.63 energy=-9949.25932697 virial="6.38880278817 4.17889707917 7.15229427215 4.17889707917 -0.740653778339 -2.86812348957 7.15229427215 -2.86812348957 -4.60133902559"
 O       0.07892115      1.81915384      1.95631150      0.05184500      0.48697900      0.19373900     -0.08661000      1.65235000      0.57685000
 O       0.03867388      1.98421766     -1.99187494      0.01775400      0.52796400     -0.21415200     -0.53478000     -0.09838000      1.11345000
@@ -373,25 +388,26 @@ Ti      -0.09878726      1.99062810      0.05586401     -0.00682000      0.52914
 Ti       0.08835527      0.05867827      2.34945896      0.03940400      0.01826600      0.24238600     -0.43629000     -0.90315000      1.27819000
 Ti       1.90982467      1.87755198     -2.42094136      0.52416000      0.52390600     -0.24682200     -0.51711000     -0.31319000     -1.29767000
 Ti       1.88176829      0.00352974      4.80843526      0.54323600      0.02871600      0.50665900     -0.44688000      0.28996000     -1.09650000""")
-      self.assertArrayAlmostEqual(at.pos.T,   [[0.07892115 ,    1.81915384 ,    1.95631150],
-                                             [ 0.03867388,     1.98421766,    -1.99187494],
-                                             [-0.00808325,    -0.07057365,     4.35164490],
-                                             [-0.07597036,     0.06054846,     0.43978436],
-                                             [ 1.88194480,     1.90132724,     5.13029557],
-                                             [ 1.86840060,    -0.05023179,     2.83158150],
-                                             [ 1.83382247,    -0.00862026,    -2.78189090],
-                                             [ 1.90053677,     1.80865713,    -0.42277565],
-                                             [-0.09878726,     1.99062810,     0.0558640],
-                                             [ 0.08835527,     0.05867827,     2.3494589],
-                                             [ 1.90982467,     1.87755198,    -2.4209413],
-                                             [ 1.88176829,     0.00352974,     4.8084352]])
+        self.assertArrayAlmostEqual(at.pos.T,
+                                    [[0.07892115, 1.81915384, 1.95631150],
+                                     [0.03867388, 1.98421766, -1.99187494],
+                                     [-0.00808325, -0.07057365, 4.35164490],
+                                     [-0.07597036, 0.06054846, 0.43978436],
+                                     [1.88194480, 1.90132724, 5.13029557],
+                                     [1.86840060, -0.05023179, 2.83158150],
+                                     [1.83382247, -0.00862026, -2.78189090],
+                                     [1.90053677, 1.80865713, -0.42277565],
+                                     [-0.09878726, 1.99062810, 0.0558640],
+                                     [0.08835527, 0.05867827, 2.3494589],
+                                     [1.90982467, 1.87755198, -2.4209413],
+                                     [1.88176829, 0.00352974, 4.8084352]])
 
-
-   def test_long_properties_string_bug(self):
-      # caused segmentation fault due to buffer overrun in xyz.c when splitting properties string into fields
-      # fixed by ensuring we don't run off end of fields array, and increasing MAX_FIELD_COUNT
-      cio = CInOutput()
-      at = cio.read(str="""57
+    def test_long_properties_string_bug(self):
+        # caused segmentation fault due to buffer overrun in xyz.c when
+        # splitting properties string into fields fixed by ensuring we
+        # don't run off end of fields array, and increasing MAX_FIELD_COUNT
+        cio = CInOutput()
+        at = cio.read(str="""57
 OrigWidth=526.11583369 OrigHeight=170.89163941 YoungsModulus=129.04197204 PoissonRatio_yx=0.14345535 PoissonRatio_yz=0.43228896 G=3.07200000 CrackPosx=-115.66261165 CrackPosy=-1.23372306 OrigCrackPos=-120.55791685 Time=1072.00000000 Temp=12.08187913 LastStateChangeTime=0.00000000 LastMDIntervalTime=0.00000000 LastCalcConnectTime=1071.00000000 State=MD_LOADING LastPrintTime=1065.00000000 LastCheckpointTime=1050.00000000 Lattice="25.200000 0.000000 0.000000 0.000000 25.200000 0.000000 0.000000 0.000000 19.152000" Properties=species:S:1:pos:R:3:Z:I:1:travel:I:3:map_shift:I:3:hybrid:I:1:hybrid_mark:I:1:changed_nn:I:1:move_mask:I:1:nn:I:1:old_nn:I:1:md_old_changed_nn:I:1:edge_mask:I:1:crack_surface:L:1:crack_front:L:1:load:R:3:local_e:R:1:mass:R:1:damp_mask:I:1:thermostat_region:I:1:avg_ke:R:1:velo:R:3:acc:R:3:avgpos:R:3:oldpos:R:3:force:R:3:qm_force:R:3:mm_force:R:3:weight_region1:R:1:modified_hybrid_mark:I:1:orig_index:I:1:index:I:1:shift:I:3:termindex:I:1:rescale:R:1:cluster_ident:S:1
 Si       8.71395610    -11.96756847     -1.23127991      14      -5       0       0       0       0       0       1       1       0       1       3       3       0       1    F    F      0.00000000     -0.05631387      0.00000000     -2.13989447   2910.85773629       1       1      0.00779406      0.00146777      0.00039089     -0.00096292      0.00007544     -0.00002422     -0.00000000   -116.35243582    -11.86333217     -1.17083136   -116.34701002    -11.74808703     -0.94746363      0.21960161     -0.07048883     -0.00000286      0.00000000      0.00000000      0.00000000      0.21960161     -0.07048883     -0.00000286      1.00000000       1    6917    6917       0       0       0       0      1.00000000 h_active
 Si       4.30478574     10.87644762      0.17727867      14      -6      -1       0       0       0       0       0       5       0       1       4       4       0       1    F    F      0.00000000     -0.06746728      0.00000000     -4.31534112   2910.85773629       1       1      0.01013096      0.00069680      0.00021642      0.00200411     -0.00000167     -0.00001051     -0.00008246   -746.89000076    -14.21863402      0.06912598   -747.01781783    -14.25631961     -0.08767505     -0.00485419     -0.03060039     -0.24001896      0.00000000      0.00000000      0.00000000     -0.00485419     -0.03060039     -0.24001896      0.00000000       5    6558    6558       0       0       0       0      1.00000000 h_outer_l
@@ -451,9 +467,9 @@ H        9.05799924     -4.95160711      1.53233042       1      -5       0     
 H        9.60576454     -5.71219411      2.41382518       1      -5       0       0       0       0       0       1       0       0       1       4       4       0       1    F    F      0.00000000     -0.02574407      0.00000000     -4.14126568   2910.85773629       1       1      0.07481067     -0.00052947     -0.00131955      0.00686207     -0.00019972     -0.00010076      0.00024500   -115.52572288     -5.01038913      1.86110663   -115.78213228     -5.39614883      1.66025709     -0.58136440     -0.29329706      0.71316950     -0.58136440     -0.29329706      0.71316950     -0.47681556      0.03184410      0.84937135      0.00000000       0    6928    6928       0       0       0      28      0.64414414 term
 H       10.74001970     -7.43396972      3.96964584       1      -5       0       0       0       0       0       1       0       0       1       4       4       0       0    F    F      0.00000000     -0.03509485      0.00000000     -4.23902095   2910.85773629       1       1      0.00811107      0.00029159      0.00042004      0.00321761      0.00003282      0.00002160      0.00011166   -113.70496336     -7.45205442      4.38119149   -113.64174799     -7.35790124      4.32227808      0.09552644      0.06287875      0.32503090      0.09552644      0.06287875      0.32503090     -0.61519270      0.42485813      0.28644278      0.00000000       0   31761   31761       0       0       0      28      0.64414414 term      """)
 
-   def test_read_int_lattice(self):
-      cio = CInOutput()
-      at = cio.read(str="""6
+    def test_read_int_lattice(self):
+        cio = CInOutput()
+        at = cio.read(str="""6
 EMP2=2.67539000e-03  ELONG=1.46920613e-03  COM=3.16174712e+00 Lattice="20 0 0 0 20 0 0 0 20" Properties=species:S:1:pos:R:3
 O	8.433042	7.254127	4.000330
 H	9.329070	6.902494	4.019458
@@ -461,113 +477,115 @@ H	8.505653	8.201400	4.069496
 O	5.939224	8.979049	3.011011
 H	5.602166	8.307183	3.670115
 H	6.859570	9.215634	3.262673""")
-      self.assertArrayAlmostEqual(at.lattice, np.diag([20.0,20.0,20.0]))
+        self.assertArrayAlmostEqual(at.lattice, np.diag([20.0, 20.0, 20.0]))
 
-   def test_read_empty_file(self):
-      os.system('touch empty.xyz')
-      self.assertRaises(RuntimeError, Atoms, 'empty.xyz')
+    def test_read_empty_file(self):
+        os.system('touch empty.xyz')
+        self.assertRaises(RuntimeError, Atoms, 'empty.xyz')
 
-   def test_missing_value(self):
-      cio = CInOutput()
-      self.assertRaises(RuntimeError, cio.read, str="""1
+    def test_missing_value(self):
+        cio = CInOutput()
+        self.assertRaises(RuntimeError, cio.read, str="""1
 Properties="species:S:1:pos:R:3" Lattice="10. 0 0 0 10.0 0 0 0 10"  State=
 H 0. 0. 0.
 """)
 
-   def test_missing_value_quoted(self):
-      cio = CInOutput()
-      self.assertRaises(RuntimeError, cio.read, str="""1
+    def test_missing_value_quoted(self):
+        cio = CInOutput()
+        self.assertRaises(RuntimeError, cio.read, str="""1
 Properties="species:S:1:pos:R:3" Lattice="10. 0 0 0 10.0 0 0 0 10"  State=""
 H 0. 0. 0.
 """)
 
-   def test_one_frame_per_file_low_level(self):
-      cio = CInOutput('test00000.xyz', action=OUTPUT, one_frame_per_file=True)
-      self.al.write(cio)
-      cio = CInOutput('test00000.xyz', action=INPUT, one_frame_per_file=True)
-      al = [cio.read() for i in range(cio.n_frame)]
-      self.assertEqual(al, list(self.al))
+    def test_one_frame_per_file_low_level(self):
+        cio = CInOutput('test_30_00000.xyz', action=OUTPUT,
+                        one_frame_per_file=True)
+        self.al.write(cio)
+        cio = CInOutput('test_30_00000.xyz', action=INPUT,
+                        one_frame_per_file=True)
+        al = [cio.read() for i in range(cio.n_frame)]
+        self.assertEqual(al, list(self.al))
 
-   def test_one_frame_per_file_high_level(self):
-      self.al.write('test00000.xyz', one_frame_per_file=True)
-      al = AtomsList('test00000.xyz', one_frame_per_file=True)
-      al2 = AtomsList('test0000*.xyz', no_compute_index=False)
-      self.assertEqual(al, self.al)
-      self.assertEqual(al, al2)
+    def test_one_frame_per_file_high_level(self):
+        self.al.write('test_31_00000.xyz', one_frame_per_file=True)
+        al = AtomsList('test_31_00000.xyz', one_frame_per_file=True)
+        al2 = AtomsList('test_31_0000*.xyz', no_compute_index=False)
+        self.assertEqual(al, self.al)
+        self.assertEqual(al, al2)
 
-   def test_read_xyz_indices_all(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz', indices=frange(self.at.n))
-      self.assertEqual(at, self.at)
+    def test_read_xyz_indices_all(self):
+        self.at.write('test_32.xyz')
+        at = Atoms('test_32.xyz', indices=frange(self.at.n))
+        self.assertEqual(at, self.at)
 
-   def test_read_xyz_indices_subset(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz', indices=[1,5,10])
-      sub = self.at.select(list=[1,5,10], orig_index=False)
-      self.assertEqual(at, sub)
+    def test_read_xyz_indices_subset(self):
+        self.at.write('test_33.xyz')
+        at = Atoms('test_33.xyz', indices=[1, 5, 10])
+        sub = self.at.select(list=[1, 5, 10], orig_index=False)
+        self.assertEqual(at, sub)
 
-   def test_read_xyz_indices_empty(self):
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz', indices=[])
-      sub = self.at.select(list=[], orig_index=False)
-      self.assertEqual(at, sub)
+    def test_read_xyz_indices_empty(self):
+        self.at.write('test_34.xyz')
+        at = Atoms('test_34.xyz', indices=[])
+        sub = self.at.select(list=[], orig_index=False)
+        self.assertEqual(at, sub)
 
-   def test_read_xyz_bad_indices(self):
-      self.at.write('test.xyz')
-      self.assertRaises(RuntimeError, Atoms, 'test.xyz', indices=[self.at.n+1])
+    def test_read_xyz_bad_indices(self):
+        self.at.write('test_35.xyz')
+        self.assertRaises(RuntimeError, Atoms, 'test_35.xyz',
+                          indices=[self.at.n + 1])
 
-   def test_read_xyz_bare_keys(self):
-      self.at.params['bare_key'] = None
-      self.at.write('test.xyz')
-      at = Atoms('test.xyz')
-      self.assertEqual(at, self.at)
-      self.assert_(at.params['bare_key'] is None)
+    def test_read_xyz_bare_keys(self):
+        self.at.params['bare_key'] = None
+        self.at.write('test_36.xyz')
+        at = Atoms('test_36.xyz')
+        self.assertEqual(at, self.at)
+        self.assert_(at.params['bare_key'] is None)
 
-   if 'netcdf' in available_modules:
-
-      def test_read_nc_indices(self):
-         self.at.write('test.nc')
-         self.assertRaises(RuntimeError, Atoms, 'test.nc', indices=[])
+    if 'netcdf' in available_modules:
+        def test_read_nc_indices(self):
+            self.at.write('test_37.nc')
+            self.assertRaises(RuntimeError, Atoms, 'test_37.nc', indices=[])
 
 
 class TestPythonNetCDF(QuippyTestCase):
-   def setUp(self):
-      self.at = supercell(diamond(5.44,14), 2,2,2)
-      self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
-      self.al.write('test3.nc', netcdf4=False)
+    def setUp(self):
+        self.at = supercell(diamond(5.44, 14), 2, 2, 2)
+        self.al = AtomsList([supercell(diamond(5.44 + 0.01 * x, 14), 2, 2, 2)
+                             for x in range(5)])
+        self.al.write('test3.nc', netcdf4=False)
 
-   def tearDown(self):
-      if os.path.exists('test3.nc'): os.remove('test3.nc')
-      if os.path.exists('dataset.nc'): os.remove('dataset.nc')
+    def tearDown(self):
+        if os.path.exists('test3.nc'): os.remove('test3.nc')
+        if os.path.exists('dataset.nc'): os.remove('dataset.nc')
 
-   if 'netcdf' in quippy.available_modules:
+    if 'netcdf' in quippy.available_modules:
+        def testpupynere_read(self):
+            from quippy.pupynere import netcdf_file
+            nc = netcdf_file('test3.nc', 'r')
+            al = AtomsList(nc, format=quippy.netcdf.netcdf_file)
+            self.assertEqual(list(self.al), list(al))
+            nc.close()
 
-      def testpupynere_read(self):
-         from quippy.pupynere import netcdf_file
-         nc = netcdf_file('test3.nc', 'r')
-         al = AtomsList(nc, format=quippy.netcdf.netcdf_file)
-         self.assertEqual(list(self.al), list(al))
-         nc.close()
+    if 'netCDF4' in quippy.available_modules:
 
-   if 'netCDF4' in quippy.available_modules:
+        def testnetcdf4_read(self):
+            from netCDF4 import Dataset
+            nc = Dataset('test3.nc', 'r')
+            al = AtomsList(nc)
+            for a, b in zip(self.al, al):
+                self.assertEqual(a, b)
+            nc.close()
 
-      def testnetcdf4_read(self):
-         from netCDF4 import Dataset
-         nc = Dataset('test3.nc','r')
-         al = AtomsList(nc)
-         for a, b in zip(self.al, al):
-            self.assertEqual(a, b)
-         nc.close()
-
-      def testnetcdf4_write(self):
-         from netCDF4 import Dataset
-         nc = Dataset('dataset.nc','w')
-         al2 = AtomsList(self.al)
-         al2.write(nc)
-         nc.close()
-         al = AtomsList('dataset.nc')
-         self.assertEqual(list(self.al), list(al))
+        def testnetcdf4_write(self):
+            from netCDF4 import Dataset
+            nc = Dataset('dataset.nc', 'w')
+            al2 = AtomsList(self.al)
+            al2.write(nc)
+            nc.close()
+            al = AtomsList('dataset.nc')
+            self.assertEqual(list(self.al), list(al))
 
 
 if __name__ == '__main__':
-   unittest.main()
+    unittest.main()

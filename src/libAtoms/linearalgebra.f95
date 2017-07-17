@@ -106,7 +106,7 @@ module linearalgebra_module
   public :: frobenius_norm
   public :: heap_sort, is_orthogonal, find_in_array, is_in_array, trace, trace_mult, diag
   public :: ran_normal3, matrix_exp, matrix3x3_det, matrix3x3_inverse, operator(.outer.), operator(.cross.)
-  public :: check_size, sort_array, trapezoidintegral, print, int_array_ge, int_array_gt, int_array_lt
+  public :: check_size, sort_array, trapezoidintegral, print, print_mathematica, int_array_ge, int_array_gt, int_array_lt
   public :: angle, unit_vector, random_unit_vector, arrays_lt, is_symmetric, permutation_symbol
   public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, pseudo_inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
@@ -522,7 +522,7 @@ module linearalgebra_module
   private :: check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2  
   interface check_size
      module procedure check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2  
-     module procedure check_size_real_dim1, check_size_real_dim1_s, check_size_real_dim2
+     module procedure check_size_real_dim1, check_size_real_dim1_s, check_size_real_dim2, check_size_real_dim3
 #ifdef HAVE_QP
      module procedure check_size_quad_dim1, check_size_quad_dim1_s, check_size_quad_dim2
 #endif
@@ -4798,6 +4798,45 @@ CONTAINS
     end if
 
   end subroutine check_size_real_dim2
+
+  subroutine check_size_real_dim3(arrayname,realarray,n,caller, error)
+
+    character(*),              intent(in) :: arrayname 
+    real(dp), dimension(:,:,:),intent(in) :: realarray 
+    integer,  dimension(:),    intent(in) :: n        
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error  
+
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed      
+    integer                            :: i          
+
+    INIT_ERROR(error)
+    failed = .false.
+    allocate( actual_size( size(shape(realarray)) ) )
+    actual_size = shape(realarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       RAISE_ERROR(trim(caller) //': Size checking failed. Expected: ' // n // ', got: ' // actual_size, error)
+    end if
+
+  end subroutine check_size_real_dim3
 
 #ifdef HAVE_QP
   subroutine check_size_quad_dim1(arrayname,quadarray,n,caller,error)

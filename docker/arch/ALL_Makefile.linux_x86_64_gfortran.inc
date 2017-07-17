@@ -1,27 +1,27 @@
-# Place to override setting elsewhere, in particular things set in Makefile.linux_x86_64_ifort_icc
-# look in QUIP/arch/Makefile.linux_x86_64_ifort_icc for defaults set by arch
+# Place to override setting elsewhere, in particular things set in Makefile.linux_x86_64_gfortran
+# look in QUIP/arch/Makefile.linux_x86_64_gfortran for defaults set by arch
 # 
-# F77=ifort
-# F90=ifort
-# F95=ifort
-# CC=icc
-# CPLUSPLUS=icpc -Kc++
-# FPP=ifort -E
-# LINKER=ifort
+# F77=gfortran
+# F90=gfortran
+# F95=gfortran
+# CC=gcc
+# CPLUSPLUS=g++
+# FPP=gfortran -E -x f95-cpp-input
+# LINKER=gfortran
 # LIBTOOL=
 # OPTIM=
 # COPTIM=
-# DEBUG=-g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
-# DEBUG=-g -traceback -DDUMP_CORE_ON_ABORT 
+# DEBUG=-O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
+# DEBUG=
 # CDEBUG=
-MATH_LINKOPTS=-mkl
+MATH_LINKOPTS=-llapack -lblas
 EXTRA_LINKOPTS=
-USE_MAKEDEP=1
+USE_MAKEDEP=0
 MAKEDEP=makedep.py
 HAVE_CP2K=1
 HAVE_VASP=1
 HAVE_TB=1
-HAVE_PRECON=0
+HAVE_PRECON=1
 HAVE_FX=1
 HAVE_LOTF=1
 HAVE_ONIOM=1
@@ -38,7 +38,7 @@ NETCDF_LIBDIR=/usr/lib
 NETCDF4=1
 NETCDF4_CURL=1
 NETCDF_INCDIR=/usr/include
-HAVE_NETCDF=1
+HAVE_NETCDF=0
 HAVE_MDCORE=0
 HAVE_ASAP=0
 HAVE_KIM=0
