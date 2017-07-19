@@ -10,7 +10,7 @@ module QUIP_LAMMPS_wrapper_module
    implicit none
 
    private
-   integer, parameter :: api_version = LMP_API_VERSION
+   integer, parameter :: API_VERSION = 1 ! Manually increment for each _incompatible_ API change
 
    public :: quip_lammps_wrapper, quip_lammps_potential_initialise, quip_lammps_api_version
 
@@ -24,7 +24,7 @@ module QUIP_LAMMPS_wrapper_module
       use iso_c_binding, only: c_int
       integer(kind=c_int) :: quip_lammps_api_version
 
-      quip_lammps_api_version = api_version
+      quip_lammps_api_version = API_VERSION
    end function quip_lammps_api_version
 
    subroutine quip_lammps_wrapper(nlocal, nghost, atomic_numbers, lmptag, &
