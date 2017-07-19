@@ -10,14 +10,22 @@ module QUIP_LAMMPS_wrapper_module
    implicit none
 
    private
+   integer, parameter :: api_version = LMP_API_VERSION
 
-   public :: quip_lammps_wrapper, quip_lammps_potential_initialise
+   public :: quip_lammps_wrapper, quip_lammps_potential_initialise, quip_lammps_api_version
 
    type quip_lammps_potential
       type(Potential), pointer :: pot
    endtype quip_lammps_potential
 
    contains
+
+   function quip_lammps_api_version() bind(c)
+      use iso_c_binding, only: c_int
+      integer(kind=c_int) :: quip_lammps_api_version
+
+      quip_lammps_api_version = api_version
+   end function quip_lammps_api_version
 
    subroutine quip_lammps_wrapper(nlocal, nghost, atomic_numbers, lmptag, &
       inum, sum_num_neigh, ilist, &
