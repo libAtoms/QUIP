@@ -1,5 +1,5 @@
 # Base Python image has most up to date Python parts
-FROM libatomsquip/quip-base
+FROM libatomsquip/quip-base-software
 
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 
@@ -61,8 +61,6 @@ RUN cd ${QUIP_ROOT} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
     && make > /dev/null \
     && make install-quippy > /dev/null
-
-RUN apt-get install -y libxpm-dev libgsl0-dev
 
 # AtomEye needs to link with QUIP for xyz read-write
 RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}/src/AtomEye \
