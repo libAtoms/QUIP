@@ -10,7 +10,8 @@ ENV QUIP_ROOT /opt/quip
 # the git+VANILLA version
 # RUN git clone https://github.com/libAtoms/QUIP.git ${QUIP_ROOT}
 # ENV BUILD NOGAP
-ENV BUILD ALL
+ENV BUILD GAP
+# ENV BUILD ALL
 ADD . ${QUIP_ROOT}
 
 # LAMMPS compilation
@@ -73,6 +74,13 @@ ENV PATH ${QUIP_ROOT}/build/${QUIP_ARCH}:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
+# Public GAP image requires license agreement
+# Replace bash with a license check script
+RUN mkdir -p /bin/real/ \
+    && mv /bin/bash /bin/real/bash
+
+ADD docker/files/fakebash /bin/bash
+
+CMD bash -c exit && jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
 EXPOSE 8899

@@ -8,11 +8,11 @@ ENV QUIP_ROOT /opt/quip
 
 # To build within the image without additonal libraries use
 # the git+VANILLA version
-RUN git clone https://github.com/libAtoms/QUIP.git ${QUIP_ROOT}
-ENV BUILD NOGAP
+# RUN git clone https://github.com/libAtoms/QUIP.git ${QUIP_ROOT}
+# ENV BUILD NOGAP
 # ENV BUILD GAP
-# ENV BUILD ALL
-# ADD . ${QUIP_ROOT}
+ENV BUILD ALL
+ADD . ${QUIP_ROOT}
 
 # LAMMPS compilation
 
