@@ -12,6 +12,7 @@ else
     done
     curl -X POST -F "email=$email" http://www.libatoms.org/gap/cgi-bin/register.cgi
     touch ~/.licenseread
+    cp ${QUIP_ROOT}/src/GAP/LICENSE.md ~/GAP_LICENSE.md
     exec /bin/real/bash $@
 fi
 
