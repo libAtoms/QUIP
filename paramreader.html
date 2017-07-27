@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command line argument parser &mdash; quippy 5a054ce+ documentation</title>
+  <title>Command line argument parser &mdash; quippy f8663aa+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 5a054ce+ documentation" href="index.html"/>
+    <link rel="top" title="quippy f8663aa+ documentation" href="index.html"/>
         <link rel="up" title="Quippy library reference" href="quippy.html"/>
         <link rel="next" title="Fortran input/output" href="fortranio.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                5a054ce+
+                f8663aa+
               </div>
             
           
@@ -505,7 +505,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <blockquote>
 <div><dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>char_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>char_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -517,6 +517,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <li><strong>char_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>'c'</em><em>)</em>) – </li>
 <li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -527,7 +528,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -539,6 +540,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <li><strong>int_target_array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 <li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -549,7 +551,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>int_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -561,6 +563,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <li><strong>int_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
 <li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -571,7 +574,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target_array</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -583,6 +586,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <li><strong>real_target_array</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 <li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -593,7 +597,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>logical_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>logical_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -605,6 +609,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <li><strong>logical_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
 <li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -615,7 +620,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em>, <em>value</em>, <em>real_target</em>, <em>help_string</em><span class="optional">[</span>, <em>has_value_target</em>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -627,6 +632,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <li><strong>real_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em>) – </li>
 <li><strong>help_string</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>has_value_target</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -637,7 +643,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.paramreader.</code><code class="descname">param_register</code><span class="sig-paren">(</span><em>dict</em>, <em>key</em><span class="optional">[</span>, <em>altkey</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -645,6 +651,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>dict</strong> (<a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal"><span class="pre">Dictionary</span></code></a> object) – </li>
 <li><strong>key</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
+<li><strong>altkey</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -700,7 +707,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'5a054ce+',
+            VERSION:'f8663aa+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
