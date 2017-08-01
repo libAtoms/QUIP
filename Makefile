@@ -73,6 +73,9 @@ endif
 ifeq (${HAVE_MBD},1)
    THIRDPARTY_LIBS += libmbd.a
 endif
+ifeq (${HAVE_TTM_NF},1)
+   THIRDPARTY_LIBS += libttm_nf.a
+endif
 
 endif
 

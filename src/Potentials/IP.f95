@@ -64,6 +64,7 @@
 !%    \item    Many-body dispersion ({\bf IPModel_MBD})
 !%    \item    ZBL potential ({\bf IPModel_ZBL})
 !%    \item    LinearSOAP potential ({\bf IPModel_LinearSOAP})
+!%    \item    TTM-nF multipole model for water ({\bf IPModel_nF})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
@@ -107,6 +108,7 @@
 !%    \item    'IP MBD'
 !%    \item    'IP ZBL'
 !%    \item    'IP LinearSOAP'
+!%    \item    'IP TTM_nF'
 !%    \item    'IP Template'
 !%   \end{itemize}
 !X
@@ -171,6 +173,7 @@ use IPModel_DispTS_module, only : ipmodel_dispts, initialise, finalise, calc, pr
 use IPModel_SCME_module, only : ipmodel_scme, initialise, finalise, calc, print
 use IPModel_MTP_module, only : ipmodel_mtp, initialise, finalise, calc, print
 use IPModel_MBD_module, only : ipmodel_mbd, initialise, finalise, calc, print
+use IPModel_TTM_nF_module, only : ipmodel_ttm_nf, initialise, finalise, calc, print
 ! Add new IP here
 
 implicit none
@@ -183,7 +186,7 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
      FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, FF_LMTO_TBE=31, FF_FC4 = 32, FF_Spring=33, &
      FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, FF_ZBL=37, FF_LinearSOAP=38, &
-     FF_MBD=39, FF_DispTS=40, & ! Add new IPs here
+     FF_MBD=39, FF_DispTS=40, FF_TTM_NF = 41, & ! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -234,6 +237,7 @@ type IP_type
   type(IPModel_ZBL) ip_ZBL
   type(IPModel_MBD) ip_MBD
   type(IPModel_LinearSOAP) ip_LinearSOAP
+  type(IPModel_TTM_nF) ip_TTM_nF
      ! Add new IP here
   type(IPModel_Template) ip_Template
   type(mpi_context) :: mpi_glob, mpi_local
@@ -343,7 +347,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan , &
        is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, & 
-       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, &! Add new IPs here
+       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, is_TTM_nF, &! Add new IPs here
        is_Template
 
   INIT_ERROR(error)
@@ -398,6 +402,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'MTP', 'false', is_MTP, help_string="MTP potential")
   call param_register(params, 'MBD', 'false', is_MBD, help_string="Many-body dispersion correction")
   call param_register(params, 'ZBL', 'false', is_ZBL, help_string="ZBL potential")
+  call param_register(params, 'TTM_nF', 'false', is_TTM_nF, help_string="TTM_nF water potentials")
   call param_register(params, 'LinearSOAP', 'false', is_LinearSOAP, help_string="LinearSOAP potential")
  ! Add new IP here
   call param_register(params, 'Template', 'false', is_Template, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -410,7 +415,8 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, &
-       is_Tether, is_Spring, is_LMTO_TBE, is_FC4, is_Multipoles, is_DispTS, is_SCME, is_MTP, is_MBD, is_ZBL,is_linearSOAP, & ! add new IPs here
+       is_Tether, is_Spring, is_LMTO_TBE, is_FC4, is_Multipoles, is_DispTS, is_SCME, is_MTP, is_MBD, is_ZBL,is_linearSOAP, &
+       is_TTM_nF, & ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -539,6 +545,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_LinearSOAP) then
      this%functional_form = FF_LinearSOAP
      call Initialise(this%ip_LinearSOAP, args_str, param_str)
+  else if (is_TTM_nF) then
+    this%functional_form = FF_TTM_nF
+    call Initialise(this%ip_TTM_nF, args_str, param_str) 
      ! Add new IP here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -638,6 +647,8 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_ZBL)
    case (FF_LinearSOAP)
       call Finalise(this%ip_LinearSOAP)
+   case (FF_TTM_nF)
+      call Finalise(this%ip_TTM_nF)
    ! add new IP here
    case (FF_Template)
       call Finalise(this%ip_Template)
@@ -734,6 +745,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_ZBL%cutoff
   case (FF_LinearSOAP)
      IP_cutoff = this%ip_LinearSOAP%cutoff
+  case (FF_TTM_nF)
+     IP_cutoff = this%ip_TTM_nF%cutoff
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
@@ -857,6 +870,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_ZBL, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_LinearSOAP)
       call calc(this%ip_LinearSOAP, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_TTM_nF)
+      call calc(this%ip_TTM_nF, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    ! Add new IP here   
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
@@ -962,6 +977,8 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_ZBL, file=file)
    case (FF_LinearSOAP)
       call Print(this%ip_LinearSOAP, file=file)
+   case (FF_TTM_nF)
+      call Print(this%ip_TTM_nF, file=file)
     ! add new IP here
    case (FF_Template)
       call Print(this%ip_Template, file=file)
