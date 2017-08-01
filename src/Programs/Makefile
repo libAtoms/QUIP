@@ -80,7 +80,7 @@ install:
 	  exit 1; \
 	else	\
 	  for f in ${PROGRAMS} ; do \
-	    echo "Copying $$f to ${QUIP_INSTALLDIR}" ; \
-	    cp $$f ${QUIP_INSTALLDIR} ; \
+	    echo "Copying $$f to ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX}" ; \
+	    cp $$f ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX} ; \
 	  done ;\
 	fi
