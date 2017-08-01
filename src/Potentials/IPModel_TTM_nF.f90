@@ -147,6 +147,7 @@ subroutine IPModel_TTM_nF_Initialise_str(this, args_str, param_str)
   call finalise(params)
 
   this%cutoff = 2.0_dp
+#ifdef HAVE_TTM_NF
   select case(lower_case(trim(potential_type)))
   case("qtip4pf")
      this%potential_type = POT_QTIP4PF
@@ -159,6 +160,7 @@ subroutine IPModel_TTM_nF_Initialise_str(this, args_str, param_str)
   case default
      call system_abort("IPModel_TTM_nF_Initialise_str: unknown potential_type "//potential_type)
   endselect
+#endif
 
 
   !  Add initialisation code here
