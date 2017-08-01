@@ -272,6 +272,7 @@ subroutine IPModel_TTM_nF_Print(this, file)
 
   call Print("IPModel_TTM_nF : TTM_nF Potential", file=file)
 
+#ifdef HAVE_TTM_NF
   if (this%potential_type == POT_QTIP4PF) then
      call print("IPModel_TTM_nF : type is QTIP4PF")
   elseif( this%potential_type == POT_TTM2F ) then
@@ -283,6 +284,7 @@ subroutine IPModel_TTM_nF_Print(this, file)
   else
      call system_abort("IPModel_TTM_nF_Print: unknown potential_type "//this%potential_type)
   endif
+#endif
 
 end subroutine IPModel_TTM_nF_Print
 
