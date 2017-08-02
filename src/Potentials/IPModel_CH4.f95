@@ -176,8 +176,10 @@ subroutine IPModel_CH4_Calc(this, at, e, local_e, f, virial, local_virial, args_
          iH = monomer_index(j+1,i)
          pos(:,j) = diff_min_image(at,iC,iH) / BOHR
       enddo
+#ifdef HAVE_CH4
       call bond_cart2radau_int10(pos,bmati,rten)
       if(present(e)) e = e + ch4pot_func_10(rten) * INVERSE_CM
+#endif
    enddo
       
    if(allocated(monomer_index)) deallocate(monomer_index)
