@@ -147,7 +147,7 @@ QUIP_MAKEFILE = spec['quip_makefile']
 if 'netcdf' in disabled_modules:
     disabled_modules.append('netcdf')
 else:
-    if QUIP_MAKEFILE.get('HAVE_NETCDF'):
+    if QUIP_MAKEFILE.get('HAVE_NETCDF4'):
         available_modules.append('netcdf')
     else:
         unavailable_modules.append('netcdf')

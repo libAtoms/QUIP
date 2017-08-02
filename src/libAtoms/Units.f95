@@ -137,7 +137,7 @@ integer, parameter :: have_cp2k = 1
 integer, parameter :: have_cp2k = 0
 #endif
 
-#ifdef HAVE_NETCDF
+#ifdef HAVE_NETCDF4
 integer, parameter :: have_netcdf = 1
 #else
 integer, parameter :: have_netcdf = 0

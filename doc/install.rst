@@ -186,15 +186,12 @@ Custom settings
 :makevar:`QUIPPY_NO_CRACK`
   If set to 1, omit compilation of crack utilities.
 
-:makevar:`HAVE_NETCDF`
-  Should be set to 1 to enable NetCDF support. Should be read automatically from QUIP.
+:makevar:`HAVE_NETCDF4`
+  Should be set to 1 to enable NetCDF4 support. Should be read automatically from QUIP.
 
-:makevar:`NETCDF4`
-  If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP.
-
-:makevar:`NETCDF_LIBDIR`, :makevar:`NETCDF_INCDIR`, :makevar:`NETCDF_LIBS` and :makevar:`NETCDF4_LIBS`
-  Directories containing NetCDF libraries and header files, and required link options.
-  Should be read automatically from QUIP.
+:makevar:`NETCDF4_LIBS`, :makevar:`NETCDF4_FLAGS`
+  Linker flags for compiling with NetCDF4 support, and flags for finding
+  header files. Should be read automatically from QUIP.
 
 
 .. _install_faq:

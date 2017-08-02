@@ -30,7 +30,7 @@
 
 /* Read and write Atoms objects in NetCDF 3 or 4 format */
 
-#ifdef HAVE_NETCDF
+#ifdef HAVE_NETCDF4
 #include <netcdf.h>
 #endif
 
@@ -55,7 +55,7 @@
 
 // Utility functions
 
-#ifdef HAVE_NETCDF
+#ifdef HAVE_NETCDF4
  
 void replace_fill_values(fortran_t *params, fortran_t *properties, int irep, double rrep, int *error) {
   int i, j=0, k=0, n, d, type, shape[2];
@@ -678,14 +678,9 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   // Open the NetCDF file for writing
   if (append) {
     debug("write_netcdf: opening netcdf file %s for append\n", filename);
-#ifdef NETCDF4
     NETCDF_CHECK(nc_open(filename, NC_WRITE, &nc_id));
-#else
-    NETCDF_CHECK(nc_open(filename, NC_64BIT_OFFSET | NC_WRITE, &nc_id));
-#endif
   } else {
     debug("write_netcdf: creating netcdf file %s\n", filename);
-#ifdef NETCDF4
     if (netcdf4) {
       NETCDF_CHECK(nc_set_default_format(NC_FORMAT_NETCDF4, NULL));
       NETCDF_CHECK(nc_create(filename, NC_NETCDF4 | NC_CLOBBER, &nc_id));
@@ -693,9 +688,6 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       NETCDF_CHECK(nc_set_default_format(NC_FORMAT_64BIT, NULL));
       NETCDF_CHECK(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_id));
     }
-#else
-    NETCDF_CHECK(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_id));
-#endif
   }
     
   NETCDF_CHECK(nc_inq(nc_id, &ndims, &nvars, &ngatts, &unlimdimid));
@@ -743,7 +735,6 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     add_cell_rotated = 1;
     add_cell_lattice = 1;
     
-#ifdef NETCDF4
     if (netcdf4) {
       NETCDF_CHECK(nc_def_var_deflate(nc_id, spatial_var_id, shuffle, deflate, deflate_level));
       NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_spatial_var_id, shuffle, deflate, deflate_level));
@@ -751,7 +742,6 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_lengths_var_id, shuffle, deflate, deflate_level));
       NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_angles_var_id, shuffle, deflate, deflate_level));
     }
-#endif
   } else {
      // Inquire dimensions
     NETCDF_CHECK(nc_inq_dimid(nc_id, "frame", &frame_dim_id));
@@ -864,12 +854,10 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
   dims[2] = spatial_dim_id;
   if (add_cell_rotated) NETCDF_CHECK(nc_def_var(nc_id, "cell_rotated", NC_INT, 1, dims, &cell_rotated_var_id));
   if (add_cell_lattice) NETCDF_CHECK(nc_def_var(nc_id, "cell_lattice", NC_DOUBLE, 3, dims, &cell_lattice_var_id));
-#ifdef NETCDF4
   if (netcdf4) {
     if (add_cell_rotated) NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_rotated_var_id, shuffle, deflate, deflate_level));
     if (add_cell_lattice) NETCDF_CHECK(nc_def_var_deflate(nc_id, cell_lattice_var_id, shuffle, deflate, deflate_level));
   }
-#endif
   
   // Define variables for parameters (d=0) and properties (d=1)
   for (d=0; d<2; d++) {
@@ -971,10 +959,8 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 	}
 	nc_put_att_int(nc_id, var_id, "type", NC_INT, 1, &type_att);
       }
-#ifdef NETCDF4
       if (netcdf4 && (newfile || newvar))
 	NETCDF_CHECK(nc_def_var_deflate(nc_id, var_id, shuffle, deflate, deflate_level));
-#endif
     }
   }
 
@@ -1186,7 +1172,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error)
 {
   INIT_ERROR;
-  RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
+  RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF4=1. \n");
 }
 
 void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3],
@@ -1196,12 +1182,12 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 
 {
   INIT_ERROR;
-  RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
+  RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF4=1. \n");
 }
 
 void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error)
 {
   INIT_ERROR;
-  RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
+  RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF4=1. \n");
 }
 #endif
