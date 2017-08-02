@@ -168,7 +168,9 @@ subroutine IPModel_CH4_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
    n_monomers = size(monomer_index,2)
 
+#ifdef HAVE_CH4
    call ch4_initialise(bmat,bmati)
+#endif
 
    do i = 1, n_monomers
       iC = monomer_index(1,i)
