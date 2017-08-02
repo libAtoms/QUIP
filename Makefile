@@ -82,6 +82,9 @@ endif
 ifeq (${HAVE_TTM_NF},1)
    THIRDPARTY_LIBS += libttm_nf.a
 endif
+ifeq (${HAVE_CH4},1)
+   THIRDPARTY_LIBS += libch4.a
+endif
 
 endif
 
