@@ -56,6 +56,7 @@ __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice
 
 if 'ase' in available_modules:
     import ase
+    from ase.spacegroup import Spacegroup
 else:
     raise ImportError("mandatory dependency ase cannot be imported. Install using 'pip install ase'.")
 
@@ -733,6 +734,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 if 'cutoff' in other.info:
                     self.set_cutoff(other.info['cutoff'],
                                     other.info.get('cutoff_break'))
+                if isinstance(other.info.get('spacegroup', None), Spacegroup):
+                    self.params['spacegroup'] = other.info['spacegroup'].symbol
 
             # create extra properties for any non-standard arrays
             standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',

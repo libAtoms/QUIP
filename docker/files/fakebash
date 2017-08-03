@@ -1,0 +1,18 @@
+#!/bin/real/bash
+
+if [ -f ~/.licenseread ]; then
+    exec /bin/real/bash $@
+else
+    more ${QUIP_ROOT}/src/GAP/LICENSE.md
+    echo "Enter email address to accept the license agreement:"
+    read email
+    while [[ ! "$email" =~ (.+)@(.+) ]]; do
+        echo "Invalid email. Try again:"
+        read email
+    done
+    curl -X POST -F "email=$email" http://www.libatoms.org/gap/cgi-bin/register.cgi
+    touch ~/.licenseread
+    cp ${QUIP_ROOT}/src/GAP/LICENSE.md ~/GAP_LICENSE.md
+    exec /bin/real/bash $@
+fi
+

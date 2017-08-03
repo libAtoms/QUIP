@@ -113,6 +113,7 @@ install:
   - cp tests/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
   # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
+  # FIXME: numpy version mask
   - if [ "${RUN}" == "true" ]; then
       gfortran --version;
       gcc --version;
@@ -130,6 +131,7 @@ script:
   - if [ "${RUN}" == "true" ]; then
       python --version;
       pip install ase;
+      pip freeze --all;
       make test;
     fi
 after_success:
@@ -138,6 +140,39 @@ after_success:
   - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then
       tests/travis/build_docs.sh || sleep 11m ;
     fi
+
+# Public and private docker images with GAP, pushed from here
+# Strip ThirdParty from the public image
+jobs:
+  include:
+    - stage: docker
+      install: skip
+      script:
+        - if [ "${TRAVIS_REPO_SLUG}" == "libAtoms/QUIP" ] && [ "${TRAVIS_BRANCH}" == "public" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+            openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
+            bash get_deps.sh > /dev/null 2>&1;
+            bin/gitversion > GIT_VERSION;
+            bin/gapversion.sh > src/GAP/GAP_VERSION;
+            rm -rf src/ThirdParty;
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            ln -s docker/Dockerfile.gap Dockerfile;
+            docker build -t $DOCKER_USERNAME/quip .;
+            docker push $DOCKER_USERNAME/quip;
+          fi
+    - stage: docker
+      install: skip
+      script:
+        - if [ "${TRAVIS_REPO_SLUG}" == "libAtoms/QUIP" ] && [ "${TRAVIS_BRANCH}" == "public" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+            openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
+            bash get_deps.sh > /dev/null 2>&1;
+            bin/gitversion > GIT_VERSION;
+            bin/gapversion.sh > src/GAP/GAP_VERSION;
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            ln -s docker/Dockerfile.private Dockerfile;
+            docker build -t $DOCKER_USERNAME/quip-private .;
+            docker push $DOCKER_USERNAME/quip-private;
+          fi
+
 notifications:
   email:
     - quip-developers@eng.cam.ac.uk

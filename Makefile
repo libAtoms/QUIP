@@ -48,6 +48,12 @@ export QUIP_ROOT
 export SCRIPT_PATH=${QUIP_ROOT}/bin
 export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 
+ifneq ($(findstring mpi, ${QUIP_ARCH}),)
+QUIP_MPI_SUFFIX=_mpi
+endif
+
+export QUIP_MPI_SUFFIX
+
 -include ${BUILDDIR}/Makefile.inc
 
 # create modules list
@@ -72,6 +78,12 @@ ifeq (${HAVE_MTP},1)
 endif
 ifeq (${HAVE_MBD},1)
    THIRDPARTY_LIBS += libmbd.a
+endif
+ifeq (${HAVE_TTM_NF},1)
+   THIRDPARTY_LIBS += libttm_nf.a
+endif
+ifeq (${HAVE_CH4},1)
+   THIRDPARTY_LIBS += libch4.a
 endif
 
 endif
