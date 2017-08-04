@@ -86,6 +86,12 @@ and Gromacs, but has a number of unique features:
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the unit cell size
 
+## Precompiled Containers
+
+If you have access to [Docker](http://singularity.lbl.gov) or
+[Singularity](http://singularity.lbl.gov), you can try one of the
+[precompiled images](https://github.com/libAtoms/QUIP/blob/public/docker/README.md)
+to get up and running quickly.
 
 ## Compilation Instructions
 
