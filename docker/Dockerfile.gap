@@ -88,6 +88,10 @@ ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
+# Launch in the home directory of the user
+WORKDIR /root/
+ADD docker/files/demo.ipynb /root/
+
 # Public GAP image requires license agreement
 # Replace bash with a license check script
 RUN mkdir -p /bin/real/ \

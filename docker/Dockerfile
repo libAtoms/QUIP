@@ -88,6 +88,10 @@ ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
+# Launch in the home directory of the user
+WORKDIR /root/
+ADD docker/files/demo.ipynb /root/
+
 CMD jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
 EXPOSE 8899
