@@ -251,6 +251,11 @@ to get up and running quickly.
     not distributed with QUIP because they come with different licensing
     restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
 
+    GAP is a machine learning method that uses Gaussian process
+    regression, and needs large data files to run. You can find
+    potentials that have been published as well as training data in
+    our [data repository](http://www.libatoms.org/Home/DataRepository).
+
 14. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html).
