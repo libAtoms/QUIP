@@ -41,6 +41,26 @@
 !% JCP 121, 4083 (2004) (used in original implementation) or from
 !% Gould and Bučko, JCTC 12(8), 3603 (2016) (better coverage)
 !%
+!% Tail corrections for the energy and virial are available for
+!% this potential.  Doing them properly, however, requires
+!% an integral over the smooth cutoff function; this involves the
+!% the special Ci and Si functions (sine and cosine integrals).
+!% Those are not yet implemented here, so instead this potential
+!% asks for a precomputed constant that depends only on the cutoff
+!% and transition width:
+!% \[
+!%     I = -\frac{2}{3} \pi (r_{in}^{-3} - 3 \int_{r_{in}}^{r_{out}} r^{-4} S(r) dr)
+!% \]
+!% where r_{out} is this potential's cutoff, r_{in} is the cutoff
+!% minus the cutoff_transition_width, and S(r) is the switching
+!% function that goes smoothly from 1 at r_{in} to 0 at r_{out}.
+!% In this potential, S(r) is the first half of a cosine (shifted
+!% and scaled).
+!%
+!% To use tail corrections, compute this integral using any
+!% method you like and supply it ($I$) as 'tail_correction_const'
+!% in the parameter file or on the command line (or use an existing
+!% parameter file that already has it).
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -70,9 +90,12 @@ type IPModel_DispTS
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp), allocatable :: c6_free(:), alpha_free(:), r_vdW_free(:)
   logical :: only_inter_resid = .false.
+  logical :: do_tail_corrections = .true.
 
   real(dp) :: cutoff = 0.0_dp
   real(dp) :: cutoff_transition_width = 0.5_dp
+
+  real(dp) :: tail_correction_const = 0.0_dp
 
   ! Constants for now...
   real(dp) :: damp_steepness = 20.0_dp
@@ -113,7 +136,14 @@ subroutine IPModel_DispTS_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   this%label=''
-  call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'label', '', this%label, help_string="Label to identify the potential")
+  call param_register(params, 'only_inter_resid', 'F', this%only_inter_resid, &
+      help_string="If True, only calculate interactions between atoms with different ResIDs (requires 'resid' property to be present)")
+  !call param_register(params, 'do_tail_corrections', this%do_tail_corrections, &
+  !    help_string="If True, apply long-range corrections to the energy and virial")
+  call param_register(params, 'tail_correction_const', '0.0', this%tail_correction_const, has_value_target=this%do_tail_corrections, &
+      help_string="Constant used to calculate tail corrections.  Both the energy and virial corrections are equal to this value divided by the cell volume &
+      multiplied by the sum of all pairwise C6 coefficients.  Units: Ang^-3.")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_DispTS_Initialise_str args_str')) then
     call system_abort("IPModel_DispTS_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -161,9 +191,10 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
     real(dp), pointer, dimension(:) :: my_hirshfeld_volume
     character(STRING_LENGTH)        :: hirshfeld_vol_name
 
-    integer     :: i, j, ji, ti, tj
+    integer     :: i, j, d, ji, ti, tj
     real(dp)    :: dr(3), dr_mag, de, de_dr, vi, vj
     real(dp)    :: damp, dfdamp
+    real(dp)    :: tail_correction, c6_sum
 
     INIT_ERROR(error)
 
@@ -182,6 +213,9 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
        local_virial = 0.0_dp
        RAISE_ERROR("IPModel_DispTS_Calc: local_virial calculation requested but not supported yet.", error)
     endif
+
+    tail_correction = 0.0_dp
+    c6_sum = 0.0_dp
 
     if (this%only_inter_resid) then
        if (.not. assign_pointer(at, "resid", resid)) then
@@ -239,6 +273,7 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
         tj = get_type(this%type_of_atomic_num, at%Z(j))
         vi = my_hirshfeld_volume(i)
         vj = my_hirshfeld_volume(j)
+        c6_sum = c6_sum + IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
 
         damp = 0.0_dp
         dfdamp = 0.0_dp
@@ -280,6 +315,8 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
       end do
    end do
 
+   c6_sum = c6_sum * 2.0_dp ! Convention is to double count this sum
+
    if (present(mpi)) then
       if (present(e)) e = sum(mpi, e)
       if (present(local_e)) call sum_in_place(mpi, local_e)
@@ -287,7 +324,15 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
       if (present(f)) call sum_in_place(mpi, f)
    endif
 
-   !TODO tie in with Ewald code for long range
+   if (this%do_tail_corrections) then
+      tail_correction = c6_sum * this%tail_correction_const / cell_volume(at)
+      if (present(e)) e = e + tail_correction
+      if (present(virial)) then
+         do d = 1, 3
+            virial(d, d) = virial(d, d) + tail_correction
+         enddo
+      endif
+   endif
 
 end subroutine IPModel_DispTS_Calc
 
@@ -312,6 +357,24 @@ subroutine IPModel_DispTS_fdamp(this, ti, tj, vi, vj, r, damp, dfdamp)
 end subroutine IPModel_DispTS_fdamp
 
 
+function IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
+    type(IPModel_DispTS), intent(in) :: this
+    integer, intent(in) :: ti, tj
+    real(dp), intent(in) :: vi, vj  ! relative Hirshfeld volumes
+    real(dp) :: IPModel_DispTS_pair_c6
+
+    real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
+    real(dp) :: alphai, alphaj
+
+    c6i = this%c6_free(ti) * vi**2
+    c6j = this%c6_free(tj) * vj**2
+    alphai = this%alpha_free(ti) * vi
+    alphaj = this%alpha_free(tj) * vj
+    c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
+    IPModel_DispTS_pair_c6 = c6
+
+end function IPModel_DispTS_pair_c6
+
 function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r, damp)
     type(IPModel_DispTS), intent(in) :: this
     integer, intent(in) :: ti, tj
@@ -319,16 +382,10 @@ function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r, damp)
     real(dp), intent(in) :: damp ! Damping factor (precalculated)
     real(dp) :: IPModel_DispTS_pairenergy
 
-    real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
-    real(dp) :: alphai, alphaj ! Polarizabilities
-    real(dp) :: rfree ! Inner cutoff distance
+    real(dp) :: c6 ! VdW R^-6 coefficient
     real(dp) :: cut ! Smooth cutoff function
 
-    c6i = this%c6_free(ti) * vi**2
-    c6j = this%c6_free(tj) * vj**2
-    alphai = this%alpha_free(ti) * vi
-    alphaj = this%alpha_free(tj) * vj
-    c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
+    c6 = IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
     cut = coordination_function(r, this%cutoff, this%cutoff_transition_width)
     IPModel_DispTS_pairenergy = -1.0_dp * c6 * r**(-6) * damp * cut
 
@@ -341,18 +398,11 @@ function IPModel_DispTS_pairenergy_deriv(this, ti, tj, vi, vj, r, damp, dfdamp)
     real(dp), intent(in) :: r, vi, vj  ! Pair distance and relative Hirshfeld volumes
     real(dp), intent(in) :: damp, dfdamp ! Damping function and derivative
     real(dp) :: IPModel_DispTS_pairenergy_deriv
-    real(dp) :: pairenergy
 
-    real(dp) :: c6, c6i, c6j ! VdW R^-6 coefficients
-    real(dp) :: alphai, alphaj ! Polarizabilities
-    real(dp) :: rfree ! Inner cutoff distance
+    real(dp) :: c6 ! VdW R^-6 coefficient
     real(dp) :: cut, dcut ! Cutoff function and derivative
 
-    c6i = this%c6_free(ti) * vi**2
-    c6j = this%c6_free(tj) * vj**2
-    alphai = this%alpha_free(ti) * vi
-    alphaj = this%alpha_free(tj) * vj
-    c6 = 2*c6i*c6j / (alphai/alphaj * c6j + alphaj/alphai * c6i)
+    c6 = IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
     cut = coordination_function(r, this%cutoff, this%cutoff_transition_width)
     dcut = dcoordination_function(r, this%cutoff, this%cutoff_transition_width)
 
@@ -453,10 +503,19 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, 'only_inter_resid', value, status)
       if (status == 0) then
-        read (value, *), parse_ip%only_inter_resid
+         read (value, *), parse_ip%only_inter_resid
       else
-        parse_ip%only_inter_resid = .false.
+         parse_ip%only_inter_resid = .false.
       endif
+      call QUIP_FoX_get_value(attributes, 'tail_correction_const', value, status)
+      if (status == 0) then
+         read (value, *), parse_ip%tail_correction_const
+         parse_ip%do_tail_corrections = .true.
+      else
+         parse_ip%tail_correction_const = 0.0_dp
+         parse_ip%do_tail_corrections = .false.
+      endif
+
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       allocate(parse_ip%c6_free(parse_ip%n_types))

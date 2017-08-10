@@ -2219,10 +2219,10 @@ contains
 #endif
   end subroutine system_finalise
 
-  !% Print a warning message to default mainlog, but don't quit
+  !% Print a warning message to stderr, but don't quit
   subroutine print_warning(message)
     character(*), intent(in) :: message
-    call print('WARNING: '//message)
+    write (0,*) 'WARNING: '//message
   end subroutine print_warning
 
   !% Take the values from 'date_and_time' and make a nice string
@@ -3378,6 +3378,7 @@ end function pad
     end do
   end function lower_case
 
+  !% Print a progress bar
   subroutine progress(total,current, name)
      integer, intent(in) :: total, current
      character(len=*), intent(in) :: name
@@ -3397,12 +3398,69 @@ end function pad
           bar(6+k:6+k)="*"
         enddo
         ! print the progress bar.
-        write(unit=mainlog%unit,fmt="(a1,a,$)") ,char(13), trim(name) // " " // bar
+        write(unit=mainlog%unit,fmt="(a1,a,$)") char(13), trim(name) // " " // bar
      else
         write(unit=mainlog%unit,fmt=*)
      endif
 
    end subroutine progress
+
+  !% Print a progress bar with an estimate of time to completion
+  !% based on the elapsed time so far
+  subroutine progress_timer(total, current, name, elapsed_seconds)
+     integer, intent(in) :: total, current
+     character(len=*), intent(in) :: name
+     real(dp), intent(in) :: elapsed_seconds
+
+     integer :: current_percent, k
+     real(dp) :: elapsed_time, estimated_time
+     character(len=1) :: time_units
+
+     character(len=27) :: bar
+
+     bar="???% |                    |"
+
+     if(total >= current) then
+        current_percent = ceiling( 100.0_dp * real(current,dp) / real(total,dp) )
+        estimated_time = elapsed_seconds * real(total,dp) / real(current,dp)
+
+        write(unit=bar(1:3),fmt="(i3)") current_percent
+
+        ! fill the progress bar
+        do k = 1, current_percent / 5
+          bar(6+k:6+k)="*"
+        enddo
+        ! convert time to readable units
+        if (estimated_time / 60.0_dp > 2.0_dp) then
+            if (estimated_time / 3600.0_dp > 2.0_dp) then
+                if (estimated_time / 86400.0_dp > 3.0_dp) then
+                    elapsed_time = elapsed_seconds / 86400.0_dp
+                    estimated_time = estimated_time / 86400.0_dp
+                    time_units = 'd'
+                else
+                    elapsed_time = elapsed_seconds / 3600.0_dp
+                    estimated_time = estimated_time / 3600.0_dp
+                    time_units = 'h'
+                endif
+            else
+                elapsed_time = elapsed_seconds / 60.0_dp
+                estimated_time = estimated_time / 60.0_dp
+                time_units = 'm'
+            endif
+        else
+            elapsed_time = elapsed_seconds
+            time_units = 's'
+        endif
+
+        ! print the progress bar.
+        write(unit=mainlog%unit,fmt="(a1,a,f5.1,a,f5.1,a)",advance="no") char(13), &
+            trim(name) // " " // bar // " ", &
+            elapsed_time, " / ", estimated_time, " " // time_units
+     else
+        write(unit=mainlog%unit,fmt=*)
+     endif
+
+   end subroutine progress_timer
 
 
 end module system_module
