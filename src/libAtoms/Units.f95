@@ -73,6 +73,7 @@ real(dp), parameter :: KCAL_MOL = 4.3383e-2_dp !% eV
 real(dp), parameter :: DEGREES_PER_RADIAN = 180.0_dp / PI
 real(dp), parameter :: RADIANS_PER_DEGREE = PI / 180.0_dp
 real(dp), parameter :: GPA = 1.6022e-19_dp*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals
+real(dp), parameter :: EV_A3_IN_GPA = 1.6022e-19_dp*1.0e30_dp/1.0e9_dp !% Same thing but with a less misleading name
 real(dp), parameter :: EPSILON_0 = 8.854187817e-12_dp / ELEM_CHARGE * 1.0e-10_dp !% epsilon_0 in e / V Angstrom
 real(dp), parameter :: DEBYE = 1.0e-21_dp/299792458.0_dp/ELEM_CHARGE*1e10_dp !% 1D $= 10^{-18}$ statcoulomb-centrimetre in e-A
 real(dp), parameter :: SQRT_TWO = sqrt(2.0_dp)
@@ -115,6 +116,7 @@ real(dp), parameter :: KCAL_MOL = 4.184*1000/(ELEM_CHARGE*N_A) !% Thermochemical
 real(dp), parameter :: DEGREES_PER_RADIAN = 180.0_dp / PI
 real(dp), parameter :: RADIANS_PER_DEGREE = PI / 180.0_dp
 real(dp), parameter :: GPA = ELEM_CHARGE*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals
+real(dp), parameter :: EV_A3_IN_GPA = ELEM_CHARGE*1.0e30_dp/1.0e9_dp !% Same thing but with a less misleading name
 real(dp), parameter :: EPSILON_0 = EPSILON_0_AU/ELEM_CHARGE*1.0e-10_dp !% epsilon_0 in e / V Angstrom
 real(dp), parameter :: DEBYE = 1.0e-21_dp/VACUUM_C/ELEM_CHARGE*1e10_dp !% 1D $= 10^{-18}$ statcoulomb-centrimetre in e-A
 real(dp), parameter :: INVERSE_CM = 1.0e2_dp*VACUUM_C*HBAR_EVSEC*2.0_dp*PI !% cm^{-1} * h * c
