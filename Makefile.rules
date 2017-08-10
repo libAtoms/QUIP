@@ -162,6 +162,14 @@ ifeq (${HAVE_MBD},1)
   DEFINES += -DHAVE_MBD
   SYSLIBS += -lmbd
 endif
+ifeq (${HAVE_TTM_NF},1)
+  DEFINES += -DHAVE_TTM_NF
+  SYSLIBS += -lttm_nf -lstdc++
+endif
+ifeq (${HAVE_CH4},1)
+  DEFINES += -DHAVE_CH4
+  SYSLIBS += -lch4
+endif
 ifeq (${HAVE_LMTO_TBE},1)
   DEFINES += -DHAVE_LMTO_TBE
   INCLUDES += $(addprefix -I,${LMTO_TBE_LIBDIR}/mods)

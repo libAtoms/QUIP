@@ -110,104 +110,148 @@ module paramreader_module
   contains
 
     ! Overloaded interface for registering parameter of type single logical
-    subroutine param_register_single_logical(dict, key, value, logical_target, help_string, has_value_target)
+    subroutine param_register_single_logical(dict, key, value, logical_target, help_string, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       logical, intent(inout), target :: logical_target
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
-
-      call param_register_main(dict, key, value, 1, PARAM_LOGICAL, help_string=help_string, &
-	 logical_target=logical_target, has_value_target=has_value_target)
+      character(len=*), intent(in), optional :: altkey
+      call param_register_main(dict, key, value, 1, PARAM_LOGICAL, &
+           help_string=help_string, logical_target=logical_target, &
+           has_value_target=has_value_target)
+      if (present(altkey)) then
+         call param_register_main(dict, altkey, value, 1, PARAM_LOGICAL, &
+              help_string=help_string, logical_target=logical_target, &
+              has_value_target=has_value_target)
+      end if
+      
 
     end subroutine param_register_single_logical
 
     ! Overloaded interface for registering parameter of type single integer
-    subroutine param_register_single_integer(dict, key, value, int_target, help_string, has_value_target)
+    subroutine param_register_single_integer(dict, key, value, int_target, help_string, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       integer, intent(inout), target :: int_target
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
-
-      call param_register_main(dict, key, value, 1, PARAM_INTEGER, help_string=help_string, &
-	 int_target=int_target, has_value_target=has_value_target)
-
+      character(len=*), intent(in), optional :: altkey
+      
+      call param_register_main(dict, key, value, 1, PARAM_INTEGER, &
+           help_string=help_string, int_target=int_target, &
+           has_value_target=has_value_target)
+      if (present(altkey)) then
+         call param_register_main(dict, altkey, value, 1, PARAM_INTEGER, &
+              help_string=help_string, int_target=int_target, &
+           has_value_target=has_value_target)
+      end if
     end subroutine param_register_single_integer
 
 
     ! Overloaded interface for registering parameter of type multiple integer
-    subroutine param_register_multiple_integer(dict, key, value, int_target_array, help_string, has_value_target)
+    subroutine param_register_multiple_integer(dict, key, value, int_target_array, help_string, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       integer, dimension(:), intent(inout), target :: int_target_array
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
-
-      call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER, help_string=help_string, &
-           int_target_array=int_target_array, has_value_target=has_value_target)
-
+      character(len=*), intent(in), optional :: altkey
+      
+      call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER,&
+           help_string=help_string, int_target_array=int_target_array, &
+           has_value_target=has_value_target)
+      if (present(altkey)) then
+         call param_register_main(dict, altkey, value, size(int_target_array), PARAM_INTEGER,&
+           help_string=help_string, int_target_array=int_target_array, &
+           has_value_target=has_value_target)
+      end if
+         
     end subroutine param_register_multiple_integer
 
 
     ! Overloaded interface for registering parameter of type single real
-    subroutine param_register_single_real(dict, key, value, real_target, help_string, has_value_target)
+    subroutine param_register_single_real(dict, key, value, real_target, help_string, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       real(dp), intent(inout), target :: real_target
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
+      character(len=*), intent(in), optional :: altkey
 
-      call param_register_main(dict, key, value, 1, PARAM_REAL, help_string=help_string, &
-	 real_target=real_target, has_value_target=has_value_target)
+      call param_register_main(dict, key, value, 1, PARAM_REAL, &
+           help_string=help_string, real_target=real_target, &
+           has_value_target=has_value_target)
+      if (present(altkey)) then
+         call param_register_main(dict, altkey, value, 1, PARAM_REAL, &
+              help_string=help_string, real_target=real_target, &
+              has_value_target=has_value_target)
+      end if
 
     end subroutine param_register_single_real
 
 
     ! Overloaded interface for registering parameter of type multiple real
-    subroutine param_register_multiple_real(dict, key, value, real_target_array, help_string, has_value_target)
+    subroutine param_register_multiple_real(dict, key, value, real_target_array, help_string, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       real(dp), dimension(:), intent(inout), target :: real_target_array
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
-
-      call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, help_string=help_string, &
-           real_target_array=real_target_array, has_value_target=has_value_target)
+      character(len=*), intent(in), optional :: altkey
+      
+      call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, &
+           help_string=help_string, real_target_array=real_target_array, &
+           has_value_target=has_value_target)
+      if (present(altkey)) then
+         call param_register_main(dict, altkey, value, size(real_target_array), PARAM_REAL,&
+              help_string=help_string, real_target_array=real_target_array, &
+              has_value_target=has_value_target)
+      end if
 
     end subroutine param_register_multiple_real
 
 
     ! Overloaded interface for registering parameter of type single string
-    subroutine param_register_single_string(dict, key, value, char_target, help_string, has_value_target)
+    subroutine param_register_single_string(dict, key, value, char_target, help_string, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
       character(len=*), intent(inout), target :: char_target
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
+      character(len=*), intent(in), optional :: altkey
 
       if (len(char_target) /= STRING_LENGTH) &
 	call system_abort('param_register_single_string called for "'//trim(key)// &
 	 '" has char_target(len='//len(char_target)//'), must be called with char_target(len=STRING_LENGTH)')
 
-      call param_register_main(dict, key, value, 1, PARAM_STRING, help_string=help_string, &
-	 char_target=char_target, has_value_target=has_value_target)
 
+      call param_register_main(dict, key, value, 1, PARAM_STRING, &
+           help_string=help_string, char_target=char_target, &
+           has_value_target=has_value_target)
+      if (present(altkey)) then
+         call param_register_main(dict, altkey, value, 1, PARAM_STRING, &
+              help_string=help_string, char_target=char_target, &
+              has_value_target=has_value_target)
+      end if
     end subroutine param_register_single_string
 
-    ! Overloaded interface for registering parameters which don't need parsing
-    subroutine param_register_dontread(dict, key)
+    ! Overloaded interface for registering parameters which do not need parsing
+    subroutine param_register_dontread(dict, key, altkey)
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
-
+      character(len=*), intent(in), optional :: altkey
+      
       call param_register_main(dict, key, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED")
-
+      if (present(altkey)) then 
+         call param_register_main(dict, altkey, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED")
+      end if
     end subroutine param_register_dontread
 
 

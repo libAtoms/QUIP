@@ -2219,10 +2219,10 @@ contains
 #endif
   end subroutine system_finalise
 
-  !% Print a warning message to default mainlog, but don't quit
+  !% Print a warning message to stderr, but don't quit
   subroutine print_warning(message)
     character(*), intent(in) :: message
-    call print('WARNING: '//message)
+    write (0,*) 'WARNING: '//message
   end subroutine print_warning
 
   !% Take the values from 'date_and_time' and make a nice string

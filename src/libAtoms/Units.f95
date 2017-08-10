@@ -81,6 +81,7 @@ real(dp), parameter :: GRAM = 1e-3_dp  !% in kg
 real(dp), parameter :: ELECTRONMASS = ELECTRONMASS_GPERMOL*GRAM/N_A
 real(dp), parameter :: EPSILON_0_AU = EPSILON_0*ELEM_CHARGE/1.0e-10_dp
 real(dp), parameter :: VACUUM_C = 299792458.0_dp  !% exact in m/s
+real(dp), parameter :: INVERSE_CM = 1.0e2_dp*VACUUM_C*HBAR_EVSEC*2.0_dp*PI !% 
 #else
 ! CODATA 2014 taken from
 ! http://arxiv.org/pdf/1507.07956.pdf
@@ -116,6 +117,7 @@ real(dp), parameter :: RADIANS_PER_DEGREE = PI / 180.0_dp
 real(dp), parameter :: GPA = ELEM_CHARGE*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals
 real(dp), parameter :: EPSILON_0 = EPSILON_0_AU/ELEM_CHARGE*1.0e-10_dp !% epsilon_0 in e / V Angstrom
 real(dp), parameter :: DEBYE = 1.0e-21_dp/VACUUM_C/ELEM_CHARGE*1e10_dp !% 1D $= 10^{-18}$ statcoulomb-centrimetre in e-A
+real(dp), parameter :: INVERSE_CM = 1.0e2_dp*VACUUM_C*HBAR_EVSEC*2.0_dp*PI !% cm^{-1} * h * c
 #endif
 
 complex(dp), parameter :: CPLX_ZERO = (0.0_dp,0.0_dp)

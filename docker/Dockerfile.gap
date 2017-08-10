@@ -1,5 +1,5 @@
 # Base Python image has most up to date Python parts
-FROM libatomsquip/quip-base
+FROM libatomsquip/quip-base-software
 
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 
@@ -10,7 +10,8 @@ ENV QUIP_ROOT /opt/quip
 # the git+VANILLA version
 # RUN git clone https://github.com/libAtoms/QUIP.git ${QUIP_ROOT}
 # ENV BUILD NOGAP
-ENV BUILD ALL
+ENV BUILD GAP
+# ENV BUILD ALL
 ADD . ${QUIP_ROOT}
 
 # LAMMPS compilation
@@ -27,7 +28,7 @@ RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
     && make libquip > /dev/null \
-    && find build/${QUIP_ARCH} -type f ! \( -name '*.a' -o -name 'Makefile.inc' \) -delete
+    && find build/${QUIP_ARCH} -type f ! \( -name 'libquip.a' -o -name 'Makefile.inc' \) -delete
 
 # TODO: prune any unwanted directories in this command
 RUN mkdir -p ${LAMMPS_PATH} \
@@ -49,20 +50,32 @@ RUN cd ${LAMMPS_PATH}/src \
 
 ENV PATH ${LAMMPS_PATH}/src/:${PATH}
 
-# TODO: mpi quip
+
+# MPI QUIP for parallel within QUIP
+# Installs with _mpi suffix, e.g. quip_mpi
+ENV QUIP_ARCH linux_x86_64_gfortran_openmpi
+
+RUN cd ${QUIP_ROOT} \
+    && mkdir -p build/${QUIP_ARCH} \
+    && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
+    && make > /dev/null \
+    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
+    && find build/${QUIP_ARCH} -type f ! \( -name 'libquip.a' -o -name 'Makefile.inc' \) -delete
+
 
 # QUIP for general use is the OpenMP version.
-# TODO: install binaries
-
+# Installs with no suffix, e.g. quip
+# Also installs quippy
+# Keep all libraries for AtomEye
 ENV QUIP_ARCH linux_x86_64_gfortran_openmp
 
 RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
     && make > /dev/null \
-    && make install-quippy > /dev/null
-
-RUN apt-get install -y libxpm-dev libgsl0-dev
+    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
+    && make install-quippy > /dev/null \
+    && find build/${QUIP_ARCH} -type f ! \( -name '*.a' -o -name 'Makefile.inc' \) -delete
 
 # AtomEye needs to link with QUIP for xyz read-write
 RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}/src/AtomEye \
@@ -71,10 +84,21 @@ RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}
     && cd ${QUIP_ROOT}/src/AtomEye/Python \
     && python setup.py install
 
-ENV PATH ${QUIP_ROOT}/build/${QUIP_ARCH}:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
+ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
+# Launch in the home directory of the user
+WORKDIR /root/
+ADD docker/files/demo.ipynb /root/
+
+# Public GAP image requires license agreement
+# Replace bash with a license check script
+RUN mkdir -p /bin/real/ \
+    && mv /bin/bash /bin/real/bash
+
+ADD docker/files/fakebash /bin/bash
+
+CMD bash -c exit && jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
 EXPOSE 8899

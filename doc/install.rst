@@ -25,6 +25,14 @@ These intructions provide more details on the compilation and
 installation of ``QUIP`` (Fortran library and main programs) and
 ``quippy`` (Python interface).
 
+Precompiled Containers
+----------------------
+
+If you have access to `Docker <http://singularity.lbl.gov>`_ or
+`Singularity <http://singularity.lbl.gov>`_, you can try one of the
+`precompiled images <https://github.com/libAtoms/QUIP/blob/public/docker/README.md>`_
+to get up and running quickly.
+
 Compilation Instructions
 ------------------------
 
