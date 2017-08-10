@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.potential &mdash; quippy cb2cd21+ documentation</title>
+  <title>quippy.potential &mdash; quippy f8ee538+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy cb2cd21+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy f8ee538+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                cb2cd21+
+                f8ee538+
               </div>
             
           
@@ -197,8 +197,10 @@
 <span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">weakref</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">path</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -332,8 +334,10 @@
             <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">init_args</span> <span class="o">=</span> <span class="s1">&#39;callbackpot&#39;</span>
 
+        <span class="n">param_dirname</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">param_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">param_str</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">param_filename</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">param_dirname</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">param_filename</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">param_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need one of init_args,param_str,param_filename&#39;</span><span class="p">)</span>
@@ -357,12 +361,22 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">init_args</span> <span class="o">=</span> <span class="n">dict_to_args_str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_args</span><span class="p">,</span> <span class="n">pot1</span><span class="o">=</span><span class="n">pot1</span><span class="p">,</span> <span class="n">pot2</span><span class="o">=</span><span class="n">pot2</span><span class="p">,</span>
-                                         <span class="n">param_str</span><span class="o">=</span><span class="n">param_str</span><span class="p">,</span>
-                                         <span class="n">bulk_scale</span><span class="o">=</span><span class="n">bulk_scale</span><span class="p">,</span>
-                                         <span class="n">mpi_obj</span><span class="o">=</span><span class="n">mpi_obj</span><span class="p">,</span>
-                                         <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">,</span>
-                                         <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+        <span class="c1"># Change to the xml directory to initialise, so that extra files</span>
+        <span class="c1"># like sparseX can be found.</span>
+        <span class="n">old_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param_dirname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">param_dirname</span><span class="p">)</span>
+
+            <span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_args</span><span class="p">,</span>
+                                          <span class="n">pot1</span><span class="o">=</span><span class="n">pot1</span><span class="p">,</span> <span class="n">pot2</span><span class="o">=</span><span class="n">pot2</span><span class="p">,</span>
+                                          <span class="n">param_str</span><span class="o">=</span><span class="n">param_str</span><span class="p">,</span>
+                                          <span class="n">bulk_scale</span><span class="o">=</span><span class="n">bulk_scale</span><span class="p">,</span>
+                                          <span class="n">mpi_obj</span><span class="o">=</span><span class="n">mpi_obj</span><span class="p">,</span>
+                                          <span class="n">fpointer</span><span class="o">=</span><span class="n">fpointer</span><span class="p">,</span> <span class="n">finalise</span><span class="o">=</span><span class="n">finalise</span><span class="p">,</span>
+                                          <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">old_dir</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">init_args</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;callbackpot&#39;</span><span class="p">):</span>
             <span class="n">_potential</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Potential</span><span class="o">.</span><span class="n">callback</span><span class="p">)</span>
@@ -954,7 +968,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'cb2cd21+',
+            VERSION:'f8ee538+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

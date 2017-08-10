@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation of QUIP and quippy &mdash; quippy cb2cd21+ documentation</title>
+  <title>Installation of QUIP and quippy &mdash; quippy f8ee538+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy cb2cd21+ documentation" href="index.html"/>
+    <link rel="top" title="quippy f8ee538+ documentation" href="index.html"/>
         <link rel="next" title="Examples" href="Examples/index.html"/>
         <link rel="prev" title="Introduction to quippy" href="intro.html"/> 
 
@@ -73,7 +73,7 @@
             
             
               <div class="version">
-                cb2cd21+
+                f8ee538+
               </div>
             
           
@@ -447,13 +447,22 @@ specific directory. <code class="docutils literal"><span class="pre">QUIPPY_INST
 </pre></div>
 </div>
 </li>
+<li><p class="first">To get back to a state near to a fresh clone, use</p>
+<blockquote>
+<div><p>make distclean</p>
+</div></blockquote>
+</li>
 <li><p class="first">Some functionality is only available if you check out other
 modules within the <code class="docutils literal"><span class="pre">QUIP/src/</span></code> directories, e.g. the <code class="docutils literal"><span class="pre">ThirdParty</span></code>
 (DFTB parameters, TTM3f water model), <code class="docutils literal"><span class="pre">GAP</span></code> (Gaussian
 Approximation Potential models) and <code class="docutils literal"><span class="pre">GAP-filler</span></code> (Gaussian
 Approximation Potential model training). These packages are
 not distributed with QUIP because they come with different licensing
-restrictions.</p>
+restrictions, but you can get them [here](<a class="reference external" href="http://www.libatoms.org/gap/gap_download.html">http://www.libatoms.org/gap/gap_download.html</a>)</p>
+<p>GAP is a machine learning method that uses Gaussian process
+regression, and needs large data files to run. You can find
+potentials that have been published as well as training data in
+our [data repository](<a class="reference external" href="http://www.libatoms.org/Home/DataRepository">http://www.libatoms.org/Home/DataRepository</a>).</p>
 </li>
 <li><p class="first">In order to run QUIP potentials via LAMMPS, <code class="docutils literal"><span class="pre">make</span> <span class="pre">libquip</span></code> to get QUIP
 into library form, and then follow the instructions in the
@@ -728,7 +737,7 @@ threading with <code class="docutils literal"><span class="pre">export</span> <s
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'cb2cd21+',
+            VERSION:'f8ee538+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
