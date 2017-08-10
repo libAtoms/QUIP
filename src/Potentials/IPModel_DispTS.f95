@@ -69,7 +69,8 @@
 module IPModel_DispTS_module
 
 use error_module
-use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, operator(//)
+use system_module, only : dp, inoutput, print, PRINT_NERD, verbosity_push_decrement, verbosity_pop, operator(//)
+!use units_module, only : EV_A3_IN_GPA
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -231,7 +232,7 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
             call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
             call param_register(params, 'r_scale', '1.0', r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
             call param_register(params, 'E_scale', '1.0', E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
- 
+
             if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_MBD_Calc args_str')) then
                 RAISE_ERROR("IPModel_DispTS_Calc failed to parse args_str '"//trim(args_str)//"'", error)
             endif
@@ -259,6 +260,22 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
          endif
       endif
 
+      ti = get_type(this%type_of_atomic_num, at%Z(i))
+      vi = my_hirshfeld_volume(i)
+
+      if (this%do_tail_corrections) then
+         do j = 1, at%n
+           if (i == j) cycle
+           if (this%only_inter_resid) then
+             if (resid(i) == resid(j)) cycle
+           endif
+
+           tj = get_type(this%type_of_atomic_num, at%Z(j))
+           vj = my_hirshfeld_volume(j)
+           c6_sum = c6_sum + IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
+         enddo
+      endif
+
       do ji = 1, n_neighbours(at, i)
         j = neighbour(at, i, ji, dr_mag, cosines = dr)
 
@@ -269,11 +286,8 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
           if (resid(i) == resid(j)) cycle
         endif
 
-        ti = get_type(this%type_of_atomic_num, at%Z(i))
         tj = get_type(this%type_of_atomic_num, at%Z(j))
-        vi = my_hirshfeld_volume(i)
         vj = my_hirshfeld_volume(j)
-        c6_sum = c6_sum + IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
 
         damp = 0.0_dp
         dfdamp = 0.0_dp
@@ -315,8 +329,6 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
       end do
    end do
 
-   c6_sum = c6_sum * 2.0_dp ! Convention is to double count this sum
-
    if (present(mpi)) then
       if (present(e)) e = sum(mpi, e)
       if (present(local_e)) call sum_in_place(mpi, local_e)
@@ -332,6 +344,8 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
             virial(d, d) = virial(d, d) + tail_correction
          enddo
       endif
+      call print("Energy tail correction: " // tail_correction // " eV", PRINT_NERD)
+      !call print("Pressure tail correction: " // (tail_correction / cell_volume(at) * EV_A3_IN_GPA) // " GPa", PRINT_NERD)
    endif
 
 end subroutine IPModel_DispTS_Calc
