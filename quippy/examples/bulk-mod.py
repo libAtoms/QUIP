@@ -87,7 +87,7 @@ def sample_input():
       at.calc_connect()
       pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
       pot.calc(at, energy=True, virial=True)
-      at.pressure = at.virial.trace()*at.cell_volume()/(3.0*GPA)
+      at.pressure = at.virial.trace()*at.cell_volume()/(3.0*EV_A3_IN_GPA)
       print at.virial
       yield at
       
@@ -131,7 +131,7 @@ assert success > 0
 
 print 'Volume vo =', vo, 'A^3'
 print 'Energy eo =', eo, 'eV'
-print 'Bulk modulus bo = ', bo, 'eV/A^3 =', bo*GPA, 'GPa'
+print 'Bulk modulus bo = ', bo, 'eV/A^3 =', bo*EV_A3_IN_GPA, 'GPa'
 print 'dP/dV (P=0) bop = ', bop
 
 if do_higher_order:
@@ -146,7 +146,7 @@ if do_higher_order:
    print 'Higher order fit:'
    print 'Volume vo2 =', vo2, 'A^3'
    print 'Energy eo2 =', eo2, 'eV'
-   print 'Bulk modulus bo2 = ', bo2, 'eV/A^3 =', bo2*GPA, 'GPa'
+   print 'Bulk modulus bo2 = ', bo2, 'eV/A^3 =', bo2*EV_A3_IN_GPA, 'GPa'
    print 'dP/dV (P=0) bop2 = ', bop2
    print 'b4 =', b4
    print 'b5 =', b5
@@ -170,5 +170,5 @@ plot(pressure, cellv, 'o', label='Calculation')
 xlabel('Pressure / GPa')
 ylabel(r'Cell Volume / $\AA^3$')
 title(r'Equation of State')
-plot(birch_pressure(vo,bo,bop,volgrid)*GPA, volgrid, label='Fit to third-order Birch polynomial')
+plot(birch_pressure(vo,bo,bop,volgrid)*EV_A3_IN_GPA, volgrid, label='Fit to third-order Birch polynomial')
 legend()

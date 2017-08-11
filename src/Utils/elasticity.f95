@@ -353,7 +353,7 @@ contains
     ! Calculate stress to find Young's modulus
     call Calc(pot, at2, virial=v)
 
-    young = -v(1,1)/(eps(1,1)-1.0_dp)*GPA/cell_volume(at2)
+    young = -v(1,1)/(eps(1,1)-1.0_dp)*EV_A3_IN_GPA/cell_volume(at2)
 
     if (present(cb)) then
        ! Finally, calculate bending modulus by fitting strain energy per atom to
@@ -723,7 +723,7 @@ contains
 
        ! energy density in eV/A**3, from u = 1/2*stress*strain
        energy_density(i) = 0.5_dp*( (/Sig_xx(i), Sig_yy(i), Sig_zz(i), Sig_yz(i), Sig_xz(i), Sig_xy(i) /) .dot. &
-            (/S_xx_sub1(i), S_yy_sub1(i), S_zz_sub1(i), S_yz(i), S_xz(i), S_xy(i) /) )/GPA
+            (/S_xx_sub1(i), S_yy_sub1(i), S_zz_sub1(i), S_yz(i), S_xz(i), S_xy(i) /) )/EV_A3_IN_GPA
 
     end do
 

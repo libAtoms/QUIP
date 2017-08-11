@@ -26,11 +26,11 @@ from quippy.atoms import Atoms
 from quippy.structures import transform, supercell, MillerPlane, MillerDirection
 from quippy.system import print_title, verbosity_push
 from quippy.clusters import HYBRID_NO_MARK
-from quippy.units import GPA
+from quippy.units import EV_A3_IN_GPA
 from quippy.surface import J_PER_M2
 from quippy.farray import fzeros, farray
 
-MPA_SQRT_M = 1e-3/GPA*sqrt(1.0e10)
+MPA_SQRT_M = 1e-3/EV_A3_IN_GPA*sqrt(1.0e10)
 
 __all__ = []
 
@@ -421,7 +421,7 @@ def crack_strain_energy_release_rate(at, bulk=None, f_min=.8, f_max=.9, stem=Non
 
     print 'Strain energy density in strip', strain_energy_density, 'eV/A**3'
 
-    E_effective = 2*strain_energy_density/strain**2*GPA
+    E_effective = 2*strain_energy_density/strain**2*EV_A3_IN_GPA
     print 'Effective elastic modulus E =', E_effective, 'GPa'
 
     G_effective = strain_energy_density*strip_height*J_PER_M2
@@ -1170,9 +1170,9 @@ def fit_crack_stress_field(atoms, r_range=(0., 50.), initial_params=None, fix_pa
 
     if verbose:
        print 'K = %.3f MPa sqrt(m)' % (params['K']/MPA_SQRT_M)
-       print 'sigma^0_{xx,yy,xy} = (%.1f, %.1f, %.1f) GPa' % (params['sxx0']*GPA,
-                                                              params['syy0']*GPA,
-                                                              params['sxy0']*GPA)
+       print 'sigma^0_{xx,yy,xy} = (%.1f, %.1f, %.1f) GPa' % (params['sxx0']*EV_A3_IN_GPA,
+                                                              params['syy0']*EV_A3_IN_GPA,
+                                                              params['sxy0']*EV_A3_IN_GPA)
        print 'Crack position (x0, y0) = (%.1f, %.1f) A' % (params['x0'], params['y0'])
 
     atoms.info['K'] = params['K']
@@ -1275,14 +1275,14 @@ def plot_stress_fields(atoms, r_range=None, initial_params=None, fix_params=None
                                   ['\sigma_{xx}', r'\sigma_{yy}', r'\sigma_{xy}']):
         subplot(3,3,i+1)
         gca().set_aspect('equal')
-        contourf(X, Y, grid_sigma[...,i]*GPA, contours[i])
+        contourf(X, Y, grid_sigma[...,i]*EV_A3_IN_GPA, contours[i])
         colorbar()
         title(r'$%s^\mathrm{atom}$' % label)
         draw()
 
         subplot(3,3,i+4)
         gca().set_aspect('equal')
-        contourf(X, Y, irwin_sigma[...,ii,jj]*GPA, contours[i])
+        contourf(X, Y, irwin_sigma[...,ii,jj]*EV_A3_IN_GPA, contours[i])
         colorbar()
         title(r'$%s^\mathrm{Irwin}$' % label)
         draw()
@@ -1290,7 +1290,7 @@ def plot_stress_fields(atoms, r_range=None, initial_params=None, fix_params=None
         subplot(3,3,i+7)
         gca().set_aspect('equal')
         contourf(X, Y, abs(grid_sigma[...,i] -
-                           irwin_sigma[...,ii,jj])*GPA, dcontours[i])
+                           irwin_sigma[...,ii,jj])*EV_A3_IN_GPA, dcontours[i])
         colorbar()
         title(r'$|%s^\mathrm{atom} - %s^\mathrm{Irwin}|$' % (label, label))
         draw()

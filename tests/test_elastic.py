@@ -101,7 +101,7 @@ class TestElasticFieldsCubic(QuippyTestCase):
         self.pot.minim(at, 'cg', 1e-6, 100, do_pos=True, do_lat=False)
 
      self.pot.calc(at, virial=True)
-     virial_stress = stress_vector(-at.virial*GPA/at.cell_volume())
+     virial_stress = stress_vector(-at.virial*EV_A3_IN_GPA/at.cell_volume())
 
      quippy._elasticity.elastic_fields(at, a=self.a, cij=C)
 

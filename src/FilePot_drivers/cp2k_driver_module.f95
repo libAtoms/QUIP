@@ -1285,7 +1285,7 @@ contains
       call print("got cp2k stress(2,:) "//virial(2,:))
       call print("got cp2k stress(3,:) "//virial(3,:))
       ! convert from stress GPa to virial in native units
-      virial = cell_volume(at)*virial/GPA
+      virial = cell_volume(at)*virial/EV_A3_IN_GPA
       call set_value(at%params, 'virial', virial)
       call finalise(t_io)
     endif
@@ -1676,7 +1676,7 @@ contains
        call print("got cp2k stress(1,:) "//virial(1,:))
        call print("got cp2k stress(2,:) "//virial(2,:))
        call print("got cp2k stress(3,:) "//virial(3,:))
-       virial = cell_volume(at)*virial/GPA
+       virial = cell_volume(at)*virial/EV_A3_IN_GPA
        call set_value(at%params, 'virial', virial)
        call finalise(stress_io)
     endif

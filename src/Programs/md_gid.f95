@@ -64,7 +64,7 @@ program md_gid
 
   if(has_trajectory_file) call initialise(savexyz,trim(trajectory_file),action=OUTPUT,append=.true.,mpi=mpi_glob)
 
-  p = p_init/GPA
+  p = p_init/EV_A3_IN_GPA
   temp = temp_init
 
   ! System 1
@@ -74,10 +74,10 @@ program md_gid
 
   if(iso1) then
      call add_thermostat(ds1,THERMOSTAT_LANGEVIN_NPT,t=temp,p=p,tau=tau,tau_cell=tau_cell, &
-        bulk_modulus_estimate=bulk_modulus_estimate1/GPA,cell_oscillation_time=cell_oscillation_time)
+        bulk_modulus_estimate=bulk_modulus_estimate1/EV_A3_IN_GPA,cell_oscillation_time=cell_oscillation_time)
   else
      call add_thermostat(ds1,THERMOSTAT_LANGEVIN_PR,t=temp,p=p,tau=tau,tau_cell=tau_cell, &
-        bulk_modulus_estimate=bulk_modulus_estimate1/GPA,cell_oscillation_time=cell_oscillation_time)
+        bulk_modulus_estimate=bulk_modulus_estimate1/EV_A3_IN_GPA,cell_oscillation_time=cell_oscillation_time)
   endif
   if( .not. restart) call rescale_velo(ds1,2*temp_init)
 
@@ -88,10 +88,10 @@ program md_gid
 
   if(iso2) then
      call add_thermostat(ds2,THERMOSTAT_LANGEVIN_NPT,t=temp,p=p,tau=tau,tau_cell=tau_cell, &
-        bulk_modulus_estimate=bulk_modulus_estimate2/GPA,cell_oscillation_time=cell_oscillation_time)
+        bulk_modulus_estimate=bulk_modulus_estimate2/EV_A3_IN_GPA,cell_oscillation_time=cell_oscillation_time)
   else
      call add_thermostat(ds2,THERMOSTAT_LANGEVIN_PR,t=temp,p=p,tau=tau,tau_cell=tau_cell, &
-        bulk_modulus_estimate=bulk_modulus_estimate2/GPA,cell_oscillation_time=cell_oscillation_time)
+        bulk_modulus_estimate=bulk_modulus_estimate2/EV_A3_IN_GPA,cell_oscillation_time=cell_oscillation_time)
   endif
   if( .not. restart) call rescale_velo(ds2,2*temp_init)
 
@@ -129,7 +129,7 @@ program md_gid
      !lnP = lnP0+f0*deltaBeta
      !p = exp(lnP)
      call print("temperature  "//temp)
-     call print("pressure in predictor step   "//p*GPA//"   "//lnP)
+     call print("pressure in predictor step   "//p*EV_A3_IN_GPA//"   "//lnP)
 
      do i = 1, nCorrector
         call runMD(ds1, ds2, pot,temp,p,vol,kine,pote,nTotal)
@@ -147,8 +147,8 @@ program md_gid
         lnP = log(p)
         !lnP = lnP0 + (f0+f1)*deltaBeta/2.0_dp
         !p = exp(lnP)
-        call print("pressure in corrector step   "//p*GPA//"   "//lnP)
-        tp(:,j) = (/temp,p*GPA/)
+        call print("pressure in corrector step   "//p*EV_A3_IN_GPA//"   "//lnP)
+        tp(:,j) = (/temp,p*EV_A3_IN_GPA/)
      enddo
      if(has_trajectory_file) then
         call set_value(ds1%atoms%params, 'temperature', "" // temp)
