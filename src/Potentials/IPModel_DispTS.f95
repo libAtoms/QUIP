@@ -70,7 +70,7 @@ module IPModel_DispTS_module
 
 use error_module
 use system_module, only : dp, inoutput, print, PRINT_NERD, verbosity_push_decrement, verbosity_pop, operator(//)
-!use units_module, only : EV_A3_IN_GPA
+use units_module, only : GPA_TO_EV_A3
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -106,6 +106,7 @@ type IPModel_DispTS
 
 end type IPModel_DispTS
 
+
 logical, private :: parse_in_ip, parse_matched_label
 type(IPModel_DispTS), private, pointer :: parse_ip
 
@@ -125,7 +126,9 @@ interface Calc
   module procedure IPModel_DispTS_Calc
 end interface Calc
 
+
 contains
+
 
 subroutine IPModel_DispTS_Initialise_str(this, args_str, param_str)
   type(IPModel_DispTS), intent(inout) :: this
@@ -155,6 +158,7 @@ subroutine IPModel_DispTS_Initialise_str(this, args_str, param_str)
   !  Add initialisation code here
 
 end subroutine IPModel_DispTS_Initialise_str
+
 
 subroutine IPModel_DispTS_Finalise(this)
   type(IPModel_DispTS), intent(inout) :: this
@@ -329,13 +333,6 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
       end do
    end do
 
-   if (present(mpi)) then
-      if (present(e)) e = sum(mpi, e)
-      if (present(local_e)) call sum_in_place(mpi, local_e)
-      if (present(virial)) call sum_in_place(mpi, virial)
-      if (present(f)) call sum_in_place(mpi, f)
-   endif
-
    if (this%do_tail_corrections) then
       tail_correction = c6_sum * this%tail_correction_const / cell_volume(at)
       if (present(e)) e = e + tail_correction
@@ -344,11 +341,23 @@ subroutine IPModel_DispTS_Calc(this, at, e, local_e, f, virial, local_virial, ar
             virial(d, d) = virial(d, d) + tail_correction
          enddo
       endif
+      ! Already taken care of in energy and virial sums
+      !if (present(mpi)) then
+      !   tail_correction = sum(mpi, tail_correction)
+      !endif
       call print("Energy tail correction: " // tail_correction // " eV", PRINT_NERD)
-      !call print("Pressure tail correction: " // (tail_correction / cell_volume(at) * EV_A3_IN_GPA) // " GPa", PRINT_NERD)
+      call print("Pressure tail correction: " // (tail_correction / cell_volume(at) / GPA_TO_EV_A3) // " GPa", PRINT_NERD)
+   endif
+
+   if (present(mpi)) then
+      if (present(e)) e = sum(mpi, e)
+      if (present(local_e)) call sum_in_place(mpi, local_e)
+      if (present(virial)) call sum_in_place(mpi, virial)
+      if (present(f)) call sum_in_place(mpi, f)
    endif
 
 end subroutine IPModel_DispTS_Calc
+
 
 subroutine IPModel_DispTS_fdamp(this, ti, tj, vi, vj, r, damp, dfdamp)
     type(IPModel_DispTS), intent(in) :: this
@@ -388,6 +397,7 @@ function IPModel_DispTS_pair_c6(this, ti, tj, vi, vj)
     IPModel_DispTS_pair_c6 = c6
 
 end function IPModel_DispTS_pair_c6
+
 
 function IPModel_DispTS_pairenergy(this, ti, tj, vi, vj, r, damp)
     type(IPModel_DispTS), intent(in) :: this
@@ -442,8 +452,15 @@ subroutine IPModel_DispTS_Print(this, file)
                // " polarizability " // this%alpha_free(ti) &
                // " vdW radius " // this%r_vdW_free(ti), file=file)
   end do
+  if (this%do_tail_corrections) then
+     call Print("IPModel_DispTS : Tail corrections with integral constant " // &
+          this%tail_correction_const, file=file)
+  else
+     call Print("IPModel_DispTS : No tail corrections", file=file)
+  endif
 
 end subroutine IPModel_DispTS_Print
+
 
 subroutine IPModel_DispTS_read_params_xml(this, param_str)
   type(IPModel_DispTS), intent(inout), target :: this
