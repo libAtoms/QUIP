@@ -92,9 +92,9 @@ try:
         c0 = fzeros((6,6))
         pot.calc_elastic_constants(at, c=c, c0=c0)
         print 'CIJ_VIRIAL_C'
-        print c.round(2)*GPA
+        print c.round(2)*EV_A3_IN_GPA
         print 'C_ij^0 (virial) / GPa ='
-        print c0.round(2)*GPA
+        print c0.round(2)*EV_A3_IN_GPA
         print
 
 
@@ -135,7 +135,7 @@ try:
                 energies.append(strained_at.energy)
 
             a, b, c = np.polyfit(x, energies, 2)
-            C = 2*a/v0*GPA/sum(strain_pattern)
+            C = 2*a/v0*EV_A3_IN_GPA/sum(strain_pattern)
             cs[label] = C
 
         cs['C12'] = cs['C11+C12']-cs['C11']

@@ -116,7 +116,7 @@ if True:
 
    # Calculate stress, should be very close to zero
    pot.calc(aq, virial=True)
-   aq.params['stress'] = -aq.virial*GPA/aq.cell_volume()
+   aq.params['stress'] = -aq.virial*EV_A3_IN_GPA/aq.cell_volume()
 
    strained_configs = generate_strained_configs(aq, 'trigonal_low')
    stressed_configs = calc_stress(strained_configs, pot, relax=True)

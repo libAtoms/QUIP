@@ -300,15 +300,15 @@ contains
 
        case(BAROSTAT_HOOVER_LANGEVIN)
 	  call print('Hoover-Langevin, stress_ext = '// &
-	  round(this%stress_ext(1,1)/GPA,5)//' '// &
-	  round(this%stress_ext(1,2)/GPA,5)//' '// &
-	  round(this%stress_ext(1,3)/GPA,5)//' '// &
-	  round(this%stress_ext(2,1)/GPA,5)//' '// &
-	  round(this%stress_ext(2,2)/GPA,5)//' '// &
-	  round(this%stress_ext(2,3)/GPA,5)//' '// &
-	  round(this%stress_ext(3,1)/GPA,5)//' '// &
-	  round(this%stress_ext(3,2)/GPA,5)//' '// &
-	  round(this%stress_ext(3,3)/GPA,5)//' GPa , hydrostatic_strain = '//this%hydrostatic_strain//&
+	  round(this%stress_ext(1,1)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(1,2)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(1,3)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(2,1)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(2,2)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(2,3)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(3,1)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(3,2)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(3,3)/EV_A3_IN_GPA,5)//' GPa , hydrostatic_strain = '//this%hydrostatic_strain//&
 	    ' diagonal_strain = '//this%diagonal_strain//' finite_strain_formulation = '//this%finite_strain_formulation//&
 	    ' gamma_epsilon = '//round(this%gamma_epsilon,5)//' fs^-1, '// &
 	    ' W_epsilon = '//round(this%W_epsilon,5)//' eV/fs, T = '//round(this%T,2)//' K, Ndof = '// round(this%Ndof,1),file=file)

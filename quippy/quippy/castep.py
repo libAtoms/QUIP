@@ -29,7 +29,7 @@ import numpy as np
 from quippy.atoms import Atoms, make_lattice, get_lattice_params
 from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.dictionary import Dictionary
-from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE
+from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, EV_A3_IN_GPA, DEBYE
 from quippy.periodictable import atomic_number
 
 from ordereddict import OrderedDict
@@ -1139,7 +1139,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
 
         # Convert virial to libAtoms units and add to params
         if got_virial:
-            mod_param['virial'] = virial*atoms.cell_volume()/GPA
+            mod_param['virial'] = virial*atoms.cell_volume()/EV_A3_IN_GPA
 
         if atoms_ref is None:
             atoms_ref = atoms.copy()
