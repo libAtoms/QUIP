@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.crack &mdash; quippy f8ee538+ documentation</title>
+  <title>quippy.crack &mdash; quippy 7430804+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy f8ee538+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 7430804+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                f8ee538+
+                7430804+
               </div>
             
           
@@ -206,11 +206,11 @@
 <span class="kn">from</span> <span class="nn">quippy.structures</span> <span class="k">import</span> <span class="n">transform</span><span class="p">,</span> <span class="n">supercell</span><span class="p">,</span> <span class="n">MillerPlane</span><span class="p">,</span> <span class="n">MillerDirection</span>
 <span class="kn">from</span> <span class="nn">quippy.system</span> <span class="k">import</span> <span class="n">print_title</span><span class="p">,</span> <span class="n">verbosity_push</span>
 <span class="kn">from</span> <span class="nn">quippy.clusters</span> <span class="k">import</span> <span class="n">HYBRID_NO_MARK</span>
-<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">GPA</span>
+<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">EV_A3_IN_GPA</span>
 <span class="kn">from</span> <span class="nn">quippy.surface</span> <span class="k">import</span> <span class="n">J_PER_M2</span>
 <span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">fzeros</span><span class="p">,</span> <span class="n">farray</span>
 
-<span class="n">MPA_SQRT_M</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="o">/</span><span class="n">GPA</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0e10</span><span class="p">)</span>
+<span class="n">MPA_SQRT_M</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="o">/</span><span class="n">EV_A3_IN_GPA</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0e10</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -601,7 +601,7 @@
 
     <span class="nb">print</span> <span class="s1">&#39;Strain energy density in strip&#39;</span><span class="p">,</span> <span class="n">strain_energy_density</span><span class="p">,</span> <span class="s1">&#39;eV/A**3&#39;</span>
 
-    <span class="n">E_effective</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">strain_energy_density</span><span class="o">/</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">GPA</span>
+    <span class="n">E_effective</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">strain_energy_density</span><span class="o">/</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span>
     <span class="nb">print</span> <span class="s1">&#39;Effective elastic modulus E =&#39;</span><span class="p">,</span> <span class="n">E_effective</span><span class="p">,</span> <span class="s1">&#39;GPa&#39;</span>
 
     <span class="n">G_effective</span> <span class="o">=</span> <span class="n">strain_energy_density</span><span class="o">*</span><span class="n">strip_height</span><span class="o">*</span><span class="n">J_PER_M2</span>
@@ -1350,9 +1350,9 @@
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
        <span class="nb">print</span> <span class="s1">&#39;K = </span><span class="si">%.3f</span><span class="s1"> MPa sqrt(m)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">MPA_SQRT_M</span><span class="p">)</span>
-       <span class="nb">print</span> <span class="s1">&#39;sigma^0_{xx,yy,xy} = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxx0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span>
-                                                              <span class="n">params</span><span class="p">[</span><span class="s1">&#39;syy0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span>
-                                                              <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxy0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">)</span>
+       <span class="nb">print</span> <span class="s1">&#39;sigma^0_{xx,yy,xy} = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxx0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">,</span>
+                                                              <span class="n">params</span><span class="p">[</span><span class="s1">&#39;syy0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">,</span>
+                                                              <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxy0&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">)</span>
        <span class="nb">print</span> <span class="s1">&#39;Crack position (x0, y0) = (</span><span class="si">%.1f</span><span class="s1">, </span><span class="si">%.1f</span><span class="s1">) A&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">])</span>
 
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
@@ -1455,14 +1455,14 @@
                                   <span class="p">[</span><span class="s1">&#39;\sigma_</span><span class="si">{xx}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\sigma_</span><span class="si">{yy}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\sigma_</span><span class="si">{xy}</span><span class="s1">&#39;</span><span class="p">]):</span>
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
-        <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
         <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
 
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
-        <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">,</span> <span class="n">contours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
         <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">draw</span><span class="p">()</span>
@@ -1470,7 +1470,7 @@
         <span class="n">subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">7</span><span class="p">)</span>
         <span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span>
-                           <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">])</span><span class="o">*</span><span class="n">GPA</span><span class="p">,</span> <span class="n">dcontours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                           <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">])</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">,</span> <span class="n">dcontours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
         <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
         <span class="n">draw</span><span class="p">()</span></div>
@@ -1650,7 +1650,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'f8ee538+',
+            VERSION:'7430804+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

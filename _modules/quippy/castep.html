@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.castep &mdash; quippy f8ee538+ documentation</title>
+  <title>quippy.castep &mdash; quippy 7430804+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy f8ee538+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 7430804+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                f8ee538+
+                7430804+
               </div>
             
           
@@ -209,7 +209,7 @@
 <span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">make_lattice</span><span class="p">,</span> <span class="n">get_lattice_params</span>
 <span class="kn">from</span> <span class="nn">quippy.io</span> <span class="k">import</span> <span class="n">AtomsReaders</span><span class="p">,</span> <span class="n">AtomsWriters</span><span class="p">,</span> <span class="n">atoms_reader</span>
 <span class="kn">from</span> <span class="nn">quippy.dictionary</span> <span class="k">import</span> <span class="n">Dictionary</span>
-<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">AU_FS</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">BOHR</span><span class="p">,</span> <span class="n">BOLTZMANN_K</span><span class="p">,</span> <span class="n">GPA</span><span class="p">,</span> <span class="n">DEBYE</span>
+<span class="kn">from</span> <span class="nn">quippy.units</span> <span class="k">import</span> <span class="n">AU_FS</span><span class="p">,</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">BOHR</span><span class="p">,</span> <span class="n">BOLTZMANN_K</span><span class="p">,</span> <span class="n">EV_A3_IN_GPA</span><span class="p">,</span> <span class="n">DEBYE</span>
 <span class="kn">from</span> <span class="nn">quippy.periodictable</span> <span class="k">import</span> <span class="n">atomic_number</span>
 
 <span class="kn">from</span> <span class="nn">ordereddict</span> <span class="k">import</span> <span class="n">OrderedDict</span>
@@ -1227,11 +1227,14 @@
            <span class="k">if</span> <span class="n">spin_polarised</span><span class="p">:</span>
                <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hirshfeld_spin&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hirshfeld_basic_lines</span><span class="p">:</span>
-               <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">spin</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                <span class="k">try</span><span class="p">:</span>
+                   <span class="k">if</span> <span class="n">spin_polarised</span><span class="p">:</span>
+                       <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">spin</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                       <span class="n">spin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spin</span><span class="p">)</span>
+                   <span class="k">else</span><span class="p">:</span>
+                       <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
                    <span class="n">charge</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span>
-                   <span class="n">spin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spin</span><span class="p">)</span>
                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                    <span class="k">if</span> <span class="n">abort</span><span class="p">:</span>
                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unable to parse Hirshfeld charge line &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
@@ -1316,7 +1319,7 @@
 
         <span class="c1"># Convert virial to libAtoms units and add to params</span>
         <span class="k">if</span> <span class="n">got_virial</span><span class="p">:</span>
-            <span class="n">mod_param</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="o">*</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">/</span><span class="n">GPA</span>
+            <span class="n">mod_param</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">virial</span><span class="o">*</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">/</span><span class="n">EV_A3_IN_GPA</span>
 
         <span class="k">if</span> <span class="n">atoms_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms_ref</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1771,7 +1774,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'f8ee538+',
+            VERSION:'7430804+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
