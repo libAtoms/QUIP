@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Getting started with Atoms &mdash; quippy 2139489+ documentation</title>
+  <title>Getting started with Atoms &mdash; quippy 897cbb5+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="quippy 2139489+ documentation" href="../index.html"/>
+    <link rel="top" title="quippy 897cbb5+ documentation" href="../index.html"/>
         <link rel="up" title="Examples" href="index.html"/>
         <link rel="next" title="Interoperability with Atomic Simulation Environment" href="quippy-ase-interoperability.html"/>
         <link rel="prev" title="Examples" href="index.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                2139489+
+                897cbb5+
               </div>
             
           
@@ -403,7 +403,7 @@ can run the cell below, then congratulations! If not, then see the
 instructions</a>.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [24]:
+<span></span>In [1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -421,7 +421,7 @@ do!</p>
 required to do almost anything useful in <code class="docutils literal"><span class="pre">quippy</span></code>.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [25]:
+<span></span>In [2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -433,7 +433,7 @@ required to do almost anything useful in <code class="docutils literal"><span cl
 see what sort of information is encoded in it:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [26]:
+<span></span>In [3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -460,7 +460,7 @@ There’s also some other information in there that we don’t need right
 now. But let’s see how to access these properties from <code class="docutils literal"><span class="pre">quippy</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [27]:
+<span></span>In [4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -506,7 +506,7 @@ quippy we’ll update this tutorial.</p>
 molecule, so we can check the bonds and angles.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [28]:
+<span></span>In [5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -516,7 +516,7 @@ molecule, so we can check the bonds and angles.</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[28]:
+<span></span>Out[5]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -528,7 +528,7 @@ molecule, so we can check the bonds and angles.</p>
 What about the other ones?</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [29]:
+<span></span>In [6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -538,7 +538,7 @@ What about the other ones?</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[29]:
+<span></span>Out[6]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -552,17 +552,17 @@ What about the other ones?</p>
 <p>And how about an H-C-H angle?</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [30]:
+<span></span>In [7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
-<span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_angle</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_angle</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[30]:
+<span></span>Out[7]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -582,7 +582,7 @@ following alternative method for getting the distance between the two
 atoms:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [31]:
+<span></span>In [8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -592,7 +592,7 @@ atoms:</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[31]:
+<span></span>Out[8]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -610,7 +610,7 @@ now it’ll just be too confusing to use them - let’s stick with ASE.</p>
 Well, let’s take a look at this function’s help message:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [32]:
+<span></span>In [9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -702,7 +702,7 @@ code, which means it’s from QUIP and only works with <em>one-based</em> indice
 (i.e. to this function, the first atom has the index 1).</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [33]:
+<span></span>In [10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -712,7 +712,7 @@ code, which means it’s from QUIP and only works with <em>one-based</em> indice
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[33]:
+<span></span>Out[10]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -723,7 +723,7 @@ code, which means it’s from QUIP and only works with <em>one-based</em> indice
 <p>Whereas the ASE function has a different help string:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [34]:
+<span></span>In [11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -756,7 +756,7 @@ you’re not yet familiar with.</p>
 are some equivalents of the queries we’ve seen above:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [35]:
+<span></span>In [12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -766,7 +766,7 @@ are some equivalents of the queries we’ve seen above:</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[35]:
+<span></span>Out[12]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -776,7 +776,7 @@ are some equivalents of the queries we’ve seen above:</p>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [36]:
+<span></span>In [13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -801,7 +801,7 @@ as well: The central atom index is now the first argument.</p>
 ASE arrays, so the row and column indices are swapped.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [37]:
+<span></span>In [14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -811,7 +811,7 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[37]:
+<span></span>Out[14]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -823,7 +823,7 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [38]:
+<span></span>In [15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -833,7 +833,7 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[38]:
+<span></span>Out[15]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -845,7 +845,7 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [39]:
+<span></span>In [16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -855,7 +855,7 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[39]:
+<span></span>Out[16]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -876,7 +876,7 @@ hydrogen atom is already oriented along the Z axis; let’s try to rotate
 the molecule so that the second one points along the X axis.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [40]:
+<span></span>In [17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -888,7 +888,7 @@ the molecule so that the second one points along the X axis.</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[40]:
+<span></span>Out[17]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -904,9 +904,9 @@ underlying object! This can be one of the hardest things to understand
 for programmers coming from a different language, so make sure to read
 up on Python references and do some of their tutorials if you find this
 distinction confusing.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [42]:
+<span></span>In [18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -914,43 +914,9 @@ distinction confusing.</p>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-42-2ee3101f5e0f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-intense-fg ansi-bold">()</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 1</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>struct_old <span class="ansi-yellow-intense-fg ansi-bold">=</span> struct<span class="ansi-yellow-intense-fg ansi-bold">.</span>copy<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-
-<span class="ansi-green-intense-fg ansi-bold">/home/max/python-envs/quippy/lib/python2.7/site-packages/quippy/atoms.pyc</span> in <span class="ansi-cyan-fg">copy</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
-<span class="ansi-green-fg">    706</span>         <span class="ansi-red-intense-fg ansi-bold"># from ase.Atoms</span>
-<span class="ansi-green-fg">    707</span>         other<span class="ansi-yellow-intense-fg ansi-bold">.</span>constraints <span class="ansi-yellow-intense-fg ansi-bold">=</span> copy<span class="ansi-yellow-intense-fg ansi-bold">.</span>deepcopy<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>constraints<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 708</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>other<span class="ansi-yellow-intense-fg ansi-bold">.</span>adsorbate_info <span class="ansi-yellow-intense-fg ansi-bold">=</span> copy<span class="ansi-yellow-intense-fg ansi-bold">.</span>deepcopy<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>adsorbate_info<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    709</span>         <span class="ansi-green-intense-fg ansi-bold">return</span> other
-<span class="ansi-green-fg">    710</span>
-
-<span class="ansi-green-intense-fg ansi-bold">/home/max/python-envs/quippy/lib/python2.7/site-packages/ase/atoms.pyc</span> in <span class="ansi-cyan-fg">adsorbate_info</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
-<span class="ansi-green-fg">   1654</span>                       <span class="ansi-blue-intense-fg ansi-bold">&#34; inside the info dictionary, i.e. atoms.&#34;</span> <span class="ansi-yellow-intense-fg ansi-bold">+</span>
-<span class="ansi-green-fg">   1655</span>                       &#34;info[&#39;adsorbate_info&#39;]&#34;, FutureWarning)
-<span class="ansi-green-intense-fg ansi-bold">-&gt; 1656</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>info<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-blue-intense-fg ansi-bold">&#39;adsorbate_info&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">]</span>
-<span class="ansi-green-fg">   1657</span>
-<span class="ansi-green-fg">   1658</span>     <span class="ansi-yellow-intense-fg ansi-bold">@</span>adsorbate_info<span class="ansi-yellow-intense-fg ansi-bold">.</span>setter
-
-<span class="ansi-green-intense-fg ansi-bold">/home/max/python-envs/quippy/lib/python2.7/site-packages/quippy/dictionary.pyc</span> in <span class="ansi-cyan-fg">__getitem__</span><span class="ansi-blue-intense-fg ansi-bold">(self, k)</span>
-<span class="ansi-green-fg">    199</span>         <span class="ansi-green-intense-fg ansi-bold">except</span> KeyError<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    200</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> <span class="ansi-green-intense-fg ansi-bold">not</span> k <span class="ansi-green-intense-fg ansi-bold">in</span> self<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 201</span><span class="ansi-yellow-intense-fg ansi-bold">                 </span><span class="ansi-green-intense-fg ansi-bold">raise</span> KeyError<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#39;Key &#34;%s&#34; not found &#39;</span> <span class="ansi-yellow-intense-fg ansi-bold">%</span> k<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    202</span>
-<span class="ansi-green-fg">    203</span>             t <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>get_type_and_size<span class="ansi-yellow-intense-fg ansi-bold">(</span>k<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">]</span>
-
-<span class="ansi-red-intense-fg ansi-bold">KeyError</span>: &#39;Key &#34;adsorbate_info&#34; not found &#39;
-</pre></div></div>
-</div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [43]:
+<span></span>In [19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -960,7 +926,7 @@ distinction confusing.</p>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [44]:
+<span></span>In [20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -970,7 +936,7 @@ distinction confusing.</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[44]:
+<span></span>Out[20]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -992,7 +958,7 @@ of the new structure; you may want to compute the RMS difference.</p>
 structure from its database:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [45]:
+<span></span>In [21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -1003,7 +969,7 @@ structure from its database:</p>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [46]:
+<span></span>In [22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -1013,7 +979,7 @@ structure from its database:</p>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>In [47]:
+<span></span>In [23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
@@ -1023,7 +989,7 @@ structure from its database:</p>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
-<span></span>Out[47]:
+<span></span>Out[23]:
 </pre></div>
 </div>
 <div class="output_area highlight-none"><div class="highlight"><pre>
@@ -1101,7 +1067,7 @@ next tutorial.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'2139489+',
+            VERSION:'897cbb5+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
