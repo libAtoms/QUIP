@@ -47,6 +47,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Brenner (carbon)
  - OpenKIM (general interface)
  - Lennard-Jones
+ - MBD (many-body dispersion correction)
  - Morse
  - Partridge-Schwenke (water monomer)
  - Stillinger-Weber (carbon, silicon, germanium)
@@ -54,6 +55,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Sutton-Chen
  - Tangney-Scandolo (silica, titania etc)
  - Tersoff (silicon, carbon)
+ - Tkatchenko-Sheffler pairwise dispersion correction
 
 The following tight-binding functional forms and parametrisations are
 implemented:
