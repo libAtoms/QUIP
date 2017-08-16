@@ -60,7 +60,13 @@
 !% To use tail corrections, compute this integral using any
 !% method you like and supply it ($I$) as 'tail_correction_const'
 !% in the parameter file or on the command line (or use an existing
-!% parameter file that already has it).
+!% parameter file that already has it).  Alternatively, supply a
+!% factor $\lambda$ (called 'tail_corr_factor') between 0 and 1 where:
+!% \[
+!%     \lambda = \frac{-3 \int_{r_{in}}^{r_{out}} r^{-4} S(r) dr}{r_{out}^{-3} - r_{in}^{-3}}
+!% \]
+!% which may be more intuitive as the fraction of "missing" energy
+!% within the transition region.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -70,7 +76,7 @@ module IPModel_DispTS_module
 
 use error_module
 use system_module, only : dp, inoutput, print, PRINT_NERD, verbosity_push_decrement, verbosity_pop, operator(//)
-use units_module, only : GPA_TO_EV_A3
+use units_module, only : GPA_TO_EV_A3, PI
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -96,6 +102,7 @@ type IPModel_DispTS
   real(dp) :: cutoff = 0.0_dp
   real(dp) :: cutoff_transition_width = 0.5_dp
 
+  real(dp) :: tail_corr_smooth_factor = 0.0_dp
   real(dp) :: tail_correction_const = 0.0_dp
 
   ! Constants for now...
@@ -135,11 +142,13 @@ subroutine IPModel_DispTS_Initialise_str(this, args_str, param_str)
   character(len=*), intent(in) :: args_str, param_str
 
   type(Dictionary) :: params
+  logical :: use_smooth_factor
 
   call Finalise(this)
 
   call initialise(params)
   this%label=''
+  use_smooth_factor = .false.
   call param_register(params, 'label', '', this%label, help_string="Label to identify the potential")
   call param_register(params, 'only_inter_resid', 'F', this%only_inter_resid, &
       help_string="If True, only calculate interactions between atoms with different ResIDs (requires 'resid' property to be present)")
@@ -148,14 +157,28 @@ subroutine IPModel_DispTS_Initialise_str(this, args_str, param_str)
   call param_register(params, 'tail_correction_const', '0.0', this%tail_correction_const, has_value_target=this%do_tail_corrections, &
       help_string="Constant used to calculate tail corrections.  Both the energy and virial corrections are equal to this value divided by the cell volume &
       multiplied by the sum of all pairwise C6 coefficients.  Units: Ang^-3.")
+  call param_register(params, 'tail_corr_factor', '0.0', this%tail_corr_smooth_factor, has_value_target=use_smooth_factor, &
+      help_string="Proportion of missing energy in the transition region; used to calculate tail corrections instead of 'tail_correction_const'.")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_DispTS_Initialise_str args_str')) then
     call system_abort("IPModel_DispTS_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
 
   call IPModel_DispTS_read_params_xml(this, param_str)
+  if (this%tail_corr_smooth_factor .fne. 0.0_dp) then
+     use_smooth_factor = .true.
+  endif
 
-  !  Add initialisation code here
+  if (use_smooth_factor) then
+     if (this%do_tail_corrections) then
+        call system_abort("IPModel_DispTS_Initialise_str: Supply only one of 'tail_corr_factor' or 'tail_correction_const'")
+     else
+        this%tail_correction_const = -2.0 * PI / 3.0 * &
+           ((1.0_dp - this%tail_corr_smooth_factor)/(this%cutoff - this%cutoff_transition_width)**3 + &
+            this%tail_corr_smooth_factor/this%cutoff**3)
+        this%do_tail_corrections = .true.
+     endif
+  endif
 
 end subroutine IPModel_DispTS_Initialise_str
 
@@ -547,6 +570,12 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          parse_ip%do_tail_corrections = .false.
       endif
 
+      call QUIP_FoX_get_value(attributes, 'tail_corr_factor', value, status)
+      if (status == 0) then
+         read (value, *), parse_ip%tail_corr_smooth_factor
+      else
+         parse_ip%tail_corr_smooth_factor = 0.0_dp
+      endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       allocate(parse_ip%c6_free(parse_ip%n_types))

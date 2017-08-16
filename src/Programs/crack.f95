@@ -597,7 +597,7 @@ program crack
   end if
 
 
-#ifndef HAVE_NETCDF
+#ifndef HAVE_NETCDF4
   if (params%io_netcdf) &
        call system_abort('io_netcdf = .true. but NetCDF support not compiled in')
 #endif 
