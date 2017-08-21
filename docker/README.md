@@ -37,7 +37,7 @@ We provide different end-user images:
 
 The default command runs a Jupyter notebook server that can be used from
 your browser. The images should download automatically when you ``docker run``
-but you will need to log in if you have access the private image.
+but you will need to log in if you have access to the private image.
 A typical launch command might look like:
 
 ```
@@ -109,12 +109,12 @@ The ``Dockerfile`` file pulls in the QUIP source code from GitHub so it
 is fine to build that in place ``docker build . -t your_tag_here``. Any
 changes that you make to the QUIP code will not be included in the image.
 
-To modify QUIP in you image, or build your own image that includes GAP,
+To modify QUIP in your image, or build your own image that includes GAP,
 copy ``Dockerfile.gap`` to the root directory of QUIP as ``Dockerfile``
 and build from there. That build copies the contents of your own QUIP
 directory. You can customise your build by editing the file 
 ``docker/arch/ALL_Makefile.linux_x86_64_gfortran.inc`` or adding your own
-``Makefile.in`` into arch and changing the value of ``BUILD`` in the
+``Makefile.in`` into ``arch`` and changing the value of ``BUILD`` in the
 Dockerfile so it will build using your own customisations.
 
 
