@@ -1,7 +1,7 @@
 <!-- Free-atom parameters from Gould and Bu\v{c}ko, JCTC 2016; radii from the original (2009) T-S paper -->
 <TS>
     <Potential label="ts" init_args="IP DispTS"/>
-    <DispTS_params n_types="2" cutoff="15.0" only_inter_resid="F" label="dispts">
+    <DispTS_params n_types="2" cutoff="15.0" cutoff_transition_width="1.0" only_inter_resid="T" tail_correction_const="-0.00068792623" label="dispts">
     <!-- Converted from atomic units (except for r) -->
     <per_type_data type="1" atomic_num="1" alpha_free="0.6668312007439030" c6_free="3.8899001042953523" r_vdW_free="1.64" />
     <per_type_data type="2" atomic_num="6" alpha_free="1.7337611219341476" c6_free="28.6215384018045143" r_vdW_free="1.9" />

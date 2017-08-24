@@ -434,7 +434,7 @@ implicit none
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .true., print_cinoutput=relax_io, &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 	length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
      res2=precond_res2, infoverride = precond_infoverride,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu) 
               call system_timer('quip/precon_minim')
@@ -447,7 +447,7 @@ implicit none
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                         external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                         external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride, &
                      bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
@@ -461,7 +461,7 @@ implicit none
               call system_timer('quip/minim')
 	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
+		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
               call system_timer('quip/minim')
 	   endif
@@ -473,7 +473,7 @@ implicit none
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
    res2=precond_res2, infoverride=precond_infoverride,convchoice=precond_conv_method,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_minim')
@@ -486,7 +486,7 @@ implicit none
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                         external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                         external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2,infoverride=precond_infoverride,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_dimer')
@@ -498,7 +498,7 @@ implicit none
               call system_timer('quip/minim')
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
+                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
               call system_timer('quip/minim')
            end if
@@ -525,12 +525,12 @@ implicit none
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"
-           call print(c0*GPA)
+           call print(c0*EV_A3_IN_GPA)
            mainlog%prefix=""
         endif
         if (do_cij) then
            mainlog%prefix="CIJ"
-           call print(c*GPA)
+           call print(c*EV_A3_IN_GPA)
            mainlog%prefix=""
         endif
         call print("")
@@ -739,7 +739,7 @@ implicit none
               call print ("Virial " // V0(i,:))
            end do
            do i=1, 3
-              call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*GPA))
+              call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*EV_A3_IN_GPA))
            end do
         end if
 
