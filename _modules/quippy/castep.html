@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.castep &mdash; quippy 4349f73+ documentation</title>
+  <title>quippy.castep &mdash; quippy b231cc9+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 4349f73+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy b231cc9+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                4349f73+
+                b231cc9+
               </div>
             
           
@@ -1227,12 +1227,16 @@
            <span class="k">if</span> <span class="n">spin_polarised</span><span class="p">:</span>
                <span class="n">atoms</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="s1">&#39;hirshfeld_spin&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hirshfeld_basic_lines</span><span class="p">:</span>
+               <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                <span class="k">try</span><span class="p">:</span>
-                   <span class="k">if</span> <span class="n">spin_polarised</span><span class="p">:</span>
-                       <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">spin</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                       <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">spin</span> <span class="o">=</span> <span class="n">fields</span>
                        <span class="n">spin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spin</span><span class="p">)</span>
+                   <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                       <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span> <span class="o">=</span> <span class="n">fields</span>
+                       <span class="n">spin</span> <span class="o">=</span> <span class="mf">0.0</span>
                    <span class="k">else</span><span class="p">:</span>
-                       <span class="n">el</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">charge</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                       <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
                    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
                    <span class="n">charge</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span>
                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -1774,7 +1778,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'4349f73+',
+            VERSION:'b231cc9+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
