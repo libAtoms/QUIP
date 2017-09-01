@@ -1047,12 +1047,16 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
            if spin_polarised:
                atoms.add_property('hirshfeld_spin', 0.0)
            for line in hirshfeld_basic_lines:
+               fields = line.split()
                try:
-                   if spin_polarised:
-                       el, num, charge, spin = line.split()
+                   if len(fields) == 4:
+                       el, num, charge, spin = fields
                        spin = float(spin)
+                   elif len(fields) == 3:
+                       el, num, charge = fields
+                       spin = 0.0
                    else:
-                       el, num, charge = line.split()
+                       raise ValueError()
                    num = int(num)
                    charge = float(charge)
                except ValueError:
