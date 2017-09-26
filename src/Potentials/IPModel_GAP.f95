@@ -324,9 +324,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
    call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
 
    call param_register(params, 'only_descriptor', '0', only_descriptor, has_value_target=do_select_descriptor, help_string="Only select a single coordinate")
-   call param_register(params, 'local_gap_variance', '', calc_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
-   call param_register(params, 'print_gap_variance', 'F', print_gap_variance, help_string="Compute variance estimate of the GAP prediction per descriptor and prints it.")
-   call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
    call param_register(params, 'energy_per_coordinate', '', calc_energy_per_coordinate, help_string="Compute energy per GP coordinate and return it in the Atoms object.")
 
    if(present(args_str)) then
