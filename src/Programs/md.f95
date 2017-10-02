@@ -41,7 +41,7 @@ private
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
-    real(dp) :: T_initial, T_cur, T_hold, T_slope, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
+    real(dp) :: T_initial, T_cur, T_hold, T_slope, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor, barostat_timescale_T
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
     real(dp) :: cutoff_skin
@@ -68,6 +68,7 @@ private
     logical :: netcdf4
     real(dp):: avgtime
     logical :: NPT_NB
+    logical :: print_restraints
   end type md_params
 
 public :: get_params, print_params, do_prints, initialise_md_thermostat, update_md_thermostat
@@ -108,6 +109,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'all_purpose_thermostat_NHL_NH_tau', '0.0', params%all_purpose_thermostat_NHL_NH_tau, help_string="tau of N-H part of NHL in all purpose thermostat")
   call param_register(md_params_dict, 'nose_hoover_thermostat', 'F', params%nose_hoover_thermostat, help_string="if true, use new plain Nose Hoover for const T")
   call param_register(md_params_dict, 'barostat_const_T', 'T', params%barostat_const_T, help_string="if true and running const_T, thermalize barostat for const T")
+  call param_register(md_params_dict, 'barostat_timescale_T', '-1.0', params%barostat_timescale_T, help_string="T used to set barostat timescale when barostat_const_T=F")
   ! call param_register(md_params_dict, 'const_T', 'F', params%const_T, help_string="if true, do constant T, set automatically when T >= 0.0")
   ! call param_register(md_params_dict, 'const_P', 'F', params%const_P, help_string="is true, do constant P")
   ! call param_register(md_params_dict, 'variable_T', 'F', params%variable_T, help_string="set automatically when T_final >= 0")
@@ -155,6 +157,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'verbosity', 'NORMAL', params%verbosity, help_string="verbosity level of run")
   call param_register(md_params_dict, 'calc_local_ke', 'F', params%calc_local_ke, help_string="if true, calculate local ke")
   call param_register(md_params_dict, 'netcdf4', 'F', params%netcdf4, help_string="if true, write trajectories in NetCDF4 (HDF5, compressed) format")
+  call param_register(md_params_dict, 'print_restraints', 'F', params%print_restraints, help_string="if true, print restraint stuff for PMF sampling")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -275,6 +278,7 @@ subroutine print_params(params)
   call print("md_params%finite_strain_formulation=" // params%finite_strain_formulation)
   call print("md_params%barostat_tau=" // params%barostat_tau)
   call print("md_params%barostat_const_T=" // params%barostat_const_T)
+  call print("md_params%barostat_timescale_T=" // params%barostat_timescale_T)
   call print("md_params%barostat_mass_factor=" // params%barostat_mass_factor)
 
   call print("md_params%calc_virial=" // params%calc_virial)
@@ -304,6 +308,7 @@ subroutine print_params(params)
   call print("md_params%extra_heat=" // params%extra_heat)
   call print("md_params%continuation=" // params%continuation)
   call print("md_params%calc_local_ke=" // params%calc_local_ke)
+  call print("md_params%print_restraints=" // params%print_restraints)
 end subroutine print_params
 
 subroutine print_usage()
@@ -340,11 +345,13 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
   if (params%summary_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%summary_interval) == 0) call print_summary(params, ds, e)
   endif
-  if (allocated(restraint_stuff)) then
-     if (params%summary_interval > 0) then
-	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) &
-	   call print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
-     endif
+  if (params%print_restraints) then
+      if (allocated(restraint_stuff)) then
+         if (params%summary_interval > 0) then
+            if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) &
+               call print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
+         endif
+      endif
   endif
 
   if (params%params_print_interval > 0) then
@@ -497,10 +504,10 @@ subroutine initialise_md_thermostat(ds, params)
 	 if (params%const_P) then
 	    if (params%const_T .and. params%barostat_const_T) then
 	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor)
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor, thermalise=.true.)
 	    else
 	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, W_epsilon_factor=params%barostat_mass_factor)
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%barostat_timescale_T, W_epsilon_factor=params%barostat_mass_factor, thermalise=.false.)
 	    endif
 	 endif
 	 if (params%const_T) then
