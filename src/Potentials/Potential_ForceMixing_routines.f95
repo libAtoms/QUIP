@@ -390,7 +390,8 @@
 
     if (len_trim(calc_energy) > 0 .or. len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0 .or. len_trim(calc_local_virial) > 0 .or. &
         len_trim(calc_force) <= 0) then
-       RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial, local_energy or local_virial', error)
+        RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial, local_energy or local_virial', error)
+        !call print('CAREFUL: ONLY RETURNING FORCES NO ENERGIES', PRINT_VERBOSE)
     endif
 
     allocate(f_mm(3,at%N),f_qm(3,at%N))

@@ -170,7 +170,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   call finalise(params)
 
   call IPModel_GAP_read_params_xml(this, param_str)
-  call gp_readXML(this%my_gp, param_str,label=trim(this%label))
+  call gp_readXML(this%my_gp, param_str, label=trim(this%label))
   allocate(this%my_descriptor(this%my_gp%n_coordinate))
 
   this%cutoff = 0.0_dp
@@ -314,7 +314,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
    call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
    call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
 
-   call param_register(params, 'local_gap_variance', '', calc_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
+   call param_register(params, 'do_local_gap_variance', 'F', do_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
+   call param_register(params, 'local_gap_variance', 'loc_gap_var', calc_local_gap_variance, help_string="Compute variance estimate of the GAP prediction per atom and return it in the Atoms object.")
    call param_register(params, 'print_gap_variance', 'F', print_gap_variance, help_string="Compute variance estimate of the GAP prediction per descriptor and prints it.")
    call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
 
@@ -345,7 +346,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   call concat(my_args_str," xml_version="//this%xml_version)
 
   do_local_gap_variance = len_trim(calc_local_gap_variance) > 0
-  do_gap_variance = do_local_gap_variance .or. print_gap_variance
+!  do_local_gap_variance = .true.
+!  do_gap_variance = do_local_gap_variance .or. print_gap_variance
+!  local_gap_variance="local_gap_variance"
   do_energy_per_coordinate = len_trim(calc_energy_per_coordinate) > 0
 
   ! Has to be allocated as it's in the reduction clause.
