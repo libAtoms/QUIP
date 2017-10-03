@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.atoms &mdash; quippy b27ab6a+ documentation</title>
+  <title>quippy.atoms &mdash; quippy 8808e1f+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy b27ab6a+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 8808e1f+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                b27ab6a+
+                8808e1f+
               </div>
             
           
@@ -490,7 +490,8 @@
 
     <span class="n">name_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;positions&#39;</span>       <span class="p">:</span> <span class="s1">&#39;pos&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;numbers&#39;</span>         <span class="p">:</span> <span class="s1">&#39;Z&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;charges&#39;</span>         <span class="p">:</span> <span class="s1">&#39;charge&#39;</span><span class="p">}</span>
+                <span class="s1">&#39;initial_charges&#39;</span> <span class="p">:</span> <span class="s1">&#39;charge&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;initial_magmoms&#39;</span> <span class="p">:</span> <span class="s1">&#39;magmoms&#39;</span><span class="p">}</span>
 
     <span class="n">rev_name_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">name_map</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">name_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
@@ -918,8 +919,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;spacegroup&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;spacegroup&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">symbol</span>
 
             <span class="c1"># create extra properties for any non-standard arrays</span>
-            <span class="n">standard_ase_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="s1">&#39;charges&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;momenta&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="s1">&#39;magmoms&#39;</span> <span class="p">]</span>
+            <span class="n">standard_ase_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_charges&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;momenta&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_magmoms&#39;</span> <span class="p">]</span>
 
             <span class="k">for</span> <span class="n">ase_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                 <span class="n">quippy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ase_name</span><span class="p">,</span> <span class="n">ase_name</span><span class="p">)</span>
@@ -1268,7 +1269,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'b27ab6a+',
+            VERSION:'8808e1f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

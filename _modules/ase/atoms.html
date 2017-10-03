@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ase.atoms &mdash; quippy b27ab6a+ documentation</title>
+  <title>ase.atoms &mdash; quippy 8808e1f+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy b27ab6a+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy 8808e1f+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                b27ab6a+
+                8808e1f+
               </div>
             
           
@@ -243,7 +243,7 @@
 <span class="sd">        for collinear calculations or three numbers for each atom for</span>
 <span class="sd">        non-collinear calculations.</span>
 <span class="sd">    charges: list of float</span>
-<span class="sd">        Atomic charges.</span>
+<span class="sd">        Initial atomic charges.</span>
 <span class="sd">    cell: 3x3 matrix or length 3 or 6 vector</span>
 <span class="sd">        Unit cell vectors.  Can also be given as just three</span>
 <span class="sd">        numbers for orthorhombic cells, or 6 numbers, where</span>
@@ -343,11 +343,11 @@
                 <span class="n">tags</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">momenta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">):</span>
                 <span class="n">momenta</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_momenta</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">magmoms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;magmoms&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">magmoms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;initial_magmoms&#39;</span><span class="p">):</span>
                 <span class="n">magmoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">masses</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
                 <span class="n">masses</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_masses</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">charges</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;charges&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">charges</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;initial_charges&#39;</span><span class="p">):</span>
                 <span class="n">charges</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_initial_charges</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">cell</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">()</span>
@@ -408,7 +408,8 @@
         <span class="k">if</span> <span class="n">pbc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pbc</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_pbc</span><span class="p">(</span><span class="n">pbc</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">momenta</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)),</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">default</span><span class="p">(</span><span class="n">momenta</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)),</span>
+                         <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
@@ -628,8 +629,9 @@
 <div class="viewcode-block" id="Atoms.has"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.has">[docs]</a>    <span class="k">def</span> <span class="nf">has</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check for existence of array.</span>
 
-<span class="sd">        name must be one of: &#39;tags&#39;, &#39;momenta&#39;, &#39;masses&#39;, &#39;magmoms&#39;,</span>
-<span class="sd">        &#39;charges&#39;.&quot;&quot;&quot;</span>
+<span class="sd">        name must be one of: &#39;tags&#39;, &#39;momenta&#39;, &#39;masses&#39;, &#39;initial_magmoms&#39;,</span>
+<span class="sd">        &#39;initial_charges&#39;.&quot;&quot;&quot;</span>
+        <span class="c1"># XXX extend has to calculator properties</span>
         <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span></div>
 
     <span class="k">def</span> <span class="nf">set_atomic_numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numbers</span><span class="p">):</span>
@@ -771,15 +773,16 @@
 <span class="sd">        or non-collinear spins).&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">magmoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;magmoms&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;initial_magmoms&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">magmoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">magmoms</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;magmoms&#39;</span><span class="p">,</span> <span class="n">magmoms</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">magmoms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;initial_magmoms&#39;</span><span class="p">,</span> <span class="n">magmoms</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                           <span class="n">magmoms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
 
 <div class="viewcode-block" id="Atoms.get_initial_magnetic_moments"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_initial_magnetic_moments">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial_magnetic_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get array of initial magnetic moments.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s1">&#39;magmoms&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;magmoms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;initial_magmoms&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;initial_magmoms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
 
@@ -799,14 +802,14 @@
         <span class="sd">&quot;&quot;&quot;Set the initial charges.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">charges</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;charges&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;initial_charges&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;charges&#39;</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="p">())</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;initial_charges&#39;</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="p">())</span></div>
 
 <div class="viewcode-block" id="Atoms.get_initial_charges"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_initial_charges">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get array of initial charges.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s1">&#39;charges&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;charges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;initial_charges&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;initial_charges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
 
@@ -1109,15 +1112,17 @@
             <span class="c1"># interpreted at 0 and 1 indices.</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
-        <span class="n">condel</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">copy</span>
+
+        <span class="n">conadd</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Constraints need to be deepcopied, but only the relevant ones.</span>
+        <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="p">(</span><span class="n">FixConstraint</span><span class="p">,</span> <span class="n">FixBondLengths</span><span class="p">)):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">con</span><span class="o">.</span><span class="n">index_shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">conadd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-                    <span class="n">condel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
-
-        <span class="kn">import</span> <span class="nn">copy</span>
+                    <span class="k">pass</span>
 
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">,</span>
                                <span class="c1"># should be communicated to the slice as well</span>
@@ -1128,9 +1133,7 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="c1"># Constraints need to be deepcopied, but only the relevant ones.</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">([</span><span class="n">con</span> <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="k">if</span>
-                                            <span class="n">con</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">condel</span><span class="p">])</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">conadd</span>
         <span class="k">return</span> <span class="n">atoms</span>
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
@@ -1988,6 +1991,9 @@
         <span class="kn">from</span> <span class="nn">ase.io</span> <span class="k">import</span> <span class="n">write</span>
         <span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_images_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span>
+
 <div class="viewcode-block" id="Atoms.edit"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.edit">[docs]</a>    <span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Modify atoms interactively through ASE&#39;s GUI viewer.</span>
 
@@ -2002,21 +2008,7 @@
         <span class="kn">from</span> <span class="nn">ase.gui.gui</span> <span class="k">import</span> <span class="n">GUI</span>
         <span class="n">images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
         <span class="n">gui</span> <span class="o">=</span> <span class="n">GUI</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
-        <span class="n">gui</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-        <span class="c1"># use atoms returned from gui:</span>
-        <span class="c1"># (1) delete all currently available atoms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="n">edited_atoms</span> <span class="o">=</span> <span class="n">gui</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">get_atoms</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="c1"># (2) extract atoms from edit session</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">edited_atoms</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">_get_constraints</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_initial_magnetic_moments</span><span class="p">(</span>
-            <span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">edited_atoms</span><span class="o">.</span><span class="n">get_tags</span><span class="p">())</span>
-        <span class="k">return</span></div>
+        <span class="n">gui</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
 
 
 <span class="k">def</span> <span class="nf">string2symbols</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
@@ -2147,7 +2139,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'b27ab6a+',
+            VERSION:'8808e1f+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
