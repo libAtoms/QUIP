@@ -61,6 +61,7 @@ include 'IPModel_interface.h'
 public :: IPModel_ZBL
 type IPModel_ZBL
   real(dp) :: cutoff = 0.0
+  real(dp) :: cutoff_width = 0.0
   real(dp) :: a_pre_exp = 0.46850
   real(dp) :: a_exp = 0.23
   real(dp) :: p_pre_exp_1 = 0.18175
@@ -113,6 +114,7 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   endif
   call param_register(params, 'E_scale', '1.0', this%E_scale, help_string="E_scale")
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string="cutoff")
+  call param_register(params, 'cutoff_width', '0.0', this%cutoff_width, help_string="smooth cutoff width")
   call param_register(params, 'a_pre_exp', '0.46850', this%a_pre_exp, help_string="pre-exponential factor for screening parameter")
   call param_register(params, 'a_exp', '0.23', this%a_exp, help_string="exponent of charge of nuclei")
   call param_register(params, 'p_pre_exp_1', '0.18175', this%p_pre_exp_1, help_string="first pre-exponential factor of screening function")
@@ -155,6 +157,7 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
    real(dp) :: a, c
    real(dp) :: t_1, t_2, t_3, t_4
    real(dp) :: de, de_dr
+   real(dp) :: f_cut = 1.0, df_cut = 0.0
 
    INIT_ERROR(error)
 
@@ -173,6 +176,9 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
       local_virial = 0.0
       RAISE_ERROR('IPModel_ZBL_Calc: local_virial calculation requested but not supported yet',error)
    endif
+   if (present(local_e)) then
+      RAISE_ERROR('IPModel_ZBL_Calc: local_e calculation requested but not supported yet',error)
+   end if
 
    do i = 1, at%N
       i_is_min_image = is_min_image(at,i)
@@ -189,26 +195,26 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
          if (i < j) cycle
 
          if (this%cutoff == 0.0 .or. r <= this%cutoff) then
-               c = ke_e2*real(at%Z(i))*real(at%Z(j))/r
-               a = this%a_pre_exp/(real(at%Z(i))**this%a_exp + real(at%Z(j))**this%a_exp)
-               rs = r/a
-               t_1 = this%p_pre_exp_1*exp(this%p_exp_1*rs)
-               t_2 = this%p_pre_exp_2*exp(this%p_exp_2*rs)
-               t_3 = this%p_pre_exp_3*exp(this%p_exp_3*rs)
-               t_4 = this%p_pre_exp_4*exp(this%p_exp_4*rs)
-            if (present(local_e)) then
-
-            end if
+            c = ke_e2*real(at%Z(i))*real(at%Z(j))/r
+            a = this%a_pre_exp/(real(at%Z(i))**this%a_exp + real(at%Z(j))**this%a_exp)
+            rs = r/a
+            t_1 = this%p_pre_exp_1*exp(this%p_exp_1*rs)
+            t_2 = this%p_pre_exp_2*exp(this%p_exp_2*rs)
+            t_3 = this%p_pre_exp_3*exp(this%p_exp_3*rs)
+            t_4 = this%p_pre_exp_4*exp(this%p_exp_4*rs)
+            if (this%cutoff > 0.0 .and. this%cutoff_width > 0.0) f_cut = poly_switch(r, this%cutoff, this%cutoff_width)
+            de = c*(t_1+t_2+t_3+t_4)
             if (present(e)) then
-               de = c*(t_1+t_2+t_3+t_4)
                if (i == j) then
-                  e = e + 0.5*de
+                  e = e + 0.5*de*f_cut
                else
-                  e = e + de
+                  e = e + de*f_cut
                end if
             end if
             if (present(f)) then
+               if (this%cutoff > 0.0 .and. this%cutoff_width > 0.0) df_cut = dpoly_switch(r, this%cutoff, this%cutoff_width)
                de_dr = -c/r*(t_1+t_2+t_3+t_4) + c/a*(this%p_exp_1*t_1+this%p_exp_2*t_2+this%p_exp_3*t_3+this%p_exp_4*t_4)
+               de_dr = de_dr*f_cut + de*df_cut
                f(:,i) = f(:,i) + de_dr*dr
                if ( i/=j ) f(:,j) = f(:,j) - de_dr*dr
             end if
@@ -237,6 +243,7 @@ subroutine IPModel_ZBL_Print(this, file)
 
   call Print("IPModel_ZBL : ZBL Potential", file=file)
   call Print("IPModel_ZBL : cutoff = " // this%cutoff, file=file)
+  call Print("IPModel_ZBL : cutoff_width = " // this%cutoff_width, file=file)
   call Print("IPModel_ZBL : a_pre_exp = " // this%a_pre_exp, file=file)
   call Print("IPModel_ZBL : a_exp = " // this%a_exp, file=file)
   call Print("IPModel_ZBL : p_pre_exp_1 = " // this%p_pre_exp_1, file=file)
