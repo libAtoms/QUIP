@@ -531,6 +531,14 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         for i in self.indices:
             yield self.get_atom(i)
 
+    def __eq__(self, other):
+        """Test for equality (==) of two Atoms objects.  Use equivalent() for 
+        better compatibility with ase.atoms.Atoms.__eq__() semantics, so things like
+        calculators that use == to check for recalculation behave
+        as expected"""
+
+        return self.equivalent(other)
+
     def equivalent(self, other):
         """Test for equivalence of two Atoms objects.
 
