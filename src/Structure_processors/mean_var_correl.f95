@@ -315,7 +315,7 @@ use mean_var_correl_util_mod
 implicit none
   integer :: n_bins, n_data, n_weights, i, j, bin_i, skip, max_frame
   logical :: do_weights
-  real(dp), allocatable :: data(:,:), weights(:), data_line(:), data_t(:,:), weights_t(:)
+  real(dp), allocatable :: data(:,:), weights(:), data_line(:), data_t(:,:), weights_t(:), weighted_data(:,:)
   integer :: stat, new_data_array_size
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
@@ -396,8 +396,8 @@ implicit none
   endif
 
   call initialise(data_params)
-  call param_register(data_params, "n_bins", param_mandatory, n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(data_params, "n_data", param_mandatory, n_data, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(data_params, "n_bins", param_mandatory, n_bins, help_string="number of bins at each data timepoint")
+  call param_register(data_params, "n_data", '-1', n_data, help_string="number of data timepoints, < 0 to figure out from length of file")
   call param_register(data_params, "do_weights", 'F', do_weights, help_string="If true, do weighted mean")
 
   call initialise(infile, infile_name, INPUT)
@@ -513,17 +513,20 @@ implicit none
   sz = size(data, other_index)
   r_sz = size(data, reduction_index)
 
+  call initialise(outfile, outfile_name, OUTPUT)
+
+
   allocate(data_mean(sz))
   if (n_weights > 0) then
+      allocate(weighted_data(size(data,1),size(data,2)))
       do i=1, n_data
-         data(:,i) = data(:,i) * weights(i)
+         weighted_data(:,i) = data(:,i) * weights(i)
       end do
-      data_mean = sum(data,reduction_index) / sum(weights)
+      data_mean = sum(weighted_data,reduction_index) / sum(weights)
+      deallocate(weighted_data)
   else
       data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
   endif
-
-  call initialise(outfile, outfile_name, OUTPUT)
 
   if (do_var) then
     allocate(data_var(sz))
@@ -532,12 +535,17 @@ implicit none
         data_var(i) = sum((data(:,i)-data_mean(i))**2)/size(data,reduction_index)
       end do
     else 
-      do i=1, sz
-        data_var(i) = sum((data(i,:)-data_mean(i))**2)/size(data,reduction_index)
-      end do
+      if (n_weights > 0) then
+          do i=1, sz
+            data_var(i) = sum(weights(:)*(data(i,:)-data_mean(i))**2)/sum(weights)
+          end do
+       else
+          do i=1, sz
+            data_var(i) = sum((data(i,:)-data_mean(i))**2)/size(data,reduction_index)
+          end do
+       endif
     endif
   endif
-
 
   if (do_correl .or. do_correlation_var_effective_N .or. do_summed_ac_effective_N) then
     call calc_correl(data, n_bins, n_data, over_bins, correlation_max_lag, correlation_subtract_mean, data_correl)
