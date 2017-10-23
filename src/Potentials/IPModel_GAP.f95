@@ -260,6 +260,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
   logical :: do_rescale_r, do_rescale_E, do_gap_variance, print_gap_variance, do_local_gap_variance, do_energy_per_coordinate
   integer :: only_descriptor
   logical :: do_select_descriptor
+  logical :: mpi_parallel_descriptor
 
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: my_args_str
@@ -326,6 +327,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
    call param_register(params, 'only_descriptor', '0', only_descriptor, has_value_target=do_select_descriptor, help_string="Only select a single coordinate")
    call param_register(params, 'energy_per_coordinate', '', calc_energy_per_coordinate, help_string="Compute energy per GP coordinate and return it in the Atoms object.")
 
+   call param_register(params, 'mpi_parallel_descriptor', 'F', mpi_parallel_descriptor, help_string="Do MPI parallelism over descriptor instances rather than atoms")
+
    if(present(args_str)) then
      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
        call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
@@ -371,10 +374,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
            RAISE_ERROR("IPModel_GAP: mpi_local_mask property already present", error)
         endif
 
-        allocate(mpi_local_mask(at%N))
-        call add_property_from_pointer(at,'mpi_local_mask',mpi_local_mask,error=error)
+        if (.not. mpi_parallel_descriptor) then
+           allocate(mpi_local_mask(at%N))
+           call add_property_from_pointer(at,'mpi_local_mask',mpi_local_mask,error=error)
 
-        call concat(my_args_str," atom_mask_name=mpi_local_mask")
+           call concat(my_args_str," atom_mask_name=mpi_local_mask")
+        endif
      endif
   endif
 
@@ -391,7 +396,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         end if
      end if
 
-     if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
+     if (.not. mpi_parallel_descriptor) then ! If parallelising over atoms, not descriptors
+        if(mpi%active) call descriptor_MPI_setup(this%my_descriptor(i_coordinate),at,mpi,mpi_local_mask,error)
+     endif
 
      d = descriptor_dimensions(this%my_descriptor(i_coordinate))
 
@@ -420,6 +427,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !$omp do schedule(dynamic)
      loop_over_descriptor_instances: do i = 1, size(my_descriptor_data%x)
         if( .not. my_descriptor_data%x(i)%has_data ) cycle
+
+        if (mpi_parallel_descriptor .and. present(mpi)) then
+            ! This blocking strategy should yield a good, memory-local distribution of descriptors to processors
+           if (.not. ((i - 1) * size(my_descriptor_data%x) / mpi%n_procs) == (mpi%my_proc - 1)) cycle
+        endif
 
         !call system_timer('IPModel_GAP_Calc_gp_predict')
 
@@ -529,7 +541,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
         if(do_energy_per_coordinate) call sum_in_place(mpi,energy_per_coordinate)
 
-        call remove_property(at,'mpi_local_mask', error=error) 
+        if (.not. mpi_parallel_descriptor) call remove_property(at,'mpi_local_mask', error=error)
         deallocate(mpi_local_mask)
      endif
   endif
