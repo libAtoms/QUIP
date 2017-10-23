@@ -428,9 +428,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
      loop_over_descriptor_instances: do i = 1, size(my_descriptor_data%x)
         if( .not. my_descriptor_data%x(i)%has_data ) cycle
 
-        if (mpi_parallel_descriptor .and. present(mpi)) then
+        if (mpi_parallel_descriptor .and. mpi%active) then
             ! This blocking strategy should yield a good, memory-local distribution of descriptors to processors
-           if (.not. ((i - 1) * size(my_descriptor_data%x) / mpi%n_procs) == (mpi%my_proc - 1)) cycle
+           if (.not. ((i - 1) * mpi%n_procs / size(my_descriptor_data%x)) == (mpi%my_proc - 1)) cycle
         endif
 
         !call system_timer('IPModel_GAP_Calc_gp_predict')
