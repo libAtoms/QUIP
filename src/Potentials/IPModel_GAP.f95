@@ -430,7 +430,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
         if (mpi_parallel_descriptor .and. mpi%active) then
             ! This blocking strategy should yield a good, memory-local distribution of descriptors to processors
-           if (.not. ((i - 1) * mpi%n_procs / size(my_descriptor_data%x)) == (mpi%my_proc - 1)) cycle
+           if (.not. ((i - 1) * mpi%n_procs / size(my_descriptor_data%x)) == mpi%my_proc) cycle
         endif
 
         !call system_timer('IPModel_GAP_Calc_gp_predict')
@@ -541,8 +541,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial, local_virial, args_
         endif
         if(do_energy_per_coordinate) call sum_in_place(mpi,energy_per_coordinate)
 
-        if (.not. mpi_parallel_descriptor) call remove_property(at,'mpi_local_mask', error=error)
-        deallocate(mpi_local_mask)
+        if (.not. mpi_parallel_descriptor) then
+           call remove_property(at,'mpi_local_mask', error=error)
+           deallocate(mpi_local_mask)
+        endif
      endif
   endif
 
