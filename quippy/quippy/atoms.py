@@ -310,7 +310,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     name_map = {'positions'       : 'pos',
                 'numbers'         : 'Z',
-                'charges'         : 'charge'}
+                'initial_charges' : 'charge',
+                'initial_magmoms' : 'magmoms'}
 
     rev_name_map = dict(zip(name_map.values(), name_map.keys()))
 
@@ -530,6 +531,14 @@ class Atoms(_atoms.Atoms, ase.Atoms):
         for i in self.indices:
             yield self.get_atom(i)
 
+    def __eq__(self, other):
+        """Test for equality (==) of two Atoms objects.  Use equivalent() for 
+        better compatibility with ase.atoms.Atoms.__eq__() semantics, so things like
+        calculators that use == to check for recalculation behave
+        as expected"""
+
+        return self.equivalent(other)
+
     def equivalent(self, other):
         """Test for equivalence of two Atoms objects.
 
@@ -738,8 +747,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                     self.params['spacegroup'] = other.info['spacegroup'].symbol
 
             # create extra properties for any non-standard arrays
-            standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',
-                                   'momenta', 'tags', 'magmoms' ]
+            standard_ase_arrays = ['positions', 'numbers', 'masses', 'initial_charges',
+                                   'momenta', 'tags', 'initial_magmoms' ]
 
             for ase_name, value in other.arrays.iteritems():
                 quippy_name = self.name_map.get(ase_name, ase_name)

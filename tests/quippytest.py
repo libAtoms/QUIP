@@ -18,8 +18,10 @@
 
 import unittest, logging
 from numpy import all, unravel_index, loadtxt, isnan
-from quippy import frange, farray, FortranArray
+from quippy import frange, farray, FortranArray, Atoms, FortranDerivedType
 from StringIO import StringIO
+
+Atoms.__eq__ = FortranDerivedType.__eq__
 
 def string_to_array(s):
    return loadtxt(StringIO(s)).T

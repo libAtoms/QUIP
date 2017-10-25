@@ -23,13 +23,15 @@ Docker
 
 We provide different end-user images:
 
- - [libatomsquip/quip](https://hub.docker.com/r/libatomsquip/quip/) includes
-   the base scientific stack and applications along with QUIP and quippy
-   compiled with GAP support. Use of this image is restricted by a
+ - [libatomsquip/quip](https://hub.docker.com/r/libatomsquip/quip/)
+   [alternative](https://store.docker.com/community/images/libatomsquip/quip)
+   includes the base scientific stack and applications along with QUIP and
+   quippy compiled with GAP support. Use of this image is restricted by a
    non-commercial licence agreement so a user must accept when starting
    a container. The license terms are added to $HOME once accepted and can
    also be accessed on [GAP download page](http://www.libatoms.org/gap/gap_download.html).
  - [libatomsquip/quip-nogap](https://hub.docker.com/r/libatomsquip/quip-nogap/)
+   [alternative](https://store.docker.com/community/images/libatomsquip/quip-nogap)
    which is a build of QUIP with all external code dependencies turned off.
    This can be used without accepting the GAP license.
  - For access to the private image that includes additional third-party code,
@@ -37,7 +39,7 @@ We provide different end-user images:
 
 The default command runs a Jupyter notebook server that can be used from
 your browser. The images should download automatically when you ``docker run``
-but you will need to log in if you have access the private image.
+but you will need to log in if you have access to the private image.
 A typical launch command might look like:
 
 ```
@@ -102,6 +104,29 @@ This image adds:
  - LAMMPS (MPI version) with QUIP integration and Python bindings
 
 
+Python 3
+--------
+
+A Python 3 virtual environment (virtualenv) is available with most of the
+same basic packages as Python 2. Note that ``quippy`` does not yet work
+with Python 3 and software like LAMMPS and AMBER are only compiled for
+Python 2 in the image.
+
+There are several ways to use Python 3:
+
+ - The Jupyter notebook allows you to select the Python 3 kernel.
+ - Type ``py3`` in a bash shell to activate the virtualenv (this is an
+   alias for ``source /opt/python3/bin/activate``, if the alias does
+   not work). In the virtualenv ``python`` and all the scripts will run
+   the Python 3 versions. Type ``deactivate`` to leave the virtualenv.
+ - Directly call the binary ``/opt/python3/bin/python``. Any other
+   scripts in ``/opt/python3/bin/`` can also be called directly.
+
+Note: Running ``python3`` outside of the virtualenv will start the system
+python that has no packages installed. You must use the virtualenv or
+``/opt`` versions to get all the packages!
+
+
 Building the image yourself
 ---------------------------
 
@@ -109,12 +134,12 @@ The ``Dockerfile`` file pulls in the QUIP source code from GitHub so it
 is fine to build that in place ``docker build . -t your_tag_here``. Any
 changes that you make to the QUIP code will not be included in the image.
 
-To modify QUIP in you image, or build your own image that includes GAP,
+To modify QUIP in your image, or build your own image that includes GAP,
 copy ``Dockerfile.gap`` to the root directory of QUIP as ``Dockerfile``
 and build from there. That build copies the contents of your own QUIP
 directory. You can customise your build by editing the file 
 ``docker/arch/ALL_Makefile.linux_x86_64_gfortran.inc`` or adding your own
-``Makefile.in`` into arch and changing the value of ``BUILD`` in the
+``Makefile.in`` into ``arch`` and changing the value of ``BUILD`` in the
 Dockerfile so it will build using your own customisations.
 
 

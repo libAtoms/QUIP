@@ -86,6 +86,10 @@ RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}
 
 ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
+# GloSim also uses quippy and GAP (SOAP)
+
+RUN git clone --depth 1 https://github.com/cosmo-epfl/glosim /usr/local/src/glosim
+
 # ENTRYPOINT ["/bin/bash", "-c"]
 
 # Launch in the home directory of the user
