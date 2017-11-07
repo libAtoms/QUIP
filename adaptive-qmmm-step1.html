@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 1: Setup of the Silicon model system &mdash; quippy cc7c40c+ documentation</title>
+  <title>Step 1: Setup of the Silicon model system &mdash; quippy 891c4ed+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy cc7c40c+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 891c4ed+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 2: Classical MD simulation of fracture in Si" href="adaptive-qmmm-step2.html"/>
         <link rel="prev" title="Theoretical background" href="adaptive-qmmm-theory.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                cc7c40c+
+                891c4ed+
               </div>
             
           
@@ -110,9 +110,9 @@
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-theory.html">Theoretical background</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Step 1: Setup of the Silicon model system</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#building-the-bulk-unit-cell-30-minutes">1.1 Building the bulk unit cell (30 minutes)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#calculation-of-elastic-and-surface-properties-of-silicon-30-minutes">1.2 Calculation of elastic and surface properties of silicon (30 minutes)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#setup-of-the-crack-slab-supercell-30-minutes">1.3 Setup of the crack slab supercell (30 minutes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#1.1-Building-the-bulk-unit-cell-(30-minutes)">1.1 Building the bulk unit cell (30 minutes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#1.2-Calculation-of-elastic-and-surface-properties-of-silicon-(30-minutes)">1.2 Calculation of elastic and surface properties of silicon (30 minutes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#1.3-Setup-of-the-crack-slab-supercell-(30-minutes)">1.3 Setup of the crack slab supercell (30 minutes)</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step2.html">Step 2: Classical MD simulation of fracture in Si</a></li>
@@ -236,15 +236,15 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="step-1-setup-of-the-silicon-model-system">
-<span id="step1"></span><h1>Step 1: Setup of the Silicon model system<a class="headerlink" href="#step-1-setup-of-the-silicon-model-system" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Step-1:-Setup-of-the-Silicon-model-system">
+<span id="step1"></span><h1>Step 1: Setup of the Silicon model system<a class="headerlink" href="#Step-1:-Setup-of-the-Silicon-model-system" title="Permalink to this headline">¶</a></h1>
 <p>The first task in this tutorial is to build the model system we will
 use for both the classical and QM/MM simulations. We will use an
 approximately 2D model system in the <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span class="std std-ref">thin strip geometry</span></a></p>
-<div class="section" id="building-the-bulk-unit-cell-30-minutes">
-<h2>1.1 Building the bulk unit cell (30 minutes)<a class="headerlink" href="#building-the-bulk-unit-cell-30-minutes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="import-the-relevant-modules-and-functions">
-<h3>Import the relevant modules and functions<a class="headerlink" href="#import-the-relevant-modules-and-functions" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="1.1-Building-the-bulk-unit-cell-(30-minutes)">
+<h2>1.1 Building the bulk unit cell (30 minutes)<a class="headerlink" href="#1.1-Building-the-bulk-unit-cell-(30-minutes)" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Import-the-relevant-modules-and-functions">
+<h3>Import the relevant modules and functions<a class="headerlink" href="#Import-the-relevant-modules-and-functions" title="Permalink to this headline">¶</a></h3>
 <p>We start by importing all the functions we will need. Create a new
 script named <code class="docutils literal"><span class="pre">make_crack.py</span></code> and add the following lines:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.lattice</span> <span class="k">import</span> <span class="n">bulk</span>
@@ -275,8 +275,8 @@ make it clear where each function we are using is defined, and to make it easier
 to look them up in the online documentation.</p>
 </div>
 </div>
-<div class="section" id="definition-of-the-simulation-parameters">
-<span id="parameters"></span><h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Definition-of-the-simulation-parameters">
+<span id="parameters"></span><h3>Definition of the simulation parameters<a class="headerlink" href="#Definition-of-the-simulation-parameters" title="Permalink to this headline">¶</a></h3>
 <p>Let’s first define the parameters needed to construct our model
 system. There are three possible crack systems. For now, we will use
 the first (uncommented) one, <span class="math">\((111)[01\bar{1}]\)</span>, which
@@ -332,8 +332,8 @@ potential:</p>
 the parameters for the SW potential (and also for DFTB, needed for
 <a class="reference internal" href="adaptive-qmmm-step3.html#step3"><span class="std std-ref">Step 3: LOTF hybrid MD simulation of fracture in Si</span></a>)</p>
 </div>
-<div class="section" id="finding-the-equilibrium-lattice-constant-for-si">
-<span id="latticeconstant"></span><h3>Finding the equilibrium lattice constant for Si<a class="headerlink" href="#finding-the-equilibrium-lattice-constant-for-si" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Finding-the-equilibrium-lattice-constant-for-Si">
+<span id="latticeconstant"></span><h3>Finding the equilibrium lattice constant for Si<a class="headerlink" href="#Finding-the-equilibrium-lattice-constant-for-Si" title="Permalink to this headline">¶</a></h3>
 <p>To find the Si equilibrium lattice constant <cite>a0</cite> with the SW potential,
 let’s first build the 8-atom diamond cubic cell for silicon, with an initial
 guess at lattice constant of 5.44 A. This can be done using the
@@ -408,15 +408,15 @@ off-diagonal components of the lattice are exactly zero:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="milestone-1-1">
-<h3>Milestone 1.1<a class="headerlink" href="#milestone-1-1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Milestone-1.1">
+<h3>Milestone 1.1<a class="headerlink" href="#Milestone-1.1" title="Permalink to this headline">¶</a></h3>
 <p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_1.py" download=""><code class="xref download docutils literal"><span class="pre">make_crack_1.py</span></code></a>.</p>
 </div>
 </div>
-<div class="section" id="calculation-of-elastic-and-surface-properties-of-silicon-30-minutes">
-<h2>1.2 Calculation of elastic and surface properties of silicon (30 minutes)<a class="headerlink" href="#calculation-of-elastic-and-surface-properties-of-silicon-30-minutes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="calculation-of-the-young-s-modulus-and-the-poisson-ratio">
-<span id="youngs-modulus-and-poisson-ratio"></span><h3>Calculation of the Young’s modulus and the Poisson ratio<a class="headerlink" href="#calculation-of-the-young-s-modulus-and-the-poisson-ratio" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="1.2-Calculation-of-elastic-and-surface-properties-of-silicon-(30-minutes)">
+<h2>1.2 Calculation of elastic and surface properties of silicon (30 minutes)<a class="headerlink" href="#1.2-Calculation-of-elastic-and-surface-properties-of-silicon-(30-minutes)" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Calculation-of-the-Young's-modulus-and-the-Poisson-ratio">
+<span id="youngs-modulus-and-poisson-ratio"></span><h3>Calculation of the Young’s modulus and the Poisson ratio<a class="headerlink" href="#Calculation-of-the-Young's-modulus-and-the-Poisson-ratio" title="Permalink to this headline">¶</a></h3>
 <p>Following the discussion <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip"><span class="std std-ref">above</span></a> section, we need to
 calculate some elastic properties of our model silicon. To calculate the Young’s
 modulus <cite>E</cite> along the direction perpendicular to the cleavage plane, and the
@@ -448,8 +448,8 @@ given <cite>c</cite>, the <cite>cleavage_plane</cite> and the <cite>crack_direct
 should get a Young’s modulus of 142.8 GPa and a Poisson ratio of
 0.265.</p>
 </div>
-<div class="section" id="calculation-of-the-surface-energy-of-the-cleavage-plane">
-<span id="surface-energy"></span><h3>Calculation of the surface energy of the cleavage plane<a class="headerlink" href="#calculation-of-the-surface-energy-of-the-cleavage-plane" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Calculation-of-the-surface-energy-of-the-cleavage-plane">
+<span id="surface-energy"></span><h3>Calculation of the surface energy of the cleavage plane<a class="headerlink" href="#Calculation-of-the-surface-energy-of-the-cleavage-plane" title="Permalink to this headline">¶</a></h3>
 <p>To calculate the surface energy per unit area <cite>gamma</cite> of the
 <cite>cleavage_plane</cite>, we build a Si slab unit cell aligned with the
 requested crystallographic orientation. The orientation of the crack
@@ -538,15 +538,15 @@ distance of the SW potential, which you can obtain with
 <code class="docutils literal"><span class="pre">mm_pot.cutoff()</span></code>, is about 3.93 A, just beyond the second neighbour
 distance).</p>
 </div>
-<div class="section" id="milestone-1-2">
-<h3>Milestone 1.2<a class="headerlink" href="#milestone-1-2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Milestone-1.2">
+<h3>Milestone 1.2<a class="headerlink" href="#Milestone-1.2" title="Permalink to this headline">¶</a></h3>
 <p>At this point your script should look something like <a class="reference download internal" href="_downloads/make_crack_2.py" download=""><code class="xref download docutils literal"><span class="pre">make_crack_2.py</span></code></a></p>
 </div>
 </div>
-<div class="section" id="setup-of-the-crack-slab-supercell-30-minutes">
-<h2>1.3 Setup of the crack slab supercell (30 minutes)<a class="headerlink" href="#setup-of-the-crack-slab-supercell-30-minutes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="replicating-the-unit-cell-to-form-a-slab-supercell">
-<h3>Replicating the unit cell to form a slab supercell<a class="headerlink" href="#replicating-the-unit-cell-to-form-a-slab-supercell" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="1.3-Setup-of-the-crack-slab-supercell-(30-minutes)">
+<h2>1.3 Setup of the crack slab supercell (30 minutes)<a class="headerlink" href="#1.3-Setup-of-the-crack-slab-supercell-(30-minutes)" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Replicating-the-unit-cell-to-form-a-slab-supercell">
+<h3>Replicating the unit cell to form a slab supercell<a class="headerlink" href="#Replicating-the-unit-cell-to-form-a-slab-supercell" title="Permalink to this headline">¶</a></h3>
 <p>Now, we have all the ingredients needed to build the full crack slab
 system and to apply the requested strain field.</p>
 <p>We start by building the full slab system. First, we need to find the number
@@ -604,8 +604,8 @@ original <cite>x</cite> coordinates of the left and right surfaces are also save
 <p>At this point, your <cite>crack_slab</cite> should look something like this:</p>
 <a class="reference internal image-reference" href="_images/crack_slab_1.png"><img alt="_images/crack_slab_1.png" class="align-center" src="_images/crack_slab_1.png" style="width: 600px;" /></a>
 </div>
-<div class="section" id="setting-constraints-to-fix-the-edge-atoms">
-<span id="crack-fixatoms"></span><h3>Setting constraints to fix the edge atoms<a class="headerlink" href="#setting-constraints-to-fix-the-edge-atoms" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Setting-constraints-to-fix-the-edge-atoms">
+<span id="crack-fixatoms"></span><h3>Setting constraints to fix the edge atoms<a class="headerlink" href="#Setting-constraints-to-fix-the-edge-atoms" title="Permalink to this headline">¶</a></h3>
 <p>During the MD simulations, the positions of the top and bottom rows of
 atoms will be kept fixed. More precisely, these rows of atoms will
 only be moved rigidly when the strain is applied and will not move in
@@ -658,8 +658,8 @@ region in between.</p>
 <p>This is the resulting crack slab, for the <span class="math">\((111)\)</span> case:</p>
 <a class="reference internal image-reference" href="_images/crack_slab_2.png"><img alt="_images/crack_slab_2.png" class="align-center" src="_images/crack_slab_2.png" style="width: 600px;" /></a>
 </div>
-<div class="section" id="relaxation-of-the-crack-slab">
-<h3>Relaxation of the crack slab<a class="headerlink" href="#relaxation-of-the-crack-slab" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Relaxation-of-the-crack-slab">
+<h3>Relaxation of the crack slab<a class="headerlink" href="#Relaxation-of-the-crack-slab" title="Permalink to this headline">¶</a></h3>
 <p>To obtain a good starting point for the MD, we need to perform an
 approximate geometry optimisation of the slab, keeping the top and
 bottom rows of atoms fixed. Once again, our <cite>mm_pot</cite> needs to be
@@ -678,8 +678,8 @@ section</span></a>:</p>
 <p>Here’s what your minimised crack slab should look like:</p>
 <a class="reference internal image-reference" href="_images/crack_slab_3.png"><img alt="_images/crack_slab_3.png" class="align-center" src="_images/crack_slab_3.png" style="width: 600px;" /></a>
 </div>
-<div class="section" id="locating-the-crack-tip">
-<h3>Locating the crack tip<a class="headerlink" href="#locating-the-crack-tip" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Locating-the-crack-tip">
+<h3>Locating the crack tip<a class="headerlink" href="#Locating-the-crack-tip" title="Permalink to this headline">¶</a></h3>
 <p>Before starting the next steps, it is useful to find the initial
 position of the crack tip.  This is provided by the
 <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal"><span class="pre">find_crack_tip_stress_field()</span></code></a> function:</p>
@@ -693,8 +693,8 @@ potential, allowing the origin of the analytical stress field to move
 during the fit. Then, we simply set this point to be the current crack
 position.</p>
 </div>
-<div class="section" id="saving-the-output-file">
-<h3>Saving the output file<a class="headerlink" href="#saving-the-output-file" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Saving-the-output-file">
+<h3>Saving the output file<a class="headerlink" href="#Saving-the-output-file" title="Permalink to this headline">¶</a></h3>
 <p>Finally, we can save all the calculated materials properties inside the
 <cite>crack_slab</cite> <code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code> object, before writing it to disk:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">crack_slab</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;nneightol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.30</span> <span class="c1"># set nearest neighbour tolerance</span>
@@ -724,8 +724,8 @@ defined in the <a class="reference internal" href="#parameters"><span class="std
 </pre></div>
 </div>
 </div>
-<div class="section" id="milestone-1-3">
-<h3>Milestone 1.3<a class="headerlink" href="#milestone-1-3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Milestone-1.3">
+<h3>Milestone 1.3<a class="headerlink" href="#Milestone-1.3" title="Permalink to this headline">¶</a></h3>
 <p>At this point your final script should look something like
 <a class="reference internal" href="adaptive-qmmm-solutions.html#make-crack"><span class="std std-ref">Step 1 solution — make_crack.py</span></a>, and your XYZ file like <a class="reference download internal" href="_downloads/crack.xyz" download=""><code class="xref download docutils literal"><span class="pre">crack.xyz</span></code></a>.</p>
 <p>When you are ready, proceed to <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span class="std std-ref">Step 2: Classical MD simulation of fracture in Si</span></a>.</p>
@@ -777,7 +777,7 @@ defined in the <a class="reference internal" href="#parameters"><span class="std
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'cc7c40c+',
+            VERSION:'891c4ed+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

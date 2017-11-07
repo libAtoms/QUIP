@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy cc7c40c+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy 891c4ed+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy cc7c40c+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 891c4ed+ documentation" href="index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
         <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/>
         <link rel="prev" title="Tutorials" href="tutorials.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                cc7c40c+
+                891c4ed+
               </div>
             
           
@@ -105,12 +105,12 @@
 <li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Introductory Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#getting-started">Getting Started</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#manipulating-atoms">Manipulating Atoms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#using-an-atomslist-to-analyse-results">Using an AtomsList to analyse results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#potentials-and-dynamicalsystems">Potentials and DynamicalSystems</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#structural-optimisation">Structural optimisation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#bulk-modulus-calculations">Bulk Modulus Calculations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Getting-Started">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Manipulating-Atoms">Manipulating Atoms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Using-an-AtomsList-to-analyse-results">Using an AtomsList to analyse results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Potentials-and-DynamicalSystems">Potentials and DynamicalSystems</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Structural-optimisation">Structural optimisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Bulk-Modulus-Calculations">Bulk Modulus Calculations</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
@@ -228,8 +228,8 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="introductory-tutorial">
-<span id="tutorial-intro"></span><h1><a class="toc-backref" href="#id3">Introductory Tutorial</a><a class="headerlink" href="#introductory-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Introductory-Tutorial">
+<span id="tutorial-intro"></span><h1><a class="toc-backref" href="#id3">Introductory Tutorial</a><a class="headerlink" href="#Introductory-Tutorial" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial assumes you’ve successfully installed quippy and that
 all the tests pass. If not, see <a class="reference internal" href="install.html#installation"><span class="std std-ref">Installation of QUIP and quippy</span></a>. We make use
 <a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>, <a class="reference external" href="http://www.scipy.org">scipy</a> and the quippy <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> extension
@@ -261,19 +261,19 @@ extension <code class="docutils literal"><span class="pre">.py</span></code>.</p
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#introductory-tutorial" id="id3">Introductory Tutorial</a><ul>
-<li><a class="reference internal" href="#getting-started" id="id4">Getting Started</a></li>
-<li><a class="reference internal" href="#manipulating-atoms" id="id5">Manipulating Atoms</a></li>
-<li><a class="reference internal" href="#using-an-atomslist-to-analyse-results" id="id6">Using an AtomsList to analyse results</a></li>
-<li><a class="reference internal" href="#potentials-and-dynamicalsystems" id="id7">Potentials and DynamicalSystems</a></li>
-<li><a class="reference internal" href="#structural-optimisation" id="id8">Structural optimisation</a></li>
-<li><a class="reference internal" href="#bulk-modulus-calculations" id="id9">Bulk Modulus Calculations</a></li>
+<li><a class="reference internal" href="#Introductory-Tutorial" id="id3">Introductory Tutorial</a><ul>
+<li><a class="reference internal" href="#Getting-Started" id="id4">Getting Started</a></li>
+<li><a class="reference internal" href="#Manipulating-Atoms" id="id5">Manipulating Atoms</a></li>
+<li><a class="reference internal" href="#Using-an-AtomsList-to-analyse-results" id="id6">Using an AtomsList to analyse results</a></li>
+<li><a class="reference internal" href="#Potentials-and-DynamicalSystems" id="id7">Potentials and DynamicalSystems</a></li>
+<li><a class="reference internal" href="#Structural-optimisation" id="id8">Structural optimisation</a></li>
+<li><a class="reference internal" href="#Bulk-Modulus-Calculations" id="id9">Bulk Modulus Calculations</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<div class="section" id="getting-started">
-<h2><a class="toc-backref" href="#id4">Getting Started</a><a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Getting-Started">
+<h2><a class="toc-backref" href="#id4">Getting Started</a><a class="headerlink" href="#Getting-Started" title="Permalink to this headline">¶</a></h2>
 <p>Let’s start by firing up Python and importing quippy:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ python
 &gt;&gt;&gt; from qlab import *
@@ -440,8 +440,8 @@ that square brackets are used:</p>
 </div>
 <p>You can also do fancier indexing as we’ll see below.</p>
 </div>
-<div class="section" id="manipulating-atoms">
-<h2><a class="toc-backref" href="#id5">Manipulating Atoms</a><a class="headerlink" href="#manipulating-atoms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Manipulating-Atoms">
+<h2><a class="toc-backref" href="#id5">Manipulating Atoms</a><a class="headerlink" href="#Manipulating-Atoms" title="Permalink to this headline">¶</a></h2>
 <p>Let’s make a more complex structure to play with, a <a class="reference internal" href="structures.html#quippy.structures.supercell" title="quippy.structures.supercell"><code class="xref py py-func docutils literal"><span class="pre">supercell()</span></code></a>
 of 3 x 3 x 3 <a class="reference internal" href="structures.html#quippy.structures.alpha_quartz" title="quippy.structures.alpha_quartz"><code class="xref py py-func docutils literal"><span class="pre">alpha_quartz()</span></code></a> unit cells:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="mf">4.92</span><span class="p">,</span> <span class="mf">5.40</span><span class="p">,</span> <span class="mf">0.4697</span><span class="p">,</span> <span class="mf">0.4135</span><span class="p">,</span> <span class="mf">0.2669</span><span class="p">,</span> <span class="mf">0.1191</span><span class="p">)</span>
@@ -536,8 +536,8 @@ to make this image.  With the extended version of AtomEye included
 in quippy, you can do this by pressing <code class="kbd docutils literal"><span class="pre">Shift+z</span></code>.</p>
 </div>
 </div>
-<div class="section" id="using-an-atomslist-to-analyse-results">
-<h2><a class="toc-backref" href="#id6">Using an AtomsList to analyse results</a><a class="headerlink" href="#using-an-atomslist-to-analyse-results" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Using-an-AtomsList-to-analyse-results">
+<h2><a class="toc-backref" href="#id6">Using an AtomsList to analyse results</a><a class="headerlink" href="#Using-an-AtomsList-to-analyse-results" title="Permalink to this headline">¶</a></h2>
 <p>One common use of quippy is for post-processing the results of
 simulations conducted with QUIP and libAtoms. It can read and write
 Atoms objects to and from a variety of file formats, with extended XYZ
@@ -724,8 +724,8 @@ do not have to be escaped.</p>
 </div>
 <a class="reference internal image-reference" href="_images/velocitydistribution.png"><img alt="_images/velocitydistribution.png" class="align-center" src="_images/velocitydistribution.png" style="width: 600px;" /></a>
 </div>
-<div class="section" id="potentials-and-dynamicalsystems">
-<span id="moleculardynamics"></span><h2><a class="toc-backref" href="#id7">Potentials and DynamicalSystems</a><a class="headerlink" href="#potentials-and-dynamicalsystems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Potentials-and-DynamicalSystems">
+<span id="moleculardynamics"></span><h2><a class="toc-backref" href="#id7">Potentials and DynamicalSystems</a><a class="headerlink" href="#Potentials-and-DynamicalSystems" title="Permalink to this headline">¶</a></h2>
 <p>Now let’s look at how to run simulations entirely using quippy. This
 will only be practical for small systems which run quickly, but can be
 very useful to get a feel for what’s going on. For this example we’ll
@@ -887,8 +887,8 @@ compatible with the ASE <code class="xref py py-class docutils literal"><span cl
 interface.</p>
 </div>
 </div>
-<div class="section" id="structural-optimisation">
-<span id="geomopt"></span><h2><a class="toc-backref" href="#id8">Structural optimisation</a><a class="headerlink" href="#structural-optimisation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Structural-optimisation">
+<span id="geomopt"></span><h2><a class="toc-backref" href="#id8">Structural optimisation</a><a class="headerlink" href="#Structural-optimisation" title="Permalink to this headline">¶</a></h2>
 <p>If you want to optimise the positions and/or the lattice of an atomic
 configuration, you’ll need to use either the
 <a class="reference internal" href="potential.html#quippy.potential.Potential.minim" title="quippy.potential.Potential.minim"><code class="xref py py-meth docutils literal"><span class="pre">potential.Potential.minim()</span></code></a> method or the
@@ -945,8 +945,8 @@ following:</p>
 necessary to set the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.cutoff" title="quippy.atoms.Atoms.cutoff"><code class="xref py py-attr docutils literal"><span class="pre">Atoms.cutoff</span></code></a>, since <a class="reference internal" href="potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal"><span class="pre">Minim</span></code></a>
 takes care of this.</p>
 </div>
-<div class="section" id="bulk-modulus-calculations">
-<h2><a class="toc-backref" href="#id9">Bulk Modulus Calculations</a><a class="headerlink" href="#bulk-modulus-calculations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Bulk-Modulus-Calculations">
+<h2><a class="toc-backref" href="#id9">Bulk Modulus Calculations</a><a class="headerlink" href="#Bulk-Modulus-Calculations" title="Permalink to this headline">¶</a></h2>
 <p>In this example, we will calculate the bulk modulus of silicon using
 the Stillinger-Weber potential. We’ll do this by fitting the
 <a class="reference external" href="http://en.wikipedia.org/wiki/Birch-Murnaghan_equation_of_state">Birch-Murnaghan equation of state</a>,
@@ -1090,7 +1090,7 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'cc7c40c+',
+            VERSION:'891c4ed+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

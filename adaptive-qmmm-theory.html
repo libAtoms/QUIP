@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Theoretical background &mdash; quippy cc7c40c+ documentation</title>
+  <title>Theoretical background &mdash; quippy 891c4ed+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy cc7c40c+ documentation" href="index.html"/>
+    <link rel="top" title="quippy 891c4ed+ documentation" href="index.html"/>
         <link rel="up" title="Adaptive QM/MM MD of Fracture in Silicon" href="adaptive-qmmm.html"/>
         <link rel="next" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html"/>
         <link rel="prev" title="Introduction" href="adaptive-qmmm-step0.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                cc7c40c+
+                891c4ed+
               </div>
             
           
@@ -109,9 +109,9 @@
 <li class="toctree-l2 current"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Theoretical background</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#introduction-to-atomic-scale-modelling-of-fracture">Introduction to Atomic-scale Modelling of Fracture</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#classical-interatomic-potentials-for-silicon">Classical interatomic potentials for silicon</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">QM/MM Force Mixing and the ‘Learn on the Fly’ scheme</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Introduction-to-Atomic-scale-Modelling-of-Fracture">Introduction to Atomic-scale Modelling of Fracture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Classical-interatomic-potentials-for-silicon">Classical interatomic potentials for silicon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#QM/MM-Force-Mixing-and-the-'Learn-on-the-Fly'-scheme">QM/MM Force Mixing and the ‘Learn on the Fly’ scheme</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step1.html">Step 1: Setup of the Silicon model system</a></li>
@@ -236,10 +236,10 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="theoretical-background">
-<h1>Theoretical background<a class="headerlink" href="#theoretical-background" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="introduction-to-atomic-scale-modelling-of-fracture">
-<span id="theory1"></span><h2>Introduction to Atomic-scale Modelling of Fracture<a class="headerlink" href="#introduction-to-atomic-scale-modelling-of-fracture" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Theoretical-background">
+<h1>Theoretical background<a class="headerlink" href="#Theoretical-background" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Introduction-to-Atomic-scale-Modelling-of-Fracture">
+<span id="theory1"></span><h2>Introduction to Atomic-scale Modelling of Fracture<a class="headerlink" href="#Introduction-to-Atomic-scale-Modelling-of-Fracture" title="Permalink to this headline">¶</a></h2>
 <p>Fracture is the main lifetime limiting failure mode of many materials, from
 metals to ceramics and glasses. There are two broad classes of
 fracture: <em>brittle</em> and <em>ductile</em>.</p>
@@ -271,8 +271,8 @@ fracture is ductile, with the emission of multiple dislocations from the tip
 <p class="caption"><span class="caption-text">Transmission electron microscopy (TEM) images of a crack in silicon.
 Image reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id1">[Lawn1993]</a>.</span></p>
 </div>
-<div class="section" id="fracture-mechanics">
-<span id="theory-griffith"></span><h3>Fracture Mechanics<a class="headerlink" href="#fracture-mechanics" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Fracture-Mechanics">
+<span id="theory-griffith"></span><h3>Fracture Mechanics<a class="headerlink" href="#Fracture-Mechanics" title="Permalink to this headline">¶</a></h3>
 <p>The study of fracture mechanics dates back around 100 years, to
 Griffith, who first proposed a thermodynamic energy balance criteria
 to understand when cracks will propagate <a class="reference internal" href="adaptive-qmmm-references.html#griffith1921" id="id2">[Griffith1921]</a>. The key idea
@@ -316,8 +316,8 @@ crack propagation becomes favourable when</p>
 <p>where <span class="math">\(\gamma\)</span> is the surface energy density, i.e. when the energy flow to
 the crack tip exceeds the cost of creating two new surfaces.</p>
 </div>
-<div class="section" id="atomic-scale-modelling-of-fracture">
-<span id="theory-atomic-fracture"></span><h3>Atomic scale modelling of fracture<a class="headerlink" href="#atomic-scale-modelling-of-fracture" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Atomic-scale-modelling-of-fracture">
+<span id="theory-atomic-fracture"></span><h3>Atomic scale modelling of fracture<a class="headerlink" href="#Atomic-scale-modelling-of-fracture" title="Permalink to this headline">¶</a></h3>
 <p>Much work has been done to understand fracture at the continuum level
 (see, e.g.  <a class="reference internal" href="adaptive-qmmm-references.html#freund1998" id="id3">[Freund1998]</a> and <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id4">[Lawn1993]</a>), but here we would like to
 simulate fracture at the atomic level, to examine the combined effects
@@ -358,8 +358,8 @@ Reproduced from G. Singh, J.R. Kermode, A. De Vita, R.W. Zimmerman,
 non-linear <em>process zone</em>, where chemically interesting things are happening.
 Here, we would like to treat this region at a quantum mechanical (QM) level.</p>
 </div>
-<div class="section" id="coupled-multiscale-approach">
-<span id="theory-multiscale"></span><h3>Coupled multiscale approach<a class="headerlink" href="#coupled-multiscale-approach" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Coupled-multiscale-approach">
+<span id="theory-multiscale"></span><h3>Coupled multiscale approach<a class="headerlink" href="#Coupled-multiscale-approach" title="Permalink to this headline">¶</a></h3>
 <p>QM approaches such as density functional theory (DFT) do correctly
 describe bond-breaking in silicon. However, the strong bidirectional
 coupling between bond-breaking at the crack tip and the long-range
@@ -380,8 +380,8 @@ problems in fracture using the ‘Learn on the Fly’ (LOTF) approach in
 of QM methods and empirical interatomic potentials. Image source: G. Csányi.</span></p>
 </div>
 </div>
-<div class="section" id="thin-strip-loading-geometry-and-elasticity-theory">
-<span id="thin-strip"></span><h3>Thin strip loading geometry and elasticity theory<a class="headerlink" href="#thin-strip-loading-geometry-and-elasticity-theory" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Thin-strip-loading-geometry-and-elasticity-theory">
+<span id="thin-strip"></span><h3>Thin strip loading geometry and elasticity theory<a class="headerlink" href="#Thin-strip-loading-geometry-and-elasticity-theory" title="Permalink to this headline">¶</a></h3>
 <p>We will use the thin strip fracture loading geometry illustrated below for our
 fracture simulations, where the load is applied by displacing the top and bottom
 surfaces.</p>
@@ -422,8 +422,8 @@ modulus and Poisson ratio for our model material. We will see how to
 do this from the elastic constant matrix <span class="math">\(C_{ij}\)</span> <a class="reference internal" href="adaptive-qmmm-step1.html#youngs-modulus-and-poisson-ratio"><span class="std std-ref">below</span></a>.</p>
 </div>
 </div>
-<div class="section" id="classical-interatomic-potentials-for-silicon">
-<h2>Classical interatomic potentials for silicon<a class="headerlink" href="#classical-interatomic-potentials-for-silicon" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Classical-interatomic-potentials-for-silicon">
+<h2>Classical interatomic potentials for silicon<a class="headerlink" href="#Classical-interatomic-potentials-for-silicon" title="Permalink to this headline">¶</a></h2>
 <p>The Stillinger-Weber <a class="reference internal" href="adaptive-qmmm-references.html#stillinger1985" id="id6">[Stillinger1985]</a> interatomic potential provides a fairly good
 description of many properties of crystalline and amorphous silicon. Its
 functional form is a two- and three-body expansion suitable for the
@@ -461,8 +461,8 @@ simulation of the crack propagation in the NVE ensemble. The velocity
 Verlet scheme <a class="reference internal" href="adaptive-qmmm-references.html#frenkelsmit2001" id="id11">[FrenkelSmit2001]</a> will be used to integrate Newton’s
 equations of motion.</p>
 </div>
-<div class="section" id="qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">
-<span id="theory3"></span><h2>QM/MM Force Mixing and the ‘Learn on the Fly’ scheme<a class="headerlink" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="QM/MM-Force-Mixing-and-the-'Learn-on-the-Fly'-scheme">
+<span id="theory3"></span><h2>QM/MM Force Mixing and the ‘Learn on the Fly’ scheme<a class="headerlink" href="#QM/MM-Force-Mixing-and-the-'Learn-on-the-Fly'-scheme" title="Permalink to this headline">¶</a></h2>
 <p>In this last part of the tutorial, we will perform an accurate MD simulation of
 Si fracture using the “Learn on the fly” (LOTF) hybrid QM/MM technique
 <a class="reference internal" href="adaptive-qmmm-references.html#devita1998" id="id12">[DeVita1998]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#csanyi2004" id="id13">[Csanyi2004]</a>. In the present case, all atoms that are not suitably described by
@@ -488,8 +488,8 @@ details of the scheme have been thoroughly presented in a number of
 articles <a class="reference internal" href="adaptive-qmmm-references.html#devita1998" id="id16">[DeVita1998]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#csanyi2004" id="id17">[Csanyi2004]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#csanyi2005" id="id18">[Csanyi2005]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#moras2010" id="id19">[Moras2010]</a>,
 <a class="reference internal" href="adaptive-qmmm-references.html#kermode2008a" id="id20">[Kermode2008a]</a>, <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id21">[Bernstein2009]</a>, we will here briefly explain the
 basic concepts that will allow us to perform the crack simulation.</p>
-<div class="section" id="calculation-of-the-forces-buffered-force-mixing">
-<span id="buffer"></span><h3>Calculation of the forces: buffered force mixing<a class="headerlink" href="#calculation-of-the-forces-buffered-force-mixing" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Calculation-of-the-forces:-buffered-force-mixing">
+<span id="buffer"></span><h3>Calculation of the forces: buffered force mixing<a class="headerlink" href="#Calculation-of-the-forces:-buffered-force-mixing" title="Permalink to this headline">¶</a></h3>
 <p>The first problem we have to face, when performing a QM/MM MD simulation is to
 calculate accurate forces. While the calculation of the MM forces, using a
 short-ranged potential (e.g. the SW potential) is trivially solved by
@@ -533,8 +533,8 @@ usually be achieved by scaling the classical model in space and energy to match
 the lattice constant and bulk modulus of the QM model (for simplicity we omit
 this step in this tutorial, but the mismatch here is not too big).</p>
 </div>
-<div class="section" id="hysteretic-selection-of-the-qm-active-and-buffer-regions">
-<span id="hysteretic"></span><h3>Hysteretic selection of the QM active and buffer regions<a class="headerlink" href="#hysteretic-selection-of-the-qm-active-and-buffer-regions" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Hysteretic-selection-of-the-QM-active-and-buffer-regions">
+<span id="hysteretic"></span><h3>Hysteretic selection of the QM active and buffer regions<a class="headerlink" href="#Hysteretic-selection-of-the-QM-active-and-buffer-regions" title="Permalink to this headline">¶</a></h3>
 <p>A key advantage of the buffered force mixing approach is that the QM region can
 be redefined during a simulation. This works because new atoms first enter the
 QM calculation at the outer boundary of the buffer region, where they do not
@@ -577,8 +577,8 @@ growing the regions using bond hopping rather than distance criteria, and using
 time-averaged positions <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id26">[Bernstein2009]</a>. For simplicity, in this tutorial we
 will use only the hysteretic selection technique.</p>
 </div>
-<div class="section" id="lotf-adjustable-potential-and-predictor-corrector-scheme">
-<span id="lotf"></span><h3>LOTF adjustable potential and predictor-corrector scheme<a class="headerlink" href="#lotf-adjustable-potential-and-predictor-corrector-scheme" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="LOTF-adjustable-potential-and-predictor-corrector-scheme">
+<span id="lotf"></span><h3>LOTF adjustable potential and predictor-corrector scheme<a class="headerlink" href="#LOTF-adjustable-potential-and-predictor-corrector-scheme" title="Permalink to this headline">¶</a></h3>
 <p>The QM/MM forces calculated as just explained, using a buffered QM region, can
 be directly used to perform an MD simulation, provided that the total sum of the
 forces is constrained to be zero, as explained above. However, in many cases,
@@ -701,7 +701,7 @@ this tutorial to do exactly that.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'cc7c40c+',
+            VERSION:'891c4ed+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
