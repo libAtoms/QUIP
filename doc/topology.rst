@@ -18,7 +18,7 @@
 
 
 Some utilities for topological analysis
-==================================
+=======================================
 
 .. automodule:: quippy.topology
    :synopsis: utilities for topological analysis
