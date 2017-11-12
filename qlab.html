@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="visualisation.html">Visualisation Tools</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Interactive visualisation of atomic systems with <code class="docutils literal"><span class="pre">qlab</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Viewing-Atoms">Viewing Atoms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Custom-Atom-Colouring">Custom Atom Colouring</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Viewing-Trajectories">Viewing Trajectories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Selecting-Atoms">Selecting Atoms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Multiple-Viewers">Multiple Viewers</a><ul class="simple">
+<li class="toctree-l3"><a class="reference internal" href="#viewing-atoms">Viewing Atoms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-atom-colouring">Custom Atom Colouring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#viewing-trajectories">Viewing Trajectories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#selecting-atoms">Selecting Atoms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-viewers">Multiple Viewers</a><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -227,13 +227,13 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="Interactive-visualisation-of-atomic-systems-with-qlab">
-<h1>Interactive visualisation of atomic systems with <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a><a class="headerlink" href="#Interactive-visualisation-of-atomic-systems-with-qlab" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-qlab">
+<span id="interactive-visualisation-of-atomic-systems-with-qlab"></span><h1>Interactive visualisation of atomic systems with <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a><a class="headerlink" href="#module-qlab" title="Permalink to this headline">¶</a></h1>
 <p>The <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> module provides a <a class="reference external" href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.html#module-matplotlib.pyplot" title="(in Matplotlib v2.1.0)"><code class="xref py py-mod docutils literal"><span class="pre">pylab</span></code></a>-style
 interface to <a class="reference internal" href="index.html#module-quippy" title="quippy"><code class="xref py py-mod docutils literal"><span class="pre">quippy</span></code></a> and <a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a>, and is designed for interactive use,
 especially in conjunction with <a class="reference external" href="http://www.ipython.org">ipython</a>.</p>
-<div class="section" id="Viewing-Atoms">
-<h2>Viewing Atoms<a class="headerlink" href="#Viewing-Atoms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="viewing-atoms">
+<h2>Viewing Atoms<a class="headerlink" href="#viewing-atoms" title="Permalink to this headline">¶</a></h2>
 <p>The most important function defined in this module is <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a>, which is
 used to open a new viewer or to update what is displayed in an existing viewer.
 Here’s an example session to give some ideas of how <a class="reference internal" href="#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> can be used:</p>
@@ -260,8 +260,8 @@ atomic number <code class="xref py py-attr docutils literal"><span class="pre">p
 <p>to change the background colour and size of the window. To redraw the
 display, just repeat the <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> command.</p>
 </div>
-<div class="section" id="Custom-Atom-Colouring">
-<span id="qlab-atom-coloring"></span><h2>Custom Atom Colouring<a class="headerlink" href="#Custom-Atom-Colouring" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="custom-atom-colouring">
+<span id="qlab-atom-coloring"></span><h2>Custom Atom Colouring<a class="headerlink" href="#custom-atom-colouring" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="atomeye.html#atomeye.AtomEyeViewer.aux_property_coloring" title="atomeye.AtomEyeViewer.aux_property_coloring"><code class="xref py py-meth docutils literal"><span class="pre">aux_property_coloring()</span></code></a> method is
 overloaded to allow custom arrays to be visualised, e.g. to highlight
 the atoms where <span class="math">\(x \ge a/2\)</span>:</p>
@@ -301,8 +301,8 @@ stress tensor:</p>
 </div>
 <a class="reference internal image-reference" href="_images/qlab-force-stress.png"><img alt="_images/qlab-force-stress.png" class="align-center" src="_images/qlab-force-stress.png" style="width: 600px;" /></a>
 </div>
-<div class="section" id="Viewing-Trajectories">
-<h2>Viewing Trajectories<a class="headerlink" href="#Viewing-Trajectories" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="viewing-trajectories">
+<h2>Viewing Trajectories<a class="headerlink" href="#viewing-trajectories" title="Permalink to this headline">¶</a></h2>
 <p>You can also pass a list of Atoms objects or a trajectory filename to
 <a class="reference internal" href="#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> to visualise a sequence of frames. For example, here’s a
 sequence of silicon unit cells with increasing lattice constant:</p>
@@ -378,8 +378,8 @@ a 1 ps MD and render the movie of every 10th frame:</p>
   </b></p>
 </video>
 </center></div>
-<div class="section" id="Selecting-Atoms">
-<span id="qlab-select-atoms"></span><h2>Selecting Atoms<a class="headerlink" href="#Selecting-Atoms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="selecting-atoms">
+<span id="qlab-select-atoms"></span><h2>Selecting Atoms<a class="headerlink" href="#selecting-atoms" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="#qlab.select_atoms" title="qlab.select_atoms"><code class="xref py py-func docutils literal"><span class="pre">select_atoms()</span></code></a> function is useful for graphically selecting a
 group of atoms, e.g. to manually define an initial QM region for a
 <a class="reference internal" href="adaptive-qmmm.html#qmmm-tutorial"><span class="std std-ref">QM/MM calculation</span></a>. After invoking the function, right
@@ -408,8 +408,8 @@ property, you could could use:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="Multiple-Viewers">
-<h2>Multiple Viewers<a class="headerlink" href="#Multiple-Viewers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="multiple-viewers">
+<h2>Multiple Viewers<a class="headerlink" href="#multiple-viewers" title="Permalink to this headline">¶</a></h2>
 <p>By default a single viewer window is reused for individual Atoms
 objects, while a new window is opened for each different trajectory
 filename. You can override this with the <cite>recycle</cite> argument to

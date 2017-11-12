@@ -108,8 +108,8 @@
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Command-line-usage">Command line usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Module-usage">Module usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-usage">Command line usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-usage">Module usage</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
@@ -225,11 +225,11 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="f90doc-----Fortran-90-source-code-scanner">
-<h1><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> — Fortran 90 source code scanner<a class="headerlink" href="#f90doc-----Fortran-90-source-code-scanner" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-f90doc">
+<span id="f90doc-fortran-90-source-code-scanner"></span><h1><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> — Fortran 90 source code scanner<a class="headerlink" href="#module-f90doc" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> can be used either as a command line tool or as a module.</p>
-<div class="section" id="Command-line-usage">
-<h2>Command line usage<a class="headerlink" href="#Command-line-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="command-line-usage">
+<h2>Command line usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 <p>When used as a command line program it reads from the Fortran source
 files given as arguments and writes LaTeX source to <code class="file docutils literal"><span class="pre">stdout</span></code>. The
 program accepts the following options:</p>
@@ -270,8 +270,8 @@ program accepts the following options:</p>
 </dd></dl>
 
 </div>
-<div class="section" id="Module-usage">
-<h2>Module usage<a class="headerlink" href="#Module-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-usage">
+<h2>Module usage<a class="headerlink" href="#module-usage" title="Permalink to this headline">¶</a></h2>
 <p>The only function that is designed to be used when <a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> is
 imported as a module is <a class="reference internal" href="#f90doc.read_files" title="f90doc.read_files"><code class="xref py py-func docutils literal"><span class="pre">read_files()</span></code></a>.  The classes
 <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_prog</span></code>, <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_module</span></code>,

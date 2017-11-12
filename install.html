@@ -101,25 +101,25 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation of QUIP and quippy</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#Precompiled-Containers">Precompiled Containers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Compilation-Instructions">Compilation Instructions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Quick-start">Quick start</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Step-by-step">Step by step</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Installing-the-Jupyter-notebook">Installing the Jupyter notebook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#precompiled-containers">Precompiled Containers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compilation-instructions">Compilation Instructions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quick-start">Quick start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-by-step">Step by step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-the-jupyter-notebook">Installing the Jupyter notebook</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#Custom-settings">Custom settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Common-Problems">Common Problems</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Permission-errors-when-installing">Permission errors when installing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Installing-on-Mac-OS-X-with-macports">Installing on Mac OS X with macports</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#RuntimeError-when-importing">RuntimeError when importing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ImportError-when-importing">ImportError when importing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Possible-problems-installing-atomeye-module">Possible problems installing atomeye module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Error-compiling-IPModel_GAP">Error compiling IPModel_GAP</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Warning-about-quippy.castep-when-importing-quippy">Warning about <code class="docutils literal"><span class="pre">quippy.castep</span></code> when importing quippy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Internal-compiler-error-with-ifort">Internal compiler error with <cite>ifort</cite></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Linking-error-on-Mac-OS-X">Linking error on Mac OS X</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Segmentation-Faults-with-OpenBLAS">Segmentation Faults with OpenBLAS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-settings">Custom settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-problems">Common Problems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#permission-errors-when-installing">Permission errors when installing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-on-mac-os-x-with-macports">Installing on Mac OS X with macports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#runtimeerror-when-importing">RuntimeError when importing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#importerror-when-importing">ImportError when importing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#possible-problems-installing-atomeye-module">Possible problems installing atomeye module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#error-compiling-ipmodel-gap">Error compiling IPModel_GAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#warning-about-quippy-castep-when-importing-quippy">Warning about <code class="docutils literal"><span class="pre">quippy.castep</span></code> when importing quippy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#internal-compiler-error-with-ifort">Internal compiler error with <cite>ifort</cite></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linking-error-on-mac-os-x">Linking error on Mac OS X</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#segmentation-faults-with-openblas">Segmentation Faults with OpenBLAS</a></li>
 </ul>
 </li>
 </ul>
@@ -235,24 +235,24 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="Installation-of-QUIP-and-quippy">
-<span id="installation"></span><h1>Installation of QUIP and quippy<a class="headerlink" href="#Installation-of-QUIP-and-quippy" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation-of-quip-and-quippy">
+<span id="installation"></span><h1>Installation of QUIP and quippy<a class="headerlink" href="#installation-of-quip-and-quippy" title="Permalink to this headline">¶</a></h1>
 <p>These intructions provide more details on the compilation and
 installation of <code class="docutils literal"><span class="pre">QUIP</span></code> (Fortran library and main programs) and
 <code class="docutils literal"><span class="pre">quippy</span></code> (Python interface).</p>
-<div class="section" id="Precompiled-Containers">
-<h2>Precompiled Containers<a class="headerlink" href="#Precompiled-Containers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="precompiled-containers">
+<h2>Precompiled Containers<a class="headerlink" href="#precompiled-containers" title="Permalink to this headline">¶</a></h2>
 <p>If you have access to <a class="reference external" href="http://singularity.lbl.gov">Docker</a> or
 <a class="reference external" href="http://singularity.lbl.gov">Singularity</a>, you can try one of the
 <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/docker/README.md">precompiled images</a>
 to get up and running quickly.</p>
 </div>
-<div class="section" id="Compilation-Instructions">
-<h2>Compilation Instructions<a class="headerlink" href="#Compilation-Instructions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="compilation-instructions">
+<h2>Compilation Instructions<a class="headerlink" href="#compilation-instructions" title="Permalink to this headline">¶</a></h2>
 <p>First try the quickstart below, which should work with most Linux systems.
 For Mac systems, have a look at <a class="reference internal" href="#installing-on-mac-os-x-with-macports">Installing on Mac OS X with macports</a> first.</p>
-<div class="section" id="Quick-start">
-<h3>Quick start<a class="headerlink" href="#Quick-start" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="quick-start">
+<h3>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h3>
 <p>Install <a class="footnote-reference" href="#id2" id="id1">[1]</a> the prerequisites: GCC, gfortran, Python, and the linear algebra
 libraries.  For example, on Ubuntu, do (in a terminal):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo apt-get install gcc gfortran python python-pip libblas-dev liblapack-dev
@@ -297,8 +297,8 @@ ask them.</td></tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="Step-by-step">
-<h3>Step by step<a class="headerlink" href="#Step-by-step" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="step-by-step">
+<h3>Step by step<a class="headerlink" href="#step-by-step" title="Permalink to this headline">¶</a></h3>
 <p>If that didn’t work, try these step-by-step instructions
 instructions excerpted from the top-level <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/README.md">README</a>.  The <code class="docutils literal"><span class="pre">README</span></code> file
 is the most up-to-date source of installation information.</p>
@@ -474,8 +474,8 @@ into library form, and then follow the instructions in the
 looking at <a class="reference internal" href="#custom-settings">Custom settings</a> and <a class="reference internal" href="#common-problems">Common Problems</a>.  As a last resort you can
 consult the <a class="reference external" href="https://github.com/libAtoms/QUIP/issues">issue tracker on Github</a>.</p>
 </div>
-<div class="section" id="Installing-the-Jupyter-notebook">
-<h3>Installing the Jupyter notebook<a class="headerlink" href="#Installing-the-Jupyter-notebook" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="installing-the-jupyter-notebook">
+<h3>Installing the Jupyter notebook<a class="headerlink" href="#installing-the-jupyter-notebook" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="http://jupyter.org/">Jupyter</a> is an environment for interactive computing that makes using Python
 much easier and more intuitive.  Especially useful is its notebook environment,
 which provides a handy way to experiment with code, see the results, and have a
@@ -500,8 +500,8 @@ enclosing directory) then navigate to the notebooks and open
 </table>
 </div>
 </div>
-<div class="section" id="Custom-settings">
-<h2>Custom settings<a class="headerlink" href="#Custom-settings" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="custom-settings">
+<h2>Custom settings<a class="headerlink" href="#custom-settings" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt><strong class="makevar">MATHS_LINKOPTS</strong></dt>
 <dd><p class="first">Library options needed to link to BLAS and LAPACK libraries. Any working
@@ -554,24 +554,24 @@ user <code class="docutils literal"><span class="pre">--prefix=${PREFIX}</span><
 header files. Should be read automatically from QUIP.</dd>
 </dl>
 </div>
-<div class="section" id="Common-Problems">
-<span id="install-faq"></span><h2>Common Problems<a class="headerlink" href="#Common-Problems" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="Permission-errors-when-installing">
-<h3>Permission errors when installing<a class="headerlink" href="#Permission-errors-when-installing" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="common-problems">
+<span id="install-faq"></span><h2>Common Problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="permission-errors-when-installing">
+<h3>Permission errors when installing<a class="headerlink" href="#permission-errors-when-installing" title="Permalink to this headline">¶</a></h3>
 <p>If you are installing as root, you may need to make sure the value of
 the <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">QUIP_ARCH</span></code> gets through to the install script, e.g.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">QUIP_ARCH</span><span class="o">=</span><span class="n">darwin_x86_64_gfortran</span> <span class="n">make</span> <span class="n">install</span><span class="o">-</span><span class="n">quippy</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="Installing-on-Mac-OS-X-with-macports">
-<h3>Installing on Mac OS X with macports<a class="headerlink" href="#Installing-on-Mac-OS-X-with-macports" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="installing-on-mac-os-x-with-macports">
+<h3>Installing on Mac OS X with macports<a class="headerlink" href="#installing-on-mac-os-x-with-macports" title="Permalink to this headline">¶</a></h3>
 <p>Macports requires various packages to be installed to compile
 everything, and may require extra linking arguments. See the
 <code class="file docutils literal"><span class="pre">README.macports</span></code> for the latest details.</p>
 </div>
-<div class="section" id="RuntimeError-when-importing">
-<h3>RuntimeError when importing<a class="headerlink" href="#RuntimeError-when-importing" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="runtimeerror-when-importing">
+<h3>RuntimeError when importing<a class="headerlink" href="#runtimeerror-when-importing" title="Permalink to this headline">¶</a></h3>
 <p>If, after installing quippy, you get the error shown below when you
 try to import it for the first time, then you are a victim of a bug in
 early versions of Python 2.6.</p>
@@ -590,16 +590,16 @@ snapshot, or to update numpy to workaround the fix. This can be done
 either by compiling numpy from source from an up-to-date svn snapshot,
 or by applying <a class="reference external" href="http://projects.scipy.org/numpy/changeset/6193">the patch manually</a>.</p>
 </div>
-<div class="section" id="ImportError-when-importing">
-<h3>ImportError when importing<a class="headerlink" href="#ImportError-when-importing" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="importerror-when-importing">
+<h3>ImportError when importing<a class="headerlink" href="#importerror-when-importing" title="Permalink to this headline">¶</a></h3>
 <p>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message about unresolved
 dependancies then something went wrong with the linking process -
 check that all the libraries you’re linking against are correct. You
 can used <cite>ldd</cite> on Linux of <cite>otool -L</cite> on Mac OS X to check which
 libraries the <code class="file docutils literal"><span class="pre">_quippy.so</span></code> Python extension is linked against.</p>
 </div>
-<div class="section" id="Possible-problems-installing-atomeye-module">
-<h3>Possible problems installing atomeye module<a class="headerlink" href="#Possible-problems-installing-atomeye-module" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="possible-problems-installing-atomeye-module">
+<h3>Possible problems installing atomeye module<a class="headerlink" href="#possible-problems-installing-atomeye-module" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt>If you get an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code> with a message ::</dt>
 <dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atomeye</span>
@@ -626,8 +626,8 @@ If not make clean and recompile again</p>
 </dl>
 <p>be sure that the gfortran libraries are properly set in <strong class="makevar">ATOMEYE_LIBS</strong> in Makefile.atomeye</p>
 </div>
-<div class="section" id="Error-compiling-IPModel_GAP">
-<h3>Error compiling IPModel_GAP<a class="headerlink" href="#Error-compiling-IPModel_GAP" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="error-compiling-ipmodel-gap">
+<h3>Error compiling IPModel_GAP<a class="headerlink" href="#error-compiling-ipmodel-gap" title="Permalink to this headline">¶</a></h3>
 <p>If you get the following error during compilation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">Potentials</span><span class="o">/</span><span class="n">IPModel_GAP</span><span class="o">.</span><span class="n">f95</span><span class="p">:</span><span class="mf">51.22</span><span class="p">:</span>
 
@@ -640,8 +640,8 @@ If not make clean and recompile again</p>
 <code class="file docutils literal"><span class="pre">Makefile.inc</span></code> must contain <strong class="makevar">HAVE_GP_PREDICT</strong> = 0, and
 <strong class="makevar">HAVE_GP_TEACH</strong> = 0.</p>
 </div>
-<div class="section" id="Warning-about-quippy.castep-when-importing-quippy">
-<h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><code class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></code></a> when importing quippy<a class="headerlink" href="#Warning-about-quippy.castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="warning-about-quippy-castep-when-importing-quippy">
+<h3>Warning about <a class="reference internal" href="io.html#module-quippy.castep" title="quippy.castep: CASTEP file readers and writers"><code class="xref py py-mod docutils literal"><span class="pre">quippy.castep</span></code></a> when importing quippy<a class="headerlink" href="#warning-about-quippy-castep-when-importing-quippy" title="Permalink to this headline">¶</a></h3>
 <p>If you get the following warning message when importing quippy:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ python
 &gt;&gt;&gt; from quippy import *
@@ -651,8 +651,8 @@ WARNING:root:quippy.castep import quippy.failed.
 <p>then don’t worry, the quippy.castep module is not redistributed with
 the main code. The rest of quippy works fine without it.</p>
 </div>
-<div class="section" id="Internal-compiler-error-with-ifort">
-<h3>Internal compiler error with <cite>ifort</cite><a class="headerlink" href="#Internal-compiler-error-with-ifort" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="internal-compiler-error-with-ifort">
+<h3>Internal compiler error with <cite>ifort</cite><a class="headerlink" href="#internal-compiler-error-with-ifort" title="Permalink to this headline">¶</a></h3>
 <p>If you see an error like the following when using the Intel fortran compiler:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fortcom</span><span class="p">:</span> <span class="n">Severe</span><span class="p">:</span> <span class="o">**</span><span class="n">Internal</span> <span class="n">compiler</span> <span class="n">error</span><span class="p">:</span> <span class="n">internal</span> <span class="n">abort</span><span class="o">**</span> <span class="n">Please</span>
 <span class="n">report</span> <span class="n">this</span> <span class="n">error</span> <span class="n">along</span> <span class="k">with</span> <span class="n">the</span> <span class="n">circumstances</span> <span class="ow">in</span> <span class="n">which</span> <span class="n">it</span> <span class="n">occurred</span>
@@ -667,8 +667,8 @@ the main code. The rest of quippy works fine without it.</p>
 setting <strong class="makevar">QUIPPY_NO_CRACK</strong> =1 in Makefile.inc should solve the
 problem, at the cost of excluding the fracture utilities from quippy.</p>
 </div>
-<div class="section" id="Linking-error-on-Mac-OS-X">
-<h3>Linking error on Mac OS X<a class="headerlink" href="#Linking-error-on-Mac-OS-X" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="linking-error-on-mac-os-x">
+<h3>Linking error on Mac OS X<a class="headerlink" href="#linking-error-on-mac-os-x" title="Permalink to this headline">¶</a></h3>
 <p>When recompiling quippy on top of a previous compilation, you may see
 errors like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">collect2</span><span class="p">:</span> <span class="n">ld</span> <span class="n">returned</span> <span class="mi">1</span> <span class="n">exit</span> <span class="n">status</span> <span class="n">ld</span><span class="p">:</span> <span class="ow">in</span>
@@ -682,8 +682,8 @@ libraries (.a files). Removing the static libraries with <cite>rm
 ../../build.${QUIP_ARCH}/*.a</cite> and recompiling should solve the
 problem.</p>
 </div>
-<div class="section" id="Segmentation-Faults-with-OpenBLAS">
-<h3>Segmentation Faults with OpenBLAS<a class="headerlink" href="#Segmentation-Faults-with-OpenBLAS" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="segmentation-faults-with-openblas">
+<h3>Segmentation Faults with OpenBLAS<a class="headerlink" href="#segmentation-faults-with-openblas" title="Permalink to this headline">¶</a></h3>
 <p>The threading in OpenBLAS can interfere with the OpenMP resulting in
 segfaults. Either recompile OpenBLAS with <code class="docutils literal"><span class="pre">USE_OPENMP=1</span></code> or disable
 threading with <code class="docutils literal"><span class="pre">export</span> <span class="pre">OPENBLAS_NUM_THREADS=1</span></code> at runtime.</p>

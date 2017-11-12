@@ -106,20 +106,20 @@
 <li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Molecular Dynamics Simulation of Fracture in Quartz</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Setting-up-your-working-environment">Setting up your working environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Starting-a-fracture-simulation">Starting a fracture simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Quartz-Primitive-Unit-Cell">Quartz Primitive Unit Cell</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Calculating-Elastic-Properties">Calculating Elastic Properties</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Young's-Modulus-and-Poisson-Ratio">Young’s Modulus and Poisson Ratio</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Surface-Energy">Surface Energy</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Energy-Release-Rate-for-Static-Fracture">Energy Release Rate for Static Fracture</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Calculating-G-for-a-thin-strip">Calculating <cite>G</cite> for a thin strip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up-your-working-environment">Setting up your working environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-a-fracture-simulation">Starting a fracture simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quartz-primitive-unit-cell">Quartz Primitive Unit Cell</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculating-elastic-properties">Calculating Elastic Properties</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#young-s-modulus-and-poisson-ratio">Young’s Modulus and Poisson Ratio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#surface-energy">Surface Energy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#energy-release-rate-for-static-fracture">Energy Release Rate for Static Fracture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#calculating-g-for-a-thin-strip">Calculating <cite>G</cite> for a thin strip</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#Changing-the-loading-of-the-fracture-system">Changing the loading of the fracture system</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Energy-Release-Rate-for-Dynamic-Fracture">Energy Release Rate for Dynamic Fracture</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Extension-tasks">Extension tasks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Input-files-and-Solutions">Input files and Solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#changing-the-loading-of-the-fracture-system">Changing the loading of the fracture system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#energy-release-rate-for-dynamic-fracture">Energy Release Rate for Dynamic Fracture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extension-tasks">Extension tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#input-files-and-solutions">Input files and Solutions</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a></li>
@@ -236,13 +236,13 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="Molecular-Dynamics-Simulation-of-Fracture-in-Quartz">
-<h1>Molecular Dynamics Simulation of Fracture in Quartz<a class="headerlink" href="#Molecular-Dynamics-Simulation-of-Fracture-in-Quartz" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="molecular-dynamics-simulation-of-fracture-in-quartz">
+<h1>Molecular Dynamics Simulation of Fracture in Quartz<a class="headerlink" href="#molecular-dynamics-simulation-of-fracture-in-quartz" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial was prepared for use at a hands-on session at the
 <a class="reference external" href="http://cdsagenda5.ictp.it/full_display.php?ida=a10139">Advanced Oxide Interfaces Workshop</a>, ICTP,
 Trieste, May 2011.</p>
-<div class="section" id="Setting-up-your-working-environment">
-<h2>Setting up your working environment<a class="headerlink" href="#Setting-up-your-working-environment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setting-up-your-working-environment">
+<h2>Setting up your working environment<a class="headerlink" href="#setting-up-your-working-environment" title="Permalink to this headline">¶</a></h2>
 <p>In this tutorial we are going to be using the <a class="reference external" href="http://www.libatoms.org">QUIP</a> (short for QUantum mechanics and
 Interatomic Potentials) code, which is a molecular dynamics code
 written in Fortran 95 and equipped with a Python interface named
@@ -256,8 +256,8 @@ and the syntax is very similar to Fortran.</p>
 <p>This tutorial assumes you have installed <cite>QUIP</cite> and <cite>quippy</cite>; see the
 <a class="reference internal" href="install.html#installation"><span class="std std-ref">Installation of QUIP and quippy</span></a> section if you need some help on doing this.</p>
 </div>
-<div class="section" id="Starting-a-fracture-simulation">
-<h2>Starting a fracture simulation<a class="headerlink" href="#Starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="starting-a-fracture-simulation">
+<h2>Starting a fracture simulation<a class="headerlink" href="#starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
 <p>To maximise the amount of progress that we can make in the hands-on
 session, the first task is to get a fracture simulation running.</p>
 <p>We’re going to be modelling a crack in <span class="math">\(\alpha\)</span>-quartz opening
@@ -352,8 +352,8 @@ settling down once the crack reaches its equilbirum velocity.</p>
 of the tutorial (avoid closing the terminal in which you started the
 job!).</p>
 </div>
-<div class="section" id="Quartz-Primitive-Unit-Cell">
-<h2>Quartz Primitive Unit Cell<a class="headerlink" href="#Quartz-Primitive-Unit-Cell" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="quartz-primitive-unit-cell">
+<h2>Quartz Primitive Unit Cell<a class="headerlink" href="#quartz-primitive-unit-cell" title="Permalink to this headline">¶</a></h2>
 <p>While the fracture simulation is running, we will try to predict the
 expected behaviour of a crack in quartz according to continuum
 elasticity. We’ll start by performing some calculations on the quartz
@@ -410,8 +410,8 @@ atoms, <cite>AtomEye</cite> doubles the unit cell along the short lattice
 vectors (<cite>a</cite> and <cite>b</cite>) resulting in 36 atoms.</p>
 </div>
 </div>
-<div class="section" id="Calculating-Elastic-Properties">
-<h2>Calculating Elastic Properties<a class="headerlink" href="#Calculating-Elastic-Properties" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="calculating-elastic-properties">
+<h2>Calculating Elastic Properties<a class="headerlink" href="#calculating-elastic-properties" title="Permalink to this headline">¶</a></h2>
 <p>In order to predict the onset and velocity of fracture, we need to
 determine the values of the Young’s modulus <span class="math">\(E\)</span>, the Poisson
 ratio <span class="math">\(\nu\)</span>, surface energy density <span class="math">\(\gamma\)</span> and the
@@ -481,8 +481,8 @@ the <span class="math">\(C^0_{ij}\)</span> tensor obtained if internal relaxatio
 allowed (use the <cite>c0ij</cite> option to the <cite>eval</cite> program). Why do you
 think some components are particularily sensitive to internal
 relaxation?</p>
-<div class="section" id="Young's-Modulus-and-Poisson-Ratio">
-<h3>Young’s Modulus and Poisson Ratio<a class="headerlink" href="#Young's-Modulus-and-Poisson-Ratio" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="young-s-modulus-and-poisson-ratio">
+<h3>Young’s Modulus and Poisson Ratio<a class="headerlink" href="#young-s-modulus-and-poisson-ratio" title="Permalink to this headline">¶</a></h3>
 <p>To calculate the effective Young’s modulus and Poisson ratio for our
 quartz fracture simulation, we need to rotate the elastic constant
 matrix to align it with the axes of our <span class="math">\((0001)[\bar{1}10]\)</span>
@@ -523,8 +523,8 @@ axis like the fracture system or <cite>quartz_0001.xyz</cite>, pictured
 below. Use <cite>eval</cite> to directly compute the elastic constant matrix
 of the rotated cell. How well does this matrix compare to <cite>C_eff</cite>?</p>
 </div>
-<div class="section" id="Surface-Energy">
-<h3>Surface Energy<a class="headerlink" href="#Surface-Energy" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="surface-energy">
+<h3>Surface Energy<a class="headerlink" href="#surface-energy" title="Permalink to this headline">¶</a></h3>
 <p>The file <a class="reference download internal" href="_downloads/quartz_0001.xyz" download=""><code class="xref download docutils literal"><span class="pre">quartz_0001.xyz</span></code></a> contains a 54 atom unit cell for
 the (0001) surface of <span class="math">\(\alpha\)</span>-quartz (shown below). Use either
 the QUIP <cite>eval</cite> program or <cite>quippy</cite> to calculate the surface energy
@@ -562,8 +562,8 @@ happens if you anneal the surface using the <cite>md</cite> program?</p>
 <p>Which surface energy do you think is more relevant for predicting the
 onset of fracture, relaxed or unrelaxed?</p>
 </div>
-<div class="section" id="Energy-Release-Rate-for-Static-Fracture">
-<h3>Energy Release Rate for Static Fracture<a class="headerlink" href="#Energy-Release-Rate-for-Static-Fracture" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="energy-release-rate-for-static-fracture">
+<h3>Energy Release Rate for Static Fracture<a class="headerlink" href="#energy-release-rate-for-static-fracture" title="Permalink to this headline">¶</a></h3>
 <p>According to continuum elasticity, the strain energy release rate of an
 advancing crack is defined by</p>
 <div class="math">
@@ -576,8 +576,8 @@ the energy required to create two new surfaces.</p>
 favourable for <span class="math">\(G &gt; 2\gamma\)</span>, where <span class="math">\(\gamma\)</span> is the
 surface energy density.</p>
 </div>
-<div class="section" id="Calculating-G-for-a-thin-strip">
-<h3>Calculating <cite>G</cite> for a thin strip<a class="headerlink" href="#Calculating-G-for-a-thin-strip" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="calculating-g-for-a-thin-strip">
+<h3>Calculating <cite>G</cite> for a thin strip<a class="headerlink" href="#calculating-g-for-a-thin-strip" title="Permalink to this headline">¶</a></h3>
 <p>We are using the thin strip geometry illustrated below for our
 fracture simulations, with the top and bottom edges fixed.</p>
 <a class="reference internal image-reference" href="_images/thin-strip.png"><img alt="_images/thin-strip.png" class="align-center" src="_images/thin-strip.png" style="width: 600px;" /></a>
@@ -619,8 +619,8 @@ the continuum Griffith criterium. How does this compare to the initial
 strain we applied to our fracture specimen?</p>
 </div>
 </div>
-<div class="section" id="Changing-the-loading-of-the-fracture-system">
-<h2>Changing the loading of the fracture system<a class="headerlink" href="#Changing-the-loading-of-the-fracture-system" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="changing-the-loading-of-the-fracture-system">
+<h2>Changing the loading of the fracture system<a class="headerlink" href="#changing-the-loading-of-the-fracture-system" title="Permalink to this headline">¶</a></h2>
 <p>Once your crack simulation should has run for a couple of picoseconds
 the crack should have reached its terminal velocity so you can stop
 the simulation (you can do this nicely creating an empty file named
@@ -662,8 +662,8 @@ useful to do this; note however that the crack tip position is found
 using the atomic coordination numbers so if thre are defects in your
 cell it will not work correctly).</p>
 </div>
-<div class="section" id="Energy-Release-Rate-for-Dynamic-Fracture">
-<h2>Energy Release Rate for Dynamic Fracture<a class="headerlink" href="#Energy-Release-Rate-for-Dynamic-Fracture" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="energy-release-rate-for-dynamic-fracture">
+<h2>Energy Release Rate for Dynamic Fracture<a class="headerlink" href="#energy-release-rate-for-dynamic-fracture" title="Permalink to this headline">¶</a></h2>
 <p>Freund extended this approach to dynamic fracture by writing the total
 energy required to break bonds at the crack surface as the product of
 the static energy release rate <span class="math">\(G\)</span> and a universal velocity-dependent
@@ -689,8 +689,8 @@ predicted by the Freund equation of motion for the same <cite>G</cite>?</p>
 <p>At the end of the session we will try to combine everybody’s results
 to produce a plot of <span class="math">\(V(G)\)</span>.</p>
 </div>
-<div class="section" id="Extension-tasks">
-<h2>Extension tasks<a class="headerlink" href="#Extension-tasks" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="extension-tasks">
+<h2>Extension tasks<a class="headerlink" href="#extension-tasks" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p class="first">Look carefully at the MD trajectory from your fracture simulation
 in <cite>AtomEye</cite>. Do you notice anything about the bond-breaking events
@@ -734,8 +734,8 @@ limitations be overcome in a more complete simulation?</p>
 </li>
 </ol>
 </div>
-<div class="section" id="Input-files-and-Solutions">
-<h2>Input files and Solutions<a class="headerlink" href="#Input-files-and-Solutions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="input-files-and-solutions">
+<h2>Input files and Solutions<a class="headerlink" href="#input-files-and-solutions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><a class="reference download internal" href="_downloads/quartz_crack.xyz" download=""><code class="xref download docutils literal"><span class="pre">quartz_crack.xyz</span></code></a>, <a class="reference download internal" href="_downloads/quartz_crack.xml" download=""><code class="xref download docutils literal"><span class="pre">quartz_crack.xml</span></code></a>, <a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz" download=""><code class="xref download docutils literal"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - input files for crack simulation</li>
 <li><a class="reference download internal" href="_downloads/quartz.xyz" download=""><code class="xref download docutils literal"><span class="pre">quartz.xyz</span></code></a> - quartz primitive cell</li>
