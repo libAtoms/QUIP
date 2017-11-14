@@ -1,0 +1,440 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>quippy.qpxml &mdash; quippy a004d5c+ documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="quippy a004d5c+ documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="../../_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                a004d5c+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+    <p></p>
+    <ul>
+        <li><a href="../../genindex.html">Index</a></li>
+        <li><a href="../../py-modindex.html">Module Index</a></li>
+        <li><a href="../../search.html">Search Page</a></li>
+        <li><a href="../index.html">Module Source Code</a></li>
+    </ul>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">quippy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>quippy.qpxml</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for quippy.qpxml</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">quippy.xml</span>
+
+<span class="sd">Functions to manipulate GAP xml files.</span>
+
+<span class="sd">Works best if lxml is installed, but will fall back to the</span>
+<span class="sd">standard library module.</span>
+
+<span class="sd">Available in script form as combine_gap_xml.py</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+
+<span class="c1"># Needs extra options for lxml to allow it to be</span>
+<span class="c1"># global and overridden</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">lxml.etree</span> <span class="k">as</span> <span class="nn">ElementTree</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">XMLParser</span><span class="p">(</span><span class="n">huge_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">strip_cdata</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="k">import</span> <span class="n">ElementTree</span>
+
+
+<div class="viewcode-block" id="get_gap_version"><a class="viewcode-back" href="../../qpxml.html#quippy.qpxml.get_gap_version">[docs]</a><span class="k">def</span> <span class="nf">get_gap_version</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract the ``gap_version`` from an xml tree</span>
+<span class="sd">    and return as an integer. Will return the maximum</span>
+<span class="sd">    if ``gap_version`` appears more than once.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tree : Element</span>
+<span class="sd">        An ElementTree of a GAP xml</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use xpath specification to get all occurances</span>
+    <span class="c1"># Pull only values in a &#39;GAP_params&#39;</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;gap_version&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;./GAP_params/[@gap_version]&#39;</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="set_max_gap_version"><a class="viewcode-back" href="../../qpxml.html#quippy.qpxml.set_max_gap_version">[docs]</a><span class="k">def</span> <span class="nf">set_max_gap_version</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">extras</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the ``gap_version`` attribute in ``base`` to be the</span>
+<span class="sd">    maximum of all ``gap_version`` found. Modify ``base`` in place</span>
+<span class="sd">    and return nothing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base : Element</span>
+<span class="sd">        The ElementTree to be updated with maximum gap_version</span>
+<span class="sd">    extras : list of Element</span>
+<span class="sd">        All other ElementTrees to be scanned for gap_version</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_gap_version</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">get_gap_version</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">tree</span> <span class="ow">in</span> <span class="p">[</span><span class="n">base</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">extras</span><span class="p">)])</span>
+
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;./GAP_params/[@gap_version]&#39;</span><span class="p">):</span>
+        <span class="n">elem</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;gap_version&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_gap_version</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="sum_e0"><a class="viewcode-back" href="../../qpxml.html#quippy.qpxml.sum_e0">[docs]</a><span class="k">def</span> <span class="nf">sum_e0</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">extras</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Update the values of ``e0`` in the base tree with the sum</span>
+<span class="sd">    of all values found in the given potentials. Modify ``base`` in</span>
+<span class="sd">    place and return nothing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base : Element</span>
+<span class="sd">        The ElementTree to be modified with the sum of ``e0`` values</span>
+<span class="sd">    extras : list of Element</span>
+<span class="sd">        All other ElementTrees to added to the summed ``e0`` values</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Start at 0.0 for uninitialised values</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="c1"># add values for the potentials being combined</span>
+    <span class="k">for</span> <span class="n">tree</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">base</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;./GAP_params/GAP_data/e0&#39;</span><span class="p">):</span>
+            <span class="n">total</span><span class="p">[</span><span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+
+    <span class="c1"># pop the values so we can tell if any are unused</span>
+    <span class="k">for</span> <span class="n">e0</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;./GAP_params/GAP_data/e0&#39;</span><span class="p">):</span>
+        <span class="n">e0</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.21g}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">total</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">e0</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">]))</span>
+
+    <span class="c1"># create new elements for anything not already present in base</span>
+    <span class="k">for</span> <span class="n">z</span><span class="p">,</span> <span class="n">e0</span> <span class="ow">in</span> <span class="n">total</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ElementTree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+            <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./GAP_params/GAP_data&#39;</span><span class="p">),</span>  <span class="c1"># End of GAP data</span>
+            <span class="s1">&#39;e0&#39;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Z&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{:.21g}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e0</span><span class="p">)})</span></div>
+
+
+<div class="viewcode-block" id="merge_descriptors"><a class="viewcode-back" href="../../qpxml.html#quippy.qpxml.merge_descriptors">[docs]</a><span class="k">def</span> <span class="nf">merge_descriptors</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">extras</span><span class="p">,</span> <span class="n">remove_xyz</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract all GAP descriptors from the potentials in extras and</span>
+<span class="sd">    merge them into base, updating the lables and number of</span>
+<span class="sd">    coordinates. Modify ``base`` in place and return nothing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base : Element</span>
+<span class="sd">        The ElementTree in which all the descriptors will be combined</span>
+<span class="sd">    extras : list of Element</span>
+<span class="sd">        All other ElementTrees to extract descriptors from</span>
+<span class="sd">    remove_xyz : bool</span>
+<span class="sd">        If True, remove any ``XYZ_data`` elements; If False then leave</span>
+<span class="sd">        anything found in base (XYZ_data is not combined)</span>
+<span class="sd">    label : str or None</span>
+<span class="sd">        Use the string as the label for the new potential, otherwise</span>
+<span class="sd">        use the label from base.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Make sure the labels for everything are aligned</span>
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Use the base as the basis for everything</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;GAP_params&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Set custom labels in the Potential so it will properly init</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Potential&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Potential&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;init_args&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s1">&#39;label\s*=\s*\w*&#39;</span><span class="p">,</span> <span class="s1">&#39;label=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">),</span>
+            <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Potential&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;init_args&#39;</span><span class="p">])</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;GAP_params&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+
+    <span class="k">if</span> <span class="n">remove_xyz</span><span class="p">:</span>
+        <span class="c1"># getparent only avaiable in lxml so find all parents first</span>
+        <span class="k">for</span> <span class="n">xyz_data_parent</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;GAP_params/XYZ_data/..&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">xyz_data</span> <span class="ow">in</span> <span class="n">xyz_data_parent</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;XYZ_data&#39;</span><span class="p">):</span>
+                <span class="n">xyz_data_parent</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">xyz_data</span><span class="p">)</span>
+
+    <span class="n">base_sparse</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;GAP_params/gpSparse&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">extra</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">new_coordinate</span> <span class="ow">in</span> <span class="n">extra</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span>
+                <span class="s1">&#39;GAP_params/gpSparse/gpCoordinates&#39;</span><span class="p">):</span>
+            <span class="n">add_coordinate</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">new_coordinate</span><span class="p">)</span>
+            <span class="n">base_sparse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">add_coordinate</span><span class="p">)</span>
+
+    <span class="c1"># update labels and total coordinates;</span>
+    <span class="c1"># ensures labels are the same even with custom label</span>
+    <span class="c1"># 1-based indexing</span>
+    <span class="n">n_coordinate</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># in case there are none!</span>
+    <span class="k">for</span> <span class="n">n_coordinate</span><span class="p">,</span> <span class="n">coordinate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">base_sparse</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;gpCoordinates&#39;</span><span class="p">),</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">coordinate</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">n_coordinate</span><span class="p">)</span>
+
+    <span class="n">base_sparse</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+    <span class="n">base_sparse</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;n_coordinate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_coordinate</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="combine_xml"><a class="viewcode-back" href="../../qpxml.html#quippy.qpxml.combine_xml">[docs]</a><span class="k">def</span> <span class="nf">combine_xml</span><span class="p">(</span><span class="n">base_filename</span><span class="p">,</span> <span class="n">extra_filenames</span><span class="p">,</span> <span class="n">remove_xyz</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Merge the GAP potentials in the xml files given in the arguments.</span>
+<span class="sd">    Return a string containing the combined potential.</span>
+
+<span class="sd">    Use this method to either write a new xml file or pass directly into</span>
+<span class="sd">    ``quippy.Potential``:</span>
+
+<span class="sd">        pot = Potential(&quot;IP GAP&quot;,</span>
+<span class="sd">                        param_str=combine_xml(&#39;pot1.xml&#39;, [&#39;pot2.xml&#39;]))</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base_filename : str</span>
+<span class="sd">        Path to xml file to use as the basis for combined xml file</span>
+<span class="sd">    extra_filenames : list of str</span>
+<span class="sd">        Paths to xml files to combine into base</span>
+<span class="sd">    remove_xyz : bool</span>
+<span class="sd">        If True, any XYZ_data will be removed from the output. If lxml is not</span>
+<span class="sd">        avaiable XYZ_data will lose CDATA status and slow parsing. There is</span>
+<span class="sd">        also no effort made to combine XYZ_data from the extra xml files</span>
+<span class="sd">    label : str or None</span>
+<span class="sd">        If not None, the string is used to label the combined potential in</span>
+<span class="sd">        the output, otherwise the label from base is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    combined_xml : str</span>
+<span class="sd">        String containing the combined xml contents</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_xml</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">base_filename</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">extra_xml</span> <span class="o">=</span> <span class="p">[</span><span class="n">ElementTree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">extra</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span> <span class="k">for</span> <span class="n">extra</span> <span class="ow">in</span>
+                 <span class="n">extra_filenames</span><span class="p">]</span>
+
+    <span class="c1"># set max gap_version</span>
+    <span class="n">set_max_gap_version</span><span class="p">(</span><span class="n">base_xml</span><span class="p">,</span> <span class="n">extra_xml</span><span class="p">)</span>
+    <span class="c1"># sum all the zeros</span>
+    <span class="n">sum_e0</span><span class="p">(</span><span class="n">base_xml</span><span class="p">,</span> <span class="n">extra_xml</span><span class="p">)</span>
+    <span class="c1"># combine everything into base</span>
+    <span class="n">merge_descriptors</span><span class="p">(</span><span class="n">base_xml</span><span class="p">,</span> <span class="n">extra_xml</span><span class="p">,</span> <span class="n">remove_xyz</span><span class="o">=</span><span class="n">remove_xyz</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+    <span class="c1"># Done, send it back</span>
+    <span class="k">return</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">base_xml</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'a004d5c+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
