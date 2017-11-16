@@ -57,6 +57,13 @@ __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice
 if 'ase' in available_modules:
     import ase
     from ase.spacegroup import Spacegroup
+    # adsorbate_info as a property is deprecated in ase
+    # since it shows up in `dir()` the methods in
+    # oo_fortran will error when trying to access it as
+    # a property. Just remove it so that it doesn't show up
+    # at all as a property any more.
+    if hasattr(ase.Atoms, 'adsorbate_info'):
+        delattr(ase.Atoms, 'adsorbate_info')
 else:
     raise ImportError("mandatory dependency ase cannot be imported. Install using 'pip install ase'.")
 
