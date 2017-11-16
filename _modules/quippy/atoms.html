@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.atoms &mdash; quippy a004d5c+ documentation</title>
+  <title>quippy.atoms &mdash; quippy f18cc61+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy a004d5c+ documentation" href="../../index.html"/>
+    <link rel="top" title="quippy f18cc61+ documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                a004d5c+
+                f18cc61+
               </div>
             
           
@@ -237,6 +237,13 @@
 <span class="k">if</span> <span class="s1">&#39;ase&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ase</span>
     <span class="kn">from</span> <span class="nn">ase.spacegroup</span> <span class="k">import</span> <span class="n">Spacegroup</span>
+    <span class="c1"># adsorbate_info as a property is deprecated in ase</span>
+    <span class="c1"># since it shows up in `dir()` the methods in</span>
+    <span class="c1"># oo_fortran will error when trying to access it as</span>
+    <span class="c1"># a property. Just remove it so that it doesn&#39;t show up</span>
+    <span class="c1"># at all as a property any more.</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span> <span class="s1">&#39;adsorbate_info&#39;</span><span class="p">):</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">,</span> <span class="s1">&#39;adsorbate_info&#39;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;mandatory dependency ase cannot be imported. Install using &#39;pip install ase&#39;.&quot;</span><span class="p">)</span>
 
@@ -1277,7 +1284,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'a004d5c+',
+            VERSION:'f18cc61+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
