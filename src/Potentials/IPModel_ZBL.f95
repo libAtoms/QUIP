@@ -62,6 +62,7 @@ public :: IPModel_ZBL
 type IPModel_ZBL
   real(dp) :: cutoff = 0.0
   real(dp) :: cutoff_width = 0.0
+  logical :: shift_cutoff = .false.
   real(dp) :: a_pre_exp = 0.46850
   real(dp) :: a_exp = 0.23
   real(dp) :: p_pre_exp_1 = 0.18175
@@ -115,6 +116,7 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   call param_register(params, 'E_scale', '1.0', this%E_scale, help_string="E_scale")
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string="cutoff")
   call param_register(params, 'cutoff_width', '0.0', this%cutoff_width, help_string="smooth cutoff width")
+  call param_register(params, 'shift_cutoff', 'F', this%shift_cutoff, help_string="shift value at cutoff to equal 0")
   call param_register(params, 'a_pre_exp', '0.46850', this%a_pre_exp, help_string="pre-exponential factor for screening parameter")
   call param_register(params, 'a_exp', '0.23', this%a_exp, help_string="exponent of charge of nuclei")
   call param_register(params, 'p_pre_exp_1', '0.18175', this%p_pre_exp_1, help_string="first pre-exponential factor of screening function")
@@ -156,6 +158,7 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
    real(dp) :: r, rs, dr(3)
    real(dp) :: a, c
    real(dp) :: t_1, t_2, t_3, t_4
+   real(dp) :: rs_shifted, t_1_shifted, t_2_shifted, t_3_shifted, t_4_shifted, c_shifted
    real(dp) :: de, de_dr
    real(dp) :: f_cut = 1.0, df_cut = 0.0
 
@@ -204,6 +207,15 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
             t_4 = this%p_pre_exp_4*exp(this%p_exp_4*rs)
             if (this%cutoff > 0.0 .and. this%cutoff_width > 0.0) f_cut = poly_switch(r, this%cutoff, this%cutoff_width)
             de = c*(t_1+t_2+t_3+t_4)
+            if (this%shift_cutoff) then
+                c_shifted = ke_e2*real(at%Z(i))*real(at%Z(j))/this%cutoff
+                rs_shifted = this%cutoff/a
+                t_1_shifted = this%p_pre_exp_1*exp(this%p_exp_1*rs_shifted)
+                t_2_shifted = this%p_pre_exp_2*exp(this%p_exp_2*rs_shifted)
+                t_3_shifted = this%p_pre_exp_3*exp(this%p_exp_3*rs_shifted)
+                t_4_shifted = this%p_pre_exp_4*exp(this%p_exp_4*rs_shifted)
+                de = de - c_shifted*(t_1_shifted+t_2_shifted+t_3_shifted+t_4_shifted)
+            endif
             if (present(e)) then
                if (i == j) then
                   e = e + 0.5*de*f_cut
