@@ -66,6 +66,7 @@
 !%    \item    LinearSOAP potential ({\bf IPModel_LinearSOAP})
 !%    \item    TTM-nF multipole model for water ({\bf IPModel_nF})
 !%    \item    CH4 potential ({\bf IPModel_CH4})
+!%    \item    Confining monomer potential ({\bf IPModel_ConfiningMonomer})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
@@ -93,6 +94,7 @@
 !%    \item    'IP PartridgeSchwenke'
 !%    \item    'IP Einstein'
 !%    \item    'IP Coulomb'
+!%    \item    'IP ConfiningMonomer'
 !%    \item    'IP Sutton_Chen'
 !%    \item    'IP HFdimer'
 !%    \item    'IP BornMayer'
@@ -167,6 +169,7 @@ use IPModel_WaterDimer_Gillan_module, only : ipmodel_waterdimer_gillan, initiali
 use IPModel_WaterTrimer_Gillan_module, only : ipmodel_watertrimer_gillan, initialise, finalise, calc, print
 use IPModel_BornMayer_module, only : ipmodel_bornmayer, initialise, finalise, calc, print
 use IPModel_Custom_module, only : ipmodel_custom, initialise, finalise, calc, print
+use IPModel_ConfiningMonomer_module, only : ipmodel_confiningmonomer, initialise, finalise, calc, print
 use IPModel_Tether_module, only : ipmodel_tether, initialise, finalise, calc, print
 use IPModel_Spring_module, only : ipmodel_Spring, initialise, finalise, calc, print
 use IPModel_SW_VP_module, only : ipmodel_sw_vp, initialise, finalise, calc, print
@@ -189,7 +192,7 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
      FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, FF_LMTO_TBE=31, FF_FC4 = 32, FF_Spring=33, &
      FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, FF_ZBL=37, FF_LinearSOAP=38, &
-     FF_MBD=39, FF_DispTS=40, FF_TTM_NF = 41, FF_CH4=42, & ! Add new IPs here
+     FF_MBD=39, FF_DispTS=40, FF_TTM_NF = 41, FF_CH4=42, FF_ConfiningMonomer=43, & ! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -225,6 +228,7 @@ type IP_type
   type(IPModel_FX) ip_FX
   type(IPModel_BornMayer) ip_BornMayer
   type(IPModel_Custom) ip_Custom
+  type(IPModel_ConfiningMonomer) ip_ConfiningMonomer
   type(IPModel_HFdimer) ip_HFdimer 
   type(IPModel_SW_VP) ip_sw_vp
   type(IPModel_WaterDimer_Gillan) ip_waterdimer_gillan
@@ -351,7 +355,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan , &
        is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, & 
-       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, is_TTM_nF, is_CH4, &! Add new IPs here
+       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, is_TTM_nF, is_CH4, is_ConfiningMonomer, &! Add new IPs here
        is_Template
 
   INIT_ERROR(error)
@@ -392,6 +396,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'FX', 'false', is_FX, help_string="Fanourgakis-Xantheas model of water")
   call param_register(params, 'BornMayer', 'false', is_BornMayer, help_string="Born-Mayer potential")
   call param_register(params, 'Custom', 'false', is_Custom, help_string="Customised (hard wired) potential")
+  call param_register(params, 'ConfiningMonomer', 'false', is_ConfiningMonomer, help_string="Confining potential for monomers, currently hardcoded for CH4")
   call param_register(params, 'HFdimer', 'false', is_HFdimer, help_string="HF dimer potential")
   call param_register(params, 'SW_VP', 'false', is_SW_VP, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'WaterDimer_Gillan', 'false', is_WaterDimer_Gillan, help_string='Water Dimer 2-body potential by Mike Gillan')
@@ -421,7 +426,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, &
        is_Tether, is_Spring, is_LMTO_TBE, is_FC4, is_Multipoles, is_DispTS, is_SCME, is_MTP, is_MBD, is_ZBL,is_linearSOAP, &
-       is_TTM_nF, is_CH4,& ! add new IPs here
+       is_TTM_nF, is_CH4, is_ConfiningMonomer, & ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -505,6 +510,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_Custom) then
      this%functional_form = FF_Custom
      call Initialise(this%ip_custom, args_str, param_str)
+  else if (is_ConfiningMonomer) then
+     this%functional_form = FF_ConfiningMonomer
+     call Initialise(this%ip_confiningmonomer, args_str, param_str)
   else if (is_HFdimer) then
      this%functional_form = FF_HFdimer
      call Initialise(this%ip_HFdimer, args_str, param_str)
@@ -625,6 +633,8 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_BornMayer)
    case (FF_Custom)
       call Finalise(this%ip_Custom)
+   case (FF_ConfiningMonomer)
+      call Finalise(this%ip_confiningmonomer)
    case (FF_HFdimer)
       call Finalise(this%ip_HFdimer)
    case (FF_SW_VP)
@@ -725,6 +735,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_BornMayer%cutoff
   case (FF_Custom)
      IP_cutoff = this%ip_custom%cutoff
+  case (FF_ConfiningMonomer)
+     IP_cutoff = this%ip_confiningmonomer%cutoff
   case (FF_HFdimer)
      IP_cutoff = this%ip_HFdimer%cutoff
   case (FF_SW_VP)
@@ -852,6 +864,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_BornMayer, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_Custom)
       call calc(this%ip_Custom, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_ConfiningMonomer)
+      call calc(this%ip_confiningmonomer, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_HFdimer)
       call calc(this%ip_HFdimer, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_SW_VP)
@@ -961,6 +975,8 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_BornMayer, file=file)
    case (FF_Custom)
       call Print(this%ip_custom, file=file)
+   case (FF_ConfiningMonomer)
+      call Print(this%ip_confiningmonomer, file=file)
    case (FF_HFdimer)
       call Print(this%ip_HFdimer, file=file)
    case (FF_SW_VP)

@@ -45,6 +45,14 @@ class TestConvert_ExtraProperties(QuippyTestCase):
     def test_equal(self):
         self.assertEqual(self.dia_quippy, self.dia_quippy_2)
 
+    def test_str(self):
+        # ensure converted atoms can still be printed
+        str(self.dia_quippy_2)
+
+    def test_repr(self):
+        # ensure no errors with repr on converted atoms
+        repr(self.dia_quippy_2)
+
 class TestConvert_UnsupportedProperties(QuippyTestCase):
 
     def setUp(self):

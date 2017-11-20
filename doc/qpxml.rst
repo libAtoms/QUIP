@@ -17,9 +17,9 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-Some utilities for topological analysis
-=======================================
+GAP XML functions
+=================
 
-.. automodule:: quippy.topology
-   :synopsis: utilities for topological analysis
+.. automodule:: quippy.qpxml
+   :synopsis: Functions for manipulating GAP xml
    :members:
