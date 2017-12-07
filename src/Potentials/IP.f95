@@ -808,7 +808,7 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
   INIT_ERROR(error)
 
   call initialise(params)
-  call param_register(params, 'pgroup_size', '', pgroup_size, has_value_target=has_pgroup_size, &
+  call param_register(params, 'pgroup_size', '0', pgroup_size, has_value_target=has_pgroup_size, &
                       help_string="Explicitly specify the parallel group size, i.e. the number of &
                       MPI processes")
   if (present(args_str)) then
