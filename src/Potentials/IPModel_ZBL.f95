@@ -49,6 +49,7 @@ use paramreader_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
+use periodictable_module, only : ElementCovRad
 
 use mpi_context_module
 use QUIP_Common_module
@@ -61,8 +62,9 @@ include 'IPModel_interface.h'
 public :: IPModel_ZBL
 type IPModel_ZBL
   real(dp) :: cutoff = 0.0
+  real(dp) :: use_cutoff = 0.0
   real(dp) :: cutoff_width = 0.0
-  logical :: shift_cutoff = .false.
+  logical :: shift_cutoff = .false., cutoff_scale_cov_rad = .false.
   real(dp) :: a_pre_exp = 0.46850
   real(dp) :: a_exp = 0.23
   real(dp) :: p_pre_exp_1 = 0.18175
@@ -117,6 +119,7 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   call param_register(params, 'cutoff', '0.0', this%cutoff, help_string="cutoff")
   call param_register(params, 'cutoff_width', '0.0', this%cutoff_width, help_string="smooth cutoff width")
   call param_register(params, 'shift_cutoff', 'F', this%shift_cutoff, help_string="shift value at cutoff to equal 0")
+  call param_register(params, 'cutoff_scale_cov_rad', 'F', this%cutoff_scale_cov_rad, help_string="multiply cutoff by sum of covalent radii (but cutoff_width is absolute)")
   call param_register(params, 'a_pre_exp', '0.46850', this%a_pre_exp, help_string="pre-exponential factor for screening parameter")
   call param_register(params, 'a_exp', '0.23', this%a_exp, help_string="exponent of charge of nuclei")
   call param_register(params, 'p_pre_exp_1', '0.18175', this%p_pre_exp_1, help_string="first pre-exponential factor of screening function")
@@ -128,9 +131,16 @@ subroutine IPModel_ZBL_Initialise_str(this, args_str, param_str)
   call param_register(params, 'p_pre_exp_4', '0.02817', this%p_pre_exp_4, help_string="fourth pre-exponential factor of screening function")
   call param_register(params, 'p_exp_4', '-0.20162', this%p_exp_4, help_string="fourth exponent of screening function")
 
-  
   if (param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ZBL_Initialise_str args_str')) then
   end if
+
+  ! by default cutoff used is cutoff set
+  this%use_cutoff = this%cutoff
+  if (this%cutoff_scale_cov_rad) then
+       ! if cutoff is actually scale for covalent rad sum, set externally accessible
+       ! cutoff to be max possible value for any element
+       this%cutoff = 2.0*maxval(ElementCovRad)
+  endif
 
   call finalise(params)
 
@@ -161,6 +171,7 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
    real(dp) :: rs_shifted, t_1_shifted, t_2_shifted, t_3_shifted, t_4_shifted, c_shifted
    real(dp) :: de, de_dr
    real(dp) :: f_cut = 1.0, df_cut = 0.0
+   real(dp) :: use_cutoff
 
    INIT_ERROR(error)
 
@@ -183,6 +194,7 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
       RAISE_ERROR('IPModel_ZBL_Calc: local_e calculation requested but not supported yet',error)
    end if
 
+   use_cutoff = this%use_cutoff
    do i = 1, at%N
       i_is_min_image = is_min_image(at,i)
 
@@ -197,7 +209,9 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
 
          if (i < j) cycle
 
-         if (this%cutoff == 0.0 .or. r <= this%cutoff) then
+         if (this%cutoff_scale_cov_rad) use_cutoff = this%use_cutoff * (ElementCovRad(at%Z(i))+ElementCovRad(at%Z(j)))
+
+         if (use_cutoff == 0.0 .or. r <= use_cutoff) then
             c = ke_e2*real(at%Z(i))*real(at%Z(j))/r
             a = this%a_pre_exp/(real(at%Z(i))**this%a_exp + real(at%Z(j))**this%a_exp)
             rs = r/a
@@ -205,11 +219,11 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
             t_2 = this%p_pre_exp_2*exp(this%p_exp_2*rs)
             t_3 = this%p_pre_exp_3*exp(this%p_exp_3*rs)
             t_4 = this%p_pre_exp_4*exp(this%p_exp_4*rs)
-            if (this%cutoff > 0.0 .and. this%cutoff_width > 0.0) f_cut = poly_switch(r, this%cutoff, this%cutoff_width)
+            if (use_cutoff > 0.0 .and. this%cutoff_width > 0.0) f_cut = poly_switch(r, use_cutoff, this%cutoff_width)
             de = c*(t_1+t_2+t_3+t_4)
             if (this%shift_cutoff) then
-                c_shifted = ke_e2*real(at%Z(i))*real(at%Z(j))/this%cutoff
-                rs_shifted = this%cutoff/a
+                c_shifted = ke_e2*real(at%Z(i))*real(at%Z(j))/use_cutoff
+                rs_shifted = use_cutoff/a
                 t_1_shifted = this%p_pre_exp_1*exp(this%p_exp_1*rs_shifted)
                 t_2_shifted = this%p_pre_exp_2*exp(this%p_exp_2*rs_shifted)
                 t_3_shifted = this%p_pre_exp_3*exp(this%p_exp_3*rs_shifted)
@@ -223,12 +237,21 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
                   e = e + de*f_cut
                end if
             end if
-            if (present(f)) then
-               if (this%cutoff > 0.0 .and. this%cutoff_width > 0.0) df_cut = dpoly_switch(r, this%cutoff, this%cutoff_width)
+            if (present(f) .or. present(virial)) then
+               if (use_cutoff > 0.0 .and. this%cutoff_width > 0.0) df_cut = dpoly_switch(r, use_cutoff, this%cutoff_width)
                de_dr = -c/r*(t_1+t_2+t_3+t_4) + c/a*(this%p_exp_1*t_1+this%p_exp_2*t_2+this%p_exp_3*t_3+this%p_exp_4*t_4)
                de_dr = de_dr*f_cut + de*df_cut
-               f(:,i) = f(:,i) + de_dr*dr
-               if ( i/=j ) f(:,j) = f(:,j) - de_dr*dr
+               if (present(f)) then
+                   f(:,i) = f(:,i) + de_dr*dr
+                   if ( i/=j ) f(:,j) = f(:,j) - de_dr*dr
+               end if
+               if (present(virial)) then
+                  if (i == j) then
+                     virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*r
+                  else
+                     virial = virial - de_dr*(dr .outer. dr)*r
+                  endif
+               endif
             end if
          end if
       end do
