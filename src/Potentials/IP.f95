@@ -123,7 +123,7 @@ module IP_module
 
 ! use system_module, only : dp
 use error_module
-use system_module, only : dp, inoutput, initialise, INPUT, print, PRINT_VERBOSE, PRINT_ALWAYS, system_timer
+use system_module, only : dp, inoutput, initialise, INPUT, print, print_warning, PRINT_VERBOSE, PRINT_ALWAYS, system_timer
 use units_module
 use mpi_context_module
 use extendable_str_module
@@ -799,12 +799,48 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
   character(len=*), intent(in), optional      :: args_str 
   integer, intent(out), optional :: error
 
+  type(Dictionary) :: params
+  integer :: pgroup_size
+  integer :: n_groups
+  logical :: has_pgroup_size = .false.
+  logical :: do_auto_pgroups = .true.
+
   INIT_ERROR(error)
+
+  call initialise(params)
+  call param_register(params, 'pgroup_size', '0', pgroup_size, has_value_target=has_pgroup_size, &
+                      help_string="Explicitly specify the parallel group size, i.e. the number of &
+                      MPI processes")
+  if (present(args_str)) then
+     if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='IP_Calc')) then
+        call system_abort("IP_Calc failed to parse args_str " // args_str)
+     endif
+  endif
+  call finalise(params)
 
   call system_timer("IP_Calc")
 
   if (this%mpi_glob%active .and. .not. this%mpi_local%active) then
-    call setup_parallel(this, at, energy, local_e, f, virial, local_virial)
+    do_auto_pgroups = .true.
+    if (has_pgroup_size) then
+       if ((pgroup_size > 0) .and. (pgroup_size <= this%mpi_glob%n_procs)) then
+          n_groups = this%mpi_glob%n_procs / pgroup_size
+          if (n_groups * pgroup_size == this%mpi_glob%n_procs) then
+             do_auto_pgroups = .false.
+          else
+             call print_warning("Invalid parallel group size specified: " // pgroup_size)
+             call print_warning("Falling back to automatic selection")
+          endif
+       else
+          call print_warning("Invalid parallel group size specified: " // pgroup_size)
+          call print_warning("Falling back to automatic selection")
+       endif
+    endif
+    if (do_auto_pgroups) then
+       call setup_parallel(this, at, energy, local_e, f, virial, local_virial)
+    else
+       call setup_parallel_groups(this, this%mpi_glob, pgroup_size)
+    endif
   endif
 
   select case (this%functional_form)
