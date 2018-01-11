@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy 249661c+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy bb658f0+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 249661c+ documentation" href="index.html"/>
+    <link rel="top" title="quippy bb658f0+ documentation" href="index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
         <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/>
         <link rel="prev" title="Tutorials" href="tutorials.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                249661c+
+                bb658f0+
               </div>
             
           
@@ -418,8 +418,8 @@ and <code class="docutils literal"><span class="pre">z</span></code> <code class
 <span class="go"> [ 1.36  4.08  4.08]]</span>
 </pre></div>
 </div>
-<p>Note that we print the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.13)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
-position array using the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.13)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
+<p>Note that we print the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html#numpy.transpose" title="(in NumPy v1.14)"><code class="xref py py-func docutils literal"><span class="pre">transpose()</span></code></a> of the
+position array using the <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.T.html#numpy.ndarray.T" title="(in NumPy v1.14)"><code class="xref py py-attr docutils literal"><span class="pre">T</span></code></a> attribute, since the
 actual <code class="docutils literal"><span class="pre">dia.pos</span></code> array has 3 rows and <code class="docutils literal"><span class="pre">len(dia)</span> <span class="pre">==</span> <span class="pre">8</span></code> columns,
 which isn’t very convenient for printing. Atomic properties are stored
 in arrays (actually, in a special type of array called a
@@ -645,10 +645,10 @@ arithmetic:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">velo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.13)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
+<p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.14)"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib’s
-<a class="reference external" href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.1.1)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.1.1)"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> function. If you want to retain the
 one-based indexing, using <a class="reference internal" href="farray.html#quippy.farray.farray" title="quippy.farray.farray"><code class="xref py py-func docutils literal"><span class="pre">farray()</span></code></a> instead, which
 returns a <a class="reference internal" href="farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal"><span class="pre">FortranArray</span></code></a>.</p>
 <p>Note the partial sums: the inner sum is over axis 1 of <code class="docutils literal"><span class="pre">al.velo</span></code>
@@ -691,9 +691,9 @@ temperature of 500K like this:</p>
 </pre></div>
 </div>
 <p>(If you want to clear the previous plot first, use the
-<a class="reference external" href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.clf.html#matplotlib.pyplot.clf" title="(in Matplotlib v2.1.1)"><code class="xref py py-func docutils literal"><span class="pre">clf()</span></code></a> matplotlib function). To add a
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.clf.html#matplotlib.pyplot.clf" title="(in Matplotlib v2.1.1)"><code class="xref py py-func docutils literal"><span class="pre">clf()</span></code></a> matplotlib function). To add a
 histogram of the speeds in the last frame of our <a class="reference internal" href="io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal"><span class="pre">AtomsList</span></code></a> to
-the plot, we make use of matplotlibs <a class="reference external" href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html#matplotlib.pyplot.hist" title="(in Matplotlib v2.1.1)"><code class="xref py py-func docutils literal"><span class="pre">hist()</span></code></a> function:</p>
+the plot, we make use of matplotlibs <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html#matplotlib.pyplot.hist" title="(in Matplotlib v2.1.1)"><code class="xref py py-func docutils literal"><span class="pre">hist()</span></code></a> function:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">al</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">(),</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1090,7 +1090,7 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'249661c+',
+            VERSION:'bb658f0+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
