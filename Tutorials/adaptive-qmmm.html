@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Examples &mdash; quippy 20f4c22+ documentation</title>
+  <title>Adaptive QM/MM MD of Fracture in Silicon &mdash; quippy 7b37b87+ documentation</title>
   
 
   
@@ -39,9 +39,10 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="quippy 20f4c22+ documentation" href="../index.html"/>
-        <link rel="next" title="Getting started with Atoms" href="Introduction.html"/>
-        <link rel="prev" title="Installation of QUIP and quippy" href="../install.html"/> 
+    <link rel="top" title="quippy 7b37b87+ documentation" href="../index.html"/>
+        <link rel="up" title="Tutorials" href="index.html"/>
+        <link rel="next" title="Quippy library reference" href="../quippy.html"/>
+        <link rel="prev" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -73,7 +74,7 @@
             
             
               <div class="version">
-                20f4c22+
+                7b37b87+
               </div>
             
           
@@ -101,12 +102,17 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Adaptive QM/MM MD of Fracture in Silicon</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
@@ -163,13 +169,15 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Examples</li>
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>Adaptive QM/MM MD of Fracture in Silicon</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/Examples/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/Tutorials/adaptive-qmmm.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -216,23 +224,22 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<p>The following examples are currently available:</p>
+<div class="section" id="adaptive-qm-mm-md-of-fracture-in-silicon">
+<span id="qmmm-tutorial"></span><h1>Adaptive QM/MM MD of Fracture in Silicon<a class="headerlink" href="#adaptive-qm-mm-md-of-fracture-in-silicon" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial has been prepared for use at a hands-on session at the
+<a class="reference external" href="http://www.adglass.eu/adglass_news.html">ADGLASS Winter School on Advanced Molecular Dynamics Simulations</a>, ICTP, Trieste, February
+2013.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">James Kermode and Gianpietro Moras</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">February 2013</td>
+</tr>
+</tbody>
+</table>
 <div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#ASE-and-quippy">ASE and <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#Changing-Atoms">Changing <code class="docutils literal"><span class="pre">Atoms</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#Generating-structures-from-scratch">Generating structures from scratch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#Computing-the-energy">Computing the energy</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html#Example:-vacancy-formation-energy">Example: vacancy formation energy</a></li>
-</ul>
-</li>
-</ul>
 </div>
 </div>
 
@@ -246,10 +253,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Introduction.html" class="btn btn-neutral float-right" title="Getting started with Atoms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../quippy.html" class="btn btn-neutral float-right" title="Quippy library reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../install.html" class="btn btn-neutral" title="Installation of QUIP and quippy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="adglass.html" class="btn btn-neutral" title="Molecular Dynamics Simulation of Fracture in Quartz" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -280,7 +287,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'20f4c22+',
+            VERSION:'7b37b87+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

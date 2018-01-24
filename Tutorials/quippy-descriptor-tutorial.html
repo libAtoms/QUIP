@@ -1,0 +1,2198 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Using Quippy to compute descriptors of atomic environments &mdash; quippy 7b37b87+ documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="quippy 7b37b87+ documentation" href="../index.html"/>
+        <link rel="up" title="Tutorials" href="index.html"/>
+        <link rel="next" title="Molecular Dynamics Simulation of Fracture in Quartz" href="adglass.html"/>
+        <link rel="prev" title="Introductory Tutorial" href="tutorial.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> quippy
+          
+
+          
+            
+            <img src="../_static/hybrid.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7b37b87+
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Using Quippy to compute descriptors of atomic environments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#A-simple-descriptor:-pairwise-distances">A simple descriptor: pairwise distances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#A-many-body-descriptor:-SOAP">A many-body descriptor: SOAP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#General_monomer-example:-benzene">General_monomer example: benzene</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+</ul>
+
+            
+          
+    <p></p>
+    <ul>
+        <li><a href="../genindex.html">Index</a></li>
+        <li><a href="../py-modindex.html">Module Index</a></li>
+        <li><a href="../search.html">Search Page</a></li>
+        <li><a href="../_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">quippy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>Using Quippy to compute descriptors of atomic environments</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Tutorials/quippy-descriptor-tutorial.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="Using-Quippy-to-compute-descriptors-of-atomic-environments">
+<h1>Using Quippy to compute descriptors of atomic environments<a class="headerlink" href="#Using-Quippy-to-compute-descriptors-of-atomic-environments" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows how to use quippy to calculate various descriptors
+for a given atomic structure, contained in an Atoms object.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">quippy</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">descriptors</span>
+</pre></div>
+</div>
+</div>
+<p>Create a configuration:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">diamond</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">at</span><span class="o">.</span><span class="n">positions</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[32]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[ 0.   ,  0.   ,  0.   ],
+       [ 0.875,  0.875,  0.875],
+       [ 1.75 ,  1.75 ,  0.   ],
+       [ 2.625,  2.625,  0.875],
+       [ 1.75 ,  0.   ,  1.75 ],
+       [ 2.625,  0.875,  2.625],
+       [ 0.   ,  1.75 ,  1.75 ],
+       [ 0.875,  2.625,  2.625]])
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">Z</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[33]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>FortranArray([6, 6, 6, 6, 6, 6, 6, 6], dtype=int32)
+</pre></div>
+</div>
+</div>
+<p>All descriptors are instantiated by a call to <code class="docutils literal"><span class="pre">Descriptor()</span></code>, which
+takes the descriptor initialisation string as its only argument. For a
+list of available descriptors and their parameters, see the following
+list, auto-generated using the following command:
+<code class="docutils literal"><span class="pre">quip</span> <span class="pre">descriptor_str=&quot;--help&quot;</span></code></p>
+<p>bispectrum_so4 bispectrum_so3 behler distance_2b coordination
+angle_3b co_angle_3b co_distance_2b cosnx trihis water_monomer
+water_dimer A2_dimer AB_dimer bond_real_space atom_real_space
+power_so3 power_so4 soap AN_monomer general_monomer general_dimer
+general_trimer rdf as_distance_2b molecule_lo_d alex com_dimer
+distance_Nb</p>
+<div class="section" id="A-simple-descriptor:-pairwise-distances">
+<h2>A simple descriptor: pairwise distances<a class="headerlink" href="#A-simple-descriptor:-pairwise-distances" title="Permalink to this headline">¶</a></h2>
+<p>Here we use a simple pair distance between carbon atoms, with a cutoff
+of 1.5 Angstrom. There are several descriptors that can do this, one is
+<code class="docutils literal"><span class="pre">distance_2b</span></code>, which takes a cutoff argument, and two Z values to
+specify the atom types. Alternatively, the <code class="docutils literal"><span class="pre">distance_Nb</span></code> descriptor
+could also do this, with <code class="docutils literal"><span class="pre">order=2</span></code>, and it takes a string of Zs to
+specify the atom types. This is more general, <code class="docutils literal"><span class="pre">order=3</span></code> is a
+triangle-like three-body descriptor of the three sides of a triangle of
+3 atoms.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;distance_2b Z1=6 Z2=6 cutoff=4&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The descriptor dimension is the length of the descriptor vector. For the
+scalar distance this is 1.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">n_dim</span> <span class="c1"># number of dimensions</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[10]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>1
+</pre></div>
+</div>
+</div>
+<p>This descriptor is very simple: it is scalar (dimension 1), and hence
+only has a single permutation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">n_perm</span> <span class="c1"># number of permutations</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[11]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>1
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">permutations</span><span class="p">()</span> <span class="c1"># array of permutation arrays</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[12]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[1]], dtype=int32)
+</pre></div>
+</div>
+</div>
+<p>Many descriptors rely on the neighbour connectivity, so we need to call
+<code class="docutils literal"><span class="pre">calc_connect</span></code>, after setting the Atoms cutoff with a skin of 1 A:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>We can now calculate how many instances of this descriptor are found in
+an <code class="docutils literal"><span class="pre">Atoms</span></code> (or <code class="docutils literal"><span class="pre">ASEAtoms</span></code>) object:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[39]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>368
+</pre></div>
+</div>
+</div>
+<p>This also works transparently for iterables (such as lists), returning a
+list of the counts.</p>
+<p>We can also calculate the actual descriptor values – in this case, the
+list of pairwise distances:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">d</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[40]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>{&#39;cutoff&#39;: array([ 0.30420743,  0.30420743,  1.        ,  1.        ,  1.        ,
+         0.30420743,  0.30420743,  0.30420743,  1.        ,  1.        ,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  0.30420743,  1.        ,
+         0.30420743,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  0.30420743,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  0.30420743,  1.        ,  1.        ,  0.30420743,
+         1.        ,  1.        ,  0.30420743,  0.30420743,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  0.30420743,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  0.30420743,  0.30420743,
+         1.        ,  1.        ,  1.        ,  1.        ,  0.30420743,
+         0.30420743,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  0.30420743,  1.        ,
+         0.30420743,  1.        ,  1.        ,  0.30420743,  0.30420743,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         0.30420743,  0.30420743,  1.        ,  1.        ,  1.        ,
+         0.30420743,  1.        ,  1.        ,  0.30420743,  1.        ,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  1.        ,  1.        ,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  0.30420743,  1.        ,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         0.30420743,  1.        ,  0.30420743,  1.        ,  1.        ,
+         0.30420743,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  0.30420743,  1.        ,  0.30420743,  0.30420743,
+         1.        ,  1.        ,  0.30420743,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         0.30420743,  0.30420743,  1.        ,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  0.30420743,  1.        ,
+         0.30420743,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  0.30420743,  1.        ,
+         1.        ,  0.30420743,  1.        ,  0.30420743,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         0.30420743,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  0.30420743,  1.        ,
+         0.30420743,  1.        ,  0.30420743,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  0.30420743,
+         0.30420743,  1.        ,  1.        ,  0.30420743,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  0.30420743,  1.        ,
+         0.30420743,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ,  1.        ,  0.30420743,
+         0.30420743,  1.        ,  1.        ,  1.        ,  0.30420743,
+         1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+         0.30420743,  1.        ,  1.        ,  0.30420743,  1.        ,
+         0.30420743,  1.        ,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  0.30420743,  1.        ,  0.30420743,
+         1.        ,  0.30420743,  1.        ,  1.        ,  1.        ,
+         1.        ,  1.        ,  1.        ]),
+ &#39;descriptor&#39;: array([[ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 3.5       ],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 3.5       ],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 1.51554446],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 2.90204669],
+        [ 3.5       ],
+        [ 1.51554446],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 1.51554446],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.47487373],
+        [ 2.90204669],
+        [ 1.51554446],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 2.90204669],
+        [ 3.81403658],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.5       ],
+        [ 3.5       ]])}
+</pre></div>
+</div>
+</div>
+<p>Notice that the first array is called <code class="docutils literal"><span class="pre">cutoff</span></code>, and it supplies the
+value of a cutoff function, implicit in all descriptors, which takes the
+descriptor value to zero as the atoms approach the cutoff, i.e. in this
+case as the distance between the two atoms approaches the cutoff. It is
+more complicated for three-body and higher-body descriptors, but the end
+result is always a descriptor which changes smoothly with atomic
+positions.</p>
+<p>Here is a histogram of the resulting descriptor array, i.e. of the
+interatomic distances</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">descriptor</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Tutorials_quippy-descriptor-tutorial_24_0.png" src="../_images/Tutorials_quippy-descriptor-tutorial_24_0.png" />
+</div>
+</div>
+<p>Calculate size of descriptor data:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">n_desc</span><span class="p">,</span> <span class="n">n_cross</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;n_desc=</span><span class="si">%d</span><span class="s2"> n_cross=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_desc</span><span class="p">,</span><span class="n">n_cross</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+n_desc=368 n_cross=736
+</pre></div></div>
+</div>
+<p><code class="docutils literal"><span class="pre">n_desc</span></code> is number of descriptors, <code class="docutils literal"><span class="pre">n_cross</span></code> is number of gradients</p>
+<p>Gradients are returned in a <code class="docutils literal"><span class="pre">DescriptorCalcResult</span></code> object ( if the
+<code class="docutils literal"><span class="pre">grad=True</span></code> option is set ) which has the following elements: -
+<code class="docutils literal"><span class="pre">descriptor</span></code> = the descriptor values (equivalent to <code class="docutils literal"><span class="pre">desc.calc(at)</span></code>)
+- <code class="docutils literal"><span class="pre">grad</span></code> = the gradients - <code class="docutils literal"><span class="pre">index</span></code> = the indices (<code class="docutils literal"><span class="pre">i_desc</span></code>,
+<code class="docutils literal"><span class="pre">i_atom</span></code>, <code class="docutils literal"><span class="pre">i_coord</span></code>)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[43]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>[&#39;descriptor&#39;, &#39;cutoff_grad&#39;, &#39;grad&#39;, &#39;index&#39;, &#39;cutoff&#39;]
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">descriptor</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[44]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 3.5       ],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 3.5       ],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 1.51554446],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 2.90204669],
+       [ 3.5       ],
+       [ 1.51554446],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 1.51554446],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.47487373],
+       [ 2.90204669],
+       [ 1.51554446],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 2.90204669],
+       [ 3.81403658],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.5       ],
+       [ 3.5       ]])
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[45]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[[-0.22941573],
+        [ 0.6882472 ],
+        [ 0.6882472 ]],
+
+       [[ 0.22941573],
+        [-0.6882472 ],
+        [-0.6882472 ]],
+
+       [[ 0.6882472 ],
+        [-0.22941573],
+        [ 0.6882472 ]],
+
+       ...,
+       [[ 0.        ],
+        [ 1.        ],
+        [ 0.        ]],
+
+       [[-0.        ],
+        [-0.        ],
+        [-1.        ]],
+
+       [[ 0.        ],
+        [ 0.        ],
+        [ 1.        ]]])
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">index</span><span class="p">[:,:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[46]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[  1,   1],
+       [  1,   2],
+       [  2,   1],
+       ...,
+       [367,   8],
+       [368,   8],
+       [368,   8]], dtype=int32)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="A-many-body-descriptor:-SOAP">
+<h2>A many-body descriptor: SOAP<a class="headerlink" href="#A-many-body-descriptor:-SOAP" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;soap cutoff=3 l_max=4 n_max=4 atom_sigma=0.5 n_Z=1 Z={6} &quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">cutoff</span><span class="p">())</span>
+<span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>There are now only 8 descriptors, because SOAP produces one for each
+atom in the structure</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[18]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(8, 258)
+</pre></div>
+</div>
+</div>
+<p>But each descriptor now is a long vector, because it encodes the entire
+environment of the atom up to the cutoff. The length of the vector
+depends on <code class="docutils literal"><span class="pre">l_max</span></code> and <code class="docutils literal"><span class="pre">n_max</span></code> and also on the number of atom types.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">n_dim</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[19]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>51
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[20]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>{&#39;cutoff&#39;: array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.]),
+ &#39;descriptor&#39;: array([[  4.73572570e-01,   5.11159766e-06,   1.01308559e-06,
+           1.60812107e-03,   5.47553526e-04,   6.27690415e-01,
+           4.95953867e-05,   9.82948612e-06,   1.54957207e-02,
+           5.47660232e-03,   4.15981924e-01,   2.40600155e-04,
+           4.76854071e-05,   7.46577370e-02,   2.73883482e-02,
+           3.18341025e-01,  -5.92864850e-07,  -1.17486739e-07,
+          -1.41512045e-03,   1.81695390e-03,   2.98357233e-01,
+          -4.06747903e-06,  -8.06043591e-07,  -9.64209426e-03,
+           1.28503115e-02,   1.06996282e-01,   3.43814942e-08,
+           6.81242239e-09,   6.22655008e-04,   3.01463911e-03,
+          -2.81631715e-03,   5.36228874e-09,   1.06263310e-09,
+           1.15339605e-05,  -1.66628637e-05,  -2.63952342e-03,
+           3.67891552e-08,   7.29042791e-09,   7.85880344e-05,
+          -1.17847232e-04,  -1.33866723e-03,  -4.39778747e-10,
+          -8.71386960e-11,  -7.17707326e-06,  -3.90981365e-05,
+           8.37426278e-06,   2.81263730e-12,   5.57301933e-13,
+           4.13635000e-08,   2.53540179e-07,   0.00000000e+00],
+        [  2.49140590e-01,   3.06897443e-04,   2.24691086e-04,
+           2.63645993e-03,   8.44257436e-04,   5.55127085e-01,
+           2.97737414e-03,   2.17965866e-03,   2.54342326e-02,
+           8.40520121e-03,   6.18458197e-01,   1.44425393e-02,
+           1.05720969e-02,   1.22683598e-01,   4.18410093e-02,
+           2.47745044e-01,  -3.90932807e-05,  -3.07806268e-05,
+          -1.98138033e-03,   2.35398492e-03,   3.90335370e-01,
+          -2.68180541e-04,  -2.11137369e-04,  -1.35142491e-02,
+           1.65884021e-02,   1.23178658e-01,   2.48989464e-06,
+           2.10833239e-06,   7.59273692e-04,   3.41878216e-03,
+          -2.19112484e-03,   3.46295943e-07,   2.69352586e-07,
+           1.61901122e-05,  -2.16062298e-05,  -3.45223263e-03,
+           2.37559580e-06,   1.84760358e-06,   1.10427087e-04,
+          -1.52258473e-04,  -1.54068059e-03,  -3.11918586e-08,
+          -2.60914232e-08,  -8.76903344e-06,  -4.43838310e-05,
+           9.63517840e-06,   1.95376148e-10,   1.61445692e-10,
+           5.06386375e-08,   2.88103389e-07,   0.00000000e+00],
+        [  2.23838398e-01,   3.78089923e-05,   4.06539273e-05,
+           1.92860775e-03,   7.66122563e-04,   5.09433866e-01,
+           3.53632752e-04,   4.29949407e-04,   1.85669919e-02,
+           7.76143527e-03,   5.79710332e-01,   1.65484402e-03,
+           2.28688255e-03,   8.93771594e-02,   3.93431430e-02,
+           2.92339646e-01,  -1.55904376e-04,   4.02508059e-04,
+          -1.89111550e-03,   3.67450327e-03,   4.70463509e-01,
+          -1.01397193e-03,   3.22651119e-03,  -1.28156879e-02,
+           2.67826166e-02,   1.90902163e-01,   4.60348034e-04,
+           3.74809897e-03,   1.39702795e-03,   1.25434798e-02,
+          -2.58972445e-03,   1.32417523e-06,  -3.56120051e-06,
+           1.55903764e-05,  -3.32865245e-05,  -4.16765521e-03,
+           8.60690247e-06,  -2.85979893e-05,   1.05611567e-04,
+          -2.42520968e-04,  -2.39161731e-03,  -5.59006314e-06,
+          -4.74862442e-05,  -1.67590764e-05,  -1.59583514e-04,
+           1.49810595e-05,   3.39496223e-08,   3.00874317e-07,
+           1.00726608e-07,   1.01530792e-06,   0.00000000e+00],
+        [  2.21912827e-01,   3.22794357e-04,   2.74608154e-04,
+           2.71347565e-03,   9.21261052e-04,   5.22685782e-01,
+           3.10761607e-03,   2.61564838e-03,   2.61192465e-02,
+           9.15687879e-03,   6.15557988e-01,   1.49623108e-02,
+           1.24681640e-02,   1.25730679e-01,   4.55125688e-02,
+           2.60247510e-01,  -3.16196242e-04,  -5.90933824e-04,
+          -2.70412292e-03,   2.39722324e-03,   4.33440876e-01,
+          -2.09668723e-03,  -3.79982381e-03,  -1.80490450e-02,
+           1.69318863e-02,   1.52602189e-01,   6.07534416e-04,
+           2.09763755e-03,   4.23793685e-03,   3.79617175e-03,
+          -2.29869885e-03,   2.76019211e-06,   5.15137054e-06,
+           2.24848968e-05,  -2.19757551e-05,  -3.82847099e-03,
+           1.83031786e-05,   3.31247321e-05,   1.49959011e-04,
+          -1.55178180e-04,  -1.90621225e-03,  -7.49516446e-06,
+          -2.58557011e-05,  -5.12063357e-05,  -4.87638925e-05,
+           1.19056128e-05,   4.62340053e-08,   1.59350048e-07,
+           3.09463332e-07,   3.13393204e-07,   0.00000000e+00],
+        [  2.23838398e-01,   3.78089923e-05,   4.06539273e-05,
+           1.92860775e-03,   7.66122563e-04,   5.09433866e-01,
+           3.53632752e-04,   4.29949407e-04,   1.85669919e-02,
+           7.76143527e-03,   5.79710332e-01,   1.65484402e-03,
+           2.28688255e-03,   8.93771594e-02,   3.93431430e-02,
+           2.92339646e-01,  -1.55904376e-04,   4.02508059e-04,
+          -1.89111550e-03,   3.67450327e-03,   4.70463509e-01,
+          -1.01397193e-03,   3.22651119e-03,  -1.28156879e-02,
+           2.67826166e-02,   1.90902163e-01,   4.60348034e-04,
+           3.74809897e-03,   1.39702795e-03,   1.25434798e-02,
+          -2.58972445e-03,   1.32417523e-06,  -3.56120051e-06,
+           1.55903764e-05,  -3.32865245e-05,  -4.16765521e-03,
+           8.60690247e-06,  -2.85979893e-05,   1.05611567e-04,
+          -2.42520968e-04,  -2.39161731e-03,  -5.59006314e-06,
+          -4.74862442e-05,  -1.67590764e-05,  -1.59583514e-04,
+           1.49810595e-05,   3.39496223e-08,   3.00874317e-07,
+           1.00726608e-07,   1.01530792e-06,   0.00000000e+00],
+        [  2.21912827e-01,   3.22794357e-04,   2.74608154e-04,
+           2.71347565e-03,   9.21261052e-04,   5.22685782e-01,
+           3.10761607e-03,   2.61564838e-03,   2.61192465e-02,
+           9.15687879e-03,   6.15557988e-01,   1.49623108e-02,
+           1.24681640e-02,   1.25730679e-01,   4.55125688e-02,
+           2.60247510e-01,  -3.16196242e-04,  -5.90933824e-04,
+          -2.70412292e-03,   2.39722324e-03,   4.33440876e-01,
+          -2.09668723e-03,  -3.79982381e-03,  -1.80490450e-02,
+           1.69318863e-02,   1.52602189e-01,   6.07534416e-04,
+           2.09763755e-03,   4.23793685e-03,   3.79617175e-03,
+          -2.29869885e-03,   2.76019211e-06,   5.15137054e-06,
+           2.24848968e-05,  -2.19757551e-05,  -3.82847099e-03,
+           1.83031786e-05,   3.31247321e-05,   1.49959011e-04,
+          -1.55178180e-04,  -1.90621225e-03,  -7.49516446e-06,
+          -2.58557011e-05,  -5.12063357e-05,  -4.87638925e-05,
+           1.19056128e-05,   4.62340053e-08,   1.59350048e-07,
+           3.09463332e-07,   3.13393204e-07,   0.00000000e+00],
+        [  2.23838398e-01,   3.78089923e-05,   4.06539273e-05,
+           1.92860775e-03,   7.66122563e-04,   5.09433866e-01,
+           3.53632752e-04,   4.29949407e-04,   1.85669919e-02,
+           7.76143527e-03,   5.79710332e-01,   1.65484402e-03,
+           2.28688255e-03,   8.93771594e-02,   3.93431430e-02,
+           2.92339646e-01,  -1.55904376e-04,   4.02508059e-04,
+          -1.89111550e-03,   3.67450327e-03,   4.70463509e-01,
+          -1.01397193e-03,   3.22651119e-03,  -1.28156879e-02,
+           2.67826166e-02,   1.90902163e-01,   4.60348034e-04,
+           3.74809897e-03,   1.39702795e-03,   1.25434798e-02,
+          -2.58972445e-03,   1.32417523e-06,  -3.56120051e-06,
+           1.55903764e-05,  -3.32865245e-05,  -4.16765521e-03,
+           8.60690247e-06,  -2.85979893e-05,   1.05611567e-04,
+          -2.42520968e-04,  -2.39161731e-03,  -5.59006314e-06,
+          -4.74862442e-05,  -1.67590764e-05,  -1.59583514e-04,
+           1.49810595e-05,   3.39496223e-08,   3.00874317e-07,
+           1.00726608e-07,   1.01530792e-06,   0.00000000e+00],
+        [  2.21912827e-01,   3.22794357e-04,   2.74608154e-04,
+           2.71347565e-03,   9.21261052e-04,   5.22685782e-01,
+           3.10761607e-03,   2.61564838e-03,   2.61192465e-02,
+           9.15687879e-03,   6.15557988e-01,   1.49623108e-02,
+           1.24681640e-02,   1.25730679e-01,   4.55125688e-02,
+           2.60247510e-01,  -3.16196242e-04,  -5.90933824e-04,
+          -2.70412292e-03,   2.39722324e-03,   4.33440876e-01,
+          -2.09668723e-03,  -3.79982381e-03,  -1.80490450e-02,
+           1.69318863e-02,   1.52602189e-01,   6.07534416e-04,
+           2.09763755e-03,   4.23793685e-03,   3.79617175e-03,
+          -2.29869885e-03,   2.76019211e-06,   5.15137054e-06,
+           2.24848968e-05,  -2.19757551e-05,  -3.82847099e-03,
+           1.83031786e-05,   3.31247321e-05,   1.49959011e-04,
+          -1.55178180e-04,  -1.90621225e-03,  -7.49516446e-06,
+          -2.58557011e-05,  -5.12063357e-05,  -4.87638925e-05,
+           1.19056128e-05,   4.62340053e-08,   1.59350048e-07,
+           3.09463332e-07,   3.13393204e-07,   0.00000000e+00]])}
+</pre></div>
+</div>
+</div>
+<p>Note that the <code class="docutils literal"><span class="pre">cutoff</span></code> array is now all 1, because SOAP takes the
+cutoff into account when it computes the descriptor vector</p>
+<p>We now add a hydrogen atom to the structure</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">add_atoms</span><span class="p">((</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">),(</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+<span class="n">desc</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[36]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(9, 285)
+</pre></div>
+</div>
+</div>
+<p>The descriptor sizes did not change! This is because the descriptor was
+set up above to only look at carbon atoms (Z=6). We need a new
+descriptor that takes account of H atoms.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;soap cutoff=3 l_max=4 n_max=4 atom_sigma=0.5 n_Z=2 Z={1 6} n_species=2 species_Z={1 6}&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The specification of which atoms are used as SOAP centers is separate to
+the specification of which atoms are taken into account in the
+environment. The <code class="docutils literal"><span class="pre">n_Z=2</span> <span class="pre">Z={1</span> <span class="pre">6}</span></code> options specify that both H and C are
+to be taken as SOAP centers. The <code class="docutils literal"><span class="pre">n_species=2</span> <span class="pre">species_Z={1</span> <span class="pre">6}</span></code> options
+specify the atom types to be taken into account in the environment.</p>
+<p>Now the dimensionality of the SOAP descriptor goes up:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">n_dim</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[24]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>181
+</pre></div>
+</div>
+</div>
+<p>And the size also increases to 9 (and the cross terms go up too),
+reflecting the fact that there are 9 atoms altogether.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[39]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(9, 285)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[38]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>{&#39;cutoff&#39;: array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.]),
+ &#39;descriptor&#39;: array([[  8.77557915e-02,   6.67877090e-06,   1.32368918e-06, ...,
+           5.39505036e-08,   3.31313515e-07,   0.00000000e+00],
+        [  1.77188829e-03,   3.74461483e-04,   2.74157244e-04, ...,
+           5.81842224e-08,   3.57313054e-07,   0.00000000e+00],
+        [  1.24011279e-04,   4.57421978e-05,   4.91840662e-05, ...,
+           5.81830007e-08,   3.57305552e-07,   0.00000000e+00],
+        ...,
+        [  1.24011279e-04,   4.57421978e-05,   4.91840662e-05, ...,
+           5.81830007e-08,   3.57305552e-07,   0.00000000e+00],
+        [  3.76907877e-04,   4.04885591e-04,   3.44444944e-04, ...,
+           5.79365059e-08,   3.55791811e-07,   0.00000000e+00],
+        [  1.35807048e-01,   0.00000000e+00,   0.00000000e+00, ...,
+           3.44738745e-07,   1.39187207e-07,   0.00000000e+00]])}
+</pre></div>
+</div>
+</div>
+<p>Note that the same descriptor can be obtained not via python, but from
+the unix command line, using the <code class="docutils literal"><span class="pre">quip</span></code> program. The input needs to be
+an extended XYZ file, and the descriptor specification is identical to
+the above.</p>
+<p>So let’s write out an xyz file:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">at</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;diamondH.xyz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The following command will print all the descriptor vectors, each vector
+on a line, which starts with the string <code class="docutils literal"><span class="pre">DESC</span></code></p>
+<p><code class="docutils literal"><span class="pre">quip</span> <span class="pre">atoms_filename=diamondH.xyz</span> <span class="pre">descriptor_str=&quot;soap</span> <span class="pre">cutoff=3</span> <span class="pre">l_max=4</span> <span class="pre">n_max=4</span> <span class="pre">atom_sigma=0.5</span> <span class="pre">n_Z=2</span> <span class="pre">Z={1</span> <span class="pre">6}</span> <span class="pre">n_species=2</span> <span class="pre">species_Z={1</span> <span class="pre">6}&quot;</span></code></p>
+</div>
+<div class="section" id="General_monomer-example:-benzene">
+<h2>General_monomer example: benzene<a class="headerlink" href="#General_monomer-example:-benzene" title="Permalink to this headline">¶</a></h2>
+<p>Now for a more interesting descriptor: a three-site benzene monomer</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">Descriptor</span><span class="p">(</span><span class="s1">&#39;general_monomer signature={6 6 6} atom_ordercheck=F&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Three intramolecular distances = dimensionality 3:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">n_dim</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[48]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>3
+</pre></div>
+</div>
+</div>
+<p>And a lot more permutations now:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">n_perm</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[49]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>6
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">permutations</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[50]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[1, 2, 3],
+       [2, 1, 3],
+       [1, 3, 2],
+       [3, 1, 2],
+       [2, 3, 1],
+       [3, 2, 1]], dtype=int32)
+</pre></div>
+</div>
+</div>
+<p>Load some test configurations</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">benzat</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">AtomsList</span><span class="p">(</span><span class="s1">&#39;benzene_frames.xyz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">benzat</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[52]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(40, 3, 648)
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">benzat</span><span class="p">)):</span>
+    <span class="n">benzat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">desc_monomer</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">benzat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Calling <code class="docutils literal"><span class="pre">calc</span></code> or any of the other methods on an <code class="docutils literal"><span class="pre">AtomsList</span></code> returns
+a list of results. Here we look at the results for the first
+configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span> <span class="o">=</span> <span class="n">desc_monomer</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">benzat</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<span></span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[55]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(648, 3, 3)
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="adglass.html" class="btn btn-neutral float-right" title="Molecular Dynamics Simulation of Fracture in Quartz" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral" title="Introductory Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2016, James Kermode.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'7b37b87+',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
