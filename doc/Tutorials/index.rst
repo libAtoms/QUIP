@@ -1,7 +1,7 @@
-Examples
+Tutorials
 ========
 
-The following examples are currently available:
+The following tutorials are currently available:
 
 .. toctree::
     :maxdepth: 2
