@@ -8,4 +8,8 @@ The following examples are currently available:
 
     Introduction.ipynb
     quippy-ase-interoperability.ipynb
+    tutorial.rst
+    quippy-descriptor-tutorial.ipynb
+    adglass.rst
+    adaptive-qmmm.rst
 

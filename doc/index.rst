@@ -105,7 +105,6 @@ Contents
    intro.rst
    install.rst
    Examples/index.rst
-   tutorials.rst
    quippy.rst
    visualisation.rst
    fortran_wrapper.rst
