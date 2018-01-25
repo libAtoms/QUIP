@@ -172,7 +172,7 @@
     }
    ],
    "source": [
-    "struct.get_distance(0, 1)"
+    "struct.get_distance(0, 1, mic=True)"
    ]
   },
   {
@@ -202,14 +202,14 @@
     }
    ],
    "source": [
-    "[struct.get_distance(0, i) for i in range(1, 5)]"
+    "[struct.get_distance(0, i, mic=True) for i in range(1, 5)]"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "And how about an H-C-H angle?"
+    "_(Oh, and in case you're wondering about the `mic=True` part, that just means to use the minimum image convention.  It's only really relevant when we use periodic systems, but it's included here for completeness.)_\n\nAnd how about an H-C-H angle?"
    ]
   },
   {
@@ -286,7 +286,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "DANGER WILL ROBINSON!  As you may have noticed, this isn't the correct bond distance.  In some circumstances the code may even just crash.  This is because the above function is derived from the underlying Fortran code, QUIP, rather than the `get_distance` function from before, which came from ASE.  The QUIP-derived functions can be very useful, but for now it'll just be too confusing to use them - let's stick with ASE."
+    "DANGER WILL ROBINSON!  As you may have noticed, this isn't the correct bond distance.  In some circumstances the code may even just crash.  This is because the above function is derived from the underlying Fortran code, QUIP, rather than the `get_distance` function from before, which came from ASE.  Fortran, unlike Python and C, starts counting from one instead of zero (cue the holy wars), so we just gave QUIP an atom index that doens't even exist -- and that can have unpredictable results.  Now, the QUIP-derived functions are often useful, but for now it'll just be too confusing to keep this indexing distinction in our heads - let's stick with ASE until we have good reason to do otherwise."
    ]
   },
   {

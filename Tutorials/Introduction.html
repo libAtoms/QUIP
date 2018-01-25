@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Getting started with Atoms &mdash; quippy 7b37b87+ documentation</title>
+  <title>Getting started with Atoms &mdash; quippy 408d197+ documentation</title>
   
 
   
@@ -39,7 +39,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="quippy 7b37b87+ documentation" href="../index.html"/>
+    <link rel="top" title="quippy 408d197+ documentation" href="../index.html"/>
         <link rel="up" title="Tutorials" href="index.html"/>
         <link rel="next" title="Interoperability with Atomic Simulation Environment" href="quippy-ase-interoperability.html"/>
         <link rel="prev" title="Tutorials" href="index.html"/> 
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                7b37b87+
+                408d197+
               </div>
             
           
@@ -517,7 +517,7 @@ molecule, so we can check the bonds and angles.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
-<span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -539,7 +539,7 @@ What about the other ones?</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2"><div class="highlight"><pre>
-<span></span><span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
+<span></span><span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
 </pre></div>
 </div>
 </div>
@@ -556,6 +556,10 @@ What about the other ones?</p>
 </pre></div>
 </div>
 </div>
+<p><em>(Oh, and in case you’re wondering about the ``mic=True`` part, that
+just means to use the minimum image convention. It’s only really
+relevant when we use periodic systems, but it’s included here for
+completeness.)</em></p>
 <p>And how about an H-C-H angle?</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none"><div class="highlight"><pre>
@@ -611,8 +615,12 @@ atoms:</p>
 bond distance. In some circumstances the code may even just crash. This
 is because the above function is derived from the underlying Fortran
 code, QUIP, rather than the <code class="docutils literal"><span class="pre">get_distance</span></code> function from before, which
-came from ASE. The QUIP-derived functions can be very useful, but for
-now it’ll just be too confusing to use them - let’s stick with ASE.</p>
+came from ASE. Fortran, unlike Python and C, starts counting from one
+instead of zero (cue the holy wars), so we just gave QUIP an atom index
+that doens’t even exist – and that can have unpredictable results. Now,
+the QUIP-derived functions are often useful, but for now it’ll just be
+too confusing to keep this indexing distinction in our heads - let’s
+stick with ASE until we have good reason to do otherwise.</p>
 <p>So how do we tell whether a function is derived from QUIP or from ASE?
 Well, let’s take a look at this function’s help message:</p>
 <div class="nbinput docutils container">
@@ -1064,7 +1072,7 @@ next tutorial.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'7b37b87+',
+            VERSION:'408d197+',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
