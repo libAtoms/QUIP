@@ -149,7 +149,9 @@ function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_
 
   ! workaround for (-1+Nsq) division by zero
   if (Nsq == 1.0_dp) then
-    Nsq = Nsq - 1.0e-16_dp
+    Lsq = 0.5e-9_dp
+    Msq = 0.5e-9_dp
+    Nsq = 1.0_dp - 1.0e-9_dp
   endif
 
 include 'SK_vogl.h'
@@ -307,7 +309,9 @@ function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
 
   ! workaround for (-1+Nsq) division by zero
   if (Nsq == 1.0_dp) then
-    Nsq = Nsq - 1.0e-16_dp
+    Lsq = 0.5e-9_dp
+    Msq = 0.5e-9_dp
+    Nsq = 1.0_dp - 1.0e-9_dp
   endif
 
 include 'SKd_vogl.h'

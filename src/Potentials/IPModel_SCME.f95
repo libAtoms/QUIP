@@ -68,6 +68,7 @@ type IPModel_SCME
   !integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
 
   real(dp) :: cutoff = 0.0_dp
+  logical :: full_interaction_order, use_repulsion, use_PS_PES
 
   character(len=STRING_LENGTH) :: label
 
@@ -105,13 +106,16 @@ subroutine IPModel_SCME_Initialise_str(this, args_str, param_str)
   call initialise(params)
   this%label=''
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(params, 'full_interaction_order', 'T', this%full_interaction_order, help_string="Whether to truncate the interaction order calculation at 5th order")
+  call param_register(params, 'use_repulsion', 'F', this%use_repulsion, help_string="Whether to use repulsion in SCME")
+  call param_register(params, 'use_PS_PES', 'T', this%use_PS_PES, help_string="Whether to use the PS potential energy surface")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SCME_Initialise_str args_str')) then
     call system_abort("IPModel_SCME_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
 
-  if( trim(this%label) /= "version_20160315" ) then
-     call system_abort("IPModel_SCME_Initialise_str: SCME with updated parameters/damping. Make sure your potential is compatible. Proceed with caution, email Albert for instructions.")
+  if( trim(this%label) /= "version_20170802" ) then
+     call system_abort("IPModel_SCME_Initialise_str: SCME with updated parameters/damping. Make sure your potential is compatible. Proceed with caution, email Albert for instructions if in doubt.")
   endif
   !call IPModel_SCME_read_params_xml(this, param_str)
   this%cutoff = 2.0_dp
@@ -129,21 +133,32 @@ subroutine IPModel_SCME_Finalise(this)
   this%label = ''
 end subroutine IPModel_SCME_Finalise
 
+
+
+
+
+
+
+!/////////////////////////////////
 subroutine IPModel_SCME_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
    type(IPModel_SCME), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+   real(dp), intent(out), optional :: f(:,:)            !j
+   real(dp), intent(out), optional :: local_virial(:,:) !j
+   !j real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
    integer, intent(out), optional :: error
 
-   integer :: nWater, i, a
+   integer :: nWater, i, a, m
    integer, dimension(:,:), allocatable :: water_monomer_index
    real(dp) :: uTot
    real(dp), dimension(3) :: lattice
-   real(dp), dimension(:), allocatable :: raOri, fa
+   real(dp), dimension(:), allocatable :: raOri
+   real(dp), dimension(:,:), allocatable :: coords !j
+   real(dp), dimension(:,:), allocatable :: fa     !j
 
    INIT_ERROR(error)
 #ifndef HAVE_SCME
@@ -179,7 +194,10 @@ subroutine IPModel_SCME_Calc(this, at, e, local_e, f, virial, local_virial, args
    allocate(water_monomer_index(3,nWater))
    call find_water_monomer(at,water_monomer_index,error=error)
 
-   allocate(raOri(3*at%N),fa(3*at%N))
+   !j allocate(raOri(3*at%N),fa(3*at%N)) 
+   allocate(raOri(3*at%N),fa(3,at%N)) !j
+   allocate( coords(3,at%N) ) !j
+   
    if( is_diagonal(at%lattice) ) then
       do i = 1, 3
          lattice(i) = at%lattice(i,i)
@@ -188,25 +206,49 @@ subroutine IPModel_SCME_Calc(this, at, e, local_e, f, virial, local_virial, args
       RAISE_ERROR('IPModel_SCME_Calc - lattice must be orthorhombic',error)
    endif
 
-   do i = 1, nWater
-      do a = 1, 3
-         raOri( (i-1)*6 + a ) = at%pos(a,water_monomer_index(2,i))
-         raOri( (i-1)*6 + a + 3 ) = at%pos(a,water_monomer_index(3,i))
-         raOri( (i-1)*3 + nWater*6 + a ) = at%pos(a,water_monomer_index(1,i))
+   do i = 1, nWater !j molecules.  I should change raOrig to at(3,n_atoms) or at(3,3,n_water)
+      
+      ! This is the new 3 by N_atoms coordinate matrix
+      coords(:,(i-1)*3+1) = at%pos(:,water_monomer_index(2,i)) !j coords is hho ordered in scme
+      coords(:,(i-1)*3+2) = at%pos(:,water_monomer_index(3,i))
+      coords(:,(i-1)*3+3) = at%pos(:,water_monomer_index(1,i))
+      
+      ! This is the old version:
+      do a = 1, 3 !j xyz
+         raOri( (i-1)*6 + a ) = at%pos(a,water_monomer_index(2,i))            !j h
+         raOri( (i-1)*6 + a + 3 ) = at%pos(a,water_monomer_index(3,i))        !j h
+         raOri( (i-1)*3 + nWater*6 + a ) = at%pos(a,water_monomer_index(1,i)) !j o
       enddo
    enddo
  
 #ifdef HAVE_SCME
-   call scme_calculate(at%N,raOri, lattice, fa, uTot)
+   !call scme_calculate(at%N,raOri, lattice, fa, uTot)
+   call scme_calculate(at%N,coords, lattice, fa, uTot,in_FULL=this%full_interaction_order, in_USE_REP=this%use_repulsion, in_USE_PS_PES=this%use_PS_PES)
 #endif
-
-   if (present(e)) e = uTot
+   
+   
+   if(present(f))then 
+    do m = 1,nWater !jö Rearange from HHO (in fa in SCME) to OHH ( in f in QUIP)
+      f(:,(m-1)*3+1)=fa(:,(m-1)*3+3) !O
+      f(:,(m-1)*3+2)=fa(:,(m-1)*3+1) !H1
+      f(:,(m-1)*3+3)=fa(:,(m-1)*3+2) !H1
+    enddo
+   endif 
+   
+   !if(present(f)) f = fa !j copy over the forces to the quip-defined array f from scme-specified fa ! How come the order gets correct? 
+   
+   if (present(e)) e = uTot !j if (present): Refers to optional arguments
 
    if(allocated(water_monomer_index)) deallocate(water_monomer_index)
    if(allocated(raOri)) deallocate(raOri)
    if(allocated(fa)) deallocate(fa)
 
 end subroutine IPModel_SCME_Calc
+!///////////////////////////////////////////////////////////
+
+
+
+
 
 
 subroutine IPModel_SCME_Print(this, file)

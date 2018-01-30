@@ -42,11 +42,12 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Fanourgakis-Xantheas (water)
  - Finnis-Sinclair (bcc metals)
  - Flikkema-Bromley
- - GAP (Gaussian Approximation Potentials: general many-body)
+ - [GAP](http://www.libatoms.org/gap/gap_download.html) (Gaussian Approximation Potentials)
  - Guggenheim-!McGlashan
  - Brenner (carbon)
  - OpenKIM (general interface)
  - Lennard-Jones
+ - MBD (many-body dispersion correction)
  - Morse
  - Partridge-Schwenke (water monomer)
  - Stillinger-Weber (carbon, silicon, germanium)
@@ -54,6 +55,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Sutton-Chen
  - Tangney-Scandolo (silica, titania etc)
  - Tersoff (silicon, carbon)
+ - Tkatchenko-Sheffler pairwise dispersion correction
 
 The following tight-binding functional forms and parametrisations are
 implemented:
@@ -82,10 +84,16 @@ and Gromacs, but has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
   ``quippy`` package
-- Support for Gaussian Approximation Potentials (GAP)
+- Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the unit cell size
 
+## Precompiled Containers
+
+If you have access to [Docker](http://singularity.lbl.gov) or
+[Singularity](http://singularity.lbl.gov), you can try one of the
+[precompiled images](https://github.com/libAtoms/QUIP/blob/public/docker/README.md)
+to get up and running quickly.
 
 ## Compilation Instructions
 
@@ -219,7 +227,7 @@ and Gromacs, but has a number of unique features:
 
     will either install into the current virtualenv or attempt to install
     systemwide (usually fails without ``sudo``). To install only for the
-    current user (into ``~\.local``), execute the command
+    current user (into ``~/.local``), execute the command
     ``QUIPPY_INSTALL_OPTS=--user make install-quippy``,
     or use ``QUIPPY_INSTALL_OPTS=--prefix=<directory>`` to install into a
     specific directory. ``QUIPPY_INSTALL_OPTS`` can also be set in the file
@@ -233,15 +241,24 @@ and Gromacs, but has a number of unique features:
 
         make test
 
-12. Some functionality is only available if you check out other
+12.  To get back to a state near to a fresh clone, use
+
+        make distclean
+
+13. Some functionality is only available if you check out other
     modules within the ``QUIP/src/`` directories, e.g. the ``ThirdParty``
     (DFTB parameters, TTM3f water model), ``GAP`` (Gaussian
     Approximation Potential models) and ``GAP-filler`` (Gaussian
     Approximation Potential model training). These packages are
     not distributed with QUIP because they come with different licensing
-    restrictions.
+    restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
 
-13. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
+    GAP is a machine learning method that uses Gaussian process
+    regression, and needs large data files to run. You can find
+    potentials that have been published as well as training data in
+    our [data repository](http://www.libatoms.org/Home/DataRepository).
+
+14. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html).
 

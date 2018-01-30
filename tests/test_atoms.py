@@ -733,6 +733,14 @@ class TestAtoms_Extras(QuippyTestCase):
       self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [1]*8)
 
+   def test_str(self):
+      # print should give no errors
+      str(self.at)
+
+   def test_repr(self):
+      # calling repr should give no errors
+      repr(self.at)
+
    #def test_bcast_serial(self):
    #   # Serial test of atoms_bcast by copying into test_out
    #   # if test fails add new data elements to ALL THREE sections in atoms_bcast() in Atoms.f95

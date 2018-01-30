@@ -379,7 +379,7 @@ subroutine print_summary(params, ds, e)
     strain(3,3) = strain(3,3) - 1.0_dp
     strain = 0.5_dp*strain
     call get_param_value(ds%atoms, "virial", virial)
-    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*GPA) // " GPa "//&
+    call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*EV_A3_IN_GPA) // " GPa "//&
                "VOL " // cell_volume(ds%atoms)// " A^3 "// &
 	       "STRAIN "//reshape(strain, (/9/)))
   endif
@@ -459,10 +459,10 @@ subroutine initialise_md_thermostat(ds, params)
       if (params%all_purpose_thermostat) then
 	 if (params%const_P) then
 	    if (params%const_T .and. params%barostat_const_T) then
-	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, hydrostatic_strain=params%hydrostatic_strain, &
+	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
 		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor)
 	    else
-	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/GPA, hydrostatic_strain=params%hydrostatic_strain, &
+	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
 		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, W_epsilon_factor=params%barostat_mass_factor)
 	    endif
 	 endif
@@ -503,15 +503,15 @@ subroutine initialise_md_thermostat(ds, params)
 	    endif
 	    ds%atoms%thermostat_region = 1
 	 else if (params%const_T.and.params%const_P) then
-	    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/GPA )
+	    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/EV_A3_IN_GPA )
 	    if (params%adaptive_langevin_NH_tau > 0) then
 	       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
-	       call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+	       call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
 	    else
 	       if (params%NPT_NB) then
-		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
+		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA)
 	       else
-		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/GPA)
+		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA)
 	       endif
 	    endif
 	    ds%atoms%thermostat_region = 1

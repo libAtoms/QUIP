@@ -43,7 +43,7 @@
 module TBSystem_module
 
 use error_module
-use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop
+use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop, verbosity_push, PRINT_ANAL
 use units_module, only : Hartree, Bohr, PI
 use periodictable_module, only : ElementName
 use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm, print
@@ -191,6 +191,7 @@ type TBSystem
   integer, allocatable :: first_orb_of_atom(:), first_manifold_of_atom(:), first_orb_of_manifold(:)
 
   logical :: noncollinear = .false.
+  logical :: spinpol_no_scf = .false.
   logical :: complex_matrices = .false.
 
   integer :: max_block_size = 0
@@ -457,6 +458,7 @@ subroutine TBSystem_Initialise_from_tbsys(this, from, mpi_obj)
   this%tbmodel = from%tbmodel
   this%complex_matrices = from%complex_matrices
   this%noncollinear = from%noncollinear
+  this%spinpol_no_scf = from%spinpol_no_scf
 
   this%kpoints = from%kpoints
   this%kpoints_generate_dynamically = from%kpoints_generate_dynamically
@@ -564,10 +566,10 @@ function TBSystem_n_elec(this, at, w_n)
   end do
 end function TBSystem_n_elec
 
-subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi_obj, error)
+subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, spinpol_no_scf, args_str, mpi_obj, error)
   type(TBSystem), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  logical, intent(in), optional :: noncollinear
+  logical, intent(in), optional :: noncollinear, spinpol_no_scf
   character(len=*), intent(in), optional :: args_str
   type(MPI_context), intent(in), optional :: mpi_obj
   integer, intent(out), optional :: error
@@ -580,7 +582,7 @@ subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi
     call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
     this%kpoints_generate_dynamically = this%kpoints_generate_next_dynamically
   endif
-  call setup_atoms(this, at%N, at%Z, noncollinear, error=error)
+  call setup_atoms(this, at%N, at%Z, noncollinear, spinpol_no_scf, error=error)
   PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_atoms_from_atoms
@@ -592,15 +594,15 @@ subroutine TBSystem_Setup_atoms_from_tbsys(this, from, error)
 
   INIT_ERROR(error)
 
-  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, error=error)
+  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, from%spinpol_no_scf, error=error)
   PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_Atoms_from_tbsys
 
-subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, error)
+subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, spinpol_no_scf, error)
   type(TBSystem), intent(inout) :: this
   integer, intent(in) :: at_N, at_Z(:)
-  logical, intent(in), optional :: noncollinear
+  logical, intent(in), optional :: noncollinear, spinpol_no_scf
   integer, intent(out), optional :: error
 
   integer :: i_at, i_man, man_offset, last_man_offset
@@ -611,6 +613,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, erro
   call Wipe(this)
 
   this%noncollinear = optional_default(this%noncollinear, noncollinear)
+  this%spinpol_no_scf = optional_default(this%spinpol_no_scf, spinpol_no_scf)
 
   this%N_atoms = at_N
   allocate(this%at_Z(this%N_atoms))
@@ -800,21 +803,33 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
   allocate(block_H(this%max_block_size, this%max_block_size))
   allocate(block_S(this%max_block_size, this%max_block_size))
   allocate(block_dipole(this%max_block_size, this%max_block_size,3))
+  block_H = 0.0_dp
+  block_S = 0.0_dp
+  block_dipole = 0.0_dp
   if (this%complex_matrices) then
     allocate(block_H_z(this%max_block_size, this%max_block_size))
     allocate(block_S_z(this%max_block_size, this%max_block_size))
     allocate(block_dipole_z(this%max_block_size, this%max_block_size,3))
+    block_H_z = 0.0_dp
+    block_S_z = 0.0_dp
+    block_dipole_z = 0.0_dp
     if (this%kpoints%non_gamma) then
       allocate(block_H_z_phase(this%max_block_size, this%max_block_size))
       allocate(block_S_z_phase(this%max_block_size, this%max_block_size))
       allocate(block_dipole_z_phase(this%max_block_size, this%max_block_size,3))
+      block_H_z_phase = 0.0_dp
+      block_S_z_phase = 0.0_dp
+      block_dipole_z_phase = 0.0_dp
     endif
   endif
   if (this%noncollinear) then
     allocate(block_H_up(this%max_block_size, this%max_block_size))
     allocate(block_H_down(this%max_block_size, this%max_block_size))
+    block_H_up = 0.0_dp
+    block_H_down = 0.0_dp
     if (this%SO%active) then
       allocate(block_SO(this%max_block_size, this%max_block_size))
+      block_SO = 0.0_dp
       call check_spin_orbit_coupling_consistency(this%SO, this%tbmodel, at%Z)
     endif
   else
@@ -845,17 +860,23 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
       block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
 
       if (this%noncollinear) then
+        if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_up, block_S, i_mag=1)
 	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_down, block_S, i_mag=2)
 	block_H_z = 0.0_dp
-	block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up+block_H_down)
-	block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up+block_H_down)
+        if (this%spinpol_no_scf) then
+            block_H_z(1:block_nr:2,1:block_nc:2) = block_H_up(1:block_nr/2,1:block_nc/2)
+            block_H_z(2:block_nr:2,2:block_nc:2) = block_H_down(1:block_nr/2,1:block_nc/2)
+        else
+            block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
+            block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
+        endif
 	block_S_z = 0.0_dp
-	block_S_z(1:block_nr:2,1:block_nc:2) = block_S
-	block_S_z(2:block_nr:2,2:block_nc:2) = block_S
+	block_S_z(1:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+	block_S_z(2:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
 	if (u_no_S_spin) then
-	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S
-	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S
+	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
 	endif
 	if (this%SO%active .and. (i == j) .and. (dv_mag .feq. 0.0_dp)) then
 	  call get_SO_block(this%SO, this%tbmodel, at%Z(i), block_SO)
@@ -1008,7 +1029,7 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   logical, intent(out), optional, target :: diag_mask(:), offdiag_mask(:)
 
   integer :: i, ji, j, ik, ii, jj
-  real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:)
+  real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:), block_dH_up(:,:,:), block_dH_down(:,:,:)
   complex(dp), allocatable :: block_dH_z(:,:,:), block_dS_z(:,:,:)
   complex(dp), allocatable :: block_dH_z_phase(:,:,:), block_dS_z_phase(:,:,:)
   real(dp) :: dv_hat(3), dv_mag
@@ -1036,13 +1057,23 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   do_S_block = do_S .or. this%scf%active
 
   allocate(block_dH(this%max_block_size, this%max_block_size, 3))
+  allocate(block_dH_up(this%max_block_size, this%max_block_size, 3))
+  allocate(block_dH_down(this%max_block_size, this%max_block_size, 3))
   allocate(block_dS(this%max_block_size, this%max_block_size, 3))
+  block_dH = 0.0_dp
+  block_dH_up = 0.0_dp
+  block_dH_down = 0.0_dp
+  block_dS = 0.0_dp
   if (this%complex_matrices) then
     allocate(block_dH_z(this%max_block_size, this%max_block_size, 3))
     allocate(block_dS_z(this%max_block_size, this%max_block_size, 3))
+    block_dH_z = 0.0_dp
+    block_dS_z = 0.0_dp
     if (this%kpoints%non_gamma) then
       allocate(block_dH_z_phase(this%max_block_size, this%max_block_size, 3))
       allocate(block_dS_z_phase(this%max_block_size, this%max_block_size, 3))
+      block_dH_z_phase = 0.0_dp
+      block_dS_z_phase = 0.0_dp
     endif
   endif
 
@@ -1067,41 +1098,53 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
     call Zero(this%dS(3), d_mask, od_mask)
   endif
 
-  if (this%noncollinear) call system_abort("no noncollinear forces yet")
-
   do i=1, at%N
     block_nr = this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
     do ji=1, n_neighbours(at, i)
-	j = neighbour(at, i, ji, dv_mag, cosines = dv_hat, shift = shift)
-	block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+      j = neighbour(at, i, ji, dv_mag, cosines = dv_hat, shift = shift)
+      block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+
 
       if ((i == j .and. .not. d_mask(i)) .or. &
 	  (i /= j .and. .not. od_mask(i) .and. .not. od_mask(j))) then
 	cycle
       endif
 
-      block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH, block_dS)
-      if (block_active .and. this%complex_matrices) then
-	block_dH_z = block_dH
-	if (do_S_block) block_dS_z = block_dS
+      if (this%noncollinear) then
+        if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
+        if (.not. this%spinpol_no_scf) call system_abort("noncollinear forces only supported for spinpol_no_scf")
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH_up, block_dS, i_mag=1)
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH_down, block_dS, i_mag=2)
+        if (block_active .and. this%complex_matrices) then
+          block_dH_z(1:block_nr:2,1:block_nc:2,:) = block_dH_up(1:block_nr/2,1:block_nc/2,:)
+          block_dH_z(2:block_nr:2,2:block_nc:2,:) = block_dH_down(1:block_nr/2,1:block_nc/2,:)
+          if (do_S_block) then
+            block_dS_z(1:block_nr:2,1:block_nc:2,:) = block_dS(1:block_nr/2,1:block_nc/2,:)
+            block_dS_z(2:block_nr:2,2:block_nc:2,:) = block_dS(1:block_nr/2,1:block_nc/2,:)
+          endif
+        endif
+      else
+        block_active = get_dHS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, at_ind, block_dH, block_dS)
+        if (block_active .and. this%complex_matrices) then
+          block_dH_z = block_dH
+          if (do_S_block) block_dS_z = block_dS
+        endif
       endif
 
-
       if (block_active .and. this%scf%active) then
-	do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
-	do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
-	  if (this%complex_matrices) then
-	    block_dH_z(ii,jj,:) = block_dH_z(ii,jj,:) + &
-	      0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-		       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS_z(ii,jj,:)
-	  else
-	    block_dH(ii,jj,:) = block_dH(ii,jj,:) + &
-	      0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-		       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS(ii,jj,:)
-	  endif
-	end do
-	end do
-	if (this%noncollinear) call system_abort("No matrix derivatives for noncollinear yet")
+        do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
+        do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+          if (this%complex_matrices) then
+            block_dH_z(ii,jj,:) = block_dH_z(ii,jj,:) + &
+              0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS_z(ii,jj,:)
+          else
+            block_dH(ii,jj,:) = block_dH(ii,jj,:) + &
+              0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                       this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_dS(ii,jj,:)
+          endif
+        end do
+        end do
 	! need to add noncollinear stuff here !!!
       endif
 
@@ -1161,8 +1204,8 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
 	endif ! complex_matrices
       endif ! block_active
 
-    end do
-  end do
+    end do ! i
+  end do ! j
 
   if (allocated(block_dH)) deallocate(block_dH)
   if (allocated(block_dS)) deallocate(block_dS)

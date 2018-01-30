@@ -81,7 +81,7 @@ implicit none
   end if
   call finalise(cli_params)
 
-  pressure = pressure / GPA ! Pressure is now in eV/A^3
+  pressure = pressure / EV_A3_IN_GPA ! Pressure is now in eV/A^3
 
   if (rng_seed >= 0) call system_set_random_seeds(rng_seed)
 

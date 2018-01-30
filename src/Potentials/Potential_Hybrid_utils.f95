@@ -93,7 +93,7 @@
          a, chisq, linear_square)
  
     V0 = -a(2)/(2*a(1))
-    B = -1.0*a(2)*GPA
+    B = -1.0*a(2)*EV_A3_IN_GPA
 
   end subroutine potential_bulk_modulus
  

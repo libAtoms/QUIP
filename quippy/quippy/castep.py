@@ -29,7 +29,7 @@ import numpy as np
 from quippy.atoms import Atoms, make_lattice, get_lattice_params
 from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.dictionary import Dictionary
-from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE
+from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, EV_A3_IN_GPA, DEBYE
 from quippy.periodictable import atomic_number
 
 from ordereddict import OrderedDict
@@ -1047,11 +1047,18 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
            if spin_polarised:
                atoms.add_property('hirshfeld_spin', 0.0)
            for line in hirshfeld_basic_lines:
-               el, num, charge, spin = line.split()
+               fields = line.split()
                try:
+                   if len(fields) == 4:
+                       el, num, charge, spin = fields
+                       spin = float(spin)
+                   elif len(fields) == 3:
+                       el, num, charge = fields
+                       spin = 0.0
+                   else:
+                       raise ValueError()
                    num = int(num)
                    charge = float(charge)
-                   spin = float(spin)
                except ValueError:
                    if abort:
                        raise ValueError('Unable to parse Hirshfeld charge line "{}"'.format(line))
@@ -1136,7 +1143,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False, format=None):
 
         # Convert virial to libAtoms units and add to params
         if got_virial:
-            mod_param['virial'] = virial*atoms.cell_volume()/GPA
+            mod_param['virial'] = virial*atoms.cell_volume()/EV_A3_IN_GPA
 
         if atoms_ref is None:
             atoms_ref = atoms.copy()

@@ -338,17 +338,17 @@ subroutine TB_copy_matrices(this, Hd, Sd, Hz, Sz, index)
 end subroutine TB_copy_matrices
 
 
-subroutine TB_Setup_atoms(this, at, is_noncollinear, args_str, error)
+subroutine TB_Setup_atoms(this, at, is_noncollinear, is_spinpol_no_scf, args_str, error)
   type(TB_type), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  logical, intent(in), optional :: is_noncollinear
+  logical, intent(in), optional :: is_noncollinear, is_spinpol_no_scf
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: error
 
   INIT_ERROR(error)
 
   call wipe(this%tbsys)
-  call setup_atoms(this%tbsys, at, is_noncollinear, args_str, this%mpi, error=error)
+  call setup_atoms(this%tbsys, at, is_noncollinear, is_spinpol_no_scf, args_str, this%mpi, error=error)
   PASS_ERROR(error)
 
   this%at = at
@@ -584,7 +584,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
   logical :: my_use_Fermi_E
   real(dp) :: my_Fermi_E, my_Fermi_T, my_band_width
   character(len=STRING_LENGTH) :: solver_arg
-  logical :: noncollinear, use_prev_charge, do_evecs
+  logical :: noncollinear, spinpol_no_scf, use_prev_charge, do_evecs
   type(ApproxFermi) :: my_AF
   logical :: do_at_local_N
   real(dp), pointer :: local_N_p(:)
@@ -605,6 +605,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
     call initialise(params)
     call param_register(params, 'solver', 'DIAG', solver_arg, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'noncollinear', 'F', noncollinear, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'spinpol_no_scf', 'F', spinpol_no_scf, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'use_prev_charge', 'F', use_prev_charge, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_at_local_N', 'F', do_at_local_N, help_string="No help yet.  This source file was $LastChangedBy$")
     call param_register(params, 'do_evecs', 'F', do_evecs, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -628,11 +629,12 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
     this%calc_args_str = ''
     solver_arg = 'DIAG'
     noncollinear = .false.
+    spinpol_no_scf = .false.
     do_evecs = .false.
     use_prev_charge = .false.
     do_at_local_N = .false.
   endif
-  call setup_atoms(this, at, noncollinear, args_str, error=error)
+  call setup_atoms(this, at, noncollinear, spinpol_no_scf, args_str, error=error)
   PASS_ERROR(error)
 
   if( present(local_virial) ) then

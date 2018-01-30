@@ -28,6 +28,9 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+# On ARCHER run:
+# module switch PrgEnv-cray PrgEnv-gnu
+
 # declarations
 
 include arch/Makefile.linux_x86_64_gfortran
@@ -39,3 +42,5 @@ CC = cc
 CPLUSPLUS = CC
 LINKER = ftn
 FPP = gfortran -E -x f95-cpp-input
+
+DEFINES += -D_MPI

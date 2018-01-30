@@ -58,18 +58,20 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width,mask,error)
    endif
 
    allocate(spherical_c(-l:l), spherical_c_crystal(-l:l))
-   spherical_c = CPLX_ZERO
    spherical_c_crystal = CPLX_ZERO
-
 
    f_cut = 1.0_dp
    n_bonds_crystal = 0.0_dp
 
    do i = 1, this%N
+
       if(present(mask)) then
          if( .not. mask(i) ) cycle
       endif
+
       n_bonds = 0.0_dp
+      spherical_c = CPLX_ZERO
+
       do n = 1, n_neighbours(this,i)
 	 j = neighbour(this,i,n,diff=diff_ij,distance=r_ij)
 

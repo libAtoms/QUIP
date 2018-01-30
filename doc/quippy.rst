@@ -96,6 +96,7 @@ Low level routines and datatypes
    fortranio.rst
    farray.rst
    util.rst
+   qpxml.rst
 
 
 

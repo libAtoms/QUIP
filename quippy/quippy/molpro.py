@@ -9,7 +9,7 @@ import numpy as np
 from quippy.atoms import Atoms
 from io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.dictionary import Dictionary
-from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, GPA, DEBYE
+from quippy.units import AU_FS, HARTREE, BOHR, BOLTZMANN_K, EV_A3_IN_GPA, DEBYE
 from quippy.periodictable import atomic_number
 from quippy.atoms import make_lattice, get_lattice_params
 

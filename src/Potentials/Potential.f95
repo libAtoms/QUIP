@@ -120,7 +120,7 @@ module Potential_module
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
    optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
-  use units_module, only : GPA
+  use units_module, only : EV_A3_IN_GPA
   use periodictable_module, only :  ElementCovRad, ElementMass
   use extendable_str_module, only : extendable_str, initialise, read, string, finalise
   use linearalgebra_module , only : norm, trace, matrix3x3_det, normsq, least_squares, add_identity, inverse, diagonalise, symmetric_linear_solve, operator(.fne.), operator(.mult.), operator(.feq.), print
@@ -363,7 +363,7 @@ module Potential_module
   public :: fix_atoms_deform_grad
   public :: prep_atoms_deform_grad
   public :: max_rij_change
-  public :: constrain_virial_post
+  public :: constrain_virial
 
 
   public :: potential_minimise
@@ -1782,10 +1782,10 @@ end subroutine undo_travel
 
     f = transpose(deform_grad) .mult. f
 
+    call constrain_virial(am%minim_at, virial)
+
     call inverse(deform_grad, deform_grad_inv)
     virial = virial .mult. transpose(deform_grad_inv)
-
-    call constrain_virial_post(am%minim_at, virial)
 
     call pack_pos_dg(-f, -virial, gradient_func, 1.0_dp/am%pos_lat_preconditioner_factor)
     if (current_verbosity() >= PRINT_NERD) then
@@ -2030,10 +2030,10 @@ endif
 
     f = transpose(deform_grad) .mult. f
 
+    call constrain_virial(am%minim_at, virial)
+
     call inverse(deform_grad, deform_grad_inv)
     virial = virial .mult. transpose(deform_grad_inv)
-
-    call constrain_virial_post(am%minim_at, virial)
 
     call pack_pos_dg(-f, -virial, grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call print ("both_func gradient packed as", PRINT_NERD)
@@ -2379,7 +2379,7 @@ end subroutine pack_pos_dg
     endif
   end subroutine constrain_DG
 
-  subroutine constrain_virial_post(at, virial)
+  subroutine constrain_virial(at, virial)
     type(Atoms), intent(in) :: at
     real(dp), intent(inout) :: virial(3,3)
 
@@ -2424,7 +2424,7 @@ end subroutine pack_pos_dg
       virial(3,3) = virial(3,3) - virial_trace/3.0
     endif
 
-  end subroutine constrain_virial_post
+  end subroutine constrain_virial
 
 
 

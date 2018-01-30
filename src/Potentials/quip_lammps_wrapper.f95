@@ -10,8 +10,9 @@ module QUIP_LAMMPS_wrapper_module
    implicit none
 
    private
+   integer, parameter :: API_VERSION = 1 ! Manually increment for each _incompatible_ API change
 
-   public :: quip_lammps_wrapper, quip_lammps_potential_initialise
+   public :: quip_lammps_wrapper, quip_lammps_potential_initialise, quip_lammps_api_version
 
    type quip_lammps_potential
       type(Potential), pointer :: pot
@@ -19,7 +20,14 @@ module QUIP_LAMMPS_wrapper_module
 
    contains
 
-   subroutine quip_lammps_wrapper(nlocal, nghost, atomic_numbers, &
+   function quip_lammps_api_version() bind(c)
+      use iso_c_binding, only: c_int
+      integer(kind=c_int) :: quip_lammps_api_version
+
+      quip_lammps_api_version = API_VERSION
+   end function quip_lammps_api_version
+
+   subroutine quip_lammps_wrapper(nlocal, nghost, atomic_numbers, lmptag, &
       inum, sum_num_neigh, ilist, &
       quip_num_neigh, quip_neigh, lattice, &
       quip_potential, n_quip_potential, quip_x, &
@@ -33,6 +41,7 @@ module QUIP_LAMMPS_wrapper_module
       integer(kind=c_int), intent(in) :: sum_num_neigh                               ! number of all neighbours
 
       integer(kind=c_int), intent(in), dimension(nlocal+nghost) :: atomic_numbers    ! list of atomic numbers of all atoms
+      integer(kind=c_int), intent(in), dimension(nlocal+nghost) :: lmptag            ! list of lammps atom ids
       integer(kind=c_int), intent(in), dimension(inum) :: ilist                      ! list of local atoms
       integer(kind=c_int), intent(in), dimension(inum) :: quip_num_neigh             ! number of neighbours of each local atom
       integer(kind=c_int), intent(in), dimension(sum_num_neigh) :: quip_neigh        ! list of neighbours of local atoms, packaged
@@ -82,6 +91,9 @@ module QUIP_LAMMPS_wrapper_module
          ! in the calculation.
          call add_property(at,'local',.false.,ptr = local, overwrite=.true., error=error) 
 
+         ! And the lammps atom ids, for distinguishability
+         call add_property(at, 'lmptag', lmptag, overwrite=.true., error=error)
+
          ! Zero all connections.
          do i = 1, at%N
             at%connect%neighbour1(i)%t%N = 0
@@ -122,7 +134,7 @@ module QUIP_LAMMPS_wrapper_module
          enddo
 
          ! Call the QUIP potential.
-         call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local lammps do_calc_connect=F")
+         call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,local_virial=quip_local_virial,args_str="atom_mask_name=local pers_idces_name=lmptag lammps do_calc_connect=F")
       else
          quip_e = 0.0_dp
          quip_local_e = 0.0_dp

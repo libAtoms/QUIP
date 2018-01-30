@@ -987,7 +987,7 @@ contains
         endif
 
         my_cell_oscillation_time = optional_default(10.0_dp/gamma_cell,cell_oscillation_time)
-        my_bulk_modulus_estimate = optional_default(100.0_dp/GPA,bulk_modulus_estimate)
+        my_bulk_modulus_estimate = optional_default(100.0_dp/EV_A3_IN_GPA,bulk_modulus_estimate)
 
         w_p = 3.0_dp * my_bulk_modulus_estimate * volume_0 * my_cell_oscillation_time**2 / ((2.0_dp*PI)**2)
 

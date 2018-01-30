@@ -30,7 +30,7 @@ from farray import *
 from quippy.atoms import Atoms
 from quippy.io import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.periodictable import ElementMass, atomic_number
-from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA
+from quippy.units import MASSCONVERT, BOHR, HARTREE, RYDBERG, EV_A3_IN_GPA
 
 __all__ = ['PosCelWriter', 'PosCelReader']
 
@@ -103,7 +103,7 @@ class PosCelWriter(object):
         if self.dostress:
             self.stress.write('(kbar)\n')
             for v in at.virial:
-                self.stress.write('%20.10e%20.10e%20.10e\n' % tuple(v*(10.0*GPA)/at.cell_volume()))
+                self.stress.write('%20.10e%20.10e%20.10e\n' % tuple(v*(10.0*EV_A3_IN_GPA)/at.cell_volume()))
 
         self.it += 1
 
@@ -178,7 +178,7 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
         if dostress:
             stress_lines = list(itertools.islice(stress, 4))
             virial = farray([ [float(x) for x in L.split()] for L in stress_lines[1:4] ])
-            virial *= at.cell_volume()/(10.0*GPA)
+            virial *= at.cell_volume()/(10.0*EV_A3_IN_GPA)
             at.params['virial'] = virial
 
         if doforce:
