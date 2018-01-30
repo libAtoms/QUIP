@@ -344,7 +344,7 @@ contains
 
 ! Printing out the force constant and atomic positions in the phonopy format:
       if_my_phonopy_force_const_mat: if (my_phonopy_force_const_mat) then
-         call print_warning("phonopy_force_const_mat: This program prints out the force constants and atoms in the way phonopy 1.12.4 expects them. It is not garantued to work with other versions and does only support a single atomic species at a time (no alloys).")
+         call print_warning("phonopy_force_const_mat: This program prints out the force constants and atoms in the way phonopy 1.12.4 expects them. It is not guaranteed to work with other versions and does only support a single atomic species at a time (no alloys).")
          !species_array = at_in%species
 !         do i_species = 2,len(at_in%species)
 !            print *, at_in%species(:,1)
