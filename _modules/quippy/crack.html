@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -450,8 +450,8 @@
 <span class="sd">    Returns stress instensity factor for mode I loading (K_I) in MPa \sqrt(m)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">G</span> <span class="o">=</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">crack_g_to_k</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="s1">&#39;plane strain&#39;</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e6</span></div>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">at</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">crack_g_to_k</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">YoungsModulus</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">PoissonRatio_yx</span><span class="p">,</span> <span class="s1">&#39;plane strain&#39;</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e6</span>
 
 <span class="k">def</span> <span class="nf">crack_rescale_homogeneous_xy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">strain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">strain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">G</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -605,8 +605,8 @@
 
     <span class="n">G_effective</span> <span class="o">=</span> <span class="n">strain_energy_density</span><span class="o">*</span><span class="n">strip_height</span><span class="o">*</span><span class="n">J_PER_M2</span>
     <span class="nb">print</span> <span class="s1">&#39;Effective energy release rate G =&#39;</span><span class="p">,</span> <span class="n">G_effective</span><span class="p">,</span> <span class="s1">&#39;J/m^2&#39;</span>
-
-    <span class="k">return</span> <span class="n">G_effective</span></div>
+</div>
+    <span class="k">return</span> <span class="n">G_effective</span>
 
 
 <span class="k">def</span> <span class="nf">crack_make_seed_curved_front</span><span class="p">(</span><span class="n">slab</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
@@ -678,8 +678,8 @@
 <span class="sd">   &quot;&quot;&quot;</span>
    <span class="n">h</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
    <span class="n">h0</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">OrigHeight</span>
-   <span class="n">eps</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span>
-   <span class="k">return</span> <span class="n">eps</span></div>
+   <span class="n">eps</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">h0</span><span class="p">)</span><span class="o">/</span><span class="n">h0</span></div>
+   <span class="k">return</span> <span class="n">eps</span>
 
 <span class="k">def</span> <span class="nf">energy_difference</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">pot</span><span class="p">,</span><span class="n">eps</span><span class="p">,</span><span class="n">relax</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;</span>
@@ -726,8 +726,8 @@
 
    <span class="nb">print</span> <span class="s1">&#39;Griffith critical strain = </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
    <span class="nb">print</span> <span class="s1">&#39;Griffith critical G = </span><span class="si">%f</span><span class="s1"> J/m^2&#39;</span> <span class="o">%</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
-
-   <span class="k">return</span> <span class="p">(</span><span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span></div>
+</div>
+   <span class="k">return</span> <span class="p">(</span><span class="n">crack_strain</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">crack_measure_g</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span> <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">find_mapping</span><span class="p">(</span><span class="n">at_in</span><span class="p">,</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">lattice_constant</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
@@ -891,8 +891,8 @@
         <span class="n">advance_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_atom_with_displacement</span><span class="p">(</span><span class="n">tmp_atoms</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
 
     <span class="c1"># save the map inside the Atoms object, and return a copy</span>
-    <span class="n">atoms</span><span class="o">.</span><span class="n">new_array</span><span class="p">(</span><span class="s1">&#39;advance_map&#39;</span><span class="p">,</span> <span class="n">advance_map</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">advance_map</span></div>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">new_array</span><span class="p">(</span><span class="s1">&#39;advance_map&#39;</span><span class="p">,</span> <span class="n">advance_map</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">advance_map</span>
 
 
 <div class="viewcode-block" id="find_crack_tip_coordination"><a class="viewcode-back" href="../../crack.html#quippy.crack.find_crack_tip_coordination">[docs]</a><span class="k">def</span> <span class="nf">find_crack_tip_coordination</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">edge_tol</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
@@ -975,8 +975,8 @@
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackPos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tip_pos</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;crack_tip&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)))</span>
     <span class="n">crack_tip</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;crack_tip&#39;</span><span class="p">]</span>
-    <span class="n">crack_tip</span><span class="p">[</span><span class="n">tip_atoms</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">return</span> <span class="n">tip_pos</span></div>
+    <span class="n">crack_tip</span><span class="p">[</span><span class="n">tip_atoms</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
+    <span class="k">return</span> <span class="n">tip_pos</span>
 
 
 <div class="viewcode-block" id="irwin_modeI_crack_tip_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.irwin_modeI_crack_tip_stress_field">[docs]</a><span class="k">def</span> <span class="nf">irwin_modeI_crack_tip_stress_field</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">xy_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1023,8 +1023,8 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">xy_only</span> <span class="ow">and</span> <span class="n">stress_state</span> <span class="o">==</span> <span class="s1">&#39;plane strain&#39;</span><span class="p">:</span>
         <span class="n">sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">nu</span><span class="o">*</span><span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>              <span class="c1"># zz</span>
-
-    <span class="k">return</span> <span class="n">sigma</span></div>
+</div>
+    <span class="k">return</span> <span class="n">sigma</span>
 
 
 <span class="k">class</span> <span class="nc">IrwinStressField</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -1088,8 +1088,8 @@
 <span class="sd">    G : float</span>
 <span class="sd">       Energy release rate in units consistent with input</span>
 <span class="sd">       (i.e. in eV/A**2 if eV/A/fs units used)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">strain</span> <span class="o">*</span> <span class="n">strain</span> <span class="o">*</span> <span class="n">orig_height</span></div>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">strain</span> <span class="o">*</span> <span class="n">strain</span> <span class="o">*</span> <span class="n">orig_height</span>
 
 
 <div class="viewcode-block" id="G_to_strain"><a class="viewcode-back" href="../../crack.html#quippy.crack.G_to_strain">[docs]</a><span class="k">def</span> <span class="nf">G_to_strain</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">orig_height</span><span class="p">):</span>
@@ -1111,8 +1111,8 @@
 <span class="sd">    -------</span>
 <span class="sd">    strain : float</span>
 <span class="sd">       Dimensionless ratio ``(current_height - orig_height)/orig_height``</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">G</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">E</span> <span class="o">*</span> <span class="n">orig_height</span><span class="p">))</span></div>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">G</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">E</span> <span class="o">*</span> <span class="n">orig_height</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="get_strain"><a class="viewcode-back" href="../../crack.html#quippy.crack.get_strain">[docs]</a><span class="k">def</span> <span class="nf">get_strain</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
@@ -1128,8 +1128,8 @@
     <span class="n">orig_height</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;OrigHeight&#39;</span><span class="p">]</span>
     <span class="n">current_height</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="n">strain</span> <span class="o">=</span> <span class="n">current_height</span> <span class="o">/</span> <span class="n">orig_height</span> <span class="o">-</span> <span class="mf">1.0</span>
-    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain</span>
-    <span class="k">return</span> <span class="n">strain</span></div>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strain</span></div>
+    <span class="k">return</span> <span class="n">strain</span>
 
 
 <div class="viewcode-block" id="get_energy_release_rate"><a class="viewcode-back" href="../../crack.html#quippy.crack.get_energy_release_rate">[docs]</a><span class="k">def</span> <span class="nf">get_energy_release_rate</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
@@ -1144,8 +1144,8 @@
     <span class="n">E</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;YoungsModulus&#39;</span><span class="p">]</span>
     <span class="n">nu</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;PoissonRatio_yx&#39;</span><span class="p">]</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">strain_to_G</span><span class="p">(</span><span class="n">current_strain</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">orig_height</span><span class="p">)</span>
-    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">G</span>
-    <span class="k">return</span> <span class="n">G</span></div>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">G</span></div>
+    <span class="k">return</span> <span class="n">G</span>
 
 
 <div class="viewcode-block" id="get_stress_intensity_factor"><a class="viewcode-back" href="../../crack.html#quippy.crack.get_stress_intensity_factor">[docs]</a><span class="k">def</span> <span class="nf">get_stress_intensity_factor</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
@@ -1162,8 +1162,8 @@
 
     <span class="n">Ep</span> <span class="o">=</span> <span class="n">E</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">nu</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">K</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">G</span><span class="o">/</span><span class="n">Ep</span><span class="p">)</span>
-    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span>
-    <span class="k">return</span> <span class="n">K</span></div>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span></div>
+    <span class="k">return</span> <span class="n">K</span>
 
 
 <div class="viewcode-block" id="fit_crack_stress_field"><a class="viewcode-back" href="../../crack.html#quippy.crack.fit_crack_stress_field">[docs]</a><span class="k">def</span> <span class="nf">fit_crack_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">50.</span><span class="p">),</span> <span class="n">initial_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1357,8 +1357,8 @@
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;sigma0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxx0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;syy0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sxy0&#39;</span><span class="p">])</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;CrackPos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">],</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">err</span></div>
+</div>
+    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">err</span>
 
 
 
@@ -1377,8 +1377,8 @@
 
     <span class="n">params</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">fit_crack_stress_field</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="p">,</span> <span class="n">initial_params</span><span class="p">,</span> <span class="n">fix_params</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span>
                                          <span class="n">avg_sigma</span><span class="p">,</span> <span class="n">avg_decay</span><span class="p">,</span> <span class="n">calc</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">],</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span></div>
+</div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">],</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="plot_stress_fields"><a class="viewcode-back" href="../../crack.html#quippy.crack.plot_stress_fields">[docs]</a><span class="k">def</span> <span class="nf">plot_stress_fields</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initial_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1471,8 +1471,8 @@
         <span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">grid_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span>
                            <span class="n">irwin_sigma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">])</span><span class="o">*</span><span class="n">EV_A3_IN_GPA</span><span class="p">,</span> <span class="n">dcontours</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">colorbar</span><span class="p">()</span>
-        <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
-        <span class="n">draw</span><span class="p">()</span></div>
+        <span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$|</span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{atom}</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">^\mathrm</span><span class="si">{Irwin}</span><span class="s1">|$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span></div>
+        <span class="n">draw</span><span class="p">()</span>
 
 
 
@@ -1535,8 +1535,8 @@
     <span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">middle</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
     <span class="n">u_y</span><span class="p">[</span><span class="n">middle</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">strain</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">middle</span><span class="p">]</span> <span class="o">+</span>
                    <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">shift</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">middle</span><span class="p">]))</span>
-
-    <span class="k">return</span> <span class="n">u_y</span></div>
+</div>
+    <span class="k">return</span> <span class="n">u_y</span>
 
 
 <div class="viewcode-block" id="print_crack_system"><a class="viewcode-back" href="../../crack.html#quippy.crack.print_crack_system">[docs]</a><span class="k">def</span> <span class="nf">print_crack_system</span><span class="p">(</span><span class="n">crack_direction</span><span class="p">,</span> <span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">crack_front</span><span class="p">):</span>
@@ -1553,8 +1553,8 @@
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack system              </span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cleavage_plane</span><span class="p">,</span> <span class="n">crack_front</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack direction (x-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_direction</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cleavage plane  (y-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cleavage_plane</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack front     (z-axis)  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_front</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cleavage plane  (y-axis)  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cleavage_plane</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Crack front     (z-axis)  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_front</span><span class="p">)</span>
 
 
 
@@ -1608,8 +1608,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">adjust_positions</span><span class="p">(</span><span class="n">newpos</span><span class="p">)</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">newpos</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">rigid_constraints</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">initial_constraints</span></div></div>
+        <span class="k">if</span> <span class="n">rigid_constraints</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span></div></div>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">initial_constraints</span>
 
 
 

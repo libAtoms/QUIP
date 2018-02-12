@@ -100,7 +100,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
@@ -115,7 +115,7 @@
 <li class="toctree-l3"><a class="reference internal" href="connection.html">Connection objects</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dictionary.html">Fortran Dictionary objects for storing key/value pairs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="domaindecomposition.html">DomainDecomposition objects</a></li>
-<li class="toctree-l3"><a class="reference internal" href="table.html">Fortran <code class="docutils literal"><span class="pre">Table</span></code> for dynamically extendable arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="table.html">Fortran <code class="docutils literal notranslate"><span class="pre">Table</span></code> for dynamically extendable arrays</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mpi_context.html">MPI parallel interface</a></li>
 <li class="toctree-l3"><a class="reference internal" href="paramreader.html">Command line argument parser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="fortranio.html">Fortran input/output</a></li>
@@ -243,7 +243,7 @@
 <p>Works best if lxml is installed, but will fall back to the
 standard library module.</p>
 <p>Available in script form as combine_gap_xml.py</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.qpxml" title="quippy.qpxml: Functions for manipulating GAP xml"><code class="xref py py-mod docutils literal"><span class="pre">quippy.qpxml</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.qpxml" title="quippy.qpxml: Functions for manipulating GAP xml"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.qpxml</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -251,7 +251,7 @@ standard library module.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">defaultdict</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaultdict</span></code></td>
 <td>defaultdict(default_factory[, …]) –&gt; dict with default factory</td>
 </tr>
 </tbody>
@@ -263,23 +263,23 @@ standard library module.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.qpxml.combine_xml" title="quippy.qpxml.combine_xml"><code class="xref py py-obj docutils literal"><span class="pre">combine_xml</span></code></a>(base_filename,&nbsp;extra_filenames)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.qpxml.combine_xml" title="quippy.qpxml.combine_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combine_xml</span></code></a>(base_filename,&nbsp;extra_filenames)</td>
 <td>Merge the GAP potentials in the xml files given in the arguments.</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">deepcopy</span></code>(x[,&nbsp;memo,&nbsp;_nil])</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">deepcopy</span></code>(x[,&nbsp;memo,&nbsp;_nil])</td>
 <td>Deep copy operation on arbitrary Python objects.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.qpxml.get_gap_version" title="quippy.qpxml.get_gap_version"><code class="xref py py-obj docutils literal"><span class="pre">get_gap_version</span></code></a>(tree)</td>
-<td>Extract the <code class="docutils literal"><span class="pre">gap_version</span></code> from an xml tree and return as an integer.</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.qpxml.get_gap_version" title="quippy.qpxml.get_gap_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gap_version</span></code></a>(tree)</td>
+<td>Extract the <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> from an xml tree and return as an integer.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.qpxml.merge_descriptors" title="quippy.qpxml.merge_descriptors"><code class="xref py py-obj docutils literal"><span class="pre">merge_descriptors</span></code></a>(base,&nbsp;extras[,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.qpxml.merge_descriptors" title="quippy.qpxml.merge_descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_descriptors</span></code></a>(base,&nbsp;extras[,&nbsp;…])</td>
 <td>Extract all GAP descriptors from the potentials in extras and merge them into base, updating the lables and number of coordinates.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.qpxml.set_max_gap_version" title="quippy.qpxml.set_max_gap_version"><code class="xref py py-obj docutils literal"><span class="pre">set_max_gap_version</span></code></a>(base,&nbsp;extras)</td>
-<td>Set the <code class="docutils literal"><span class="pre">gap_version</span></code> attribute in <code class="docutils literal"><span class="pre">base</span></code> to be the maximum of all <code class="docutils literal"><span class="pre">gap_version</span></code> found.</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.qpxml.set_max_gap_version" title="quippy.qpxml.set_max_gap_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_max_gap_version</span></code></a>(base,&nbsp;extras)</td>
+<td>Set the <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> attribute in <code class="docutils literal notranslate"><span class="pre">base</span></code> to be the maximum of all <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> found.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.qpxml.sum_e0" title="quippy.qpxml.sum_e0"><code class="xref py py-obj docutils literal"><span class="pre">sum_e0</span></code></a>(base,&nbsp;extras)</td>
-<td>Update the values of <code class="docutils literal"><span class="pre">e0</span></code> in the base tree with the sum of all values found in the given potentials.</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.qpxml.sum_e0" title="quippy.qpxml.sum_e0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum_e0</span></code></a>(base,&nbsp;extras)</td>
+<td>Update the values of <code class="docutils literal notranslate"><span class="pre">e0</span></code> in the base tree with the sum of all values found in the given potentials.</td>
 </tr>
 </tbody>
 </table>
@@ -295,10 +295,10 @@ standard library module.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ElementTree</span></code></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal notranslate"><span class="pre">ElementTree</span></code></td>
 <td>&lt;module ‘xml.etree.ElementTree’ from ‘/opt/python/2.7.14/lib/python2.7/xml/etree/ElementTree.pyc’&gt;</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-attr docutils literal"><span class="pre">re</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-attr docutils literal notranslate"><span class="pre">re</span></code></td>
 <td>&lt;module ‘re’ from ‘/home/travis/virtualenv/python2.7.14/lib/python2.7/re.pyc’&gt;</td>
 </tr>
 </tbody>
@@ -309,7 +309,7 @@ standard library module.</p>
 <dd><p>Merge the GAP potentials in the xml files given in the arguments.
 Return a string containing the combined potential.</p>
 <p>Use this method to either write a new xml file or pass directly into
-<code class="docutils literal"><span class="pre">quippy.Potential</span></code>:</p>
+<code class="docutils literal notranslate"><span class="pre">quippy.Potential</span></code>:</p>
 <blockquote>
 <div><dl class="docutils">
 <dt>pot = Potential(“IP GAP”,</dt>
@@ -354,9 +354,9 @@ the output, otherwise the label from base is used.</p>
 <dl class="function">
 <dt id="quippy.qpxml.get_gap_version">
 <code class="descclassname">quippy.qpxml.</code><code class="descname">get_gap_version</code><span class="sig-paren">(</span><em>tree</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/qpxml.html#get_gap_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.qpxml.get_gap_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract the <code class="docutils literal"><span class="pre">gap_version</span></code> from an xml tree
+<dd><p>Extract the <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> from an xml tree
 and return as an integer. Will return the maximum
-if <code class="docutils literal"><span class="pre">gap_version</span></code> appears more than once.</p>
+if <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> appears more than once.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -376,7 +376,7 @@ if <code class="docutils literal"><span class="pre">gap_version</span></code> ap
 <code class="descclassname">quippy.qpxml.</code><code class="descname">merge_descriptors</code><span class="sig-paren">(</span><em>base</em>, <em>extras</em>, <em>remove_xyz=True</em>, <em>label=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/qpxml.html#merge_descriptors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.qpxml.merge_descriptors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract all GAP descriptors from the potentials in extras and
 merge them into base, updating the lables and number of
-coordinates. Modify <code class="docutils literal"><span class="pre">base</span></code> in place and return nothing.</p>
+coordinates. Modify <code class="docutils literal notranslate"><span class="pre">base</span></code> in place and return nothing.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -391,7 +391,7 @@ coordinates. Modify <code class="docutils literal"><span class="pre">base</span>
 </div></blockquote>
 <p><strong>remove_xyz</strong> : bool</p>
 <blockquote>
-<div><p>If True, remove any <code class="docutils literal"><span class="pre">XYZ_data</span></code> elements; If False then leave
+<div><p>If True, remove any <code class="docutils literal notranslate"><span class="pre">XYZ_data</span></code> elements; If False then leave
 anything found in base (XYZ_data is not combined)</p>
 </div></blockquote>
 <p><strong>label</strong> : str or None</p>
@@ -408,8 +408,8 @@ use the label from base.</p>
 <dl class="function">
 <dt id="quippy.qpxml.set_max_gap_version">
 <code class="descclassname">quippy.qpxml.</code><code class="descname">set_max_gap_version</code><span class="sig-paren">(</span><em>base</em>, <em>extras</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/qpxml.html#set_max_gap_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.qpxml.set_max_gap_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the <code class="docutils literal"><span class="pre">gap_version</span></code> attribute in <code class="docutils literal"><span class="pre">base</span></code> to be the
-maximum of all <code class="docutils literal"><span class="pre">gap_version</span></code> found. Modify <code class="docutils literal"><span class="pre">base</span></code> in place
+<dd><p>Set the <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> attribute in <code class="docutils literal notranslate"><span class="pre">base</span></code> to be the
+maximum of all <code class="docutils literal notranslate"><span class="pre">gap_version</span></code> found. Modify <code class="docutils literal notranslate"><span class="pre">base</span></code> in place
 and return nothing.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -432,8 +432,8 @@ and return nothing.</p>
 <dl class="function">
 <dt id="quippy.qpxml.sum_e0">
 <code class="descclassname">quippy.qpxml.</code><code class="descname">sum_e0</code><span class="sig-paren">(</span><em>base</em>, <em>extras</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/qpxml.html#sum_e0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.qpxml.sum_e0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the values of <code class="docutils literal"><span class="pre">e0</span></code> in the base tree with the sum
-of all values found in the given potentials. Modify <code class="docutils literal"><span class="pre">base</span></code> in
+<dd><p>Update the values of <code class="docutils literal notranslate"><span class="pre">e0</span></code> in the base tree with the sum
+of all values found in the given potentials. Modify <code class="docutils literal notranslate"><span class="pre">base</span></code> in
 place and return nothing.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -441,11 +441,11 @@ place and return nothing.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>base</strong> : Element</p>
 <blockquote>
-<div><p>The ElementTree to be modified with the sum of <code class="docutils literal"><span class="pre">e0</span></code> values</p>
+<div><p>The ElementTree to be modified with the sum of <code class="docutils literal notranslate"><span class="pre">e0</span></code> values</p>
 </div></blockquote>
 <p><strong>extras</strong> : list of Element</p>
 <blockquote class="last">
-<div><p>All other ElementTrees to added to the summed <code class="docutils literal"><span class="pre">e0</span></code> values</p>
+<div><p>All other ElementTrees to added to the summed <code class="docutils literal notranslate"><span class="pre">e0</span></code> values</p>
 </div></blockquote>
 </td>
 </tr>

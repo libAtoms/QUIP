@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -405,8 +405,8 @@
                         <span class="n">match</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="nb">property</span><span class="p">)[</span><span class="n">i_at</span><span class="p">]</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">()</span> <span class="o">==</span> <span class="n">prop_vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                     <span class="k">except</span><span class="p">:</span>
                         <span class="n">match</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="nb">property</span><span class="p">)[</span><span class="n">i_at</span><span class="p">]</span> <span class="o">==</span> <span class="n">prop_vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">match</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">i_at</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">i_at</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="n">i_at</span><span class="p">]))</span></div>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">match</span><span class="p">):</span></div>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">i_at</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">i_at</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="n">i_at</span><span class="p">]))</span>
 
 <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;vasp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">VASPWriter</span>
 <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;VASP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">VASPWriter</span>
@@ -488,8 +488,8 @@
                 <span class="k">yield</span> <span class="n">at_cur</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">at_cur</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">at_i</span> <span class="o">==</span> <span class="n">at_cur</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="c1"># at end of configuration, set lattice</span>
                 <span class="n">at_cur</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lat_cur</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-
-    <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;VASP_POSCAR_Reader&#39;</span><span class="p">,</span> <span class="s1">&#39;VASP_OUTCAR_Reader&#39;</span><span class="p">,</span> <span class="s1">&#39;VASPWriter&#39;</span><span class="p">]</span></div>
+</div>
+    <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;VASP_POSCAR_Reader&#39;</span><span class="p">,</span> <span class="s1">&#39;VASP_OUTCAR_Reader&#39;</span><span class="p">,</span> <span class="s1">&#39;VASPWriter&#39;</span><span class="p">]</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="c1"># use ASE vasp readers/writers if they are available</span>

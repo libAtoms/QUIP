@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -231,19 +231,19 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">min</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">step</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">min</span><span class="p">,</span><span class="nb">max</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">step</span><span class="p">)</span></div>
+    <span class="k">else</span><span class="p">:</span></div>
+        <span class="k">return</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">min</span><span class="p">,</span><span class="nb">max</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">step</span><span class="p">)</span>
 
 <div class="viewcode-block" id="fenumerate"><a class="viewcode-back" href="../../farray.html#quippy.farray.fenumerate">[docs]</a><span class="k">def</span> <span class="nf">fenumerate</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;One-based equivalent of enumerate&quot;&quot;&quot;</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
-        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span></div>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span></div>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="fzeros"><a class="viewcode-back" href="../../farray.html#quippy.farray.fzeros">[docs]</a><span class="k">def</span> <span class="nf">fzeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create an empty :class:`FortranArray` with Fortran ordering.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">))</span></div>
+    <span class="sd">&quot;&quot;&quot;Create an empty :class:`FortranArray` with Fortran ordering.&quot;&quot;&quot;</span></div>
+    <span class="k">return</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">))</span>
 
 <div class="viewcode-block" id="farray"><a class="viewcode-back" href="../../farray.html#quippy.farray.farray">[docs]</a><span class="k">def</span> <span class="nf">farray</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert ``seq`` to a :class:`FortranArray` with Fortran ordering.</span>
@@ -251,13 +251,13 @@
 <span class="sd">    &gt;&gt;&gt; fa = farray([1,2,3])</span>
 
 <span class="sd">    A copy of the data in seq will be made if necessary.&quot;&quot;&quot;</span>
-    <span class="n">na</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">na</span><span class="p">)</span></div>
+    <span class="n">na</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">na</span><span class="p">)</span>
 
 <div class="viewcode-block" id="fidentity"><a class="viewcode-back" href="../../farray.html#quippy.farray.fidentity">[docs]</a><span class="k">def</span> <span class="nf">fidentity</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return the ``n`` dimensional identity matrix as a :class:`FortranArray`.&quot;&quot;&quot;</span>
-
-    <span class="k">return</span> <span class="n">farray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
+</div>
+    <span class="k">return</span> <span class="n">farray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
 <div class="viewcode-block" id="fvar"><a class="viewcode-back" href="../../farray.html#quippy.farray.fvar">[docs]</a><span class="k">def</span> <span class="nf">fvar</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -283,8 +283,8 @@
         <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
             <span class="n">frame</span><span class="o">.</span><span class="n">f_globals</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
         <span class="k">return</span> <span class="n">res</span>
-    <span class="k">finally</span><span class="p">:</span>
-        <span class="k">del</span> <span class="n">frame</span></div>
+    <span class="k">finally</span><span class="p">:</span></div>
+        <span class="k">del</span> <span class="n">frame</span>
 
 <div class="viewcode-block" id="FortranArray"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray">[docs]</a><span class="k">class</span> <span class="nc">FortranArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Subclass of :class:`np.ndarray` which uses Fortran-style one-based indexing.</span>
@@ -455,8 +455,8 @@
                         <span class="n">res</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">Ellipsis</span><span class="p">]</span> <span class="o">+</span> <span class="n">nindx</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">res</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">nindx</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">res</span></div>
+</div>
+        <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indx</span><span class="p">):</span>
         <span class="s2">&quot;Overloaded __getitem__ which accepts one-based indices.&quot;</span>
@@ -522,24 +522,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FortranArray.nonzero"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.nonzero">[docs]</a>    <span class="k">def</span> <span class="nf">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the one-based indices of the elements of a which are not zero.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
+        <span class="sd">&quot;&quot;&quot;Return the one-based indices of the elements of a which are not zero.&quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
 <div class="viewcode-block" id="FortranArray.argmin"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.argmin">[docs]</a>    <span class="k">def</span> <span class="nf">argmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return one-based indices of the minimum values along the given  axis of `a`.</span>
 
 <span class="sd">        Refer to `np.ndarray.argmax` for detailed documentation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axis</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span></div>
+            <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="FortranArray.argmax"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.argmax">[docs]</a>    <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return one-based indices of the maximum values along the given axis of `a`.</span>
 
 <span class="sd">        Refer to `np.ndarray.argmax` for detailed documentation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axis</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span></div>
+            <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="FortranArray.argsort"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.argsort">[docs]</a>    <span class="k">def</span> <span class="nf">argsort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;quicksort&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns the indices that would sort this array.</span>
@@ -547,8 +547,8 @@
 <span class="sd">        Refer to `np.argsort` for full documentation.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axis</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">order</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span></div>
+            <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">order</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="FortranArray.take"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.take">[docs]</a>    <span class="k">def</span> <span class="nf">take</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;raise&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return an array formed from the elements of a at the given</span>
@@ -558,16 +558,16 @@
 
         <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axis</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">mapindices</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span>
-                                  <span class="n">axis</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">mode</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">mapindices</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span></div>
+                                  <span class="n">axis</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">mode</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FortranArray.put"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;raise&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set a.flat[n] = values[n] for all n in indices.</span>
 
 <span class="sd">        Refer to `np.put` for full documentation.&quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapindices</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span>
-                                 <span class="n">values</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapindices</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span></div>
+                                 <span class="n">values</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -605,8 +605,8 @@
                 <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">isbuiltin</span><span class="p">):</span>
                     <span class="n">fa</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
                     <span class="k">yield</span> <span class="n">fa</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">obj</span></div>
+                <span class="k">else</span><span class="p">:</span></div>
+                    <span class="k">yield</span> <span class="n">obj</span>
 
     <span class="n">rows</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">row_iter</span><span class="p">)</span>
 
@@ -627,17 +627,17 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to take norm2 of array with shape </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span></div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to take norm2 of array with shape </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="FortranArray.norm"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.norm">[docs]</a>    <span class="k">def</span> <span class="nf">norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;Return ``sqrt(norm2(self))``&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm2</span><span class="p">())</span></div>
+        <span class="s2">&quot;Return ``sqrt(norm2(self))``&quot;</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm2</span><span class="p">())</span>
 
 <div class="viewcode-block" id="FortranArray.normalised"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.normalised">[docs]</a>    <span class="k">def</span> <span class="nf">normalised</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;Return a normalised copy of this array&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span></div>
+        <span class="s2">&quot;Return a normalised copy of this array&quot;</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
 
     <span class="n">hat</span> <span class="o">=</span> <span class="n">normalised</span>
 
@@ -647,8 +647,8 @@
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-                <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="bp">Ellipsis</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-                <span class="k">yield</span> <span class="n">obj</span></div>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="bp">Ellipsis</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span></div>
+                <span class="k">yield</span> <span class="n">obj</span>
 
     <span class="n">cols</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">col_iter</span><span class="p">)</span>
 
@@ -659,8 +659,8 @@
             <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">obj</span></div>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">obj</span>
 
 <div class="viewcode-block" id="FortranArray.any"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.any">[docs]</a>    <span class="k">def</span> <span class="nf">any</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;One-based analogue of :meth:`np.ndarray.any`&quot;&quot;&quot;</span>
@@ -669,8 +669,8 @@
             <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">obj</span></div>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">obj</span>
 
 <div class="viewcode-block" id="FortranArray.sum"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;One-based analogue of :meth:`np.ndarray.sum`&quot;&quot;&quot;</span>
@@ -678,8 +678,8 @@
             <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">obj</span></div>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">obj</span>
 
 <div class="viewcode-block" id="FortranArray.mean"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;One-based analogue of :meth:`np.ndarray.mean`&quot;&quot;&quot;</span>
@@ -687,8 +687,8 @@
             <span class="n">axis</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">obj</span></div>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">obj</span>
 
 
 <div class="viewcode-block" id="FortranArray.stripstrings"><a class="viewcode-back" href="../../farray.html#quippy.farray.FortranArray.stripstrings">[docs]</a>    <span class="k">def</span> <span class="nf">stripstrings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -703,8 +703,8 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">farray</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span></div></div>
+        <span class="k">else</span><span class="p">:</span></div></div>
+            <span class="k">return</span> <span class="n">farray</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
 
 
 <div class="viewcode-block" id="padded_str_array"><a class="viewcode-back" href="../../farray.html#quippy.farray.padded_str_array">[docs]</a><span class="k">def</span> <span class="nf">padded_str_array</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
@@ -713,8 +713,8 @@
     <span class="n">res</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="n">length</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)),</span> <span class="s1">&#39;S&#39;</span><span class="p">)</span>
     <span class="n">res</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fenumerate</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-        <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">),</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">res</span></div>
+        <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">),</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">res</span>
 
 
 <div class="viewcode-block" id="convert_farray_to_ndarray"><a class="viewcode-back" href="../../farray.html#quippy.farray.convert_farray_to_ndarray">[docs]</a><span class="k">def</span> <span class="nf">convert_farray_to_ndarray</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -761,8 +761,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">nres</span><span class="p">)</span>
 
-
-    <span class="k">return</span> <span class="n">nfunc</span></div>
+</div>
+    <span class="k">return</span> <span class="n">nfunc</span>
 
 
 <div class="viewcode-block" id="convert_ndarray_to_farray"><a class="viewcode-back" href="../../farray.html#quippy.farray.convert_ndarray_to_farray">[docs]</a><span class="k">def</span> <span class="nf">convert_ndarray_to_farray</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -808,16 +808,16 @@
             <span class="k">return</span> <span class="n">nres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">nres</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">nfunc</span></div>
+</div>
+    <span class="k">return</span> <span class="n">nfunc</span>
 
 <div class="viewcode-block" id="f2n"><a class="viewcode-back" href="../../farray.html#quippy.farray.f2n">[docs]</a><span class="k">def</span> <span class="nf">f2n</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return ``x.view(np.ndarray)``&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span></div>
+    <span class="sd">&quot;&quot;&quot;Return ``x.view(np.ndarray)``&quot;&quot;&quot;</span></div>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
 
 <div class="viewcode-block" id="n2f"><a class="viewcode-back" href="../../farray.html#quippy.farray.n2f">[docs]</a><span class="k">def</span> <span class="nf">n2f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return ``x.view(FortranArray)``&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FortranArray</span><span class="p">)</span></div>
+    <span class="sd">&quot;&quot;&quot;Return ``x.view(FortranArray)``&quot;&quot;&quot;</span></div>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FortranArray</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">unravel_index</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;1-based version of np.unravel_index&quot;&quot;&quot;</span>

@@ -99,7 +99,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
@@ -231,7 +231,7 @@
 </style>
 <div class="section" id="module-quippy.cp2k">
 <span id="cp2k-i-o-and-driver"></span><span id="cp2k"></span><h1>CP2K I/O and driver<a class="headerlink" href="#module-quippy.cp2k" title="Permalink to this headline">¶</a></h1>
-<p>Module contents for <a class="reference internal" href="#module-quippy.cp2k" title="quippy.cp2k: CP2K I/O"><code class="xref py py-mod docutils literal"><span class="pre">quippy.cp2k</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cp2k" title="quippy.cp2k: CP2K I/O"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.cp2k</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -239,10 +239,10 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.CP2KPotential" title="quippy.cp2k.CP2KPotential"><code class="xref py py-obj docutils literal"><span class="pre">CP2KPotential</span></code></a>([fpointer,&nbsp;finalise,&nbsp;error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.CP2KPotential" title="quippy.cp2k.CP2KPotential"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CP2KPotential</span></code></a>([fpointer,&nbsp;finalise,&nbsp;error])</td>
 <td>QUIP Potential interface to the CP2K code.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.CP2KInputHeader" title="quippy.cp2k.CP2KInputHeader"><code class="xref py py-obj docutils literal"><span class="pre">CP2KInputHeader</span></code></a>([filename])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.CP2KInputHeader" title="quippy.cp2k.CP2KInputHeader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CP2KInputHeader</span></code></a>([filename])</td>
 <td>Read a cp2k_input.inp.header file and parse into an ordered dictionary.</td>
 </tr>
 </tbody>
@@ -254,19 +254,19 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.read_cp2k_qm_kind" title="quippy.cp2k.read_cp2k_qm_kind"><code class="xref py py-obj docutils literal"><span class="pre">read_cp2k_qm_kind</span></code></a>(fh)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.read_cp2k_qm_kind" title="quippy.cp2k.read_cp2k_qm_kind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_cp2k_qm_kind</span></code></a>(fh)</td>
 <td>Read a file in cp2k_input.qmmm_qm_kind</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.read_psf" title="quippy.cp2k.read_psf"><code class="xref py py-obj docutils literal"><span class="pre">read_psf</span></code></a>(psf[,&nbsp;rev_sort_index])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.read_psf" title="quippy.cp2k.read_psf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_psf</span></code></a>(psf[,&nbsp;rev_sort_index])</td>
 <td>Read the PSF topology file from the filename <cite>psf</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.apply_cp2k_sort_order" title="quippy.cp2k.apply_cp2k_sort_order"><code class="xref py py-obj docutils literal"><span class="pre">apply_cp2k_sort_order</span></code></a>(at[,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.apply_cp2k_sort_order" title="quippy.cp2k.apply_cp2k_sort_order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_cp2k_sort_order</span></code></a>(at[,&nbsp;…])</td>
 <td>Reorder atoms in <cite>at</cite> so that they match rev_sort_index read from file.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.bonds_from_avgpos" title="quippy.cp2k.bonds_from_avgpos"><code class="xref py py-obj docutils literal"><span class="pre">bonds_from_avgpos</span></code></a>(at)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k.bonds_from_avgpos" title="quippy.cp2k.bonds_from_avgpos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bonds_from_avgpos</span></code></a>(at)</td>
 <td>Compute connectivity of <cite>at</cite> using <cite>avgpos</cite> positions.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.qmmm_link_bonds" title="quippy.cp2k.qmmm_link_bonds"><code class="xref py py-obj docutils literal"><span class="pre">qmmm_link_bonds</span></code></a>(at[,&nbsp;run_suffix])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k.qmmm_link_bonds" title="quippy.cp2k.qmmm_link_bonds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qmmm_link_bonds</span></code></a>(at[,&nbsp;run_suffix])</td>
 <td>Return the set of QM/MM link bonds in <cite>at</cite>.</td>
 </tr>
 </tbody>
@@ -274,7 +274,7 @@
 <dl class="class">
 <dt id="quippy.cp2k.CP2KPotential">
 <em class="property">class </em><code class="descclassname">quippy.cp2k.</code><code class="descname">CP2KPotential</code><span class="sig-paren">(</span><em>fpointer=None</em>, <em>finalise=True</em>, <em>error=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#CP2KPotential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.CP2KPotential" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">quippy.potential.Potential</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">quippy.potential.Potential</span></code></a></p>
 <p>QUIP Potential interface to the CP2K code.</p>
 <p>Calls do_cp2k_calc() in QUIP_FilePot_Drivers/cp2k_driver_module.f95 to do the heavy lifting</p>
 </dd></dl>
@@ -282,7 +282,7 @@
 <dl class="class">
 <dt id="quippy.cp2k.CP2KInputHeader">
 <em class="property">class </em><code class="descclassname">quippy.cp2k.</code><code class="descname">CP2KInputHeader</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cp2k.html#CP2KInputHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cp2k.CP2KInputHeader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">quippy.ordereddict.OrderedDict</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">quippy.ordereddict.OrderedDict</span></code></p>
 <p>Read a cp2k_input.inp.header file and parse into an ordered dictionary.</p>
 </dd></dl>
 
@@ -327,7 +327,7 @@ object. Returns list of bonds as a set.</p>
 </dd></dl>
 
 <span class="target" id="module-quippy.cp2k_driver"></span><p>guts of cp2k driver from template</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.cp2k_driver" title="quippy.cp2k_driver: CP2K Interface"><code class="xref py py-mod docutils literal"><span class="pre">quippy.cp2k_driver</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cp2k_driver" title="quippy.cp2k_driver: CP2K Interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.cp2k_driver</span></code></a>:</p>
 <p class="rubric">Functions</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -335,7 +335,7 @@ object. Returns list of bonds as a set.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.calc_charge_lsd" title="quippy.cp2k_driver.calc_charge_lsd"><code class="xref py py-obj docutils literal"><span class="pre">calc_charge_lsd</span></code></a>(…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.calc_charge_lsd" title="quippy.cp2k_driver.calc_charge_lsd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_charge_lsd</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -346,11 +346,11 @@ object. Returns list of bonds as a set.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.do_cp2k_calc" title="quippy.cp2k_driver.do_cp2k_calc"><code class="xref py py-obj docutils literal"><span class="pre">do_cp2k_calc</span></code></a>(at,args_str,n0,n1,[error])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.do_cp2k_calc" title="quippy.cp2k_driver.do_cp2k_calc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">do_cp2k_calc</span></code></a>(at,args_str,n0,n1,[error])</td>
 <td><p class="rubric">args_str options</p>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.read_output" title="quippy.cp2k_driver.read_output"><code class="xref py py-obj docutils literal"><span class="pre">read_output</span></code></a>(…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.read_output" title="quippy.cp2k_driver.read_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_output</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -361,7 +361,7 @@ object. Returns list of bonds as a set.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.cp2k_state_change" title="quippy.cp2k_driver.cp2k_state_change"><code class="xref py py-obj docutils literal"><span class="pre">cp2k_state_change</span></code></a>(…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cp2k_driver.cp2k_state_change" title="quippy.cp2k_driver.cp2k_state_change"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cp2k_state_change</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -372,7 +372,7 @@ object. Returns list of bonds as a set.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.qmmm_qm_abc" title="quippy.cp2k_driver.qmmm_qm_abc"><code class="xref py py-obj docutils literal"><span class="pre">qmmm_qm_abc</span></code></a>(at,qm_list_a,qm_vacuum)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cp2k_driver.qmmm_qm_abc" title="quippy.cp2k_driver.qmmm_qm_abc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qmmm_qm_abc</span></code></a>(at,qm_list_a,qm_vacuum)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -392,7 +392,7 @@ object. Returns list of bonds as a set.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>qm_list_a</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 <p><strong>charge</strong> :  int</p>
 <p><strong>do_lsd</strong> :  int</p>
@@ -406,7 +406,7 @@ object. Returns list of bonds as a set.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc_charge_lsd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">calc_charge_lsd</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -733,7 +733,7 @@ virial in</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>f</strong> :  rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
 <p><strong>n0</strong> :  input int</p>
 <blockquote>
@@ -751,7 +751,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">do_cp2k_calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">do_cp2k_calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -761,7 +761,7 @@ virial in</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>qm_list_a</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 <p><strong>cur_qmmm_qm_abc</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
 <p><strong>run_dir</strong> :  input string(len=-1)</p>
@@ -786,7 +786,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">read_output</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">read_output</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -796,7 +796,7 @@ virial in</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>to</strong> :  input string(len=-1)</p>
 <p><strong>from_list</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
 <p><strong>ignore_failure</strong> :  input int, optional</p>
@@ -806,7 +806,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cp2k_state_change</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">cp2k_state_change</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -816,7 +816,7 @@ virial in</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>qm_list_a</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
 <p><strong>qm_vacuum</strong> :  input float</p>
 </td>
@@ -827,7 +827,7 @@ virial in</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">qmmm_qm_abc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">qmmm_qm_abc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/FilePot_drivers/cp2k_driver_module.f95">src/FilePot_drivers/cp2k_driver_module.f95</a>.</p>
 </dd></dl>
 
 </div>

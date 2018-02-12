@@ -98,7 +98,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
@@ -249,8 +249,8 @@
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">descriptor</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">descriptor</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -258,10 +258,10 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.calc_descriptor" title="quippy.descriptors.Descriptor.calc_descriptor"><code class="xref py py-obj docutils literal"><span class="pre">calc_descriptor</span></code></a>(at,&nbsp;*args,&nbsp;**kw)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.calc_descriptor" title="quippy.descriptors.Descriptor.calc_descriptor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_descriptor</span></code></a>(at,&nbsp;*args,&nbsp;**kw)</td>
 <td>Calculates all descriptors of this type in the Atoms object, and returns the array of descriptor values.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.count" title="quippy.descriptors.Descriptor.count"><code class="xref py py-obj docutils literal"><span class="pre">count</span></code></a>(at,&nbsp;*args,&nbsp;**kw)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.count" title="quippy.descriptors.Descriptor.count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code></a>(at,&nbsp;*args,&nbsp;**kw)</td>
 <td>Returns how many descriptors of this type are found in the Atoms object.</td>
 </tr>
 </tbody>
@@ -284,7 +284,7 @@ are also returned.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>descriptor_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
 <p><strong>covariance_cutoff</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n2), optional</p>
 <p><strong>grad_descriptor_out</strong> :  in/output rank-3 array(‘d’) with bounds (qp_n3,qp_n4,qp_n5), optional</p>
@@ -298,7 +298,7 @@ are also returned.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_calc_array</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">descriptor_calc_array</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -319,7 +319,8 @@ object.</p>
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.cutoff">
 <code class="descname">cutoff</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.cutoff" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>descriptor_cutoff([error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -330,17 +331,18 @@ object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.descriptor_sizes">
 <code class="descname">descriptor_sizes</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>mask</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Descriptor.descriptor_sizes" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>descriptor_descriptor_sizes(at,[mask,error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
 <p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
@@ -350,7 +352,7 @@ object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -367,7 +369,7 @@ object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_dimensions</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">descriptor_dimensions</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -377,8 +379,8 @@ object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
-<p><strong>mpi</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
+<p><strong>mpi</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object</p>
 <p><strong>n0</strong> :  input int</p>
 <blockquote>
 <div><p>shape(qp_mpi_mask,0)</p>
@@ -392,7 +394,7 @@ object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_mpi_setup</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">descriptor_mpi_setup</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -409,7 +411,7 @@ object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_n_permutations</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">descriptor_n_permutations</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -425,7 +427,7 @@ object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
 <p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
@@ -435,7 +437,7 @@ object.</p>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">descriptor_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">descriptor_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -588,8 +590,8 @@ was created</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">soap</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">soap</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -597,29 +599,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Soap.cutoff_" title="quippy.descriptors.Soap.cutoff_"><code class="xref py py-obj docutils literal"><span class="pre">cutoff_</span></code></a>([error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Soap.cutoff_" title="quippy.descriptors.Soap.cutoff_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cutoff_</span></code></a>([error])</td>
+<td>soap_cutoff([error])</td>
 </tr>
-</tbody>
-</table>
-</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.Soap.descriptor_sizes" title="quippy.descriptors.Soap.descriptor_sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">descriptor_sizes</span></code></a>(at,[mask,error])</td>
+<td>soap_descriptor_sizes(at,[mask,error])</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.Soap.descriptor_sizes" title="quippy.descriptors.Soap.descriptor_sizes"><code class="xref py py-obj docutils literal"><span class="pre">descriptor_sizes</span></code></a>(at,[mask,error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Soap.sizes" title="quippy.descriptors.Soap.sizes"><code class="xref py py-obj docutils literal"><span class="pre">sizes</span></code></a>(at,[mask,error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Soap.sizes" title="quippy.descriptors.Soap.sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sizes</span></code></a>(at,[mask,error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -635,7 +621,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dl class="method">
 <dt id="quippy.descriptors.Soap.cutoff_">
 <code class="descname">cutoff_</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Soap.cutoff_" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>soap_cutoff([error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -646,17 +633,18 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.descriptors.Soap.descriptor_sizes">
 <code class="descname">descriptor_sizes</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>mask</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.Soap.descriptor_sizes" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>soap_descriptor_sizes(at,[mask,error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
 <p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
@@ -666,7 +654,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -676,7 +664,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
 <p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
@@ -686,7 +674,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">soap_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">soap_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -747,8 +735,8 @@ to monomer</td>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">general_monomer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">general_monomer</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -756,29 +744,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.General_monomer.cutoff_" title="quippy.descriptors.General_monomer.cutoff_"><code class="xref py py-obj docutils literal"><span class="pre">cutoff_</span></code></a>([error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.General_monomer.cutoff_" title="quippy.descriptors.General_monomer.cutoff_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cutoff_</span></code></a>([error])</td>
+<td>general_monomer_cutoff([error])</td>
 </tr>
-</tbody>
-</table>
-</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.General_monomer.descriptor_sizes" title="quippy.descriptors.General_monomer.descriptor_sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">descriptor_sizes</span></code></a>(at,[mask,error])</td>
+<td>general_monomer_descriptor_sizes(at,[mask,error])</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.General_monomer.descriptor_sizes" title="quippy.descriptors.General_monomer.descriptor_sizes"><code class="xref py py-obj docutils literal"><span class="pre">descriptor_sizes</span></code></a>(at,[mask,error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.General_monomer.sizes" title="quippy.descriptors.General_monomer.sizes"><code class="xref py py-obj docutils literal"><span class="pre">sizes</span></code></a>(at,[mask,error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.General_monomer.sizes" title="quippy.descriptors.General_monomer.sizes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sizes</span></code></a>(at,[mask,error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -794,7 +766,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dl class="method">
 <dt id="quippy.descriptors.General_monomer.cutoff_">
 <code class="descname">cutoff_</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.General_monomer.cutoff_" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>general_monomer_cutoff([error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -805,17 +778,18 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.descriptors.General_monomer.descriptor_sizes">
 <code class="descname">descriptor_sizes</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>mask</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.descriptors.General_monomer.descriptor_sizes" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>general_monomer_descriptor_sizes(at,[mask,error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
 <p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
@@ -825,7 +799,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -835,7 +809,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal"><span class="pre">atoms</span></code> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
 <p><strong>n_descriptors</strong> :  int</p>
 <p><strong>n_cross</strong> :  int</p>
 <p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
@@ -845,7 +819,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">general_monomer_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">general_monomer_sizes</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/GAP/descriptors.f95">src/GAP/descriptors.f95</a>.</p>
 </dd></dl>
 
 </dd></dl>

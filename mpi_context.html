@@ -98,7 +98,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
@@ -113,7 +113,7 @@
 <li class="toctree-l3"><a class="reference internal" href="connection.html">Connection objects</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dictionary.html">Fortran Dictionary objects for storing key/value pairs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="domaindecomposition.html">DomainDecomposition objects</a></li>
-<li class="toctree-l3"><a class="reference internal" href="table.html">Fortran <code class="docutils literal"><span class="pre">Table</span></code> for dynamically extendable arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="table.html">Fortran <code class="docutils literal notranslate"><span class="pre">Table</span></code> for dynamically extendable arrays</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">MPI parallel interface</a><ul class="simple">
 </ul>
 </li>
@@ -238,7 +238,7 @@
 </style>
 <div class="section" id="module-quippy.mpi_context">
 <span id="mpi-parallel-interface"></span><h1>MPI parallel interface<a class="headerlink" href="#module-quippy.mpi_context" title="Permalink to this headline">¶</a></h1>
-<p>Module contents for <a class="reference internal" href="#module-quippy.mpi_context" title="quippy.mpi_context: MPI parallel interface"><code class="xref py py-mod docutils literal"><span class="pre">quippy.mpi_context</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.mpi_context" title="quippy.mpi_context: MPI parallel interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.mpi_context</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -246,16 +246,8 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-obj docutils literal"><span class="pre">MPI_context</span></code></a>(…)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MPI_context</span></code></a>(…)</td>
+<td>mpi_context_initialise([communicator,context,dims,periods,error])</td>
 </tr>
 </tbody>
 </table>
@@ -266,7 +258,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.push_mpi_error" title="quippy.mpi_context.push_mpi_error"><code class="xref py py-obj docutils literal"><span class="pre">push_mpi_error</span></code></a>(info,fn,line)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.push_mpi_error" title="quippy.mpi_context.push_mpi_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">push_mpi_error</span></code></a>(info,fn,line)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -291,7 +283,7 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">ROOT</span></code></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal notranslate"><span class="pre">ROOT</span></code></td>
 <td>0</td>
 </tr>
 </tbody>
@@ -299,14 +291,14 @@
 <dl class="class">
 <dt id="quippy.mpi_context.MPI_context">
 <em class="property">class </em><code class="descclassname">quippy.mpi_context.</code><code class="descname">MPI_context</code><span class="sig-paren">(</span><span class="optional">[</span><em>communicator</em>, <em>context</em>, <em>dims</em>, <em>periods</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="oo_fortran.html#quippy.oo_fortran.FortranDerivedType" title="quippy.oo_fortran.FortranDerivedType"><code class="xref py py-class docutils literal notranslate"><span class="pre">quippy.oo_fortran.FortranDerivedType</span></code></a></p>
 <p>mpi_context_initialise([communicator,context,dims,periods,error])</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>communicator</strong> :  input int, optional</p>
-<p><strong>context</strong> : <a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object, optional</p>
+<p><strong>context</strong> : <a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
 <p><strong>dims</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>periods</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
@@ -315,8 +307,8 @@
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">MPI_context</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">MPI_context</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -324,7 +316,25 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.all" title="quippy.mpi_context.MPI_context.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a>(v,[error])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.all" title="quippy.mpi_context.MPI_context.all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">all</span></code></a>(v,[error])</td>
+<td>mpi_context_all(v,[error])</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.any" title="quippy.mpi_context.MPI_context.any"><code class="xref py py-obj docutils literal notranslate"><span class="pre">any</span></code></a>(v,[error])</td>
+<td>mpi_context_any(v,[error])</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">barrier</span></code></a>([error])</td>
+<td>mpi_context_barrier([error])</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.bcast" title="quippy.mpi_context.MPI_context.bcast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">bcast</span></code> containing multiple routines:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cart_shift</span></code></a>(direction,displ,[error])</td>
+<td>mpi_context_cart_shift(direction,displ,[error])</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect" title="quippy.mpi_context.MPI_context.collect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect</span></code></a>(v_in,n2,n3,[error])</td>
+<td>mpi_context_collect(v_in,n2,n3,[error])</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect_real2" title="quippy.mpi_context.MPI_context.collect_real2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_real2</span></code></a>(v_in,n2,n3,[error])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -335,85 +345,19 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.any" title="quippy.mpi_context.MPI_context.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a>(v,[error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">free_context</span></code></a>([error])</td>
+<td>mpi_context_free_context([error])</td>
 </tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal"><span class="pre">barrier</span></code></a>([error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.bcast" title="quippy.mpi_context.MPI_context.bcast"><code class="xref py py-obj docutils literal"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">bcast</span></code> containing multiple routines:</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal"><span class="pre">cart_shift</span></code></a>(direction,displ,[error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect" title="quippy.mpi_context.MPI_context.collect"><code class="xref py py-obj docutils literal"><span class="pre">collect</span></code></a>(v_in,n2,n3,[error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.collect_real2" title="quippy.mpi_context.MPI_context.collect_real2"><code class="xref py py-obj docutils literal"><span class="pre">collect_real2</span></code></a>(v_in,n2,n3,[error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal"><span class="pre">free_context</span></code></a>([error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.max" title="quippy.mpi_context.MPI_context.max"><code class="xref py py-obj docutils literal"><span class="pre">max</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">max</span></code> containing multiple routines:</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.max" title="quippy.mpi_context.MPI_context.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">max</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.min" title="quippy.mpi_context.MPI_context.min"><code class="xref py py-obj docutils literal"><span class="pre">min</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">min</span></code> containing multiple routines:</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.min" title="quippy.mpi_context.MPI_context.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">min</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.mpi_print" title="quippy.mpi_context.MPI_context.mpi_print"><code class="xref py py-obj docutils literal"><span class="pre">mpi_print</span></code></a>(lines)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.mpi_print" title="quippy.mpi_context.MPI_context.mpi_print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_print</span></code></a>(lines)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -424,49 +368,34 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>([file])</td>
+<td>mpi_context_print([file])</td>
 </tr>
-</tbody>
-</table>
-</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sendrecv" title="quippy.mpi_context.MPI_context.sendrecv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sendrecv</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sendrecv</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sendrecv" title="quippy.mpi_context.MPI_context.sendrecv"><code class="xref py py-obj docutils literal"><span class="pre">sendrecv</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sendrecv</span></code> containing multiple routines:</td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal"><span class="pre">split_context</span></code></a>(split_index,[error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_context</span></code></a>(split_index,[error])</td>
+<td>mpi_context_split_context(split_index,[error])</td>
 </tr>
-</tbody>
-</table>
-</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum" title="quippy.mpi_context.MPI_context.sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum" title="quippy.mpi_context.MPI_context.sum"><code class="xref py py-obj docutils literal"><span class="pre">sum</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sum</span></code> containing multiple routines:</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum_in_place" title="quippy.mpi_context.MPI_context.sum_in_place"><code class="xref py py-obj docutils literal"><span class="pre">sum_in_place</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sum_in_place</span></code> containing multiple routines:</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum_in_place" title="quippy.mpi_context.MPI_context.sum_in_place"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum_in_place</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum_in_place</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.all">
 <code class="descname">all</code><span class="sig-paren">(</span><em>v</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.all" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_all(v,[error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -480,13 +409,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">all</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">all</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.any">
 <code class="descname">any</code><span class="sig-paren">(</span><em>v</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.any" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_any(v,[error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -500,13 +430,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">any</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">any</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.barrier">
 <code class="descname">barrier</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.barrier" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_barrier([error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -515,13 +446,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">barrier</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">barrier</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.bcast">
 <code class="descname">bcast</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.bcast" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">bcast</span></code> containing multiple routines:</p>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">bcast</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
@@ -533,13 +464,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_real1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_real1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -552,13 +483,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -570,13 +501,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_logical1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_logical1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -588,13 +519,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_logical2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_logical2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -606,13 +537,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_c1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_c1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -624,13 +555,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_c2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_c2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -641,14 +572,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_logical</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_logical</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -661,13 +592,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>(</em><em>*</em><em>)</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_char1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_char1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -680,13 +611,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-3 array</em><em>(</em><em>'S'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>(</em><em>*</em><em>)</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_char2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_char2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -697,15 +628,15 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
+<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -718,13 +649,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -736,13 +667,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_int2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_int2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -754,13 +685,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_int1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_int1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -771,15 +702,15 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>'c'</em><em>)</em>) – </li>
+<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><em>string</em><em>(</em><em>len=-1</em><em>)</em><em>,</em><em>'c'</em><em>)</em>) – </li>
 <li><strong>root</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_bcast_char</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_bcast_char</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -788,7 +719,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.cart_shift">
 <code class="descname">cart_shift</code><span class="sig-paren">(</span><em>direction</em>, <em>displ</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.cart_shift" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_cart_shift(direction,displ,[error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -802,13 +734,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">cart_shift</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">cart_shift</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.collect">
 <code class="descname">collect</code><span class="sig-paren">(</span><em>v_in</em>, <em>n2</em>, <em>n3</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.collect" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_collect(v_in,n2,n3,[error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -830,7 +763,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">collect_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">collect_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -858,13 +791,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_collect_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_collect_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.free_context">
 <code class="descname">free_context</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.free_context" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_free_context([error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -873,13 +807,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">free_context</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">free_context</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.max">
 <code class="descname">max</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.max" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">max</span></code> containing multiple routines:</p>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">max</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
@@ -890,7 +824,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input float</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -899,7 +833,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_max_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_max_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -911,7 +845,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input int</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -920,7 +854,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_max_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_max_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -929,7 +863,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.min">
 <code class="descname">min</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.min" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">min</span></code> containing multiple routines:</p>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">min</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
@@ -940,7 +874,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input int</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -949,7 +883,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_min_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_min_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -961,7 +895,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input float</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -970,7 +904,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_min_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_min_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -988,28 +922,29 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_print</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_print</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.print_">
 <code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.print_" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_print([file])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.sendrecv">
 <code class="descname">sendrecv</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sendrecv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sendrecv</span></code> containing multiple routines:</p>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sendrecv</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
@@ -1025,8 +960,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <li><strong>n1</strong> (<em>input int</em>) – shape(qp_recvbuf,0)</li>
 <li><strong>source</strong> (<em>input int</em>) – </li>
 <li><strong>recvtag</strong> (<em>input int</em>) – </li>
-<li><strong>nrecv</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>nrecv</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1035,7 +970,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sendrecv_ra</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sendrecv_ra</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1051,7 +986,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <li><strong>sendtag</strong> (<em>input int</em>) – </li>
 <li><strong>source</strong> (<em>input int</em>) – </li>
 <li><strong>recvtag</strong> (<em>input int</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1060,7 +995,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sendrecv_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sendrecv_r</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1077,8 +1012,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <li><strong>n1</strong> (<em>input int</em>) – shape(qp_recvbuf,0)</li>
 <li><strong>source</strong> (<em>input int</em>) – </li>
 <li><strong>recvtag</strong> (<em>input int</em>) – </li>
-<li><strong>nrecv</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>nrecv</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1087,7 +1022,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sendrecv_c1a</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sendrecv_c1a</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1096,7 +1031,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.split_context">
 <code class="descname">split_context</code><span class="sig-paren">(</span><em>split_index</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.split_context" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>mpi_context_split_context(split_index,[error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1104,19 +1040,19 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>new_context</strong> : <a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal"><span class="pre">MPI_context</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>new_context</strong> : <a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">split_context</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">split_context</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.sum">
 <code class="descname">sum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sum</span></code> containing multiple routines:</p>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
@@ -1127,7 +1063,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input int</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1136,7 +1072,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_int</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1148,7 +1084,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>v</strong> (<em>input float</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -1157,7 +1093,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_real</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1166,7 +1102,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.sum_in_place">
 <code class="descname">sum_in_place</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sum_in_place" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around Fortran interface <code class="docutils literal"><span class="pre">sum_in_place</span></code> containing multiple routines:</p>
+<dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum_in_place</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
 <dt>
@@ -1177,13 +1113,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_complex1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_complex1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1195,13 +1131,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_complex2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_complex2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1213,13 +1149,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'i'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_int1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_int1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1230,14 +1166,14 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_int0</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_int0</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1249,13 +1185,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_real1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_real1</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1267,13 +1203,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a><em>,</em><em>'d'</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_real0</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_real0</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1285,13 +1221,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-3 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>,</em><em>qp_n2</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_real3</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_real3</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1303,13 +1239,13 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>v</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
-<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference internal" href="table.html#quippy.table.Table.int" title="quippy.table.Table.int"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">mpi_context_sum_in_place_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">mpi_context_sum_in_place_real2</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1335,7 +1271,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">push_mpi_error</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">push_mpi_error</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/MPI_context.f95">src/libAtoms/MPI_context.f95</a>.</p>
 </dd></dl>
 
 </div>

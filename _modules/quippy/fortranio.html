@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -233,12 +233,12 @@
 
 <span class="c1"># convenience wrapper functions which behave like python &quot;print&quot; statement</span>
 <div class="viewcode-block" id="fortran_print"><a class="viewcode-back" href="../../fortranio.html#quippy.fortranio.fortran_print">[docs]</a><span class="k">def</span> <span class="nf">fortran_print</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Print `args` to mainlog using Fortran I/O routines. Respects prefix and verbosity settings&quot;&quot;&quot;</span>
-    <span class="nb">print</span> <span class="o">&gt;&gt;</span><span class="n">fortran_stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span></div>
+    <span class="sd">&quot;&quot;&quot;Print `args` to mainlog using Fortran I/O routines. Respects prefix and verbosity settings&quot;&quot;&quot;</span></div>
+    <span class="nb">print</span> <span class="o">&gt;&gt;</span><span class="n">fortran_stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
 
 <div class="viewcode-block" id="fortran_print_error"><a class="viewcode-back" href="../../fortranio.html#quippy.fortranio.fortran_print_error">[docs]</a><span class="k">def</span> <span class="nf">fortran_print_error</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Print `args` to errorlog using Fortran I/O routines. Respects prefix and verbosity settings&quot;&quot;&quot;</span>
-    <span class="nb">print</span> <span class="o">&gt;&gt;</span><span class="n">fortran_stderr</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span></div>
+    <span class="sd">&quot;&quot;&quot;Print `args` to errorlog using Fortran I/O routines. Respects prefix and verbosity settings&quot;&quot;&quot;</span></div>
+    <span class="nb">print</span> <span class="o">&gt;&gt;</span><span class="n">fortran_stderr</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
 
 <span class="k">del</span> <span class="n">_quippy</span>
 </pre></div>

@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -263,16 +263,16 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns array containing all valid permutations of this descriptor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">perm</span> <span class="o">=</span> <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_perm</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_perm</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
 <div class="viewcode-block" id="Descriptor.count"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.count">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns how many descriptors of this type are found in the Atoms</span>
 <span class="sd">        object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
 <div class="viewcode-block" id="Descriptor.calc_descriptor"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.calc_descriptor">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
     <span class="k">def</span> <span class="nf">calc_descriptor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">):</span>
@@ -280,8 +280,8 @@
 <span class="sd">        Calculates all descriptors of this type in the Atoms object, and</span>
 <span class="sd">        returns the array of descriptor values. Does not compute gradients; use</span>
 <span class="sd">        calc(at, grad=True, ...) for that.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">)</span><span class="o">.</span><span class="n">descriptor</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">)</span><span class="o">.</span><span class="n">descriptor</span>
 
 <div class="viewcode-block" id="Descriptor.calc"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.calc">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
     <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">):</span>
@@ -322,8 +322,8 @@
             <span class="n">results</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">data_grad</span><span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">data_index</span><span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">cutoff_grad</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">cutoff_grad</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">results</span></div></div>
+</div></div>
+        <span class="k">return</span> <span class="n">results</span>
 
 </pre></div>
 

@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -216,8 +216,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e3</span><span class="p">,</span> <span class="n">e4</span><span class="p">,</span> <span class="n">e5</span><span class="p">,</span> <span class="n">e6</span> <span class="o">=</span> <span class="n">strain_vector</span>
     <span class="k">return</span> <span class="n">farray</span><span class="p">([[</span><span class="mf">1.0</span><span class="o">+</span><span class="n">e1</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">e6</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">e5</span><span class="p">],</span>
-                   <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="n">e6</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">+</span><span class="n">e2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">e4</span><span class="p">],</span>
-                   <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="n">e5</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">e4</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">+</span><span class="n">e3</span><span class="p">]])</span></div>
+                   <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="n">e6</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">+</span><span class="n">e2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">e4</span><span class="p">],</span></div>
+                   <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="n">e5</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">e4</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">+</span><span class="n">e3</span><span class="p">]])</span>
 
 <div class="viewcode-block" id="stress_matrix"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.stress_matrix">[docs]</a><span class="k">def</span> <span class="nf">stress_matrix</span><span class="p">(</span><span class="n">stress_vector</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -225,8 +225,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s5</span><span class="p">,</span> <span class="n">s6</span> <span class="o">=</span> <span class="n">stress_vector</span>
     <span class="k">return</span> <span class="n">farray</span><span class="p">([[</span><span class="n">s1</span><span class="p">,</span> <span class="n">s6</span><span class="p">,</span> <span class="n">s5</span><span class="p">],</span>
-                   <span class="p">[</span><span class="n">s6</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span><span class="p">],</span>
-                   <span class="p">[</span><span class="n">s5</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s3</span><span class="p">]])</span></div>
+                   <span class="p">[</span><span class="n">s6</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span><span class="p">],</span></div>
+                   <span class="p">[</span><span class="n">s5</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s3</span><span class="p">]])</span>
 
 <div class="viewcode-block" id="strain_vector"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.strain_vector">[docs]</a><span class="k">def</span> <span class="nf">strain_vector</span><span class="p">(</span><span class="n">strain_matrix</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -237,8 +237,8 @@
                    <span class="n">strain_matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span>
                    <span class="n">strain_matrix</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span>
                    <span class="mf">2.0</span><span class="o">*</span><span class="n">strain_matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
-                   <span class="mf">2.0</span><span class="o">*</span><span class="n">strain_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
-                   <span class="mf">2.0</span><span class="o">*</span><span class="n">strain_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span></div>
+                   <span class="mf">2.0</span><span class="o">*</span><span class="n">strain_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span></div>
+                   <span class="mf">2.0</span><span class="o">*</span><span class="n">strain_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span>
 
 <div class="viewcode-block" id="stress_vector"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.stress_vector">[docs]</a><span class="k">def</span> <span class="nf">stress_vector</span><span class="p">(</span><span class="n">stress_matrix</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -248,8 +248,8 @@
                    <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
                    <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
                    <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
-                   <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
-                   <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span></div>
+                   <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span></div>
+                   <span class="n">stress_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span>
 
 
 
@@ -315,15 +315,15 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    quippy.elasticity.fit_elastic_constants() deprecated, please use</span>
 <span class="sd">      matscipy.elasticity.fit_elastic_constants() instead</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;quippy.elasticity.fit_elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span>    </div>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;quippy.elasticity.fit_elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span>    
 
 <div class="viewcode-block" id="elastic_constants"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.elastic_constants">[docs]</a><span class="k">def</span> <span class="nf">elastic_constants</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">,</span> <span class="n">relax</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    quippy.elasticity.elastic_contants() deprecated, please use</span>
 <span class="sd">       matscipy.elasticity.fit_elastic_constants() instead</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;quippy.elasticity.elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span></div>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;quippy.elasticity.elastic_contants() deprecated, please use matscipy.elasticity.fit_elastic_constants() instead&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="atomic_strain"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.atomic_strain">[docs]</a><span class="k">def</span> <span class="nf">atomic_strain</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">crystal_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
@@ -337,8 +337,8 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
                     <span class="n">strain</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span><span class="o">.</span><span class="n">diff</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">n</span><span class="o">.</span><span class="n">diff</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">r0</span><span class="o">**</span><span class="mf">2.0</span>
-
-    <span class="k">return</span> <span class="n">strain</span><span class="o">/</span><span class="n">crystal_factor</span></div>
+</div>
+    <span class="k">return</span> <span class="n">strain</span><span class="o">/</span><span class="n">crystal_factor</span>
 
 
 <span class="n">elastic_fields_fortran</span> <span class="o">=</span> <span class="n">elastic_fields</span> <span class="c1"># Fortran elastic fields routine</span>
@@ -603,8 +603,8 @@
 
             <span class="n">at</span><span class="o">.</span><span class="n">strain_energy_density</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">strain</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">at</span><span class="o">.</span><span class="n">stress</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">system</span> <span class="o">==</span> <span class="s1">&#39;anatase&#39;</span><span class="p">):</span>
-        <span class="nb">print</span> <span class="s1">&#39;Ti atoms computed&#39;</span><span class="p">,</span> <span class="n">n_at</span></div>
+    <span class="k">if</span> <span class="p">(</span><span class="n">system</span> <span class="o">==</span> <span class="s1">&#39;anatase&#39;</span><span class="p">):</span></div>
+        <span class="nb">print</span> <span class="s1">&#39;Ti atoms computed&#39;</span><span class="p">,</span> <span class="n">n_at</span>
 
 
 <div class="viewcode-block" id="AtomResolvedStressField"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.AtomResolvedStressField">[docs]</a><span class="k">class</span> <span class="nc">AtomResolvedStressField</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -670,15 +670,15 @@
         <span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">sigma</span></div>
+</div>
+        <span class="k">return</span> <span class="n">sigma</span>
 
 <div class="viewcode-block" id="AtomResolvedStressField.get_stress"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.AtomResolvedStressField.get_stress">[docs]</a>    <span class="k">def</span> <span class="nf">get_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns total stress on `atoms`, as a 6-element array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">stresses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">stresses</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div></div>
+        <span class="n">stresses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">stresses</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         
 
 <span class="k">def</span> <span class="nf">elasticity_matrix_to_tensor</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
@@ -791,8 +791,8 @@
 
     <span class="k">if</span> <span class="n">made_tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">elasticity_tensor_to_matrix</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">cp</span></div>
+    <span class="k">else</span><span class="p">:</span></div>
+        <span class="k">return</span> <span class="n">cp</span>
 
 
 <div class="viewcode-block" id="rayleigh_wave_speed"><a class="viewcode-back" href="../../elasticity.html#quippy.elasticity.rayleigh_wave_speed">[docs]</a><span class="k">def</span> <span class="nf">rayleigh_wave_speed</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">4000.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">6000.</span><span class="p">,</span> <span class="n">isotropic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -837,8 +837,8 @@
         <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="o">/</span><span class="n">vp</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="n">C</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">vp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span>
                        <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span> <span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">C</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span> <span class="p">)</span> <span class="o">-</span>
                        <span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">vp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">vs</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">c_R</span> <span class="o">=</span> <span class="n">bisect</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vs</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">vs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">vs</span><span class="p">,</span> <span class="n">vp</span><span class="p">,</span> <span class="n">c_R</span></div>
+    <span class="n">c_R</span> <span class="o">=</span> <span class="n">bisect</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vs</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">vs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">vs</span><span class="p">,</span> <span class="n">vp</span><span class="p">,</span> <span class="n">c_R</span>
 
 </pre></div>
 

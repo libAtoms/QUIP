@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -275,15 +275,15 @@
         <span class="k">if</span> <span class="n">D</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c1"># copy from D</span>
 
-    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Dictionary.keys"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="c1"># HACK to solve shallow copy bug</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_keys_lower</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">key_cache_invalid</span> <span class="o">=</span> <span class="mi">0</span></div>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span>
 
-    <span class="k">def</span> <span class="nf">has_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="c1"># ensure _keys_lower is up-to-date</span>
+<div class="viewcode-block" id="Dictionary.has_key"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.has_key">[docs]</a>    <span class="k">def</span> <span class="nf">has_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="c1"># ensure _keys_lower is up-to-date</span></div>
         <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_lower</span>
 
 <div class="viewcode-block" id="Dictionary.get_value"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.get_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -327,8 +327,8 @@
         <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">T_DICT</span><span class="p">:</span>
             <span class="n">v</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_dict</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported dictionary entry type </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">v</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported dictionary entry type </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">v</span>
 
 <div class="viewcode-block" id="Dictionary.get_array"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.get_array">[docs]</a>    <span class="k">def</span> <span class="nf">get_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="s2">&quot;Return a _reference_ to an array stored in this Dictionary&quot;&quot;&quot;</span>
@@ -339,8 +339,8 @@
             <span class="k">if</span> <span class="n">get_fortran_indexing</span><span class="p">():</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">FortranArray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">a</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Key &quot;</span><span class="si">%s</span><span class="s1">&quot; does not correspond to an array entry&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span></div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Key &quot;</span><span class="si">%s</span><span class="s1">&quot; does not correspond to an array entry&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Dictionary.get_type"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="s2">&quot;Return an integer code for the type of the value associated with a key&quot;</span>
@@ -348,8 +348,8 @@
         <span class="kn">import</span> <span class="nn">_quippy</span><span class="o">,</span> <span class="nn">arraydata</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_and_size</span><span class="p">(</span><span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Key &quot;</span><span class="si">%s</span><span class="s1">&quot; not found&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span></div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Key &quot;</span><span class="si">%s</span><span class="s1">&quot; not found&#39;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
 
 
     <span class="k">def</span> <span class="nf">is_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -460,10 +460,10 @@
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Dictionary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_no_initialise</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Dictionary.subset"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary.Dictionary.subset">[docs]</a>    <span class="k">def</span> <span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_no_initialise</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">out</span> <span class="o">=</span> <span class="n">Dictionary</span><span class="p">()</span>
-        <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="p">,</span> <span class="n">out_no_initialise</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span></div>
+        <span class="n">_dictionary</span><span class="o">.</span><span class="n">Dictionary</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="p">,</span> <span class="n">out_no_initialise</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">out</span>
 
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">FortranDerivedTypes</span>
 <span class="n">FortranDerivedTypes</span><span class="p">[</span><span class="s1">&#39;type(dictionary)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Dictionary</span>

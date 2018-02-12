@@ -97,7 +97,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
@@ -250,11 +250,11 @@ Design (<a class="reference external" href="http://www.camd.dtu.dk/">CAMd</a>) a
 <p>If you’re not familiar with Python don’t worry, it’s quite easy to
 pick up and the syntax is very similar to Fortran. We have provided
 template Python code which you should copy and paste into your text
-editor. Save your script with a <code class="docutils literal"><span class="pre">.py</span></code> file extension. Whenever you
-see <code class="docutils literal"><span class="pre">...</span></code> it means there is something you need to add to the code in
+editor. Save your script with a <code class="docutils literal notranslate"><span class="pre">.py</span></code> file extension. Whenever you
+see <code class="docutils literal notranslate"><span class="pre">...</span></code> it means there is something you need to add to the code in
 order to complete it; usually there will be a comment to give you a
 hint. The source code listings are all in boxes like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Example code listing&#39;</span>     <span class="c1"># Print something out</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Example code listing&#39;</span>     <span class="c1"># Print something out</span>
 <span class="nb">print</span> <span class="o">...</span>                        <span class="c1"># You need to add something here</span>
                                  <span class="c1"># e.g. replace the ... with a number</span>
 </pre></div>
@@ -262,31 +262,31 @@ hint. The source code listings are all in boxes like this:</p>
 <p>To run code, we will be using <a class="reference external" href="http://ipython.org">ipython</a>, an
 interactive Python shell. You can start <cite>ipython</cite> with a simple shell
 command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ ipython
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ipython
 </pre></div>
 </div>
 <p>Start by importing everything from the <cite>quippy</cite> package with the
 command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">qlab</span> <span class="k">import</span> <span class="o">*</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">qlab</span> <span class="k">import</span> <span class="o">*</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>If you have not installed the <cite>AtomEye</cite> plugin then the command
-above will give an <code class="xref py py-exc docutils literal"><span class="pre">ImportError</span></code>. You can use:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="o">*</span>
+above will give an <code class="xref py py-exc docutils literal notranslate"><span class="pre">ImportError</span></code>. You can use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="o">*</span>
 </pre></div>
 </div>
 <p class="last">instead, which only imports <cite>quippy</cite> and not <cite>AtomEye</cite>, but you
 will then not be able to visualise interactively using the
-<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal"><span class="pre">view()</span></code></a> function - you can always save configurations to
-external files and visualise them with other tools such as <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> or <a class="reference external" href="http://www.ovito.org">OVITO</a> instead. See the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal"><span class="pre">qlab</span></code></a> and
-<a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal"><span class="pre">atomeye</span></code></a> documentation for further details.</p>
+<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a> function - you can always save configurations to
+external files and visualise them with other tools such as <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> or <a class="reference external" href="http://www.ovito.org">OVITO</a> instead. See the <a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code></a> and
+<a class="reference internal" href="atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">atomeye</span></code></a> documentation for further details.</p>
 </div>
 <p>You should prepare your Python scripts in a text editor and then run
 them from within <cite>ipython</cite> with the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing">%run</a>
 command. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">run</span> <span class="n">make_crack</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">run</span> <span class="n">make_crack</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>If your script is taking a long time to run and you realise something
@@ -307,15 +307,15 @@ can also browse the source code by clicking on the <cite>[source]</cite> link
 which you will find to the right of class and function definitions in
 the online documentations. You can also explore functions
 interactively from within <cite>ipython</cite> by following the name of an object
-or function with a <code class="docutils literal"><span class="pre">?</span></code>, e.g.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>In [3]: Atoms ?
+or function with a <code class="docutils literal notranslate"><span class="pre">?</span></code>, e.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>In [3]: Atoms ?
 </pre></div>
 </div>
-<p>displays information about the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> class, or</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>In [4]: write ?
+<p>displays information about the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> class, or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>In [4]: write ?
 </pre></div>
 </div>
-<p>displays information about the <a class="reference internal" href="io.html#quippy.io.write" title="quippy.io.write"><code class="xref py py-func docutils literal"><span class="pre">write()</span></code></a> function. See
+<p>displays information about the <a class="reference internal" href="io.html#quippy.io.write" title="quippy.io.write"><code class="xref py py-func docutils literal notranslate"><span class="pre">write()</span></code></a> function. See
 the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/tutorial.html">ipython tutorial</a>
 for more information.</p>
 <p>Each subsection indicates the approximate amount of time you should

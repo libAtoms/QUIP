@@ -100,19 +100,19 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#command-line-usage">Command line usage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-usage">Module usage</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal notranslate"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal notranslate"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal notranslate"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
 <li class="toctree-l2"><a class="reference internal" href="oo_fortran.html">Fortran 90 derived-type support</a></li>
 </ul>
 </li>
@@ -171,7 +171,7 @@
         
           <li><a href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a> &raquo;</li>
         
-      <li><code class="docutils literal"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</li>
+      <li><code class="docutils literal notranslate"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -225,12 +225,12 @@
 }
 </style>
 <div class="section" id="module-f90doc">
-<span id="f90doc-fortran-90-source-code-scanner"></span><h1><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> — Fortran 90 source code scanner<a class="headerlink" href="#module-f90doc" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> can be used either as a command line tool or as a module.</p>
+<span id="f90doc-fortran-90-source-code-scanner"></span><h1><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal notranslate"><span class="pre">f90doc</span></code></a> — Fortran 90 source code scanner<a class="headerlink" href="#module-f90doc" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal notranslate"><span class="pre">f90doc</span></code></a> can be used either as a command line tool or as a module.</p>
 <div class="section" id="command-line-usage">
 <h2>Command line usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 <p>When used as a command line program it reads from the Fortran source
-files given as arguments and writes LaTeX source to <code class="file docutils literal"><span class="pre">stdout</span></code>. The
+files given as arguments and writes LaTeX source to <code class="file docutils literal notranslate"><span class="pre">stdout</span></code>. The
 program accepts the following options:</p>
 <dl class="cmdoption">
 <dt id="cmdoption-f90doc-t">
@@ -265,17 +265,17 @@ program accepts the following options:</p>
 <dl class="cmdoption">
 <dt id="cmdoption-f90doc-l">
 <code class="descname">-l</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-f90doc-l" title="Permalink to this definition">¶</a></dt>
-<dd><p>write latex output to <code class="file docutils literal"><span class="pre">stdout</span></code>.</p>
+<dd><p>write latex output to <code class="file docutils literal notranslate"><span class="pre">stdout</span></code>.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="module-usage">
 <h2>Module usage<a class="headerlink" href="#module-usage" title="Permalink to this headline">¶</a></h2>
-<p>The only function that is designed to be used when <a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal"><span class="pre">f90doc</span></code></a> is
-imported as a module is <a class="reference internal" href="#f90doc.read_files" title="f90doc.read_files"><code class="xref py py-func docutils literal"><span class="pre">read_files()</span></code></a>.  The classes
-<code class="xref py py-class docutils literal"><span class="pre">f90doc.C_prog</span></code>, <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_module</span></code>,
-<code class="xref py py-class docutils literal"><span class="pre">f90doc.C_subt</span></code>, <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_funct</span></code>,
-<code class="xref py py-class docutils literal"><span class="pre">f90doc.C_decl</span></code> and <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_interface</span></code> contain the
+<p>The only function that is designed to be used when <a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal notranslate"><span class="pre">f90doc</span></code></a> is
+imported as a module is <a class="reference internal" href="#f90doc.read_files" title="f90doc.read_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_files()</span></code></a>.  The classes
+<code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_prog</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_module</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_subt</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_funct</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_decl</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_interface</span></code> contain the
 implementation of LaTeX output code, with each class represnting
 structures in the Fortran code.</p>
 <dl class="function">
@@ -283,12 +283,12 @@ structures in the Fortran code.</p>
 <code class="descclassname">f90doc.</code><code class="descname">read_files</code><span class="sig-paren">(</span><em>in_files</em><span class="sig-paren">)</span><a class="headerlink" href="#f90doc.read_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read Fortran 90 sources from the list of filenames <cite>in_files</cite>, and return
 a tuple <cite>(programs, modules, functs, subts)</cite>.</p>
-<p><cite>programs</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_prog</span></code> and program names,
-<cite>modules</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_module</span></code> and module names,
-<cite>functs</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_funct</span></code> and function names
-<cite>subts</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal"><span class="pre">f90doc.C_subt</span></code> and subroutine names</p>
+<p><cite>programs</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_prog</span></code> and program names,
+<cite>modules</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_module</span></code> and module names,
+<cite>functs</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_funct</span></code> and function names
+<cite>subts</cite> is a list of pairs of instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">f90doc.C_subt</span></code> and subroutine names</p>
 <p>For example, to print the names of all modules defined in a list of filenames <cite>in_files</cite>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">programs</span><span class="p">,</span> <span class="n">modules</span><span class="p">,</span> <span class="n">functs</span><span class="p">,</span> <span class="n">subts</span> <span class="o">=</span> <span class="n">f90doc</span><span class="o">.</span><span class="n">read_files</span><span class="p">(</span><span class="n">in_files</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">programs</span><span class="p">,</span> <span class="n">modules</span><span class="p">,</span> <span class="n">functs</span><span class="p">,</span> <span class="n">subts</span> <span class="o">=</span> <span class="n">f90doc</span><span class="o">.</span><span class="n">read_files</span><span class="p">(</span><span class="n">in_files</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">mod</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
    <span class="nb">print</span> <span class="n">name</span>
 </pre></div>

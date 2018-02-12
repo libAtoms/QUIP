@@ -99,7 +99,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
@@ -233,7 +233,7 @@
 </style>
 <div class="section" id="module-quippy.phonons">
 <span id="phonon-calculation"></span><h1>Phonon calculation<a class="headerlink" href="#module-quippy.phonons" title="Permalink to this headline">¶</a></h1>
-<p>Module contents for <a class="reference internal" href="#module-quippy.phonons" title="quippy.phonons: Evaluate phonons"><code class="xref py py-mod docutils literal"><span class="pre">quippy.phonons</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.phonons" title="quippy.phonons: Evaluate phonons"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.phonons</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -241,16 +241,8 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine" title="quippy.phonons.Phonon_fine"><code class="xref py py-obj docutils literal"><span class="pre">Phonon_fine</span></code></a>([error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine" title="quippy.phonons.Phonon_fine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Phonon_fine</span></code></a>([error])</td>
+<td>phonon_fine_initialise([error])</td>
 </tr>
 </tbody>
 </table>
@@ -261,7 +253,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonon_fine_calc_print" title="quippy.phonons.phonon_fine_calc_print"><code class="xref py py-obj docutils literal"><span class="pre">phonon_fine_calc_print</span></code></a>(…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonon_fine_calc_print" title="quippy.phonons.phonon_fine_calc_print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phonon_fine_calc_print</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -272,7 +264,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.phonons.eval_frozen_phonon" title="quippy.phonons.eval_frozen_phonon"><code class="xref py py-obj docutils literal"><span class="pre">eval_frozen_phonon</span></code></a>(pot,at,dx,evec,[calc_args])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.phonons.eval_frozen_phonon" title="quippy.phonons.eval_frozen_phonon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval_frozen_phonon</span></code></a>(pot,at,dx,evec,[calc_args])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -283,7 +275,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonons_all" title="quippy.phonons.phonons_all"><code class="xref py py-obj docutils literal"><span class="pre">phonons_all</span></code></a>(…)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.phonons_all" title="quippy.phonons.phonons_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phonons_all</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -308,7 +300,7 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-attr docutils literal"><span class="pre">PHONON_FORCE_TOLERANCE</span></code></td>
+<tr class="row-even"><td><code class="xref py py-attr docutils literal notranslate"><span class="pre">PHONON_FORCE_TOLERANCE</span></code></td>
 <td>1e-12</td>
 </tr>
 </tbody>
@@ -316,7 +308,8 @@
 <dl class="class">
 <dt id="quippy.phonons.Phonon_fine">
 <em class="property">class </em><code class="descclassname">quippy.phonons.</code><code class="descname">Phonon_fine</code><span class="sig-paren">(</span><span class="optional">[</span><em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>phonon_fine_initialise([error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -325,8 +318,8 @@
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">Phonon_fine</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">Phonon_fine</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -334,39 +327,24 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.calc" title="quippy.phonons.Phonon_fine.calc"><code class="xref py py-obj docutils literal"><span class="pre">calc</span></code></a>(…)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.calc" title="quippy.phonons.Phonon_fine.calc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc</span></code></a>(…)</td>
+<td>phonon_fine_calc(pot,at_in,dx,[phonon_supercell,phonon_supercell_fine,args,do_parallel,phonons_path_start,phonons_path_end,phonons_path_steps,do_phonopy_force_const_mat,error])</td>
 </tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.print_" title="quippy.phonons.Phonon_fine.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file,error])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.phonons.Phonon_fine.print_" title="quippy.phonons.Phonon_fine.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>([file,error])</td>
+<td>phonon_fine_print([file,error])</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.phonons.Phonon_fine.calc">
 <code class="descname">calc</code><span class="sig-paren">(</span><em>pot</em>, <em>at_in</em>, <em>dx</em><span class="optional">[</span>, <em>phonon_supercell</em>, <em>phonon_supercell_fine</em>, <em>args</em>, <em>do_parallel</em>, <em>phonons_path_start</em>, <em>phonons_path_end</em>, <em>phonons_path_steps</em>, <em>do_phonopy_force_const_mat</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine.calc" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>phonon_fine_calc(pot,at_in,dx,[phonon_supercell,phonon_supercell_fine,args,do_parallel,phonons_path_start,phonons_path_end,phonons_path_steps,do_phonopy_force_const_mat,error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
 <p><strong>phonon_supercell</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>phonon_supercell_fine</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
@@ -382,24 +360,25 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">calc</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.phonons.Phonon_fine.print_">
 <code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.phonons.Phonon_fine.print_" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>phonon_fine_print([file,error])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
 <p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -411,8 +390,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
 <p><strong>phonon_supercell</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
 <p><strong>phonon_supercell_fine</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
@@ -421,7 +400,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <p><strong>phonons_path_start</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
 <p><strong>phonons_path_end</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
 <p><strong>phonons_path_steps</strong> :  input int, optional</p>
-<p><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</p>
+<p><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
 <p><strong>do_phonopy_force_const_mat</strong> :  input int, optional</p>
 <p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
 </td>
@@ -429,7 +408,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">phonon_fine_calc_print</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">phonon_fine_calc_print</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -439,8 +418,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
 <p><strong>evec</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
 <p><strong>calc_args</strong> :  input string(len=-1), optional</p>
@@ -452,7 +431,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">eval_frozen_phonon</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">eval_frozen_phonon</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -462,8 +441,8 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
+<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 <p><strong>dx</strong> :  input float</p>
 <p><strong>n0</strong> :  input int</p>
 <blockquote>
@@ -485,7 +464,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">phonons_all</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">phonons_all</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/phonons.f95">src/Utils/phonons.f95</a>.</p>
 </dd></dl>
 
 </div>

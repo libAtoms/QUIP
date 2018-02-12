@@ -98,7 +98,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
@@ -233,7 +233,7 @@
 <span id="cubic-spline-interpolation"></span><h1>Cubic spline interpolation<a class="headerlink" href="#module-quippy.spline" title="Permalink to this headline">¶</a></h1>
 <p>Defines derived type for a spline, and associated functions.
 Code partially based on Numerical Recipes.</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.spline" title="quippy.spline: Cubic spline interpolation"><code class="xref py py-mod docutils literal"><span class="pre">quippy.spline</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.spline" title="quippy.spline: Cubic spline interpolation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.spline</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -241,7 +241,7 @@ Code partially based on Numerical Recipes.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline" title="quippy.spline.Spline"><code class="xref py py-obj docutils literal"><span class="pre">Spline</span></code></a>(x,y,yp1,ypn)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline" title="quippy.spline.Spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Spline</span></code></a>(x,y,yp1,ypn)</td>
 <td>Initialises a spline with given x and y values (and endpoint derivatives)</td>
 </tr>
 </tbody>
@@ -264,19 +264,19 @@ Code partially based on Numerical Recipes.</p>
 </div></blockquote>
 <p><strong>yp1</strong> :  input float</p>
 <blockquote>
-<div><p>Derivative of the spline at <code class="docutils literal"><span class="pre">x(1)</span></code></p>
+<div><p>Derivative of the spline at <code class="docutils literal notranslate"><span class="pre">x(1)</span></code></p>
 </div></blockquote>
 <p><strong>ypn</strong> :  input float</p>
 <blockquote class="last">
-<div><p>Derivative of the spline at <code class="docutils literal"><span class="pre">x(n)</span></code></p>
+<div><p>Derivative of the spline at <code class="docutils literal notranslate"><span class="pre">x(n)</span></code></p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">__init__init</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.
-Class is wrapper around Fortran type <code class="docutils literal"><span class="pre">Spline</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__init</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.
+Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">Spline</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
 <p class="rubric">Attributes</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -284,22 +284,22 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.n" title="quippy.spline.Spline.n"><code class="xref py py-obj docutils literal"><span class="pre">n</span></code></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.n" title="quippy.spline.Spline.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></td>
 <td>Number of knot points</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.x" title="quippy.spline.Spline.x"><code class="xref py py-obj docutils literal"><span class="pre">x</span></code></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.x" title="quippy.spline.Spline.x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">x</span></code></a></td>
 <td>Knot positions</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.y" title="quippy.spline.Spline.y"><code class="xref py py-obj docutils literal"><span class="pre">y</span></code></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.y" title="quippy.spline.Spline.y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">y</span></code></a></td>
 <td>Function values</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.y2" title="quippy.spline.Spline.y2"><code class="xref py py-obj docutils literal"><span class="pre">y2</span></code></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.y2" title="quippy.spline.Spline.y2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">y2</span></code></a></td>
 <td>Second derivative</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.yp1" title="quippy.spline.Spline.yp1"><code class="xref py py-obj docutils literal"><span class="pre">yp1</span></code></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.yp1" title="quippy.spline.Spline.yp1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yp1</span></code></a></td>
 <td>Endpoint derivatives</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.ypn" title="quippy.spline.Spline.ypn"><code class="xref py py-obj docutils literal"><span class="pre">ypn</span></code></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.ypn" title="quippy.spline.Spline.ypn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ypn</span></code></a></td>
 <td>Endpoint derivatives</td>
 </tr>
 </tbody>
@@ -311,10 +311,10 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.deriv" title="quippy.spline.Spline.deriv"><code class="xref py py-obj docutils literal"><span class="pre">deriv</span></code></a>(x)</td>
-<td>Interpolate the derivative of the spline at the given <span class="math">\(x\)</span> point</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.deriv" title="quippy.spline.Spline.deriv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deriv</span></code></a>(x)</td>
+<td>Interpolate the derivative of the spline at the given <span class="math notranslate">\(x\)</span> point</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.max_knot" title="quippy.spline.Spline.max_knot"><code class="xref py py-obj docutils literal"><span class="pre">max_knot</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.max_knot" title="quippy.spline.Spline.max_knot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_knot</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -325,7 +325,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.min_knot" title="quippy.spline.Spline.min_knot"><code class="xref py py-obj docutils literal"><span class="pre">min_knot</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.min_knot" title="quippy.spline.Spline.min_knot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min_knot</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -336,26 +336,18 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.print_" title="quippy.spline.Spline.print_"><code class="xref py py-obj docutils literal"><span class="pre">print_</span></code></a>([file])</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.spline.Spline.print_" title="quippy.spline.Spline.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>([file])</td>
+<td>spline_print([file])</td>
 </tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.value" title="quippy.spline.Spline.value"><code class="xref py py-obj docutils literal"><span class="pre">value</span></code></a>(x)</td>
-<td>Interpolate the spline for a given <span class="math">\(x\)</span> point</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.spline.Spline.value" title="quippy.spline.Spline.value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">value</span></code></a>(x)</td>
+<td>Interpolate the spline for a given <span class="math notranslate">\(x\)</span> point</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.spline.Spline.deriv">
 <code class="descname">deriv</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline.deriv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interpolate the derivative of the spline at the given <span class="math">\(x\)</span> point</p>
+<dd><p>Interpolate the derivative of the spline at the given <span class="math notranslate">\(x\)</span> point</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -367,7 +359,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">spline_deriv</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">spline_deriv</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -382,7 +374,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">max_knot</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">max_knot</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -397,28 +389,29 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">min_knot</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">min_knot</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.spline.Spline.print_">
 <code class="descname">print_</code><span class="sig-paren">(</span><span class="optional">[</span><em>file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline.print_" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>spline_print([file])</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal"><span class="pre">InOutput</span></code></a> object, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">print_</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.spline.Spline.value">
 <code class="descname">value</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.spline.Spline.value" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interpolate the spline for a given <span class="math">\(x\)</span> point</p>
+<dd><p>Interpolate the spline for a given <span class="math notranslate">\(x\)</span> point</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -430,7 +423,7 @@ Class is wrapper around Fortran type <code class="docutils literal"><span class=
 </tbody>
 </table>
 <p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal"><span class="pre">spline_value</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">spline_value</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Spline.f95">src/libAtoms/Spline.f95</a>.</p>
 </dd></dl>
 
 <dl class="attribute">

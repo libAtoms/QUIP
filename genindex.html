@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
@@ -626,6 +626,8 @@
 </li>
       <li><a href="potential.html#quippy.potential.Potential.calc_tb_matrices">calc_tb_matrices() (quippy.potential.Potential method)</a>
 </li>
+      <li><a href="potential.html#quippy.potential.Potential.calculate">calculate() (quippy.potential.Potential method)</a>
+</li>
       <li><a href="potential.html#quippy.potential.Potential.calculate_numerical_forces">calculate_numerical_forces() (quippy.potential.Potential method)</a>
 </li>
       <li><a href="potential.html#quippy.potential.Potential.calculate_numerical_stress">calculate_numerical_stress() (quippy.potential.Potential method)</a>
@@ -645,6 +647,8 @@
       <li><a href="io.html#quippy.castep.CastepCell">CastepCell (class in quippy.castep)</a>
 </li>
       <li><a href="io.html#quippy.castep.CastepParam">CastepParam (class in quippy.castep)</a>
+</li>
+      <li><a href="io.html#quippy.castep.CastepPotential">CastepPotential (class in quippy.castep)</a>
 </li>
       <li><a href="atoms.html#quippy.atoms.Atoms.cell">cell (quippy.atoms.Atoms attribute)</a>
 </li>
@@ -742,6 +746,10 @@
 </li>
       <li><a href="linearalgebra.html#quippy.linearalgebra.check_size">check_size() (in module quippy.linearalgebra)</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[1]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[2]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[3]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[4]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[5]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[6]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[7]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[8]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[9]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[10]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[11]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[12]</a>, <a href="linearalgebra.html#quippy.linearalgebra.check_size">[13]</a>
 </li>
+      <li><a href="potential.html#quippy.potential.Potential.check_state">check_state() (quippy.potential.Potential method)</a>
+</li>
+      <li><a href="io.html#quippy.cinoutput.CInOutput">CInOutput (class in quippy.cinoutput)</a>
+</li>
       <li><a href="io.html#quippy.cinoutput.CInOutputReader">CInOutputReader (class in quippy.cinoutput)</a>
 </li>
       <li><a href="io.html#quippy.cinoutput.CInOutputWriter">CInOutputWriter (class in quippy.cinoutput)</a>
@@ -764,6 +772,8 @@
         <li><a href="atomeye.html#atomeye.close">(in module atomeye)</a>
 </li>
         <li><a href="qlab.html#qlab.close">(in module qlab)</a>
+</li>
+        <li><a href="io.html#quippy.cinoutput.CInOutput.close">(quippy.cinoutput.CInOutput method)</a>
 </li>
         <li><a href="io.html#quippy.io.AtomsReader.close">(quippy.io.AtomsReader method)</a>
 </li>
@@ -836,10 +846,20 @@
 </li>
       <li><a href="linearalgebra.html#quippy.linearalgebra.coordination_function">coordination_function() (in module quippy.linearalgebra)</a>, <a href="linearalgebra.html#quippy.linearalgebra.coordination_function">[1]</a>, <a href="linearalgebra.html#quippy.linearalgebra.coordination_function">[2]</a>
 </li>
-      <li><a href="atoms.html#quippy.atoms.Atoms.copy">copy() (quippy.atoms.Atoms method)</a>
+      <li><a href="qlab.html#qlab.AtomsViewer.copy">copy() (qlab.AtomsViewer method)</a>
+
+      <ul>
+        <li><a href="atoms.html#quippy.atoms.Atoms.copy">(quippy.atoms.Atoms method)</a>
 </li>
+        <li><a href="io.html#quippy.castep.CastepCell.copy">(quippy.castep.CastepCell method)</a>
+</li>
+        <li><a href="io.html#quippy.castep.CastepParam.copy">(quippy.castep.CastepParam method)</a>
+</li>
+      </ul></li>
       <li><a href="atoms.html#quippy.atoms.Atoms.copy_entry">copy_entry() (quippy.atoms.Atoms method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="atoms.html#quippy.atoms.Atoms.copy_from">copy_from() (quippy.atoms.Atoms method)</a>
 </li>
       <li><a href="atoms.html#quippy.atoms.Atoms.copy_properties">copy_properties() (quippy.atoms.Atoms method)</a>
@@ -848,8 +868,6 @@
 </li>
       <li><a href="linearalgebra.html#quippy.linearalgebra.cos_cutoff_function">cos_cutoff_function() (in module quippy.linearalgebra)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="atoms.html#quippy.atoms.Atoms.cosine">cosine() (quippy.atoms.Atoms method)</a>
 </li>
       <li><a href="atoms.html#quippy.atoms.Atoms.cosine_neighbour">cosine_neighbour() (quippy.atoms.Atoms method)</a>
@@ -1517,6 +1535,8 @@
       <ul>
         <li><a href="qlab.html#qlab.gcat">(in module qlab)</a>
 </li>
+        <li><a href="qlab.html#qlab.AtomsViewer.gcat">(qlab.AtomsViewer method)</a>
+</li>
       </ul></li>
       <li><a href="qlab.html#qlab.gcv">gcv() (in module qlab)</a>
 </li>
@@ -1630,10 +1650,10 @@
 </li>
       <li><a href="connection.html#quippy.atoms.get_min_max_images">get_min_max_images() (in module quippy.atoms)</a>
 </li>
-      <li><a href="atoms.html#quippy.atoms.Atoms.get_momenta">get_momenta() (quippy.atoms.Atoms method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="atoms.html#quippy.atoms.Atoms.get_momenta">get_momenta() (quippy.atoms.Atoms method)</a>
+</li>
       <li><a href="atoms.html#quippy.atoms.Atoms.get_moments_of_inertia">get_moments_of_inertia() (quippy.atoms.Atoms method)</a>
 </li>
       <li><a href="system.html#quippy.system.get_mpi_size_rank">get_mpi_size_rank() (in module quippy.system)</a>
@@ -1772,10 +1792,16 @@
 </li>
       <li><a href="atoms.html#quippy.atoms.Atoms.has">has() (quippy.atoms.Atoms method)</a>
 </li>
+      <li><a href="dictionary.html#quippy.dictionary.Dictionary.has_key">has_key() (quippy.dictionary.Dictionary method)</a>
+</li>
       <li><a href="atoms.html#quippy.atoms.Atoms.has_property">has_property() (quippy.atoms.Atoms method)</a>
 </li>
       <li><a href="farray.html#quippy.farray.FortranArray.hat">hat() (quippy.farray.FortranArray method)</a>
+
+      <ul>
+        <li><a href="structures.html#quippy.structures.MillerIndex.hat">(quippy.structures.MillerIndex method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="structures.html#quippy.structures.hcp">hcp() (in module quippy.structures)</a>
@@ -1921,6 +1947,8 @@
       <li><a href="atomeye.html#atomeye.AtomEyeViewer.key">key() (atomeye.AtomEyeViewer method)</a>
 </li>
       <li><a href="dictionary.html#quippy.dictionary.Dictionary.key_cache_invalid">key_cache_invalid (quippy.dictionary.Dictionary attribute)</a>
+</li>
+      <li><a href="dictionary.html#quippy.dictionary.Dictionary.keys">keys() (quippy.dictionary.Dictionary method)</a>
 </li>
       <li><a href="dynamicalsystem.html#quippy.dynamicalsystem.kinetic_energy">kinetic_energy() (in module quippy.dynamicalsystem)</a>, <a href="dynamicalsystem.html#quippy.dynamicalsystem.kinetic_energy">[1]</a>, <a href="dynamicalsystem.html#quippy.dynamicalsystem.kinetic_energy">[2]</a>
 
@@ -2242,6 +2270,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="atoms.html#quippy.atoms.Atoms.new_array">new_array() (quippy.atoms.Atoms method)</a>
+</li>
       <li><a href="connection.html#quippy.atoms.Connection.next_atom_in_cell">next_atom_in_cell (quippy.atoms.Connection attribute)</a>
 </li>
       <li><a href="system.html#quippy.system.next_non_separator">next_non_separator() (in module quippy.system)</a>
@@ -2273,7 +2303,11 @@
 </li>
       </ul></li>
       <li><a href="farray.html#quippy.farray.FortranArray.normalised">normalised() (quippy.farray.FortranArray method)</a>
+
+      <ul>
+        <li><a href="structures.html#quippy.structures.MillerIndex.normalised">(quippy.structures.MillerIndex method)</a>
 </li>
+      </ul></li>
       <li><a href="linearalgebra.html#quippy.linearalgebra.normsq">normsq() (in module quippy.linearalgebra)</a>, <a href="linearalgebra.html#quippy.linearalgebra.normsq">[1]</a>, <a href="linearalgebra.html#quippy.linearalgebra.normsq">[2]</a>
 </li>
       <li><a href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.nrestraints">nrestraints (quippy.dynamicalsystem.DynamicalSystem attribute)</a>
@@ -2705,6 +2739,8 @@
 </li>
         <li><a href="io.html#quippy.castep.CastepParam.read">(quippy.castep.CastepParam method)</a>
 </li>
+        <li><a href="io.html#quippy.cinoutput.CInOutput.read">(quippy.cinoutput.CInOutput method)</a>
+</li>
         <li><a href="potential.html#quippy.potential.Potential.read">(quippy.potential.Potential method)</a>
 </li>
       </ul></li>
@@ -2772,14 +2808,14 @@
 </li>
       <li><a href="system.html#quippy.system.reference_true">reference_true() (in module quippy.system)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="atoms.html#quippy.atoms.Atoms.remove_atoms">remove_atoms() (quippy.atoms.Atoms method)</a>
 
       <ul>
         <li><a href="dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.remove_atoms">(quippy.dynamicalsystem.DynamicalSystem method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#quippy.atoms.Connection.remove_bond">remove_bond() (quippy.atoms.Connection method)</a>
 </li>
       <li><a href="connection.html#quippy.atoms.Connection.remove_bonds">remove_bonds() (quippy.atoms.Connection method)</a>
@@ -2925,7 +2961,11 @@
       <li><a href="linearalgebra.html#quippy.linearalgebra.scalar_triple_product">scalar_triple_product() (in module quippy.linearalgebra)</a>
 </li>
       <li><a href="atomeye.html#atomeye.AtomEyeViewer.scat">scat() (atomeye.AtomEyeViewer method)</a>
+
+      <ul>
+        <li><a href="qlab.html#qlab.AtomsViewer.scat">(qlab.AtomsViewer method)</a>
 </li>
+      </ul></li>
       <li><a href="polarization.html#quippy.polarization.screened_effective_charge">screened_effective_charge() (in module quippy.polarization)</a>
 </li>
       <li><a href="qlab.html#qlab.scv">scv() (in module qlab)</a>
@@ -3227,6 +3267,8 @@
       <li><a href="table.html#quippy.table.Table.strsize">strsize (quippy.table.Table attribute)</a>
 </li>
       <li><a href="structures.html#quippy.structures.structure_from_file">structure_from_file() (in module quippy.structures)</a>
+</li>
+      <li><a href="dictionary.html#quippy.dictionary.Dictionary.subset">subset() (quippy.dictionary.Dictionary method)</a>
 </li>
       <li><a href="table.html#quippy.table.Table.subtable">subtable() (quippy.table.Table method)</a>
 </li>
@@ -3536,6 +3578,8 @@
         <li><a href="io.html#quippy.castep.CastepCell.write">(quippy.castep.CastepCell method)</a>
 </li>
         <li><a href="io.html#quippy.castep.CastepParam.write">(quippy.castep.CastepParam method)</a>
+</li>
+        <li><a href="io.html#quippy.cinoutput.CInOutput.write">(quippy.cinoutput.CInOutput method)</a>
 </li>
       </ul></li>
       <li><a href="topology.html#quippy.topology.write_brookhaven_pdb_file">write_brookhaven_pdb_file() (in module quippy.topology)</a>

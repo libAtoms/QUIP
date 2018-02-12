@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -220,8 +220,8 @@
             <span class="n">dip2</span> <span class="o">+=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span>
 
          <span class="n">born_tensor</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dip2</span> <span class="o">-</span> <span class="n">dip1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">dx</span><span class="o">*</span><span class="mf">2.0</span><span class="p">)</span>
-
-   <span class="k">return</span> <span class="n">born_tensor</span></div>
+</div>
+   <span class="k">return</span> <span class="n">born_tensor</span>
          
 
 <div class="viewcode-block" id="epsilon_infty"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.epsilon_infty">[docs]</a><span class="k">def</span> <span class="nf">epsilon_infty</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">deltafield</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">zerotol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
@@ -255,8 +255,8 @@
    <span class="n">at</span><span class="o">.</span><span class="n">ext_efield</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
    <span class="n">dielectric_tensor</span><span class="p">[</span><span class="n">dielectric_tensor</span> <span class="o">&lt;</span> <span class="n">zerotol</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-   <span class="k">return</span> <span class="n">dielectric_tensor</span></div>
+</div>
+   <span class="k">return</span> <span class="n">dielectric_tensor</span>
       
 
 <span class="k">def</span> <span class="nf">calc_effective_charge_vectors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">born_tensor</span><span class="p">):</span>
@@ -282,8 +282,8 @@
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
                <span class="k">if</span> <span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span> <span class="k">continue</span>
                <span class="n">screened</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">born</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">])</span>
-
-   <span class="k">return</span> <span class="n">screened</span></div>
+</div>
+   <span class="k">return</span> <span class="n">screened</span>
 
 <span class="k">def</span> <span class="nf">dipole_moment</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>

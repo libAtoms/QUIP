@@ -98,7 +98,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
@@ -546,14 +546,14 @@
 <div class="viewcode-block" id="FortranDerivedType.is_same_fortran_object"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType.is_same_fortran_object">[docs]</a>    <span class="k">def</span> <span class="nf">is_same_fortran_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test if `self` and `other` point to the same Fortan object.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;_fpointer&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+            <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
 <div class="viewcode-block" id="FortranDerivedType.shallow_copy"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType.shallow_copy">[docs]</a>    <span class="k">def</span> <span class="nf">shallow_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a shallow copy of `self`.&quot;&quot;&quot;</span>
         <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
-        <span class="n">other</span><span class="o">.</span><span class="n">shallow_copy_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">other</span></div>
+        <span class="n">other</span><span class="o">.</span><span class="n">shallow_copy_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">other</span>
 
 <div class="viewcode-block" id="FortranDerivedType.shallow_copy_from"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType.shallow_copy_from">[docs]</a>    <span class="k">def</span> <span class="nf">shallow_copy_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Transform `self` into a shallow copy of `other`.&quot;&quot;&quot;</span>
@@ -567,8 +567,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_fpointer</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;ref_count&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ref_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_count</span> <span class="o">+</span> <span class="mi">1</span></div>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;ref_count&#39;</span><span class="p">):</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ref_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_count</span> <span class="o">+</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -668,8 +668,8 @@
 
         <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;updating </span><span class="si">%s</span><span class="s1"> at 0x</span><span class="si">%x</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpointer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
-        <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_hooks</span><span class="p">:</span>
-            <span class="n">hook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_hooks</span><span class="p">:</span></div>
+            <span class="n">hook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">add_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
@@ -690,8 +690,8 @@
 <span class="sd">        the return value should be a tuple `(N_1, N_2, ..., N_d)` where `d`</span>
 <span class="sd">        is the number of dimensions of the array and `N_1, N_2` etc. are the lengths</span>
 <span class="sd">        of each dimension.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="FortranDerivedType._runroutine"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType._runroutine">[docs]</a>    <span class="k">def</span> <span class="nf">_runroutine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -773,8 +773,8 @@
             <span class="n">newres</span> <span class="o">=</span> <span class="n">process_results</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">inargs</span><span class="p">,</span> <span class="n">outargs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">newres</span> <span class="o">=</span> <span class="n">res</span>
-
-        <span class="k">return</span> <span class="n">newres</span></div>
+</div>
+        <span class="k">return</span> <span class="n">newres</span>
 
 
 <div class="viewcode-block" id="FortranDerivedType._runinterface"><a class="viewcode-back" href="../../oo_fortran.html#quippy.atoms.FortranDerivedType._runinterface">[docs]</a>    <span class="k">def</span> <span class="nf">_runinterface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -844,8 +844,8 @@
             <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;calling &#39;</span><span class="o">+</span><span class="n">rname</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">routine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;No matching routine found in interface </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span></div>
+</div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;No matching routine found in interface </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 
 
 
@@ -864,8 +864,8 @@
                     <span class="k">raise</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">continue</span>
-
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;No matching routine found in interface </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span></div>
+</div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;No matching routine found in interface </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">nested_dict_update</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
@@ -1025,8 +1025,8 @@
         <span class="nb">setattr</span><span class="p">(</span><span class="n">pymods</span><span class="p">[</span><span class="n">modules_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">mod</span><span class="p">)],</span> <span class="n">name</span><span class="p">,</span> <span class="n">wrapped_interface</span><span class="p">)</span>
         <span class="n">pymods</span><span class="p">[</span><span class="n">modules_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="n">mod</span><span class="p">)]</span><span class="o">.</span><span class="n">__all__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">wraplog</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  added interface routine </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">routine</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">pymods</span></div>
+</div>
+    <span class="k">return</span> <span class="n">pymods</span>
 
 
 

@@ -100,15 +100,15 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ASE-and-quippy">ASE and <code class="docutils literal"><span class="pre">quippy</span></code></a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ASE-and-quippy">ASE and <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Useful-QUIP-equivalents">Useful QUIP equivalents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#Changing-Atoms">Changing <code class="docutils literal"><span class="pre">Atoms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Changing-Atoms">Changing <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Generating-structures-from-scratch">Generating structures from scratch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Computing-the-energy">Computing the energy</a></li>
 </ul>
@@ -178,7 +178,7 @@
         
           <li><a href="index.html">Tutorials</a> &raquo;</li>
         
-      <li>Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code></li>
+      <li>Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -396,24 +396,24 @@ div.nboutput div.output_area.stderr {
 }
 </style>
 <div class="section" id="Getting-started-with-Atoms">
-<h1>Getting started with <code class="docutils literal"><span class="pre">Atoms</span></code><a class="headerlink" href="#Getting-started-with-Atoms" title="Permalink to this headline">¶</a></h1>
-<p>This example will walk you through getting started with using <code class="docutils literal"><span class="pre">quippy</span></code>
+<h1>Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code><a class="headerlink" href="#Getting-started-with-Atoms" title="Permalink to this headline">¶</a></h1>
+<p>This example will walk you through getting started with using <code class="docutils literal notranslate"><span class="pre">quippy</span></code>
 by playing with a small molecule. It complements the (older)
 <a class="reference external" href="http://libatoms.github.io/QUIP/tutorial.html">introductory tutorial</a>
 which is longer and goes more in depth, though it is recommended that
 new users start here first. This example is especially recommended for
-those who want to get going and working with <code class="docutils literal"><span class="pre">Atoms</span></code> as quickly as
+those who want to get going and working with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> as quickly as
 possible.</p>
-<p>First, make sure you have QUIP and <code class="docutils literal"><span class="pre">quippy</span></code> properly installed. If you
+<p>First, make sure you have QUIP and <code class="docutils literal notranslate"><span class="pre">quippy</span></code> properly installed. If you
 can run the cell below, then congratulations! If not, then see the
 <a class="reference external" href="http://libatoms.github.io/QUIP/install.html">Installation
 instructions</a>.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">quippy</span>
@@ -424,14 +424,14 @@ instructions</a>.</p>
 <p>Remember, this is an interactive tutorial. You are encouraged to run the
 cells yourself and even try editing the code to see what else you can
 do!</p>
-<p>Now let’s try getting our hands on an <code class="docutils literal"><span class="pre">Atoms</span></code> object; this object is
-required to do almost anything useful in <code class="docutils literal"><span class="pre">quippy</span></code>.</p>
+<p>Now let’s try getting our hands on an <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object; this object is
+required to do almost anything useful in <code class="docutils literal notranslate"><span class="pre">quippy</span></code>.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;methane.xyz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -439,11 +439,11 @@ required to do almost anything useful in <code class="docutils literal"><span cl
 <p>OK, now what do we do with it? Let’s look at the Atoms source file and
 see what sort of information is encoded in it:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="o">!</span>cat methane.xyz
 </pre></div>
 </div>
@@ -464,13 +464,13 @@ H               0.37430000     -0.93680000     -0.35667000       1
 </div>
 <p>We have positions, atomic symbols, atomic numbers, and a unit cell.
 There’s also some other information in there that we don’t need right
-now. But let’s see how to access these properties from <code class="docutils literal"><span class="pre">quippy</span></code>:</p>
+now. But let’s see how to access these properties from <code class="docutils literal notranslate"><span class="pre">quippy</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;Positions:&quot;</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">get_positions</span><span class="p">())</span>
 <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unit cell:&quot;</span><span class="p">)</span>
@@ -502,9 +502,9 @@ Atomic numbers:
 <p>(Remember, units in quippy are always Ångstrøms and electronvolts:
 <a class="reference external" href="http://libatoms.github.io/QUIP/units.html">http://libatoms.github.io/QUIP/units.html</a>)</p>
 <p>You might want get an idea of what this structure actually looks like.
-The native <code class="docutils literal"><span class="pre">xyz</span></code> format is supported by many open-source molecular
+The native <code class="docutils literal notranslate"><span class="pre">xyz</span></code> format is supported by many open-source molecular
 viewers, like <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> and
-<a class="reference external" href="https://avogadro.cc/">Avogadro</a>. If you’ve gotten the <code class="docutils literal"><span class="pre">atomeye</span></code>
+<a class="reference external" href="https://avogadro.cc/">Avogadro</a>. If you’ve gotten the <code class="docutils literal notranslate"><span class="pre">atomeye</span></code>
 module to work you can use that as well.</p>
 <p>We’re still looking for a simple way to view molecular structures in the
 notebook environment; once we (the developers) get that working with
@@ -512,21 +512,21 @@ quippy we’ll update this tutorial.</p>
 <p>Let’s try another way to get information about the structure: This is a
 molecule, so we can check the bonds and angles.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[5]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>1.0700000000000001
 </pre></div>
 </div>
@@ -534,21 +534,21 @@ molecule, so we can check the bonds and angles.</p>
 <p>OK, that’s a pretty reasonable C-H bond length in a methane molecule.
 What about the other ones?</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[6]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>[1.0700000000000001,
  1.0699965409757173,
  1.0700018621479124,
@@ -562,51 +562,51 @@ relevant when we use periodic systems, but it’s included here for
 completeness.)</em></p>
 <p>And how about an H-C-H angle?</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_angle</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[7]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>109.47090748192832
 </pre></div>
 </div>
 </div>
 <p>which is the correct “tetrahedral angle” between the hydrogens in a
 methane molecule (it’s equal to
-<span class="math">\(\arccos\left(-\frac{1}{3}\right)\)</span>).</p>
+<span class="math notranslate">\(\arccos\left(-\frac{1}{3}\right)\)</span>).</p>
 <p>Note that the atom indices in these functions are <em>zero_based</em>, meaning
 the first atom (here, the carbon) is referred to by the index 0.</p>
 <div class="section" id="ASE-and-quippy">
-<h2>ASE and <code class="docutils literal"><span class="pre">quippy</span></code><a class="headerlink" href="#ASE-and-quippy" title="Permalink to this headline">¶</a></h2>
+<h2>ASE and <code class="docutils literal notranslate"><span class="pre">quippy</span></code><a class="headerlink" href="#ASE-and-quippy" title="Permalink to this headline">¶</a></h2>
 <p>If you’ve read some of the documentation, you may be aware of the
 following alternative method for getting the distance between the two
 atoms:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">distance_min_image</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[8]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>0.0
 </pre></div>
 </div>
@@ -614,7 +614,7 @@ atoms:</p>
 <p>DANGER WILL ROBINSON! As you may have noticed, this isn’t the correct
 bond distance. In some circumstances the code may even just crash. This
 is because the above function is derived from the underlying Fortran
-code, QUIP, rather than the <code class="docutils literal"><span class="pre">get_distance</span></code> function from before, which
+code, QUIP, rather than the <code class="docutils literal notranslate"><span class="pre">get_distance</span></code> function from before, which
 came from ASE. Fortran, unlike Python and C, starts counting from one
 instead of zero (cue the holy wars), so we just gave QUIP an atom index
 that doens’t even exist – and that can have unpredictable results. Now,
@@ -624,11 +624,11 @@ stick with ASE until we have good reason to do otherwise.</p>
 <p>So how do we tell whether a function is derived from QUIP or from ASE?
 Well, let’s take a look at this function’s help message:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">help</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">distance_min_image</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -709,39 +709,39 @@ Help on method &lt;lambda&gt; in module quippy._atoms:
 </pre></div></div>
 </div>
 <p>A bit confusing, yes, but take a look at the final line:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>Routine is wrapper around Fortran routine ``distance8_vec_atom`` defined in file :git:`src/libAtoms/Atoms_types.f95`.
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Routine is wrapper around Fortran routine ``distance8_vec_atom`` defined in file :git:`src/libAtoms/Atoms_types.f95`.
 </pre></div>
 </div>
 <p>It says this function is a <em>wrapper</em> around something in the Fortran
 code, which means it’s from QUIP and only works with <em>one-based</em> indices
 (i.e. to this function, the first atom has the index 1).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">distance_min_image</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[10]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>1.07
 </pre></div>
 </div>
 </div>
 <p>Whereas the ASE function has a different help string:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">help</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -761,40 +761,40 @@ get_distance(self, a0, a1, mic=False, vector=False) method of quippy.atoms.Atoms
 
 </pre></div></div>
 </div>
-<p>See that part, ‘<code class="docutils literal"><span class="pre">in</span> <span class="pre">module</span> <span class="pre">ase.atoms</span></code>’? That means this function
+<p>See that part, ‘<code class="docutils literal notranslate"><span class="pre">in</span> <span class="pre">module</span> <span class="pre">ase.atoms</span></code>’? That means this function
 comes from ASE and works with zero-based indices.</p>
-<p>You should <em>always</em> do this check before using any <code class="docutils literal"><span class="pre">Atoms</span></code> function
+<p>You should <em>always</em> do this check before using any <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> function
 you’re not yet familiar with.</p>
 <div class="section" id="Useful-QUIP-equivalents">
 <h3>Useful QUIP equivalents<a class="headerlink" href="#Useful-QUIP-equivalents" title="Permalink to this headline">¶</a></h3>
 <p>Just in case you ever want to work with the Fortran QUIP routines, here
 are some equivalents of the queries we’ve seen above:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">distance_min_image</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">)]</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[12]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>[1.07, 1.0699965409757173, 1.0700018621479124, 1.070003840600584]
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="k">print</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">cosine</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="k">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">cosine</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 </pre></div>
@@ -809,27 +809,27 @@ are some equivalents of the queries we’ve seen above:</p>
 109.470907482
 </pre></div></div>
 </div>
-<p>Note that the <em>order</em> of the arguments in <code class="docutils literal"><span class="pre">Atoms.cosine</span></code> is different
+<p>Note that the <em>order</em> of the arguments in <code class="docutils literal notranslate"><span class="pre">Atoms.cosine</span></code> is different
 as well: The central atom index is now the first argument.</p>
 <p>The properties can also be accessed as one-based arrays (called
-<code class="docutils literal"><span class="pre">FortranArray</span></code>s). Note that these are also the <em>transpose</em> of the
+<code class="docutils literal notranslate"><span class="pre">FortranArray</span></code>s). Note that these are also the <em>transpose</em> of the
 ASE arrays, so the row and column indices are swapped.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">pos</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[14]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>FortranArray([[ 0.     ,  0.     ,  0.62414, -0.99844,  0.3743 ],
               [ 0.     ,  0.     ,  0.79255,  0.14425, -0.9368 ],
               [ 0.     ,  1.07   , -0.35666, -0.35667, -0.35667]])
@@ -837,21 +837,21 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">lattice</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[15]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>FortranArray([[ 10.,   0.,   0.],
               [  0.,  10.,   0.],
               [  0.,   0.,  10.]])
@@ -859,21 +859,21 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">Z</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[16]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>FortranArray([6, 1, 1, 1, 1], dtype=int32)
 </pre></div>
 </div>
@@ -881,7 +881,7 @@ ASE arrays, so the row and column indices are swapped.</p>
 </div>
 </div>
 <div class="section" id="Changing-Atoms">
-<h2>Changing <code class="docutils literal"><span class="pre">Atoms</span></code><a class="headerlink" href="#Changing-Atoms" title="Permalink to this headline">¶</a></h2>
+<h2>Changing <code class="docutils literal notranslate"><span class="pre">Atoms</span></code><a class="headerlink" href="#Changing-Atoms" title="Permalink to this headline">¶</a></h2>
 <p>There’s a more complete tutorial on manipulating Atoms objects in ASE at
 <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/tutorials/manipulating_atoms.html">the ASE
 website</a>;
@@ -890,11 +890,11 @@ this is a shorter example just to get you started.</p>
 hydrogen atom is already oriented along the Z axis; let’s try to rotate
 the molecule so that the second one points along the X axis.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">r_h2</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">vector</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">r_h2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">r_h2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_h2</span><span class="p">))</span>
@@ -902,11 +902,11 @@ the molecule so that the second one points along the X axis.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[17]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>0.90371859179284519
 </pre></div>
 </div>
@@ -914,47 +914,47 @@ the molecule so that the second one points along the X axis.</p>
 <p>So we need to rotate it by about -0.9 radians about the Z axis.</p>
 <p>But first, we want to keep the old methane molecule for comparison.
 Let’s copy it - note that this must be done <em>explicitly</em>; the Python
-assignment operator (<code class="docutils literal"><span class="pre">=</span></code>) only assigns a new <em>reference</em> to the
+assignment operator (<code class="docutils literal notranslate"><span class="pre">=</span></code>) only assigns a new <em>reference</em> to the
 underlying object! This can be one of the hardest things to understand
 for programmers coming from a different language, so make sure to read
 up on Python references and do some of their tutorials if you find this
 distinction confusing.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct_old</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">rotate</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">r_h2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_h2</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">struct</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[20]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>array([[  0.00000000e+00,   0.00000000e+00,   0.00000000e+00],
        [  0.00000000e+00,   0.00000000e+00,   1.07000000e+00],
        [  1.00880436e+00,  -1.11022302e-16,  -3.56660000e-01],
@@ -972,42 +972,42 @@ of the new structure; you may want to compute the RMS difference.</p>
 <p>We could have also just used ASE functionality to pull a methane
 structure from its database:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">ase</span>
 <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">me</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s1">&#39;CH4&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2"><div class="highlight"><pre>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">me</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>Out[23]:
 </pre></div>
 </div>
-<div class="output_area highlight-none"><div class="highlight"><pre>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
 <span></span>array([[ 0.      ,  0.      ,  0.      ],
        [ 0.629118,  0.629118,  0.629118],
        [-0.629118, -0.629118,  0.629118],
@@ -1017,12 +1017,12 @@ structure from its database:</p>
 </div>
 </div>
 <p>Like the introductory tutorial at
-<a class="reference external" href="http://libatoms.github.io/QUIP/tutorial.html">http://libatoms.github.io/QUIP/tutorial.html</a> - use the <code class="docutils literal"><span class="pre">diamond</span></code>
+<a class="reference external" href="http://libatoms.github.io/QUIP/tutorial.html">http://libatoms.github.io/QUIP/tutorial.html</a> - use the <code class="docutils literal notranslate"><span class="pre">diamond</span></code>
 generator, view a supercell, do fun things with the structure…</p>
 </div>
 <div class="section" id="Computing-the-energy">
 <h2>Computing the energy<a class="headerlink" href="#Computing-the-energy" title="Permalink to this headline">¶</a></h2>
-<p>Introduce <code class="docutils literal"><span class="pre">Potential</span></code>. Use something like <code class="docutils literal"><span class="pre">IP</span> <span class="pre">SW</span></code> to get the energy
+<p>Introduce <code class="docutils literal notranslate"><span class="pre">Potential</span></code>. Use something like <code class="docutils literal notranslate"><span class="pre">IP</span> <span class="pre">SW</span></code> to get the energy
 of the silicon supercell. Direct user to the list of potentials and the
 next tutorial.</p>
 </div>
