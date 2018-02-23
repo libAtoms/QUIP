@@ -263,7 +263,7 @@ i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 <td>Given two vectors (<code class="docutils literal notranslate"><span class="pre">a1</span></code> and <code class="docutils literal notranslate"><span class="pre">b1</span></code>), calculate the rotation quaternion that must be used to rotate them into two other vectors (<code class="docutils literal notranslate"><span class="pre">a2</span></code> and <code class="docutils literal notranslate"><span class="pre">b2</span></code>).</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.rotation" title="quippy.quaternions.rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation</span></code></a>(axis,angle)</td>
-<td>Many rotations can be collapsed into one, e.g.</td>
+<td>Many rotations can be collapsed into one, e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.rotate" title="quippy.quaternions.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">rotate</span></code> containing multiple routines:</td>
@@ -307,10 +307,10 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>quaternion_print([file])</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotate" title="quippy.quaternions.Quaternion.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(qv,qr)</td>
-<td>Rotate a vector represented as a quaternion (<code class="docutils literal notranslate"><span class="pre">qv</span></code>), using a given rotation quaternion (<code class="docutils literal notranslate"><span class="pre">qr</span></code>)</td>
+<td>Rotate a vector represented as a quaternion (<code class="docutils literal notranslate"><span class="pre">qv</span></code>), using a given rotation quaternion (<code class="docutils literal notranslate"><span class="pre">qr</span></code>) This assumes that the rotation quaternion is properly normalised</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotate_quat" title="quippy.quaternions.Quaternion.rotate_quat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate_quat</span></code></a>(qv,qr)</td>
-<td>Rotate a vector represented as a quaternion (<code class="docutils literal notranslate"><span class="pre">qv</span></code>), using a given rotation quaternion (<code class="docutils literal notranslate"><span class="pre">qr</span></code>)</td>
+<td>Rotate a vector represented as a quaternion (<code class="docutils literal notranslate"><span class="pre">qv</span></code>), using a given rotation quaternion (<code class="docutils literal notranslate"><span class="pre">qr</span></code>) This assumes that the rotation quaternion is properly normalised</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotation_matrix" title="quippy.quaternions.Quaternion.rotation_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation_matrix</span></code></a>(q_in)</td>
 <td>Return the equivalent rotation matrix of a (unit) quaternion</td>

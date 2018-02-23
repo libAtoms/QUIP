@@ -281,7 +281,7 @@ for a time <code class="docutils literal notranslate"><span class="pre">dt</span
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.gaussian_velocity_component" title="quippy.dynamicalsystem.gaussian_velocity_component"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussian_velocity_component</span></code></a>(m,t)</td>
-<td>Draw a velocity component from the correct Gaussian distribution for</td>
+<td>Draw a velocity component from the correct Gaussian distribution for a degree of freedom with (effective) mass <code class="docutils literal notranslate"><span class="pre">m</span></code> at temperature <code class="docutils literal notranslate"><span class="pre">T</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.torque" title="quippy.dynamicalsystem.torque"><code class="xref py py-obj docutils literal notranslate"><span class="pre">torque</span></code></a>(pos,force,[origin])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -500,7 +500,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Advances the velocities by the second half time-step</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.amend_constraint" title="quippy.dynamicalsystem.DynamicalSystem.amend_constraint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amend_constraint</span></code></a>(constraint,func,data,[k])</td>
-<td>Replace a constraint involving some atoms with a different constraint involving</td>
+<td>Replace a constraint involving some atoms with a different constraint involving the same atoms</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.angular_momentum" title="quippy.dynamicalsystem.DynamicalSystem.angular_momentum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">angular_momentum</span></code></a>([origin,indices])</td>
 <td>Return the angular momentum of all the atoms in this DynamicalSystem, defined by <span class="math notranslate">\(\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}\)</span>.</td>
@@ -536,8 +536,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Constrain an atom to lie in a particluar plane</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.disable_damping" title="quippy.dynamicalsystem.DynamicalSystem.disable_damping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_damping</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td><p class="rubric">References</p>
-</td>
+<td>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.enable_damping" title="quippy.dynamicalsystem.DynamicalSystem.enable_damping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_damping</span></code></a>(damp_time)</td>
 <td>Enable damping, with damping time set to <cite>damp_time</cite>.</td>

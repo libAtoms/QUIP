@@ -270,7 +270,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <td>Make a matrix of lattice vectors from the lengths <code class="docutils literal notranslate"><span class="pre">a</span></code>,``b``,``c`` and the angles <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, <code class="docutils literal notranslate"><span class="pre">beta</span></code> and <code class="docutils literal notranslate"><span class="pre">gamma</span></code>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="connection.html#quippy.atoms.divide_cell" title="quippy.atoms.divide_cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">divide_cell</span></code></a>(lattice,cutoff)</td>
-<td>Given a simulation cell defined by lattice vectors, how many</td>
+<td>Given a simulation cell defined by lattice vectors, how many times can the cell be divided along the lattice vectors into subcells such that a sphere of radius <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> with centre in one subcell does not spill out of the surrounding <span class="math notranslate">\(3 \times 3\)</span> subcell block?</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="connection.html#quippy.atoms.max_cutoff" title="quippy.atoms.max_cutoff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_cutoff</span></code></a>(lattice,[error])</td>
 <td>Returns the maximum cutoff radius for <code class="docutils literal notranslate"><span class="pre">calc_connect</span></code>, given the lattice if we want to avoid image neghbours</td>
@@ -279,7 +279,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <td>Parses an atom_mask, which is string consisting of the <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> symbol followed by a comma separated list of indices or ranges into a table containing all the indices it represents.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="connection.html#quippy.atoms.fit_box_in_cell" title="quippy.atoms.fit_box_in_cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_box_in_cell</span></code></a>(rx,ry,rz,lattice)</td>
-<td>Given an orthogonal box, oriented along the cartesian axes with lengths <code class="docutils literal notranslate"><span class="pre">2*rx</span></code>, <code class="docutils literal notranslate"><span class="pre">2*ry</span></code> and <code class="docutils literal notranslate"><span class="pre">2*rz</span></code></td>
+<td>Given an orthogonal box, oriented along the cartesian axes with lengths <code class="docutils literal notranslate"><span class="pre">2*rx</span></code>, <code class="docutils literal notranslate"><span class="pre">2*ry</span></code> and <code class="docutils literal notranslate"><span class="pre">2*rz</span></code> and centred on the origin, what parameters must we pass to supercell to make a system big enough from our original cell defined by lattice for the box to fit inside?</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">difference</span></code>(list1,list2,[error])</td>
 <td>Return the difference between list1 and list2 in outlist.</td>
@@ -316,7 +316,7 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 <td>calculate volume of unit cell</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_into_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Map atomic positions into the unit cell so that lattice</td>
+<td>Map atomic positions into the unit cell so that lattice  coordinates satisfy $-0.</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lattice_params_</span></code>(…)</td>
 <td>Opposite of Make_Lattice.</td>

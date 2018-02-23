@@ -258,7 +258,7 @@ manipulate it use an <a class="reference internal" href="#quippy.io.AtomsList" t
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AtomsReader</span></code></a>(source[,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;…])</td>
-<td>An <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReader</span></code></a> reads a series of <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code> objects</td>
+<td>An <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReader</span></code></a> reads a series of <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code> objects from the trajectory <cite>source</cite> which should be one of the following:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AtomsList</span></code></a>([source,&nbsp;format,&nbsp;start,&nbsp;stop,&nbsp;…])</td>
 <td>An <a class="reference internal" href="#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsList</span></code></a> is just like an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReader</span></code></a> except that all frames are read in on initialiased and then stored in memory.</td>
@@ -1209,10 +1209,10 @@ by Paul Tangney and Sandro Scandolo.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell" title="quippy.castep.CastepCell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CastepCell</span></code></a>([cellfile,&nbsp;xml,&nbsp;atoms])</td>
-<td>Class to wrap a CASTEP cell (.cell) file</td>
+<td>Class to wrap a CASTEP cell (.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam" title="quippy.castep.CastepParam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CastepParam</span></code></a>([paramfile,&nbsp;xml,&nbsp;atoms])</td>
-<td>Class to wrap a CASTEP parameter (.param) file</td>
+<td>Class to wrap a CASTEP parameter (.</td>
 </tr>
 </tbody>
 </table>
@@ -1230,10 +1230,10 @@ by Paul Tangney and Sandro Scandolo.</p>
 <td>Invoke castep and return True if it completed successfully</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.read_formatted_potential" title="quippy.castep.read_formatted_potential"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_formatted_potential</span></code></a>(filename)</td>
-<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .cube file.</td>
+<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.read_formatted_density" title="quippy.castep.read_formatted_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_formatted_density</span></code></a>(filename)</td>
-<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .cube file.</td>
+<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .</td>
 </tr>
 </tbody>
 </table>
@@ -1249,10 +1249,10 @@ by Paul Tangney and Sandro Scandolo.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell.read" title="quippy.castep.CastepCell.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(cellfile)</td>
-<td>Read a CASTEP .cell file.</td>
+<td>Read a CASTEP .</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepCell.write" title="quippy.castep.CastepCell.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([cellfile])</td>
-<td>Write CASTEP .cell file.</td>
+<td>Write CASTEP .</td>
 </tr>
 </tbody>
 </table>
@@ -1287,13 +1287,13 @@ by Paul Tangney and Sandro Scandolo.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.read" title="quippy.castep.CastepParam.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(paramfile)</td>
-<td>Read a CASTEP .param file.</td>
+<td>Read a CASTEP .</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam.read_from_castep_output" title="quippy.castep.CastepParam.read_from_castep_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_castep_output</span></code></a>(castep_output)</td>
-<td>Read user parameters from .castep output.</td>
+<td>Read user parameters from .</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.write" title="quippy.castep.CastepParam.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([paramfile])</td>
-<td>Write CASTEP .param file</td>
+<td>Write CASTEP .</td>
 </tr>
 </tbody>
 </table>

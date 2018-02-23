@@ -277,8 +277,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>OMIT</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.system_resync_rng" title="quippy.system.system_resync_rng"><code class="xref py py-obj docutils literal notranslate"><span class="pre">system_resync_rng</span></code></a>()</td>
-<td><p class="rubric">References</p>
-</td>
+<td>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.upper_case" title="quippy.system.upper_case"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper_case</span></code></a>(word)</td>
 <td>Convert a word to upper case</td>
@@ -290,7 +289,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>Measure elapsed CPU and wall clock time between pairs of calls with matching <code class="docutils literal notranslate"><span class="pre">name</span></code> parameter.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_of_str" title="quippy.system.verbosity_of_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbosity_of_str</span></code></a>(str)</td>
-<td>Map from descriptive verbosity names (<code class="docutils literal notranslate"><span class="pre">NORMAL</span></code>, <code class="docutils literal notranslate"><span class="pre">VERBOSE</span></code> etc.) to numbers</td>
+<td>Map from descriptive verbosity names (<code class="docutils literal notranslate"><span class="pre">NORMAL</span></code>, <code class="docutils literal notranslate"><span class="pre">VERBOSE</span></code> etc.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.reference_true" title="quippy.system.reference_true"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reference_true</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -332,10 +331,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.ran_exp" title="quippy.system.ran_exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ran_exp</span></code></a>()</td>
-<td>Return a random real distributed exponentially between zero and positive infinity</td>
+<td>Return a random real distributed exponentially between zero and positive infinity with mean and variance of unity</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.parse_string" title="quippy.system.parse_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_string</span></code></a>(delimiters,fields,[matching,error])</td>
-<td>outdated - please use split_string</td>
+<td>outdated - please use split_string Parse a string into fields delimited by certain characters.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.parse_string_orig" title="quippy.system.parse_string_orig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_string_orig</span></code></a>(delimiters,fields)</td>
 <td>Parse a string into fields delimited by certain characters.</td>
@@ -386,8 +385,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.enable_timing" title="quippy.system.enable_timing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_timing</span></code></a>()</td>
-<td><p class="rubric">References</p>
-</td>
+<td>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.mem_info" title="quippy.system.mem_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_info</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -452,7 +450,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>Convert an input string into a logical.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.split_string" title="quippy.system.split_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_string</span></code></a>(separators,quotes,fields,[matching])</td>
-<td>split a string at separators, making sure not to break up bits that</td>
+<td>split a string at separators, making sure not to break up bits that are in quotes (possibly matching opening and closing quotes), and also strip one level of quotes off, sort of like a shell would when tokenizing</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_to_str" title="quippy.system.verbosity_to_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbosity_to_str</span></code></a>(val)</td>
 <td>Map from verbsoity codes to descriptive strings</td>
@@ -494,7 +492,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.verbosity_set_minimum" title="quippy.system.verbosity_set_minimum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbosity_set_minimum</span></code></a>(verbosity)</td>
-<td>set the minimum verbosity value, by pushing value onto</td>
+<td>set the minimum verbosity value, by pushing value onto stack and pushing 1 on to verbosity_cascade_stack</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.current_version" title="quippy.system.current_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">current_version</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -525,7 +523,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>push the current value - n onto the stack</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.progress_timer" title="quippy.system.progress_timer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">progress_timer</span></code></a>(…)</td>
-<td>Print a progress bar with an estimate of time to completion</td>
+<td>Print a progress bar with an estimate of time to completion based on the elapsed time so far</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.reference_false" title="quippy.system.reference_false"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reference_false</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -581,7 +579,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>Return a random string of length l containing the characters A-Z, a-z, and 0-9</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_unset_minimum" title="quippy.system.verbosity_unset_minimum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbosity_unset_minimum</span></code></a>()</td>
-<td>unset the minimum verbosity value, by popping value from</td>
+<td>unset the minimum verbosity value, by popping value from stack and popping from verbosity_cascade_stack</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.get_mainlog_errorlog_ptr" title="quippy.system.get_mainlog_errorlog_ptr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mainlog_errorlog_ptr</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -624,7 +622,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>String to character array</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.verbosity_push" title="quippy.system.verbosity_push"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbosity_push</span></code></a>(val)</td>
-<td>Push a value onto the verbosity stack</td>
+<td>Push a value onto the verbosity stack Don’t ever lower the verbosity if verbosity minimum is set,   but always push _something_</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.int_format_length" title="quippy.system.int_format_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int_format_length</span></code></a>(i)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -672,11 +670,10 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.disable_timing" title="quippy.system.disable_timing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_timing</span></code></a>()</td>
-<td><p class="rubric">References</p>
-</td>
+<td>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.split_string_simple" title="quippy.system.split_string_simple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_string_simple</span></code></a>(str,separators,n0,[error])</td>
-<td>split a string into fields separated by possible separators</td>
+<td>split a string into fields separated by possible separators no quoting, matching separators, just a simple split</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.is_file_readable" title="quippy.system.is_file_readable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_file_readable</span></code></a>(filename)</td>
 <td>Test if the file <code class="docutils literal notranslate"><span class="pre">filename</span></code> can be accessed.</td>
@@ -707,7 +704,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optional_default</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>takes as arguments a default value and an optional argument, and</td>
+<td>takes as arguments a default value and an optional argument, and returns the optional argument value if it’s present, otherwise the default value</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">string_to_numerical</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">string_to_numerical</span></code> containing multiple routines:</td>

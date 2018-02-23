@@ -261,7 +261,7 @@
 <td>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is near to an open surface of slab.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_parse_name" title="quippy.crack.crack_parse_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_parse_name</span></code></a>(crackname)</td>
-<td>Parse crack name in the format is (ijk)[lmn], with negative numbers denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (short for <code class="docutils literal notranslate"><span class="pre">bar</span></code>), e.g.</td>
+<td>Parse crack name in the format is (ijk)[lmn], with negative numbers denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (short for <code class="docutils literal notranslate"><span class="pre">bar</span></code>), e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_hybrid_calc_args" title="quippy.crack.crack_hybrid_calc_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_hybrid_calc_args</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -275,7 +275,7 @@
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_g_to_k" title="quippy.crack.crack_g_to_k"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g_to_k</span></code></a>(g,e,v,[mode])</td>
-<td>Convert from energy release rate <span class="math notranslate">\(G\)</span> to stress intensity factor <span class="math notranslate">\(K\)</span></td>
+<td>Convert from energy release rate <span class="math notranslate">\(G\)</span> to stress intensity factor <span class="math notranslate">\(K\)</span> Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.percolation_step" title="quippy.crack.percolation_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">percolation_step</span></code></a>(grid)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -311,7 +311,7 @@
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_is_topbottom_edge_atom" title="quippy.crack.crack_is_topbottom_edge_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_is_topbottom_edge_atom</span></code></a>(slab,i,edge_gap)</td>
-<td>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is the topbottom surface of slab</td>
+<td>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is the topbottom surface of slab Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```OrigHeight/2`\)</span></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_make_slab" title="quippy.crack.crack_make_slab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_make_slab</span></code></a>(params,classicalpot)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -398,7 +398,7 @@
 <td>Calculate <span class="math notranslate">\(epsilon\)</span> from <span class="math notranslate">\(G\)</span>, inverse of above formula.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_k_to_g" title="quippy.crack.crack_k_to_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_k_to_g</span></code></a>(k,e,v,[mode])</td>
-<td>Convert from stress intensity factor <span class="math notranslate">\(K\)</span> to energy release rate <span class="math notranslate">\(G\)</span></td>
+<td>Convert from stress intensity factor <span class="math notranslate">\(K\)</span> to energy release rate <span class="math notranslate">\(G\)</span> Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_update_connect" title="quippy.crack.crack_update_connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_update_connect</span></code></a>(at,params)</td>
 <td>Use hysteretic version of calc_connect() so we can use relative cutoffs Update the connectivity of a crack slab.</td>
@@ -489,7 +489,7 @@
 <td>Returns stress instensity factor for mode I loading (K_I) in MPa sqrt(m)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.make_crack_advance_map" title="quippy.crack.make_crack_advance_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_crack_advance_map</span></code></a>(atoms[,&nbsp;tol])</td>
-<td>Find mapping from atom indices to the index of atom one step ahead of them in the crack propagation direction (i.e.</td>
+<td>Find mapping from atom indices to the index of atom one step ahead of them in the crack propagation direction (i.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.find_crack_tip_coordination" title="quippy.crack.find_crack_tip_coordination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_crack_tip_coordination</span></code></a>(atoms[,&nbsp;…])</td>
 <td>Return position of crack tip in <cite>atoms</cite>, based on atomic coordination.</td>
@@ -671,13 +671,13 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Guess at bulk lattice parameter, used to obtain accurate result.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_load_interp_length" title="quippy.crack.CrackParams.crack_load_interp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_load_interp_length</span></code></a></td>
-<td>Length over which linear interpolation between k-field</td>
+<td>Length over which linear interpolation between k-field and uniform strain field is carried out</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_loading" title="quippy.crack.CrackParams.crack_loading"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_loading</span></code></a></td>
-<td><code class="docutils literal notranslate"><span class="pre">uniform</span></code> for constant load,</td>
+<td><code class="docutils literal notranslate"><span class="pre">uniform</span></code> for constant load, <code class="docutils literal notranslate"><span class="pre">ramp</span></code> for linearly decreasing load along <span class="math notranslate">\(x\)</span>, <code class="docutils literal notranslate"><span class="pre">kfield</span></code> for Irwin plane strain K-field, <code class="docutils literal notranslate"><span class="pre">interp_kfield_uniform</span></code> to linearly interpolate between k-field (at crack tip) and uniform at distance <code class="docutils literal notranslate"><span class="pre">crack_load_interp_length</span></code> <code class="docutils literal notranslate"><span class="pre">reduce_uniform</span></code> for reducing load</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_name" title="quippy.crack.CrackParams.crack_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_name</span></code></a></td>
-<td>Crack name, in format <code class="docutils literal notranslate"><span class="pre">(abc)[def]</span></code> with negative indices denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (for bar), e.g.</td>
+<td>Crack name, in format <code class="docutils literal notranslate"><span class="pre">(abc)[def]</span></code> with negative indices denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (for bar), e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_num_layers" title="quippy.crack.CrackParams.crack_num_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_num_layers</span></code></a></td>
 <td>Number of primitive cells in <span class="math notranslate">\(z\)</span> direction</td>
@@ -758,7 +758,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Number of hops used to generate fit region from embed region</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.fit_method" title="quippy.crack.CrackParams.fit_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_method</span></code></a></td>
-<td>Method to use for force mixing: should be one of</td>
+<td>Method to use for force mixing: should be one of begin{itemize}  item <code class="docutils literal notranslate"><span class="pre">lotf_adj_pot_svd</span></code> — LOTF using SVD to optimised the Adj Pot  item <code class="docutils literal notranslate"><span class="pre">lotf_adj_pot_minim</span></code> — LOTF using conjugate gradients to optimise the Adj Pot  item <code class="docutils literal notranslate"><span class="pre">lotf_adj_pot_sw</span></code> — LOTF using old style SW Adj Pot  item <code class="docutils literal notranslate"><span class="pre">conserve_momentum</span></code> — divide the total force on QM region over the fit atoms to conserve momentum  item <code class="docutils literal notranslate"><span class="pre">force_mixing</span></code> — force mixing with details depending on values of      <code class="docutils literal notranslate"><span class="pre">buffer_hops</span></code>, <code class="docutils literal notranslate"><span class="pre">transtion_hops</span></code> and <code class="docutils literal notranslate"><span class="pre">weight_interpolation</span></code>  item <code class="docutils literal notranslate"><span class="pre">force_mixing_abrupt</span></code> — simply use QM forces on QM atoms and MM forces on MM atoms      (shorthand for <code class="docutils literal notranslate"><span class="pre">method=force_mixing</span> <span class="pre">buffer_hops=0</span> <span class="pre">transition_hops=0</span></code>)  item <code class="docutils literal notranslate"><span class="pre">force_mixing_smooth</span></code> — use QM forces in QM region, MM forces in MM region and    linearly interpolate in buffer region  (shorthand for <code class="docutils literal notranslate"><span class="pre">method=force_mixing</span> <span class="pre">weight_interpolation=hop_ramp</span></code>)  item <code class="docutils literal notranslate"><span class="pre">force_mixing_super_smooth</span></code> — as above, but weight forces on each atom by distance from    centre of mass of core region (shorthand for <code class="docutils literal notranslate"><span class="pre">method=force_mixing</span> <span class="pre">weight_interpolation=distance_ramp</span></code>) end{itemize}</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.fit_spring_hops" title="quippy.crack.CrackParams.fit_spring_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_spring_hops</span></code></a></td>
 <td>Number of hops used when creating list of springs</td>
@@ -815,7 +815,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>If using fire_minim, the maximum step size</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_linminroutine" title="quippy.crack.CrackParams.minim_linminroutine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_linminroutine</span></code></a></td>
-<td>Linmin routine, e.g.</td>
+<td>Linmin routine, e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_max_steps" title="quippy.crack.CrackParams.minim_max_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_max_steps</span></code></a></td>
 <td>Maximum number of minimisation steps.</td>
@@ -839,7 +839,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Maximum number of cg cycles for MM minimisation</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_method" title="quippy.crack.CrackParams.minim_mm_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_method</span></code></a></td>
-<td>Minim method for MM minimisation, e.g.</td>
+<td>Minim method for MM minimisation, e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_tol" title="quippy.crack.CrackParams.minim_mm_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_tol</span></code></a></td>
 <td>Target force tolerance for MM minimisation</td>
@@ -848,7 +848,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Number of steps between XYZ confgurations printed</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_tol" title="quippy.crack.CrackParams.minim_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_tol</span></code></a></td>
-<td>Target force tolerance - geometry optimisation is considered to be</td>
+<td>Target force tolerance - geometry optimisation is considered to be converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <code class="docutils literal notranslate"><span class="pre">tol</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_args" title="quippy.crack.CrackParams.qm_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_args</span></code></a></td>
 <td>Arguments used to initialise QM potential</td>
@@ -938,7 +938,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate">\(x\)</span> direction.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_buffer" title="quippy.crack.CrackParams.selection_ellipse_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_buffer</span></code></a></td>
-<td>Difference in size between inner and outer selection ellipses, i.e.</td>
+<td>Difference in size between inner and outer selection ellipses, i.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_max_qm_atoms" title="quippy.crack.CrackParams.selection_max_qm_atoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_max_qm_atoms</span></code></a></td>
 <td>Maximum number of QM atoms to select</td>
@@ -947,7 +947,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>One of <code class="docutils literal notranslate"><span class="pre">static</span></code>, <code class="docutils literal notranslate"><span class="pre">coordination</span></code>, <code class="docutils literal notranslate"><span class="pre">crack_front</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_update_interval" title="quippy.crack.CrackParams.selection_update_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_update_interval</span></code></a></td>
-<td>intervals between QM selection updates, defaults to 0.0_dp meaning <code class="docutils literal notranslate"><span class="pre">every</span> <span class="pre">step</span></code></td>
+<td>intervals between QM selection updates, defaults to 0.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.simulation_classical" title="quippy.crack.CrackParams.simulation_classical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_classical</span></code></a></td>
 <td>Perform a purely classical simulation</td>
