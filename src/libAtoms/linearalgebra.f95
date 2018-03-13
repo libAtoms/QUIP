@@ -732,6 +732,7 @@ CONTAINS
 
     integer  :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -746,6 +747,7 @@ CONTAINS
 
     integer  :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -762,6 +764,7 @@ CONTAINS
 
     integer  :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -778,6 +781,7 @@ CONTAINS
 
     integer :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -794,6 +798,7 @@ CONTAINS
 
     integer :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i)=vect(i)*matrix(:,i)
     end do

@@ -199,8 +199,8 @@ contains
       integer :: primcell_counter,i_n,n1i,n2i,n3i,n1eff,n2eff,n3eff,jneff
       real(dp), dimension(:,:,:,:), allocatable :: fine_force_const
       real(dp), dimension(3,3) :: super_cell_lattice,fract_matrix
-
-
+      !character(2), dimension(1,len(at_in%species)) :: species_array
+      integer :: i_species
     
       INIT_ERROR(error)
     
@@ -344,7 +344,15 @@ contains
 
 ! Printing out the force constant and atomic positions in the phonopy format:
       if_my_phonopy_force_const_mat: if (my_phonopy_force_const_mat) then
-         call print_warning("phonopy_force_const_mat: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
+         call print_warning("phonopy_force_const_mat: This program prints out the force constants and atoms in the way phonopy 1.12.4 expects them. It is not guaranteed to work with other versions and does only support a single atomic species at a time (no alloys).")
+         !species_array = at_in%species
+!         do i_species = 2,len(at_in%species)
+!            print *, at_in%species(:,1)
+!            if ( (at_in%species(:,1)) /= (at_in%species(:,i_species)) ) then
+!                print *, at_in%species(:,i_species)
+!                call system_abort("Only one species is supported. Aborting program.")
+!            endif
+!         enddo
          call print("Force constant matrix using supercell/supercell fine:")
 
          allocate(fine_force_const(at_in%N,3,do_phonon_supercell_fine(1)*do_phonon_supercell_fine(2)*do_phonon_supercell_fine(3)*at_in%N,3))
@@ -371,47 +379,51 @@ contains
 
          print *, do_phonon_supercell_fine(1)*do_phonon_supercell_fine(2)*do_phonon_supercell_fine(3)*at_in%N
 
-         loop_n1i: do n1i = 0, do_phonon_supercell_fine(1)-1
-         do n2i = 0, do_phonon_supercell_fine(2)-1
-         do n3i = 0, do_phonon_supercell_fine(3)-1
-            do i = 1, at_in%N
-               i_n = ((n1i*do_phonon_supercell_fine(2)+n2i)*do_phonon_supercell_fine(3)+n3i)*at_in%N+i
+
+!Some loops needed to be reveresed compared to the phonon calculation further below as phonopy orders the supercell atoms differently than we do:
+         do i = 1, at_in%N
+            do n3i = 0, do_phonon_supercell_fine(3)-1
+            do n2i = 0, do_phonon_supercell_fine(2)-1
+            do n1i = 0, do_phonon_supercell_fine(1)-1
+!               i_n = ((n1i*do_phonon_supercell_fine(2)+n2i)*do_phonon_supercell_fine(3)+n3i)*at_in%N+i
+               i_n = 1 + (((i-1)*do_phonon_supercell_fine(3)+n3i)*do_phonon_supercell_fine(2)+n2i)*do_phonon_supercell_fine(1)+n1i
                primcell_counter = 0
-               do n1 = 0, do_phonon_supercell_fine(1)-1
-               do n2 = 0, do_phonon_supercell_fine(2)-1
-               do n3 = 0, do_phonon_supercell_fine(3)-1
-                  do j = 1, at_in%N
-                     jn = ((n1*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(3)+n3)*at_in%N+j
+               do j = 1, at_in%N
+                  do n3 = 0, do_phonon_supercell_fine(3)-1
+                  do n2 = 0, do_phonon_supercell_fine(2)-1
+                  do n1 = 0, do_phonon_supercell_fine(1)-1
+                     jn = 1 + (((j-1)*do_phonon_supercell_fine(3)+n3)*do_phonon_supercell_fine(2)+n2)*do_phonon_supercell_fine(1)+n1
 
                      n1eff = mod(do_phonon_supercell_fine(1) + n1 - n1i,do_phonon_supercell_fine(1))
                      n2eff = mod(do_phonon_supercell_fine(2) + n2 - n2i,do_phonon_supercell_fine(2))
                      n3eff = mod(do_phonon_supercell_fine(3) + n3 - n3i,do_phonon_supercell_fine(3))
 
+                     !This makes sure that we use the right atom (regarding the supercell as well as the phonopy atom numbering convention).
                      jneff = ((n1eff*do_phonon_supercell_fine(2)+n2eff)*do_phonon_supercell_fine(3)+n3eff)*at_in%N+j
 
                      print *, i_n, jn
                      do alpha = 1, 3
 
-                         print *, fine_force_const(i,1,jneff,alpha), fine_force_const(i,2,jneff,alpha), &
+                        print *, fine_force_const(i,1,jneff,alpha), fine_force_const(i,2,jneff,alpha), &
                                & fine_force_const(i,3,jneff,alpha)
 
                      enddo ! beta
 
-                  enddo ! j
-               enddo ! n3
-               enddo ! n2
-               enddo ! n1
-            enddo ! i
-         enddo ! n3i
-         enddo ! n2i
-         enddo loop_n1i ! n1i
+                  enddo ! n1
+                  enddo ! n2
+                  enddo ! n3
+               enddo ! j
+            enddo ! n1i
+            enddo ! n2i
+            enddo ! n3i
+         enddo ! i
 
 
          deallocate(fine_force_const)
 
          print *, "Atom postions for above given force constant in format for phonopy:"
 
-         print *, "Ti"
+         print *, at_in%species(:,1)
          print *, 1.0_dp
          super_cell_lattice(1,:) = at_in%lattice .mult. (/do_phonon_supercell_fine(1),0,0/)
          super_cell_lattice(2,:) = at_in%lattice .mult. (/0,do_phonon_supercell_fine(2),0/)
@@ -425,18 +437,19 @@ contains
          fract_matrix = transpose(super_cell_lattice)
          call inverse(fract_matrix)
          
-         do n1 = 0, do_phonon_supercell_fine(1)-1
-            do n2 = 0, do_phonon_supercell_fine(2)-1
-               do n3= 0, do_phonon_supercell_fine(3)-1
-                  do j = 1, at_in%N
+
+         do j = 1, at_in%N
+            do n3= 0, do_phonon_supercell_fine(3)-1
+               do n2 = 0, do_phonon_supercell_fine(2)-1
+                  do n1 = 0, do_phonon_supercell_fine(1)-1
 
                      pp = at_in%lattice .mult. (/n1,n2,n3/)
 
                      print *, (fract_matrix .mult. (at_in%pos(:,j) + pp))
-                  enddo ! j
-               enddo ! n3
-            enddo ! n2
-         enddo ! n1
+                  enddo ! n1
+               enddo ! n2
+            enddo ! n3
+         enddo ! j
 
          print *, "Finished atom postions for above given force constant in format for phonopy:"
       endif if_my_phonopy_force_const_mat

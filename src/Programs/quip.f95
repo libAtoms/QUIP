@@ -163,7 +163,7 @@ implicit none
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
   call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation, help_string="project out rotation components from phonons?")
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat, help_string="print out force constant matrix from phonon calculation?")
-  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
+  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy 1.12.4 format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: It is not guaranteed to work with versions different from phonopy 1.12.4 and does only support a single atomic species at a time (no alloys).")
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons, help_string="compute phonons in parallel?")
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment, help_string="compute dipole moment?")
   call param_register(cli_params, 'absorption', 'F', do_absorption, help_string="compute absorption spectrum (electronic, TB only)?")
@@ -403,7 +403,7 @@ implicit none
 	did_anything = .true.
         do_calc = .true.
         call set_param_value(at, "Minim_Hydrostatic_Strain", relax_hydrostatic_strain)
-	! call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
+!       call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
 	call set_param_value(at, "Minim_Lattice_Fix", reshape(relax_lattice_fix, (/ 3, 3 /)) )
         if(relax_rattle > 0.0) then
            call randomise(at%pos, relax_rattle)

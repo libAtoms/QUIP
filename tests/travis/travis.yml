@@ -137,8 +137,10 @@ script:
 after_success:
   # There is no notification if the docs fail to build,
   # so cause a failure by timeout using a long sleep :)
+  # fcntl added due to https://github.com/travis-ci/travis-ci/issues/8189
+  - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
   - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then
-      tests/travis/build_docs.sh || sleep 11m ;
+      tests/travis/build_docs.sh || sleep 11m;
     fi
 
 # Public and private docker images with GAP, pushed from here
