@@ -173,6 +173,11 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
    real(dp) :: f_cut = 1.0, df_cut = 0.0
    real(dp) :: use_cutoff
 
+   type(Dictionary) :: params
+   logical :: has_atom_mask_name
+   logical, dimension(:), pointer :: atom_mask_pointer
+   character(STRING_LENGTH) :: atom_mask_name
+
    INIT_ERROR(error)
 
    if (present(e)) e = 0.0
@@ -194,8 +199,27 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
       RAISE_ERROR('IPModel_ZBL_Calc: local_e calculation requested but not supported yet',error)
    end if
 
+   atom_mask_pointer => null()
+   if (present(args_str)) then
+       call initialise(params)
+       call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name,  has_value_target = has_atom_mask_name, help_string="name of atom_mask property")
+       if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='IPModel_ZBL_args_str')) then
+          RAISE_ERROR("IPModel_ZBL_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+       endif
+       call finalise(params)
+   endif
+   if (has_atom_mask_name) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) then
+           RAISE_ERROR("IPModel_ZBL_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+        endif
+   endif
+
    use_cutoff = this%use_cutoff
    do i = 1, at%N
+      if (associated(atom_mask_pointer)) then
+        if (.not. atom_mask_pointer(i)) cycle
+      endif
+
       i_is_min_image = is_min_image(at,i)
 
       if (present(mpi)) then
@@ -207,7 +231,7 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
       do ji = 1, n_neighbours(at, i)
          j = neighbour(at, i, ji, distance=r, cosines=dr)
 
-         if (i < j) cycle
+         ! if (i < j) cycle
 
          if (this%cutoff_scale_cov_rad) use_cutoff = this%use_cutoff * (ElementCovRad(at%Z(i))+ElementCovRad(at%Z(j)))
 
@@ -231,26 +255,18 @@ subroutine IPModel_ZBL_Calc(this, at, e, local_e, f, virial, local_virial, args_
                 de = de - c_shifted*(t_1_shifted+t_2_shifted+t_3_shifted+t_4_shifted)
             endif
             if (present(e)) then
-               if (i == j) then
-                  e = e + 0.5*de*f_cut
-               else
-                  e = e + de*f_cut
-               end if
+               e = e + 0.5*de*f_cut
             end if
             if (present(f) .or. present(virial)) then
                if (use_cutoff > 0.0 .and. this%cutoff_width > 0.0) df_cut = dpoly_switch(r, use_cutoff, this%cutoff_width)
                de_dr = -c/r*(t_1+t_2+t_3+t_4) + c/a*(this%p_exp_1*t_1+this%p_exp_2*t_2+this%p_exp_3*t_3+this%p_exp_4*t_4)
                de_dr = de_dr*f_cut + de*df_cut
                if (present(f)) then
-                   f(:,i) = f(:,i) + de_dr*dr
-                   if ( i/=j ) f(:,j) = f(:,j) - de_dr*dr
+                   f(:,i) = f(:,i) + 0.5*de_dr*dr
+                   f(:,j) = f(:,j) - 0.5*de_dr*dr
                end if
                if (present(virial)) then
-                  if (i == j) then
-                     virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*r
-                  else
-                     virial = virial - de_dr*(dr .outer. dr)*r
-                  endif
+                  virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*r
                endif
             end if
          end if
