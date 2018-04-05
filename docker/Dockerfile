@@ -95,3 +95,4 @@ ADD files/demo.ipynb /root/
 CMD jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
 EXPOSE 8899
+
