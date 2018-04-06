@@ -1,4 +1,4 @@
-# Base Python image has most up to date Python parts
+# Base Python image has most up to date Python parts 
 FROM libatomsquip/quip-base-software
 
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
