@@ -371,6 +371,14 @@ IMD checkpoint
 
 .. _povray:
 
+NMWiz plugin for VMD
+------------------------------------
+
+.. automodule:: quippy.nmwiz
+    :synopsis: Normal mode visualizer
+
+.. _nmwiz:
+
 POV-ray
 -------
 
