@@ -38,28 +38,29 @@ import quippy
 
 class NMDWriter(object):
 
-    """Writer for the .nmd format
+    """Writer for the '.nmd' format
 
     The Atoms object must have normal modes -- both eigenvectors and
     eigenvalues (force constants in the normal-mode basis) of the
-    Hessian matrix -- stored in ``atoms.info['hessian_eigenvalue_X']``
-    and ``atoms.arrays['hessian_eigenvector_X']``, where ``X`` ranges
+    Hessian matrix -- stored in 'atoms.info["hessian_eigenvalue_X"]'
+    and 'atoms.arrays["hessian_eigenvector_X"]', where 'X' ranges
     from 1 to the number of stored normal modes.
 
     This writer implements the context manager protocol, so you can
-    use it like so::
+    use it like so:
 
         with NMDWriter(filename) as writer:
             writer.write(atoms)
 
     and the associated file will be closed automatically when done.
 
-    The ``.nmd`` file format only supports single configurations, so
+    The '.nmd' file format only supports single configurations, so
     this writer doesn't accept trajectories.
     """
 
     def __init__(self, filename):
-        if filename == 'stdout':
+        """Open ``filename`` for writing (use ``-`` for stdout)"""
+        if filename == '-':
             self._file = sys.stdout
         else:
             self._file = open(filename, 'w')
@@ -122,5 +123,6 @@ class NMDWriter(object):
         return False
 
     def close(self):
+        """Close the file (unnecessary if using the ``with`` statment)"""
         self.__exit__(None, None, None)
 
