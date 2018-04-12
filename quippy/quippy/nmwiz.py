@@ -34,6 +34,7 @@ import sys
 
 from numpy import abs, sqrt
 import quippy
+from quippy.io import AtomsWriters
 
 
 class NMDWriter(object):
@@ -125,4 +126,7 @@ class NMDWriter(object):
     def close(self):
         """Close the file (unnecessary if using the ``with`` statment)"""
         self.__exit__(None, None, None)
+
+
+AtomsWriters['nmd'] = NMDWriter
 

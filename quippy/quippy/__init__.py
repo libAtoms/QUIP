@@ -285,6 +285,7 @@ import quippy.asap
 import quippy.povray
 import quippy.cube
 import quippy.netcdf
+import quippy.nmwiz
 import quippy.imd
 import quippy.vasp
 import quippy.dan
