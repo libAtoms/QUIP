@@ -41,10 +41,10 @@ class NMDWriter(object):
     """Writer for the .nmd format
 
     The Atoms object must have normal modes -- both eigenvectors and
-    eigenvalues (force constants) of the Hessian matrix -- stored in
-    ``atoms.info['hessians_forceconst_X'`` and
-    ``atoms.arrays['hessians_vector_X']``, where ``X`` ranges from 1
-    to the number of stored normal modes.
+    eigenvalues (force constants in the normal-mode basis) of the
+    Hessian matrix -- stored in ``atoms.info['hessian_eigenvalue_X']``
+    and ``atoms.arrays['hessian_eigenvector_X']``, where ``X`` ranges
+    from 1 to the number of stored normal modes.
 
     This writer implements the context manager protocol, so you can
     use it like so::
@@ -78,7 +78,7 @@ class NMDWriter(object):
             eigvecs = []
             mode_idces = []
             while True:
-                mode_string = 'hessians_vector_{:d}'.format(mode_idx)
+                mode_string = 'hessian_eigenvector_{:d}'.format(mode_idx)
                 eigvecs.append(atoms.get_array(mode_string))
                 mode_idces.append(mode_idx)
                 mode_idx += 1
@@ -86,21 +86,21 @@ class NMDWriter(object):
             if not mode_idces:
                 # Oh great, Python 2 doesn't support exception chaining
                 #py2kfacepalm
-                #raise ValueError("Couldn't find any mode vectors "
+                #raise ValueError("Couldn't find any Hessian eigenvectors "
                 #                 "in Atoms object") from kerr
                 raise ValueError(
-                    "Couldn't find any mode vectors in Atoms object "
+                    "Couldn't find any Hessian eigenvectors in Atoms object "
                     "(key '{:s}' missing)".format(mode_string))
         try:
             eigvals = []
             for mode_idx in mode_idces:
-                mode_string = 'hessians_forceconst_{:d}'.format(mode_idx)
+                mode_string = 'hessian_eigenvalue_{:d}'.format(mode_idx)
                 eigvals.append(atoms.info[mode_string])
         except KeyError as kerr:
             # This is how easy it would be in Python 3
-            #raise ValueError("Couldn't find force constant for mode number "
+            #raise ValueError("Couldn't find Hessian eigenvalue number "
             #                 "{:d}".format(mode_idx)) from kerr
-            raise ValueError("Couldn't find force constant for mode number "
+            raise ValueError("Couldn't find Hessian eigenvalue number "
                              "{:d} (key '{:s}')".format(mode_idx, mode_string))
         # Write the actual file
         self._file.write('title ' + title + '\n')
