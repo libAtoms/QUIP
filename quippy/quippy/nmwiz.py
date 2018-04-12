@@ -84,16 +84,24 @@ class NMDWriter(object):
                 mode_idx += 1
         except KeyError as kerr:
             if not mode_idces:
-                raise KeyError("Couldn't find any mode vectors "
-                               "in Atoms object") from kerr
+                # Oh great, Python 2 doesn't support exception chaining
+                #py2kfacepalm
+                #raise ValueError("Couldn't find any mode vectors "
+                #                 "in Atoms object") from kerr
+                raise ValueError(
+                    "Couldn't find any mode vectors in Atoms object "
+                    "(key '{:s}' missing)".format(mode_string))
         try:
             eigvals = []
             for mode_idx in mode_idces:
                 mode_string = 'hessians_forceconst_{:d}'.format(mode_idx)
                 eigvals.append(atoms.info[mode_string])
         except KeyError as kerr:
-            raise KeyError("Couldn't find force constant for mode number "
-                           "{:d}".format(mode_idx)) from kerr
+            # This is how easy it would be in Python 3
+            #raise ValueError("Couldn't find force constant for mode number "
+            #                 "{:d}".format(mode_idx)) from kerr
+            raise ValueError("Couldn't find force constant for mode number "
+                             "{:d} (key '{:s}')".format(mode_idx, mode_string))
         # Write the actual file
         self._file.write('title ' + title + '\n')
         self._file.write('coordinates ')
