@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>GAP XML functions &mdash; quippy 22731ad+ documentation</title>
+  <title>GAP XML functions &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,29 +27,20 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="next" title="Visualisation Tools" href="visualisation.html"/>
-        <link rel="prev" title="Utility functions" href="util.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Visualisation Tools" href="visualisation.html" />
+    <link rel="prev" title="Utility functions" href="util.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +57,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -74,7 +65,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -148,7 +139,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -156,9 +147,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -252,7 +244,7 @@ standard library module.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaultdict</span></code></td>
-<td>defaultdict(default_factory[, .</td>
+<td>defaultdict(default_factory[, …]) –&gt; dict with default factory</td>
 </tr>
 </tbody>
 </table>
@@ -320,31 +312,30 @@ Return a string containing the combined potential.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>base_filename</strong> : str</p>
-<blockquote>
-<div><p>Path to xml file to use as the basis for combined xml file</p>
-</div></blockquote>
-<p><strong>extra_filenames</strong> : list of str</p>
-<blockquote>
-<div><p>Paths to xml files to combine into base</p>
-</div></blockquote>
-<p><strong>remove_xyz</strong> : bool</p>
-<blockquote>
-<div><p>If True, any XYZ_data will be removed from the output. If lxml is not
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>base_filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Path to xml file to use as the basis for combined xml file</p>
+</dd>
+<dt><strong>extra_filenames</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd><p class="first last">Paths to xml files to combine into base</p>
+</dd>
+<dt><strong>remove_xyz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If True, any XYZ_data will be removed from the output. If lxml is not
 avaiable XYZ_data will lose CDATA status and slow parsing. There is
 also no effort made to combine XYZ_data from the extra xml files</p>
-</div></blockquote>
-<p><strong>label</strong> : str or None</p>
-<blockquote>
-<div><p>If not None, the string is used to label the combined potential in
+</dd>
+<dt><strong>label</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd><p class="first last">If not None, the string is used to label the combined potential in
 the output, otherwise the label from base is used.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>combined_xml</strong> : str</p>
-<blockquote class="last">
-<div><p>String containing the combined xml contents</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>combined_xml</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">String containing the combined xml contents</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -361,10 +352,11 @@ if <code class="docutils literal notranslate"><span class="pre">gap_version</spa
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>tree</strong> : Element</p>
-<blockquote class="last">
-<div><p>An ElementTree of a GAP xml</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>tree</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Element</span></dt>
+<dd><p class="first last">An ElementTree of a GAP xml</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -381,24 +373,22 @@ coordinates. Modify <code class="docutils literal notranslate"><span class="pre"
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>base</strong> : Element</p>
-<blockquote>
-<div><p>The ElementTree in which all the descriptors will be combined</p>
-</div></blockquote>
-<p><strong>extras</strong> : list of Element</p>
-<blockquote>
-<div><p>All other ElementTrees to extract descriptors from</p>
-</div></blockquote>
-<p><strong>remove_xyz</strong> : bool</p>
-<blockquote>
-<div><p>If True, remove any <code class="docutils literal notranslate"><span class="pre">XYZ_data</span></code> elements; If False then leave
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>base</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Element</span></dt>
+<dd><p class="first last">The ElementTree in which all the descriptors will be combined</p>
+</dd>
+<dt><strong>extras</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Element</span></dt>
+<dd><p class="first last">All other ElementTrees to extract descriptors from</p>
+</dd>
+<dt><strong>remove_xyz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If True, remove any <code class="docutils literal notranslate"><span class="pre">XYZ_data</span></code> elements; If False then leave
 anything found in base (XYZ_data is not combined)</p>
-</div></blockquote>
-<p><strong>label</strong> : str or None</p>
-<blockquote class="last">
-<div><p>Use the string as the label for the new potential, otherwise
+</dd>
+<dt><strong>label</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd><p class="first last">Use the string as the label for the new potential, otherwise
 use the label from base.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -415,14 +405,14 @@ and return nothing.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>base</strong> : Element</p>
-<blockquote>
-<div><p>The ElementTree to be updated with maximum gap_version</p>
-</div></blockquote>
-<p><strong>extras</strong> : list of Element</p>
-<blockquote class="last">
-<div><p>All other ElementTrees to be scanned for gap_version</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>base</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Element</span></dt>
+<dd><p class="first last">The ElementTree to be updated with maximum gap_version</p>
+</dd>
+<dt><strong>extras</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Element</span></dt>
+<dd><p class="first last">All other ElementTrees to be scanned for gap_version</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -439,14 +429,14 @@ place and return nothing.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>base</strong> : Element</p>
-<blockquote>
-<div><p>The ElementTree to be modified with the sum of <code class="docutils literal notranslate"><span class="pre">e0</span></code> values</p>
-</div></blockquote>
-<p><strong>extras</strong> : list of Element</p>
-<blockquote class="last">
-<div><p>All other ElementTrees to added to the summed <code class="docutils literal notranslate"><span class="pre">e0</span></code> values</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>base</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Element</span></dt>
+<dd><p class="first last">The ElementTree to be modified with the sum of <code class="docutils literal notranslate"><span class="pre">e0</span></code> values</p>
+</dd>
+<dt><strong>extras</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of Element</span></dt>
+<dd><p class="first last">All other ElementTrees to added to the summed <code class="docutils literal notranslate"><span class="pre">e0</span></code> values</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -457,9 +447,7 @@ place and return nothing.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -481,7 +469,7 @@ place and return nothing.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -499,7 +487,8 @@ place and return nothing.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -518,14 +507,13 @@ place and return nothing.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

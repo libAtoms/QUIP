@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.util &mdash; quippy 22731ad+ documentation</title>
+  <title>quippy.util &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="../../_static/hybrid.png" class="logo" />
+            <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -124,7 +115,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">quippy</a>
@@ -132,9 +123,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -163,8 +155,6 @@
     
     
       <li class="wy-breadcrumbs-aside">
-        
-            
         
       </li>
     
@@ -233,12 +223,12 @@
                     <span class="nb">format</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">format</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="vm">__class__</span>
-</div>
-    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="nb">format</span>
+
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="nb">format</span></div>
 
 <div class="viewcode-block" id="args_str"><a class="viewcode-back" href="../../util.html#quippy.util.args_str">[docs]</a><span class="k">def</span> <span class="nf">args_str</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Construct args string from file, string or mapping object&quot;&quot;&quot;</span></div>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">PuPyDictionary</span><span class="p">(</span><span class="n">D</span><span class="p">))</span>
+    <span class="sd">&quot;&quot;&quot;Construct args string from file, string or mapping object&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">PuPyDictionary</span><span class="p">(</span><span class="n">D</span><span class="p">))</span></div>
 
 <span class="n">dict_to_args_str</span> <span class="o">=</span> <span class="n">args_str</span> <span class="c1"># synonym for args_str() function</span>
 
@@ -248,13 +238,13 @@
     <span class="k">class</span> <span class="nc">SliceParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">idx</span>
-</div>
-    <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="s1">&#39;SliceParser()[</span><span class="si">%s</span><span class="s1">]&#39;</span> <span class="o">%</span> <span class="n">S</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="s1">&#39;SliceParser()[</span><span class="si">%s</span><span class="s1">]&#39;</span> <span class="o">%</span> <span class="n">S</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="parse_params"><a class="viewcode-back" href="../../util.html#quippy.util.parse_params">[docs]</a><span class="k">def</span> <span class="nf">parse_params</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
    <span class="sd">&quot;&quot;&quot;Read key=value pairs from a string or list of string and return a standard Python dictionary&quot;&quot;&quot;</span>
-   <span class="n">p</span> <span class="o">=</span> <span class="n">PuPyDictionary</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
-   <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+   <span class="n">p</span> <span class="o">=</span> <span class="n">PuPyDictionary</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+   <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
 
 <span class="n">args_str_to_dict</span> <span class="o">=</span> <span class="n">parse_params</span> <span class="c1"># synonym for parse_params() function</span>
 
@@ -267,8 +257,8 @@
         <span class="n">L</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">L</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">]</span>
-</div>
-    <span class="k">return</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">L</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">L</span><span class="p">]</span></div>
 
 <span class="k">def</span> <span class="nf">loadstring</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">StringIO</span>
@@ -330,8 +320,8 @@
 
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">toxml</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Return entire contents of file</span></div>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+        <span class="c1"># Return entire contents of file</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="is_interactive_shell"><a class="viewcode-back" href="../../util.html#quippy.util.is_interactive_shell">[docs]</a><span class="k">def</span> <span class="nf">is_interactive_shell</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Return True if we&#39;re running in an interactive shell (including IPython)&quot;&quot;&quot;</span>
@@ -342,8 +332,8 @@
         <span class="n">__IPYTHON__</span>
     <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span></div>
-        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <span class="k">def</span> <span class="nf">read_text_file</span><span class="p">(</span><span class="n">fh</span><span class="p">):</span>
@@ -370,22 +360,22 @@
    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   Return a list of files matching `pattern` sorted by modification time</span>
 <span class="sd">   &quot;&quot;&quot;</span>
-</div>
-   <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="most_recent_file"><a class="viewcode-back" href="../../util.html#quippy.util.most_recent_file">[docs]</a><span class="k">def</span> <span class="nf">most_recent_file</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the most recent file matching glob `pattern`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-</div>
-    <span class="k">return</span> <span class="n">time_ordered_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">time_ordered_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="most_recent_files"><a class="viewcode-back" href="../../util.html#quippy.util.most_recent_files">[docs]</a><span class="k">def</span> <span class="nf">most_recent_files</span><span class="p">(</span><span class="n">dir_pattern</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the most recent file matching file_pattern in each of the directories matching dir_pattern</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
-    <span class="k">return</span> <span class="p">[</span><span class="n">most_recent_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">))</span><span class="o">+</span><span class="n">suffix</span> <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">dir_pattern</span><span class="p">)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">most_recent_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">))</span><span class="o">+</span><span class="n">suffix</span> <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">dir_pattern</span><span class="p">)]</span></div>
 
 
 
@@ -418,8 +408,8 @@
             <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
             <span class="n">summary</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;len&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
                                    <span class="s1">&#39;sum&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
-                                   <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">mean</span><span class="p">()}</span></div>
-    <span class="k">return</span> <span class="n">timings</span><span class="p">,</span> <span class="n">summary</span>
+                                   <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">mean</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">timings</span><span class="p">,</span> <span class="n">summary</span></div>
 
 
 <div class="viewcode-block" id="write_timings"><a class="viewcode-back" href="../../util.html#quippy.util.write_timings">[docs]</a><span class="k">def</span> <span class="nf">write_timings</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">timings</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;calls&#39;</span><span class="p">,</span> <span class="n">wall_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpu_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -466,14 +456,12 @@
 
     <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sorted_items</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">timing_types</span><span class="p">:</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%-20s</span><span class="s1"> calls </span><span class="si">%-6d</span><span class="s1"> total </span><span class="si">%s</span><span class="s1"> </span><span class="si">%6.2f</span><span class="s1"> mean </span><span class="si">%s</span><span class="s1"> </span><span class="si">%6.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span></div>
-                        <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;len&#39;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;sum&#39;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]))</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%-20s</span><span class="s1"> calls </span><span class="si">%-6d</span><span class="s1"> total </span><span class="si">%s</span><span class="s1"> </span><span class="si">%6.2f</span><span class="s1"> mean </span><span class="si">%s</span><span class="s1"> </span><span class="si">%6.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;len&#39;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;sum&#39;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]))</span></div>
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -486,7 +474,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -504,7 +492,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -523,14 +512,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

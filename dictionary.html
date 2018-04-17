@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 22731ad+ documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -148,7 +139,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -156,9 +147,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -416,21 +408,22 @@ files:</p>
 </pre></div>
 </div>
 <p>Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Dictionary.f95">src/libAtoms/Dictionary.f95</a>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.cache_invalid" title="quippy.dictionary.Dictionary.cache_invalid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_invalid</span></code></a></td>
-<td>non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.key_cache_invalid" title="quippy.dictionary.Dictionary.key_cache_invalid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key_cache_invalid</span></code></a></td>
-<td>non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any keys changed</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.n" title="quippy.dictionary.Dictionary.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></td>
-<td>number of entries in use</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.dictionary.Dictionary.cache_invalid" title="quippy.dictionary.Dictionary.cache_invalid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_invalid</span></code></a></dt>
+<dd><p class="first last">non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dictionary.Dictionary.key_cache_invalid" title="quippy.dictionary.Dictionary.key_cache_invalid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key_cache_invalid</span></code></a></dt>
+<dd><p class="first last">non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any keys changed</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dictionary.Dictionary.n" title="quippy.dictionary.Dictionary.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></dt>
+<dd><p class="first last">number of entries in use</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -804,7 +797,11 @@ files:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>from</strong> : <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -820,8 +817,12 @@ files:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>from</strong> : <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -838,7 +839,11 @@ files:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>from</strong> : <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -856,11 +861,18 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>in</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>in</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>out</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>out</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -882,11 +894,18 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>key</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>key</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -908,11 +927,18 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>key</strong> :  input string(len=-1)</p>
-<p><strong>type</strong> :  int</p>
-<p><strong>thesize</strong> :  int</p>
-<p><strong>thesize2</strong> :  rank-1 array(‘i’) with bounds (2)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>key</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>thesize</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>thesize2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘i’) with bounds (2)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -935,11 +961,18 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>key</strong> :  input string(len=-1)</p>
-<p><strong>case_sensitive</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>key</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>case_sensitive</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dictionary_has_key</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dictionary_has_key</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -962,11 +995,18 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>key</strong> :  input string(len=-1)</p>
-<p><strong>case_sensitive</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>key</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>case_sensitive</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lookup_entry_i</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_lookup_entry_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -983,8 +1023,12 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1001,8 +1045,12 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1019,12 +1067,15 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>str</strong> :  input string(len=-1)</p>
-<p><strong>append</strong> :  input int, optional</p>
-<blockquote>
-<div><p>If true, append to dictionary (default false)</p>
-</div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>append</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If true, append to dictionary (default false)</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1041,7 +1092,11 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>key</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1466,11 +1521,18 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>keys</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
-<p><strong>out</strong> : <a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<p><strong>case_sensitive</strong> :  input int, optional</p>
-<p><strong>out_no_initialise</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>keys</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+<dt><strong>out</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>case_sensitive</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>out_no_initialise</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1487,10 +1549,16 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>key1</strong> :  input string(len=-1)</p>
-<p><strong>key2</strong> :  input string(len=-1)</p>
-<p><strong>case_sensitive</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>key1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>key2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>case_sensitive</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1507,26 +1575,28 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>real_format</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>Output format for reals, default is <code class="docutils literal notranslate"><span class="pre">f9.3</span></code></p>
-</div></blockquote>
-<p><strong>entry_sep</strong> :  input string(len=1), optional</p>
-<blockquote>
-<div><p>Entry seperator, default is single space</p>
-</div></blockquote>
-<p><strong>char_a_sep</strong> :  input string(len=1), optional</p>
-<blockquote>
-<div><p>Output separator for character arrays, default is <code class="docutils literal notranslate"><span class="pre">,</span></code></p>
-</div></blockquote>
-<p><strong>quote_char</strong> :  input string(len=1), optional</p>
-<blockquote>
-<div><p>Character to use to quote output fields containing whitespace, default is <code class="docutils literal notranslate"><span class="pre">&quot;</span></code></p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>real_format</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">Output format for reals, default is <code class="docutils literal notranslate"><span class="pre">f9.3</span></code></p>
+</dd>
+<dt><strong>entry_sep</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=1), optional</span></dt>
+<dd><p class="first last">Entry seperator, default is single space</p>
+</dd>
+<dt><strong>char_a_sep</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=1), optional</span></dt>
+<dd><p class="first last">Output separator for character arrays, default is <code class="docutils literal notranslate"><span class="pre">,</span></code></p>
+</dd>
+<dt><strong>quote_char</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=1), optional</span></dt>
+<dd><p class="first last">Character to use to quote output fields containing whitespace, default is <code class="docutils literal notranslate"><span class="pre">&quot;</span></code></p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dictionary_write_string</strong> :  string(len=10240)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dictionary_write_string</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=10240)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1606,9 +1676,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1621,7 +1689,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1639,7 +1707,8 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1658,14 +1727,13 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

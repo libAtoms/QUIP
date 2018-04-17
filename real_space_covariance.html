@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Real-space covariance representation of atomic environments &mdash; quippy 22731ad+ documentation</title>
+  <title>Real-space covariance representation of atomic environments &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="prev" title="Identification of atoms on surfaces" href="find_surface_atoms.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Identification of atoms on surfaces" href="find_surface_atoms.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -145,7 +136,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -153,9 +144,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -244,7 +236,7 @@
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance" title="quippy.real_space_covariance.RealSpaceCovariance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RealSpaceCovariance</span></code></a>(…)</td>
-<td>24-point quaternion grid from centers of the cells of a truncated-cubic tetracontaoctachoron (48-cell), coverage angle alpha=62.</td>
+<td>24-point quaternion grid from centers of the cells of a truncated-cubic tetracontaoctachoron (48-cell), coverage angle alpha=62.8 degrees.</td>
 </tr>
 </tbody>
 </table>
@@ -334,15 +326,26 @@ alpha=62.8 degrees. See <a class="reference external" href="http://charles.karne
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
-<p><strong>n_grid_minim</strong> :  input int</p>
-<p><strong>sigma_alpha</strong> :  input float</p>
-<p><strong>sigma_beta</strong> :  input float</p>
-<p><strong>sigma_covariance</strong> :  input float</p>
-<p><strong>sigma_error</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
-<p><strong>transition_width</strong> :  input float</p>
-<p class="last"><strong>covariance_tol</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n_grid_minim</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>sigma_alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>sigma_beta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>sigma_covariance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>sigma_error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>transition_width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>covariance_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -481,16 +484,28 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at1</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>at2</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>q</strong> :  in/output rank-1 array(‘d’) with bounds (4)</p>
-<p><strong>distance</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>force_covariance</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>force_difference</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>do_align</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at1</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>at2</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘d’) with bounds (4)</span></dt>
+<dd></dd>
+<dt><strong>distance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>force_covariance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>force_difference</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>do_align</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_covariance</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_covariance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -507,9 +522,14 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>force</strong> :  rank-1 array(‘d’) with bounds (3)</p>
-<p class="last"><strong>error</strong> :  float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>test</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -526,9 +546,14 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>force</strong> :  rank-1 array(‘d’) with bounds (3)</p>
-<p class="last"><strong>error</strong> :  float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>test</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -545,11 +570,18 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>test</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>crystal</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>k</strong> :  input int</p>
-<p><strong>force</strong> :  rank-1 array(‘d’) with bounds (3)</p>
-<p class="last"><strong>error</strong> :  float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>test</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>crystal</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -566,7 +598,11 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -582,8 +618,12 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>do_optimise</strong> :  input int</p>
-<p class="last"><strong>use_qr</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>do_optimise</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>use_qr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -601,7 +641,11 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_random_quaternion</strong> :  rank-1 array(‘d’) with bounds (4)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_random_quaternion</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (4)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -616,11 +660,18 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
-<p><strong>am_data</strong> :  input rank-2 array(‘S’) with bounds (qp_n1,(1)), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>am_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n1,(1)), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_overlap_func</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_overlap_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -636,7 +687,11 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -651,11 +706,18 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
-<p><strong>am_data</strong> :  input rank-2 array(‘S’) with bounds (qp_n1,(1)), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>am_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n1,(1)), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_doverlap_func</strong> :  rank-1 array(‘d’) with bounds (size(qp_x))</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_doverlap_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (size(qp_x))</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -671,9 +733,17 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(‘d’) with bounds (4)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (4)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_rotmat_quaternion</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_rotmat_quaternion</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -688,9 +758,17 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> :  input rank-1 array(‘d’) with bounds (4)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (4)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_drotmat_dquaternion</strong> :  rank-3 array(‘d’) with bounds (3,3,4)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_drotmat_dquaternion</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-3 array(‘d’) with bounds (3,3,4)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -702,9 +780,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -724,7 +800,7 @@ A single minimisation is performed, starting from quaterions in <code class="doc
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -742,7 +818,8 @@ A single minimisation is performed, starting from quaterions in <code class="doc
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -761,14 +838,13 @@ A single minimisation is performed, starting from quaterions in <code class="doc
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

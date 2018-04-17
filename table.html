@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran Table for dynamically extendable arrays &mdash; quippy 22731ad+ documentation</title>
+  <title>Fortran Table for dynamically extendable arrays &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -148,7 +139,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -156,9 +147,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -294,27 +286,25 @@ number of reals, number of strings and number of logicals can be zero</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nint</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of integer columns</p>
-</div></blockquote>
-<p><strong>nreal</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of real columns</p>
-</div></blockquote>
-<p><strong>nstr</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of string columns</p>
-</div></blockquote>
-<p><strong>nlogical</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of logical columns</p>
-</div></blockquote>
-<p><strong>max_length</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of rows to initially allocate</p>
-</div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>nint</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of integer columns</p>
+</dd>
+<dt><strong>nreal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of real columns</p>
+</dd>
+<dt><strong>nstr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of string columns</p>
+</dd>
+<dt><strong>nlogical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of logical columns</p>
+</dd>
+<dt><strong>max_length</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of rows to initially allocate</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -322,45 +312,46 @@ number of reals, number of strings and number of logicals can be zero</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">table_allocate</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Table.f95">src/libAtoms/Table.f95</a>.
 Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">Table</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Table.f95">src/libAtoms/Table.f95</a>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.increment" title="quippy.table.Table.increment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">increment</span></code></a></td>
-<td>How many rows to grow the table by on reallocation (default 1000)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></td>
-<td>(intsize,N) array of integer data</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.intsize" title="quippy.table.Table.intsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intsize</span></code></a></td>
-<td>Number of integer columns</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.logical" title="quippy.table.Table.logical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logical</span></code></a></td>
-<td>(logicalsize,N) array of logical data</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.logicalsize" title="quippy.table.Table.logicalsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logicalsize</span></code></a></td>
-<td>Number of logical columns</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.max_length" title="quippy.table.Table.max_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_length</span></code></a></td>
-<td>Initial maximum length of the table before the first reallocation (default 100)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.n" title="quippy.table.Table.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></td>
-<td>Number of rows</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.real" title="quippy.table.Table.real"><code class="xref py py-obj docutils literal notranslate"><span class="pre">real</span></code></a></td>
-<td>(realsize,N) array of real data</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.realsize" title="quippy.table.Table.realsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">realsize</span></code></a></td>
-<td>Number of real columns</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.table.Table.str" title="quippy.table.Table.str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></td>
-<td>(strsize,N) array of string data</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.table.Table.strsize" title="quippy.table.Table.strsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">strsize</span></code></a></td>
-<td>Number of string columns</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.table.Table.increment" title="quippy.table.Table.increment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">increment</span></code></a></dt>
+<dd><p class="first last">How many rows to grow the table by on reallocation (default 1000)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.int" title="quippy.table.Table.int"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></dt>
+<dd><p class="first last">(intsize,N) array of integer data</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.intsize" title="quippy.table.Table.intsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intsize</span></code></a></dt>
+<dd><p class="first last">Number of integer columns</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.logical" title="quippy.table.Table.logical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logical</span></code></a></dt>
+<dd><p class="first last">(logicalsize,N) array of logical data</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.logicalsize" title="quippy.table.Table.logicalsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logicalsize</span></code></a></dt>
+<dd><p class="first last">Number of logical columns</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.max_length" title="quippy.table.Table.max_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_length</span></code></a></dt>
+<dd><p class="first last">Initial maximum length of the table before the first reallocation (default 100)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.n" title="quippy.table.Table.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></dt>
+<dd><p class="first last">Number of rows</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.real" title="quippy.table.Table.real"><code class="xref py py-obj docutils literal notranslate"><span class="pre">real</span></code></a></dt>
+<dd><p class="first last">(realsize,N) array of real data</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.realsize" title="quippy.table.Table.realsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">realsize</span></code></a></dt>
+<dd><p class="first last">Number of real columns</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.str" title="quippy.table.Table.str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></dt>
+<dd><p class="first last">(strsize,N) array of string data</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.table.Table.strsize" title="quippy.table.Table.strsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">strsize</span></code></a></dt>
+<dd><p class="first last">Number of string columns</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -496,27 +487,25 @@ allocated accordingly.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nint</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of integer columns</p>
-</div></blockquote>
-<p><strong>nreal</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of real columns</p>
-</div></blockquote>
-<p><strong>nstr</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of string columns</p>
-</div></blockquote>
-<p><strong>nlogical</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of logical columns</p>
-</div></blockquote>
-<p><strong>max_length</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Number of rows to initially allocate</p>
-</div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>nint</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of integer columns</p>
+</dd>
+<dt><strong>nreal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of real columns</p>
+</dd>
+<dt><strong>nstr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of string columns</p>
+</dd>
+<dt><strong>nlogical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of logical columns</p>
+</dd>
+<dt><strong>max_length</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Number of rows to initially allocate</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -980,7 +969,11 @@ is not maintained.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1067,11 +1060,18 @@ are converted to Fortran 1-based indexing.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pos</strong> :  input int</p>
-<p><strong>intpart</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<p><strong>realpart</strong> :  input rank-1 array(‘d’) with bounds (qp_n1), optional</p>
-<p><strong>strpart</strong> :  input rank-2 array(‘S’) with bounds (qp_n2,(10)), optional</p>
-<p class="last"><strong>logicalpart</strong> :  input rank-1 array(‘i’) with bounds (qp_n3), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>intpart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+<dt><strong>realpart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>strpart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n2,(10)), optional</span></dt>
+<dd></dd>
+<dt><strong>logicalpart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n3), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1162,11 +1162,18 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
-<p><strong>cols</strong> :  input rank-1 array(‘i’) with bounds (qp_n1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>rows</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>cols</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_int_subtable</strong> : <a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_int_subtable</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1371,7 +1378,11 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1387,14 +1398,24 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>int_col_min</strong> :  input int, optional</p>
-<p><strong>int_col_max</strong> :  input int, optional</p>
-<p><strong>real_col_min</strong> :  input int, optional</p>
-<p><strong>real_col_max</strong> :  input int, optional</p>
-<p><strong>str_col_min</strong> :  input int, optional</p>
-<p><strong>str_col_max</strong> :  input int, optional</p>
-<p><strong>logical_col_min</strong> :  input int, optional</p>
-<p class="last"><strong>logical_col_max</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>int_col_min</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>int_col_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>real_col_min</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>real_col_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>str_col_min</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>str_col_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>logical_col_min</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>logical_col_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1411,9 +1432,17 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intpart</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>intpart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_index</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1429,10 +1458,16 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code> object</p>
-<p><strong>from</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code> object</p>
-<p><strong>row_mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<p class="last"><strong>row_list</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>to</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code> object</span></dt>
+<dd></dd>
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code> object</span></dt>
+<dd></dd>
+<dt><strong>row_mask</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+<dt><strong>row_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1449,7 +1484,11 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>increment</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>increment</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1465,8 +1504,12 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>idx</strong> :  in/output rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<p class="last"><strong>int_cols</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>idx</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+<dt><strong>int_cols</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1553,14 +1596,24 @@ interface below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rows</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
-<p><strong>intcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
-<p><strong>realcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n2), optional</p>
-<p><strong>strcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n3), optional</p>
-<p><strong>logicalcols</strong> :  input rank-1 array(‘i’) with bounds (qp_n4), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>rows</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>intcols</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>realcols</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n2), optional</span></dt>
+<dd></dd>
+<dt><strong>strcols</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n3), optional</span></dt>
+<dd></dd>
+<dt><strong>logicalcols</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n4), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_subtable</strong> : <a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_subtable</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1599,7 +1652,11 @@ Table was not created in that way.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>zero</strong> :  input int, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>zero</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1679,9 +1736,7 @@ Table was not created in that way.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1694,7 +1749,7 @@ Table was not created in that way.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1712,7 +1767,8 @@ Table was not created in that way.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1731,14 +1787,13 @@ Table was not created in that way.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.structures &mdash; quippy 22731ad+ documentation</title>
+  <title>quippy.structures &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="../../_static/hybrid.png" class="logo" />
+            <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -124,7 +115,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">quippy</a>
@@ -132,9 +123,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -163,8 +155,6 @@
     
     
       <li class="wy-breadcrumbs-aside">
-        
-            
         
       </li>
     
@@ -276,8 +266,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">component</span>
         <span class="n">s</span> <span class="o">+=</span> <span class="n">bclose</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;$&#39;</span></div>
-        <span class="k">return</span> <span class="n">s</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;$&#39;</span>
+        <span class="k">return</span> <span class="n">s</span></div>
 
 <div class="viewcode-block" id="MillerIndex.parse"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.parse">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
@@ -327,15 +317,15 @@
             <span class="k">return</span> <span class="n">components</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot parse Miller index from string </span><span class="si">%s</span><span class="s1">, too few components found&#39;</span> <span class="o">%</span> <span class="n">orig_s</span><span class="p">)</span>
-        </div>
-        <span class="bp">self</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MillerIndex.simplify"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.simplify">[docs]</a>    <span class="k">def</span> <span class="nf">simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simplify by dividing through by greatest common denominator</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">gcd</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span></div>
-        <span class="bp">self</span><span class="p">[:]</span> <span class="o">/=</span> <span class="n">d</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">gcd</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">[:]</span> <span class="o">/=</span> <span class="n">d</span></div>
 
     <span class="k">def</span> <span class="nf">simplified</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -343,8 +333,8 @@
         <span class="k">return</span> <span class="n">copy</span>
 
 <div class="viewcode-block" id="MillerIndex.normalised"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerIndex.normalised">[docs]</a>    <span class="k">def</span> <span class="nf">normalised</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span></div>
-        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FortranArray</span><span class="p">)</span><span class="o">/</span><span class="n">a</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FortranArray</span><span class="p">)</span><span class="o">/</span><span class="n">a</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span></div>
 
     <span class="n">hat</span> <span class="o">=</span> <span class="n">normalised</span>
 
@@ -375,21 +365,21 @@
             <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">plane_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span></div>
-        <span class="k">return</span> <span class="n">a</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">plane_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">as3</span><span class="p">()</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MillerPlane"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerPlane">[docs]</a><span class="k">def</span> <span class="nf">MillerPlane</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-   <span class="sd">&quot;&quot;&quot;Special case of :class:`MillerIndex` with ``type=&quot;plane&quot;``&quot;&quot;&quot;</span></div>
-   <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;plane&#39;</span><span class="p">)</span>
+   <span class="sd">&quot;&quot;&quot;Special case of :class:`MillerIndex` with ``type=&quot;plane&quot;``&quot;&quot;&quot;</span>
+   <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;plane&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="MillerDirection"><a class="viewcode-back" href="../../structures.html#quippy.structures.MillerDirection">[docs]</a><span class="k">def</span> <span class="nf">MillerDirection</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-   <span class="sd">&quot;&quot;&quot;Special case of :class:`MillerIndex` with ``type=&quot;direction&quot;`` (the default)&quot;&quot;&quot;</span></div>
-   <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;direction&#39;</span><span class="p">)</span>
+   <span class="sd">&quot;&quot;&quot;Special case of :class:`MillerIndex` with ``type=&quot;direction&quot;`` (the default)&quot;&quot;&quot;</span>
+   <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;direction&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="angle_between"><a class="viewcode-back" href="../../structures.html#quippy.structures.angle_between">[docs]</a><span class="k">def</span> <span class="nf">angle_between</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Angle between crystallographic directions between a=[ijk] and b=[lmn], in radians.&quot;&quot;&quot;</span></div>
-    <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Angle between crystallographic directions between a=[ijk] and b=[lmn], in radians.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">MillerIndex</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">b</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="rotation_matrix"><a class="viewcode-back" href="../../structures.html#quippy.structures.rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">rotation_matrix</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
@@ -428,8 +418,8 @@
 
         <span class="n">axes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">axes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span>
 
-    <span class="c1"># Rotation matrix is transpose of axes matrix</span></div>
-    <span class="k">return</span> <span class="n">axes</span><span class="o">.</span><span class="n">T</span>
+    <span class="c1"># Rotation matrix is transpose of axes matrix</span>
+    <span class="k">return</span> <span class="n">axes</span><span class="o">.</span><span class="n">T</span></div>
 
 
 
@@ -674,8 +664,8 @@
         <span class="n">orthorhombic</span><span class="o">.</span><span class="n">pos</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">shift</span><span class="p">),</span> <span class="p">[</span><span class="n">orthorhombic</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
 
     <span class="n">orthorhombic</span><span class="o">.</span><span class="n">set_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scale_positions</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">orthorhombic</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span></div>
-    <span class="k">return</span> <span class="n">orthorhombic</span>
+    <span class="n">orthorhombic</span><span class="o">.</span><span class="n">map_into_cell</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">orthorhombic</span></div>
 
 
 
@@ -749,8 +739,8 @@
             <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">minij</span><span class="p">]</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">(),</span> <span class="n">at</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">maxij</span><span class="p">]</span><span class="o">.</span><span class="n">stripstrings</span><span class="p">())</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_ij</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
-    <span class="nb">print</span> <span class="n">res</span></div>
-    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="n">farray</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+    <span class="nb">print</span> <span class="n">res</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="n">farray</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="get_bulk_params"><a class="viewcode-back" href="../../structures.html#quippy.structures.get_bulk_params">[docs]</a><span class="k">def</span> <span class="nf">get_bulk_params</span><span class="p">(</span><span class="n">bulk</span><span class="p">,</span> <span class="n">lat_type</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return 6-tuple of lattice parameters a, c, u, x, y, z for</span>
@@ -780,14 +770,12 @@
                    <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="p">,</span><span class="n">z</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown latttice type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">lat_type</span><span class="p">)</span>
-</div>
-    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -800,7 +788,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -818,7 +806,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -837,14 +826,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Molecular Dynamics &mdash; quippy 22731ad+ documentation</title>
+  <title>Molecular Dynamics &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="prev" title="Some utilities for topological analysis" href="topology.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Some utilities for topological analysis" href="topology.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -140,7 +131,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -148,9 +139,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -388,13 +380,22 @@ for a time <code class="docutils literal notranslate"><span class="pre">dt</span
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>velocity</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>acceleration</strong> :  input rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
-<p><strong>constraints</strong> :  input int, optional</p>
-<p><strong>restraints</strong> :  input int, optional</p>
-<p><strong>rigidbodies</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>atoms_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>velocity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>acceleration</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</span></dt>
+<dd></dd>
+<dt><strong>constraints</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>restraints</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>rigidbodies</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -402,72 +403,73 @@ for a time <code class="docutils literal notranslate"><span class="pre">dt</span
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.
 Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">DynamicalSystem</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.avg_temp" title="quippy.dynamicalsystem.DynamicalSystem.avg_temp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avg_temp</span></code></a></td>
-<td>Time-averaged temperature</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.avg_time" title="quippy.dynamicalsystem.DynamicalSystem.avg_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avg_time</span></code></a></td>
-<td>Averaging time, in fs</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.cur_temp" title="quippy.dynamicalsystem.DynamicalSystem.cur_temp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cur_temp</span></code></a></td>
-<td>Current temperature</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.dt" title="quippy.dynamicalsystem.DynamicalSystem.dt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dt</span></code></a></td>
-<td>Last time step</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.dw" title="quippy.dynamicalsystem.DynamicalSystem.dw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dw</span></code></a></td>
-<td>Increment of work done this time step</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.ekin" title="quippy.dynamicalsystem.DynamicalSystem.ekin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ekin</span></code></a></td>
-<td>Current kinetic energy</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.epot" title="quippy.dynamicalsystem.DynamicalSystem.epot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epot</span></code></a></td>
-<td>Total potential energy</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.ext_energy" title="quippy.dynamicalsystem.DynamicalSystem.ext_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ext_energy</span></code></a></td>
-<td>Extended energy</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.n" title="quippy.dynamicalsystem.DynamicalSystem.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></td>
-<td>Number of atoms</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nconstraints" title="quippy.dynamicalsystem.DynamicalSystem.nconstraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nconstraints</span></code></a></td>
-<td>Number of constraints</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.ndof" title="quippy.dynamicalsystem.DynamicalSystem.ndof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndof</span></code></a></td>
-<td>Number of degrees of freedom</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nrestraints" title="quippy.dynamicalsystem.DynamicalSystem.nrestraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nrestraints</span></code></a></td>
-<td>Number of restraints</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nrigid" title="quippy.dynamicalsystem.DynamicalSystem.nrigid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nrigid</span></code></a></td>
-<td>Number of rigid bodies</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nsteps" title="quippy.dynamicalsystem.DynamicalSystem.nsteps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nsteps</span></code></a></td>
-<td>Number of integration steps</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.random_seed" title="quippy.dynamicalsystem.DynamicalSystem.random_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_seed</span></code></a></td>
-<td>RNG seed, used by <code class="docutils literal notranslate"><span class="pre">ds_save_state</span></code> and <code class="docutils literal notranslate"><span class="pre">ds_restore_state</span></code> only.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.t" title="quippy.dynamicalsystem.DynamicalSystem.t"><code class="xref py py-obj docutils literal notranslate"><span class="pre">t</span></code></a></td>
-<td>Time</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.thermostat_dw" title="quippy.dynamicalsystem.DynamicalSystem.thermostat_dw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thermostat_dw</span></code></a></td>
-<td>Increment of work done by thermostat</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.thermostat_work" title="quippy.dynamicalsystem.DynamicalSystem.thermostat_work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thermostat_work</span></code></a></td>
-<td>Total work done by thermostat</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.wkin" title="quippy.dynamicalsystem.DynamicalSystem.wkin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wkin</span></code></a></td>
-<td>Current kinetic contribution to the virial</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.work" title="quippy.dynamicalsystem.DynamicalSystem.work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">work</span></code></a></td>
-<td>Total work done</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.avg_temp" title="quippy.dynamicalsystem.DynamicalSystem.avg_temp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avg_temp</span></code></a></dt>
+<dd><p class="first last">Time-averaged temperature</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.avg_time" title="quippy.dynamicalsystem.DynamicalSystem.avg_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">avg_time</span></code></a></dt>
+<dd><p class="first last">Averaging time, in fs</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.cur_temp" title="quippy.dynamicalsystem.DynamicalSystem.cur_temp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cur_temp</span></code></a></dt>
+<dd><p class="first last">Current temperature</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.dt" title="quippy.dynamicalsystem.DynamicalSystem.dt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dt</span></code></a></dt>
+<dd><p class="first last">Last time step</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.dw" title="quippy.dynamicalsystem.DynamicalSystem.dw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dw</span></code></a></dt>
+<dd><p class="first last">Increment of work done this time step</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.ekin" title="quippy.dynamicalsystem.DynamicalSystem.ekin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ekin</span></code></a></dt>
+<dd><p class="first last">Current kinetic energy</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.epot" title="quippy.dynamicalsystem.DynamicalSystem.epot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epot</span></code></a></dt>
+<dd><p class="first last">Total potential energy</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.ext_energy" title="quippy.dynamicalsystem.DynamicalSystem.ext_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ext_energy</span></code></a></dt>
+<dd><p class="first last">Extended energy</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.n" title="quippy.dynamicalsystem.DynamicalSystem.n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code></a></dt>
+<dd><p class="first last">Number of atoms</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nconstraints" title="quippy.dynamicalsystem.DynamicalSystem.nconstraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nconstraints</span></code></a></dt>
+<dd><p class="first last">Number of constraints</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.ndof" title="quippy.dynamicalsystem.DynamicalSystem.ndof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndof</span></code></a></dt>
+<dd><p class="first last">Number of degrees of freedom</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nrestraints" title="quippy.dynamicalsystem.DynamicalSystem.nrestraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nrestraints</span></code></a></dt>
+<dd><p class="first last">Number of restraints</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nrigid" title="quippy.dynamicalsystem.DynamicalSystem.nrigid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nrigid</span></code></a></dt>
+<dd><p class="first last">Number of rigid bodies</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.nsteps" title="quippy.dynamicalsystem.DynamicalSystem.nsteps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nsteps</span></code></a></dt>
+<dd><p class="first last">Number of integration steps</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.random_seed" title="quippy.dynamicalsystem.DynamicalSystem.random_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_seed</span></code></a></dt>
+<dd><p class="first last">RNG seed, used by <code class="docutils literal notranslate"><span class="pre">ds_save_state</span></code> and <code class="docutils literal notranslate"><span class="pre">ds_restore_state</span></code> only.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.t" title="quippy.dynamicalsystem.DynamicalSystem.t"><code class="xref py py-obj docutils literal notranslate"><span class="pre">t</span></code></a></dt>
+<dd><p class="first last">Time</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.thermostat_dw" title="quippy.dynamicalsystem.DynamicalSystem.thermostat_dw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thermostat_dw</span></code></a></dt>
+<dd><p class="first last">Increment of work done by thermostat</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.thermostat_work" title="quippy.dynamicalsystem.DynamicalSystem.thermostat_work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thermostat_work</span></code></a></dt>
+<dd><p class="first last">Total work done by thermostat</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.wkin" title="quippy.dynamicalsystem.DynamicalSystem.wkin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wkin</span></code></a></dt>
+<dd><p class="first last">Current kinetic contribution to the virial</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.work" title="quippy.dynamicalsystem.DynamicalSystem.work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">work</span></code></a></dt>
+<dd><p class="first last">Total work done</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -536,7 +538,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Constrain an atom to lie in a particluar plane</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.disable_damping" title="quippy.dynamicalsystem.DynamicalSystem.disable_damping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_damping</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>.</td>
+<td></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.enable_damping" title="quippy.dynamicalsystem.DynamicalSystem.enable_damping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_damping</span></code></a>(damp_time)</td>
 <td>Enable damping, with damping time set to <cite>damp_time</cite>.</td>
@@ -614,7 +616,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <td>Save the state of a DynamicalSystem.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem.set_barostat" title="quippy.dynamicalsystem.DynamicalSystem.set_barostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_barostat</span></code></a>(…)</td>
-<td>ds_set_barostat(type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,[w_epsilon,t,w_epsilon_factor])</td>
+<td>ds_set_barostat(type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,[w_epsilon,t,w_epsilon_factor,thermalise])</td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
@@ -709,14 +711,24 @@ unless <code class="docutils literal notranslate"><span class="pre">update_Ndof<
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
-<p><strong>func</strong> :  input int</p>
-<p><strong>data</strong> :  input rank-1 array(‘d’) with bounds (qp_n1)</p>
-<p><strong>update_ndof</strong> :  input int, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>update_ndof</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -749,19 +761,34 @@ pressure for the case of Langevin NPT.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>type</strong> :  input int</p>
-<p><strong>t</strong> :  input float</p>
-<p><strong>gamma</strong> :  input float, optional</p>
-<p><strong>q</strong> :  input float, optional</p>
-<p><strong>tau</strong> :  input float, optional</p>
-<p><strong>tau_cell</strong> :  input float, optional</p>
-<p><strong>p</strong> :  input float, optional</p>
-<p><strong>bulk_modulus_estimate</strong> :  input float, optional</p>
-<p><strong>cell_oscillation_time</strong> :  input float, optional</p>
-<p><strong>nhl_tau</strong> :  input float, optional</p>
-<p><strong>nhl_mu</strong> :  input float, optional</p>
-<p><strong>massive</strong> :  input int, optional</p>
-<p class="last"><strong>region_i</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>gamma</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>tau_cell</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bulk_modulus_estimate</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>cell_oscillation_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>nhl_tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>nhl_mu</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>massive</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>region_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -778,17 +805,30 @@ pressure for the case of Langevin NPT.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>type</strong> :  input int</p>
-<p><strong>n</strong> :  input int</p>
-<p><strong>t</strong> :  input float, optional</p>
-<p><strong>t_a</strong> :  input rank-1 array(‘d’) with bounds (qp_n0), optional</p>
-<p><strong>gamma</strong> :  input float, optional</p>
-<p><strong>gamma_a</strong> :  input rank-1 array(‘d’) with bounds (qp_n1), optional</p>
-<p><strong>q</strong> :  input float, optional</p>
-<p><strong>q_a</strong> :  input rank-1 array(‘d’) with bounds (qp_n2), optional</p>
-<p><strong>tau</strong> :  input float, optional</p>
-<p><strong>tau_a</strong> :  input rank-1 array(‘d’) with bounds (qp_n3), optional</p>
-<p class="last"><strong>region_i</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>t_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+<dt><strong>gamma</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>gamma_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>q_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n2), optional</span></dt>
+<dd></dd>
+<dt><strong>tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>tau_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n3), optional</span></dt>
+<dd></dd>
+<dt><strong>region_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -814,15 +854,26 @@ velocities will be half-stepped. This allows a simpler MD loop:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ds</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">dynamicalsystem</span></code> object</p>
-<p><strong>dt</strong> :  input float</p>
-<p><strong>f</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>virial</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>e</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>parallel</strong> :  input int, optional</p>
-<p><strong>store_constraint_force</strong> :  input int, optional</p>
-<p><strong>do_calc_dists</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ds</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamicalsystem</span></code> object</span></dt>
+<dd></dd>
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>virial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>parallel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_constraint_force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>do_calc_dists</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -851,13 +902,22 @@ resemble the following code (Python example, Fortran is similar):</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt</strong> :  input float</p>
-<p><strong>virial</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>parallel</strong> :  input int, optional</p>
-<p><strong>store_constraint_force</strong> :  input int, optional</p>
-<p><strong>do_calc_dists</strong> :  input int, optional</p>
-<p><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>virial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>parallel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_constraint_force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>do_calc_dists</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>mpi_obj</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -874,13 +934,22 @@ resemble the following code (Python example, Fortran is similar):</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt</strong> :  input float</p>
-<p><strong>f</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>virial</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>e</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>parallel</strong> :  input int, optional</p>
-<p><strong>store_constraint_force</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>virial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>parallel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_constraint_force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -898,10 +967,16 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>constraint</strong> :  input int</p>
-<p><strong>func</strong> :  input int</p>
-<p><strong>data</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
-<p class="last"><strong>k</strong> :  input float, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>constraint</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -919,11 +994,18 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
-<p><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>origin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_l</strong> :  rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -940,13 +1022,22 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>plane_n</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>d</strong> :  input float, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>plane_n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -963,14 +1054,24 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>k</strong> :  input int</p>
-<p><strong>c</strong> :  input float, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -987,16 +1088,28 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>d</strong> :  input float</p>
-<p><strong>di</strong> :  input float, optional</p>
-<p><strong>t0</strong> :  input float, optional</p>
-<p><strong>tau</strong> :  input float, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>di</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>t0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1013,17 +1126,30 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>p</strong> :  input float</p>
-<p><strong>d</strong> :  input float</p>
-<p><strong>di</strong> :  input float, optional</p>
-<p><strong>t0</strong> :  input float, optional</p>
-<p><strong>tau</strong> :  input float, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>di</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>t0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1040,17 +1166,30 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>k</strong> :  input int</p>
-<p><strong>d</strong> :  input float</p>
-<p><strong>di</strong> :  input float, optional</p>
-<p><strong>t0</strong> :  input float, optional</p>
-<p><strong>tau</strong> :  input float, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>di</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>t0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1067,13 +1206,22 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>d</strong> :  input float, optional</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1090,11 +1238,18 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>d</strong> :  input float</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1111,13 +1266,22 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>z</strong> :  input int</p>
-<p><strong>q</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>sf</strong> :  input float</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>sf</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1134,13 +1298,22 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>z</strong> :  input int</p>
-<p><strong>q</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>sf</strong> :  input float</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>sf</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1157,13 +1330,22 @@ the same atoms</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>z</strong> :  input int</p>
-<p><strong>q</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>sf</strong> :  input float</p>
-<p><strong>restraint_k</strong> :  input float, optional</p>
-<p><strong>bound</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p class="last"><strong>print_summary</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>sf</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>restraint_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>bound</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>print_summary</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1188,7 +1370,11 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>damp_time</strong> :  input float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>damp_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1203,7 +1389,11 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_get_damping_time</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_get_damping_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1218,7 +1408,11 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_is_damping_enabled</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_is_damping_enabled</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1234,12 +1428,20 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>local_ke</strong> :  input int, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>mpi_obj</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>local_ke</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_ke</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_ke</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1256,11 +1458,18 @@ flagged in the <cite>damp_mask</cite> property will be affected.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>mpi_obj</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_kv</strong> :  rank-2 array(‘d’) with bounds (3,3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_kv</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1278,9 +1487,17 @@ Optionally only include the contribution of a subset of atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_p</strong> :  rank-1 array(‘d’) with bounds (3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1295,7 +1512,11 @@ Optionally only include the contribution of a subset of atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_n_thermostat</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_n_thermostat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1311,7 +1532,11 @@ Optionally only include the contribution of a subset of atoms.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1331,12 +1556,20 @@ if this is available. <code class="docutils literal notranslate"><span class="pr
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>label</strong> :  input string(len=-1), optional</p>
-<p><strong>epot</strong> :  input float, optional</p>
-<p><strong>instantaneous</strong> :  input int, optional</p>
-<p><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>label</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>epot</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>instantaneous</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>mpi_obj</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1407,7 +1640,11 @@ but also amends the number of degrees of freedom correctly.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1427,9 +1664,14 @@ If <code class="docutils literal notranslate"><span class="pre">mass_weighted</s
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>temp</strong> :  input float</p>
-<p><strong>mass_weighted</strong> :  input int, optional</p>
-<p class="last"><strong>zero_l</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>temp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>mass_weighted</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>zero_l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1451,8 +1693,12 @@ called on the restored atoms object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</p>
-<p class="last"><strong>from</strong> : <a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>to</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1475,16 +1721,28 @@ connectivity is recalculated every <code class="docutils literal notranslate"><s
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>dt</strong> :  input float</p>
-<p><strong>n_steps</strong> :  input int</p>
-<p><strong>hook</strong> :  call-back function</p>
-<p><strong>hook_interval</strong> :  input int, optional</p>
-<p><strong>summary_interval</strong> :  input int, optional</p>
-<p><strong>write_interval</strong> :  input int, optional</p>
-<p><strong>trajectory</strong> : <a class="reference internal" href="io.html#quippy.cinoutput.CInOutput" title="quippy.cinoutput.CInOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">CInOutput</span></code></a> object, optional</p>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>n_steps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>hook</strong> <span class="classifier-delimiter">:</span> <span class="classifier">call-back function</span></dt>
+<dd></dd>
+<dt><strong>hook_interval</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>summary_interval</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>write_interval</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>trajectory</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="io.html#quippy.cinoutput.CInOutput" title="quippy.cinoutput.CInOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">CInOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1506,9 +1764,14 @@ state of the random number generator is also saved.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</p>
-<p><strong>from</strong> : <a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>to</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1519,21 +1782,34 @@ state of the random number generator is also saved.</p>
 
 <dl class="method">
 <dt id="quippy.dynamicalsystem.DynamicalSystem.set_barostat">
-<code class="descname">set_barostat</code><span class="sig-paren">(</span><em>type</em>, <em>p_ext</em>, <em>hydrostatic_strain</em>, <em>diagonal_strain</em>, <em>finite_strain_formulation</em>, <em>tau_epsilon</em><span class="optional">[</span>, <em>w_epsilon</em>, <em>t</em>, <em>w_epsilon_factor</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.set_barostat" title="Permalink to this definition">¶</a></dt>
-<dd><p>ds_set_barostat(type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,[w_epsilon,t,w_epsilon_factor])</p>
+<code class="descname">set_barostat</code><span class="sig-paren">(</span><em>type</em>, <em>p_ext</em>, <em>hydrostatic_strain</em>, <em>diagonal_strain</em>, <em>finite_strain_formulation</em>, <em>tau_epsilon</em><span class="optional">[</span>, <em>w_epsilon</em>, <em>t</em>, <em>w_epsilon_factor</em>, <em>thermalise</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dynamicalsystem.DynamicalSystem.set_barostat" title="Permalink to this definition">¶</a></dt>
+<dd><p>ds_set_barostat(type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,[w_epsilon,t,w_epsilon_factor,thermalise])</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>type</strong> :  input int</p>
-<p><strong>p_ext</strong> :  input float</p>
-<p><strong>hydrostatic_strain</strong> :  input int</p>
-<p><strong>diagonal_strain</strong> :  input int</p>
-<p><strong>finite_strain_formulation</strong> :  input int</p>
-<p><strong>tau_epsilon</strong> :  input float</p>
-<p><strong>w_epsilon</strong> :  input float, optional</p>
-<p><strong>t</strong> :  input float, optional</p>
-<p class="last"><strong>w_epsilon_factor</strong> :  input float, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>p_ext</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>hydrostatic_strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>diagonal_strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>finite_strain_formulation</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>tau_epsilon</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>w_epsilon</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>w_epsilon_factor</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>thermalise</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1558,15 +1834,26 @@ masses, or whether to return the value at the last Verlet step
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>property</strong> :  input string(len=-1), optional</p>
-<p><strong>value</strong> :  input int, optional</p>
-<p><strong>include_all</strong> :  input int, optional</p>
-<p><strong>instantaneous</strong> :  input int, optional</p>
-<p><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>property</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>include_all</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>instantaneous</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>mpi_obj</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_temperature</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_temperature</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1582,13 +1869,17 @@ masses, or whether to return the value at the last Verlet step
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_temps,0)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_temps,0)</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>temps</strong> :  rank-1 array(‘d’) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>temps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1605,9 +1896,14 @@ masses, or whether to return the value at the last Verlet step
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>t</strong> :  input float, optional</p>
-<p><strong>p</strong> :  input float, optional</p>
-<p class="last"><strong>i</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1625,7 +1921,11 @@ Optionalally zero the total momentum of a subset of atoms, specified by <code cl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1771,7 +2071,7 @@ When using this class, all times should be given in ASE time units.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>atoms</strong> – quippy or ASE Atoms instance. Note that if atoms is
 not a quippy Atoms object, a copy will be made.</li>
 <li><strong>timestep</strong> – in ASE time units (multiply by <code class="xref py py-const docutils literal notranslate"><span class="pre">ase.units.fs</span></code>
@@ -1787,47 +2087,42 @@ Use special filename <code class="docutils literal notranslate"><span class="pre
 </ul>
 </td>
 </tr>
-</tbody>
-</table>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.average_temperature" title="quippy.dynamicalsystem.Dynamics.average_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">average_temperature</span></code></a></td>
-<td>Average temperature</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.averaging_time" title="quippy.dynamicalsystem.Dynamics.averaging_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">averaging_time</span></code></a></td>
-<td>Averaging time used for average temperature and kinetic energy</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.damping" title="quippy.dynamicalsystem.Dynamics.damping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">damping</span></code></a></td>
-<td>Get or set the damping time constant in fs.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_constraints" title="quippy.dynamicalsystem.Dynamics.number_of_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_constraints</span></code></a></td>
-<td>Get number of constraints</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_degrees_of_freedom" title="quippy.dynamicalsystem.Dynamics.number_of_degrees_of_freedom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_degrees_of_freedom</span></code></a></td>
-<td>Get number of degrees of freedom in system, including QUIP constraints</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_restraints" title="quippy.dynamicalsystem.Dynamics.number_of_restraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_restraints</span></code></a></td>
-<td>Get number of restraints</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_rigid_bodies" title="quippy.dynamicalsystem.Dynamics.number_of_rigid_bodies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_rigid_bodies</span></code></a></td>
-<td>Get number of rigid_bodies</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.state" title="quippy.dynamicalsystem.Dynamics.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></td>
-<td>Save or restore current state of this dynamical system</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.temperature" title="quippy.dynamicalsystem.Dynamics.temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temperature</span></code></a></td>
-<td>Get or set the current temperature</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.time" title="quippy.dynamicalsystem.Dynamics.time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time</span></code></a></td>
-<td>Time in ASE units (Note: NOT the same as femtoseconds)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.timestep" title="quippy.dynamicalsystem.Dynamics.timestep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timestep</span></code></a></td>
-<td>Set timestep, in ASE time units</td>
+<tr class="field-even field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.average_temperature" title="quippy.dynamicalsystem.Dynamics.average_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">average_temperature</span></code></a></dt>
+<dd><p class="first last">Average temperature</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.averaging_time" title="quippy.dynamicalsystem.Dynamics.averaging_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">averaging_time</span></code></a></dt>
+<dd><p class="first last">Averaging time used for average temperature and kinetic energy</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.damping" title="quippy.dynamicalsystem.Dynamics.damping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">damping</span></code></a></dt>
+<dd><p class="first last">Get or set the damping time constant in fs.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_constraints" title="quippy.dynamicalsystem.Dynamics.number_of_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_constraints</span></code></a></dt>
+<dd><p class="first last">Get number of constraints</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_degrees_of_freedom" title="quippy.dynamicalsystem.Dynamics.number_of_degrees_of_freedom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_degrees_of_freedom</span></code></a></dt>
+<dd><p class="first last">Get number of degrees of freedom in system, including QUIP constraints</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_restraints" title="quippy.dynamicalsystem.Dynamics.number_of_restraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_restraints</span></code></a></dt>
+<dd><p class="first last">Get number of restraints</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.number_of_rigid_bodies" title="quippy.dynamicalsystem.Dynamics.number_of_rigid_bodies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_rigid_bodies</span></code></a></dt>
+<dd><p class="first last">Get number of rigid_bodies</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.state" title="quippy.dynamicalsystem.Dynamics.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></dt>
+<dd><p class="first last">Save or restore current state of this dynamical system</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.temperature" title="quippy.dynamicalsystem.Dynamics.temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temperature</span></code></a></dt>
+<dd><p class="first last">Get or set the current temperature</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.time" title="quippy.dynamicalsystem.Dynamics.time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time</span></code></a></dt>
+<dd><p class="first last">Time in ASE units (Note: NOT the same as femtoseconds)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.timestep" title="quippy.dynamicalsystem.Dynamics.timestep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timestep</span></code></a></dt>
+<dd><p class="first last">Set timestep, in ASE time units</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2105,11 +2400,18 @@ a degree of freedom with (effective) mass <code class="docutils literal notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>m</strong> :  input float</p>
-<p><strong>t</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_v</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2125,12 +2427,20 @@ a degree of freedom with (effective) mass <code class="docutils literal notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pos</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>force</strong> :  input rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</p>
-<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</span></dt>
+<dd></dd>
+<dt><strong>origin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_tau</strong> :  rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2149,11 +2459,18 @@ This is useful for time dependent constraints.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>dist</strong> :  float</p>
-<p class="last"><strong>rel_velo</strong> :  float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>dist</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>rel_velo</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2337,9 +2654,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -2359,7 +2674,7 @@ Optionally only include the contribution of a subset of atoms.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -2377,7 +2692,8 @@ Optionally only include the contribution of a subset of atoms.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -2396,14 +2712,13 @@ Optionally only include the contribution of a subset of atoms.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

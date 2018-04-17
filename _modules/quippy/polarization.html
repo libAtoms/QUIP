@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.polarization &mdash; quippy 22731ad+ documentation</title>
+  <title>quippy.polarization &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="../../_static/hybrid.png" class="logo" />
+            <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -124,7 +115,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">quippy</a>
@@ -132,9 +123,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -163,8 +155,6 @@
     
     
       <li class="wy-breadcrumbs-aside">
-        
-            
         
       </li>
     
@@ -220,8 +210,8 @@
             <span class="n">dip2</span> <span class="o">+=</span> <span class="n">at</span><span class="o">.</span><span class="n">dipoles</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span>
 
          <span class="n">born_tensor</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dip2</span> <span class="o">-</span> <span class="n">dip1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">dx</span><span class="o">*</span><span class="mf">2.0</span><span class="p">)</span>
-</div>
-   <span class="k">return</span> <span class="n">born_tensor</span>
+
+   <span class="k">return</span> <span class="n">born_tensor</span></div>
          
 
 <div class="viewcode-block" id="epsilon_infty"><a class="viewcode-back" href="../../polarization.html#quippy.polarization.epsilon_infty">[docs]</a><span class="k">def</span> <span class="nf">epsilon_infty</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">deltafield</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">zerotol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
@@ -255,8 +245,8 @@
    <span class="n">at</span><span class="o">.</span><span class="n">ext_efield</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
    <span class="n">dielectric_tensor</span><span class="p">[</span><span class="n">dielectric_tensor</span> <span class="o">&lt;</span> <span class="n">zerotol</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-</div>
-   <span class="k">return</span> <span class="n">dielectric_tensor</span>
+
+   <span class="k">return</span> <span class="n">dielectric_tensor</span></div>
       
 
 <span class="k">def</span> <span class="nf">calc_effective_charge_vectors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">born_tensor</span><span class="p">):</span>
@@ -282,8 +272,8 @@
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">frange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
                <span class="k">if</span> <span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span> <span class="k">continue</span>
                <span class="n">screened</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">born</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">])</span>
-</div>
-   <span class="k">return</span> <span class="n">screened</span>
+
+   <span class="k">return</span> <span class="n">screened</span></div>
 
 <span class="k">def</span> <span class="nf">dipole_moment</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
@@ -298,9 +288,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -313,7 +301,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -331,7 +319,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -350,14 +339,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

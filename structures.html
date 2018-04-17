@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Structure building routines &mdash; quippy 22731ad+ documentation</title>
+  <title>Structure building routines &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -144,7 +135,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -152,9 +143,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -284,7 +276,7 @@
 <td>Creates a 2-atom simple hexagonal lattice with lattice constants of <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span></code></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_compatible_supercells" title="quippy.structures.find_compatible_supercells"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_compatible_supercells</span></code></a>(…)</td>
-<td>find supercells of two lattices that are compatible (i.</td>
+<td>find supercells of two lattices that are compatible (i.e.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.imma" title="quippy.structures.imma"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imma</span></code></a>(a,b,c,u,[z])</td>
 <td>Creates a 2-atom Imma cell</td>
@@ -312,10 +304,10 @@
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.find_motif" title="quippy.structures.find_motif"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_motif</span></code></a>(…)</td>
-<td>Subgraph isomorphism identifier based on J.</td>
+<td>Subgraph isomorphism identifier based on J.R.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.diamond" title="quippy.structures.diamond"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diamond</span></code></a>(a,[z])</td>
-<td>Creates an 8-atom diamond-structure with cubic lattice constant of <code class="docutils literal notranslate"><span class="pre">a</span></code> and atomic number <code class="docutils literal notranslate"><span class="pre">Z</span></code>, e.</td>
+<td>Creates an 8-atom diamond-structure with cubic lattice constant of <code class="docutils literal notranslate"><span class="pre">a</span></code> and atomic number <code class="docutils literal notranslate"><span class="pre">Z</span></code>, e.g.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.unit_slab" title="quippy.structures.unit_slab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unit_slab</span></code></a>(axes,a,[atnum,lat_type,c,u,x,y,z])</td>
 <td>Return a slab of material with the x, y, and z axes desribed by the Miller indices in the array axes (with <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">axes[:,1])</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">axes[:,2]</span></code> and <code class="docutils literal notranslate"><span class="pre">z</span> <span class="pre">=</span> <span class="pre">axes[:,3]</span></code>).</td>
@@ -655,11 +647,18 @@ i.e. <code class="docutils literal notranslate"><span class="pre">[001]</span></
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>grid_size</strong> :  input float</p>
-<p><strong>cutoff</strong> :  input float</p>
-<p><strong>grid</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p class="last"><strong>radii</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n2)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>grid_size</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>grid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>radii</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘d’) with bounds (qp_n2)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -676,15 +675,26 @@ i.e. <code class="docutils literal notranslate"><span class="pre">[001]</span></
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>u</strong> :  input float</p>
-<p><strong>x</strong> :  input float</p>
-<p><strong>y</strong> :  input float</p>
-<p><strong>z</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -700,15 +710,21 @@ i.e. <code class="docutils literal notranslate"><span class="pre">[001]</span></
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>r</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_closest_list,0)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_closest_list,0)</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>closest_list</strong> :  rank-1 array(‘i’) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>closest_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -725,12 +741,20 @@ i.e. <code class="docutils literal notranslate"><span class="pre">[001]</span></
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -748,42 +772,35 @@ equal or parallel vectors to some tolerance)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>l1</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<blockquote>
-<div><p>lattices of 1st and 2nd structures</p>
-</div></blockquote>
-<p><strong>l2</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<blockquote>
-<div><p>lattices of 1st and 2nd structures</p>
-</div></blockquote>
-<p><strong>match_tol</strong> :  input float</p>
-<blockquote>
-<div><p>tolerange for good enough match.</p>
-</div></blockquote>
-<p><strong>n1</strong> :  rank-2 array(‘i’) with bounds (3,3)</p>
-<blockquote>
-<div><p>output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )</p>
-</div></blockquote>
-<p><strong>n2</strong> :  rank-2 array(‘i’) with bounds (3,3)</p>
-<blockquote>
-<div><p>output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )</p>
-</div></blockquote>
-<p><strong>fix_l2</strong> :  input int, optional</p>
-<blockquote>
-<div><p>if true, don’t allow supercells of l2</p>
-</div></blockquote>
-<p><strong>max_m1</strong> :  input int, optional</p>
-<blockquote>
-<div><p>max range of supercells to check (bigger is slower)</p>
-</div></blockquote>
-<p><strong>max_m2</strong> :  input int, optional</p>
-<blockquote>
-<div><p>max range of supercells to check (bigger is slower)</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<blockquote class="last">
-<div><p>if present, error status return</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>l1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd><p class="first last">lattices of 1st and 2nd structures</p>
+</dd>
+<dt><strong>l2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd><p class="first last">lattices of 1st and 2nd structures</p>
+</dd>
+<dt><strong>match_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last">tolerange for good enough match.</p>
+</dd>
+<dt><strong>n1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘i’) with bounds (3,3)</span></dt>
+<dd><p class="first last">output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )</p>
+</dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘i’) with bounds (3,3)</span></dt>
+<dd><p class="first last">output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )</p>
+</dd>
+<dt><strong>fix_l2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">if true, don’t allow supercells of l2</p>
+</dd>
+<dt><strong>max_m1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">max range of supercells to check (bigger is slower)</p>
+</dd>
+<dt><strong>max_m2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">max range of supercells to check (bigger is slower)</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd><p class="first last">if present, error status return</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -800,14 +817,24 @@ equal or parallel vectors to some tolerance)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>b</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>u</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -823,12 +850,20 @@ equal or parallel vectors to some tolerance)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -844,9 +879,17 @@ equal or parallel vectors to some tolerance)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a0</strong> :  input float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -913,38 +956,37 @@ if the alt_connect’s cutoff were the same as at.cutoff(_break)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>The atoms structure to search</p>
-</div></blockquote>
-<p><strong>motif</strong> :  input rank-2 array(‘i’) with bounds (qp_n0,qp_n1)</p>
-<blockquote>
-<div><p>The motif to search for</p>
-</div></blockquote>
-<p><strong>start</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Start and End atomic indices for search</p>
-</div></blockquote>
-<p><strong>end</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Start and End atomic indices for search</p>
-</div></blockquote>
-<p><strong>mask</strong> :  input rank-1 array(‘i’) with bounds (qp_n2), optional</p>
-<blockquote>
-<div><p>If present only masked atoms are searched</p>
-</div></blockquote>
-<p><strong>find_all_possible_matches</strong> :  input int, optional</p>
-<blockquote>
-<div><p>if true, don’t exclude matches that overlap</p>
-</div></blockquote>
-<p><strong>nneighb_only</strong> :  input int, optional</p>
-<p><strong>alt_connect</strong> : <a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">The atoms structure to search</p>
+</dd>
+<dt><strong>motif</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘i’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd><p class="first last">The motif to search for</p>
+</dd>
+<dt><strong>start</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Start and End atomic indices for search</p>
+</dd>
+<dt><strong>end</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Start and End atomic indices for search</p>
+</dd>
+<dt><strong>mask</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n2), optional</span></dt>
+<dd><p class="first last">If present only masked atoms are searched</p>
+</dd>
+<dt><strong>find_all_possible_matches</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">if true, don’t exclude matches that overlap</p>
+</dd>
+<dt><strong>nneighb_only</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>alt_connect</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="connection.html#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matches</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
-<blockquote class="last">
-<div><p>All matches</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>matches</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd><p class="first last">All matches</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -971,11 +1013,18 @@ and atomic number <code class="docutils literal notranslate"><span class="pre">Z
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1000,18 +1049,32 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>axes</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<p><strong>a</strong> :  input float</p>
-<p><strong>atnum</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<p><strong>lat_type</strong> :  input string(len=-1), optional</p>
-<p><strong>c</strong> :  input float, optional</p>
-<p><strong>u</strong> :  input float, optional</p>
-<p><strong>x</strong> :  input float, optional</p>
-<p><strong>y</strong> :  input float, optional</p>
-<p><strong>z</strong> :  input float, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>axes</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>atnum</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+<dt><strong>lat_type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1028,11 +1091,18 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1048,9 +1118,14 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>distance</strong> :  input float</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>distance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1067,26 +1142,33 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lat_type</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>One of <code class="docutils literal notranslate"><span class="pre">diamond</span></code>, <code class="docutils literal notranslate"><span class="pre">bcc</span></code>, <code class="docutils literal notranslate"><span class="pre">fcc</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_quartz</span></code>, <code class="docutils literal notranslate"><span class="pre">anatase_cubic</span></code>, <code class="docutils literal notranslate"><span class="pre">anatase</span></code>, or <code class="docutils literal notranslate"><span class="pre">rutile</span></code></p>
-</div></blockquote>
-<p><strong>a</strong> :  input float</p>
-<blockquote>
-<div><p>Principal lattice constant</p>
-</div></blockquote>
-<p><strong>c</strong> :  input float, optional</p>
-<p><strong>u</strong> :  input float, optional</p>
-<p><strong>x</strong> :  input float, optional</p>
-<p><strong>y</strong> :  input float, optional</p>
-<p><strong>z</strong> :  input float, optional</p>
-<p><strong>atnum</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<blockquote>
-<div><p>Optionally specify atomic numbers</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>lat_type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">One of <code class="docutils literal notranslate"><span class="pre">diamond</span></code>, <code class="docutils literal notranslate"><span class="pre">bcc</span></code>, <code class="docutils literal notranslate"><span class="pre">fcc</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_quartz</span></code>, <code class="docutils literal notranslate"><span class="pre">anatase_cubic</span></code>, <code class="docutils literal notranslate"><span class="pre">anatase</span></code>, or <code class="docutils literal notranslate"><span class="pre">rutile</span></code></p>
+</dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last">Principal lattice constant</p>
+</dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>atnum</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd><p class="first last">Optionally specify atomic numbers</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1103,21 +1185,28 @@ and <cite>nz</cite> is the number of cells in the <cite>z</cite> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>Input cell</p>
-</div></blockquote>
-<p><strong>n1</strong> :  input int</p>
-<p><strong>n2</strong> :  input int</p>
-<p><strong>n3</strong> :  input int</p>
-<p><strong>supercell_index_name</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Input cell</p>
+</dd>
+<dt><strong>n1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>supercell_index_name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>aa</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote class="last">
-<div><p>Output (big) cell</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>aa</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Output (big) cell</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1140,15 +1229,26 @@ or in <code class="docutils literal notranslate"><span class="pre">HOME/share/qu
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>struct</strong> :  input string(len=-1)</p>
-<p><strong>vol_per_atom</strong> :  input float, optional</p>
-<p><strong>vol_per_unit_cell</strong> :  input float, optional</p>
-<p><strong>repeat</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
-<p><strong>z_values_str</strong> :  input string(len=-1), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>struct</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>vol_per_atom</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>vol_per_unit_cell</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>repeat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>z_values_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dup_cell</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dup_cell</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1164,12 +1264,20 @@ or in <code class="docutils literal notranslate"><span class="pre">HOME/share/qu
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at1</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>at2</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>types</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at1</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>at2</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>types</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_map_nearest_atoms</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_map_nearest_atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1187,9 +1295,17 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a0</strong> :  input float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1204,9 +1320,17 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_min_neighbour_dist</strong> :  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_min_neighbour_dist</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1221,12 +1345,20 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>u</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1242,16 +1374,28 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a0</strong> :  input float</p>
-<p><strong>nu</strong> :  input float</p>
-<p><strong>n1</strong> :  input int</p>
-<p><strong>n2</strong> :  input int</p>
-<p><strong>n3</strong> :  input int</p>
-<p><strong>d</strong> :  input int</p>
-<p><strong>type</strong> :  input string(len=-1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>nu</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>n1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>type</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1268,12 +1412,20 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1290,9 +1442,17 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tube</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>tube</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_r</strong> :  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1308,17 +1468,20 @@ surface are aligned with the cell boundaries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>Input</p>
-</div></blockquote>
-<p><strong>t</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Input</p>
+</dd>
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>at_out</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote class="last">
-<div><p>Output</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Output</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1336,12 +1499,20 @@ unit cells along the tube length. Also returns the radius of the tube.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>tube</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>a</strong> :  input float</p>
-<p><strong>n</strong> :  input int</p>
-<p><strong>m</strong> :  input int</p>
-<p><strong>nz</strong> :  input int</p>
-<p class="last"><strong>ret_r</strong> :  float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>tube</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>nz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>ret_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1357,9 +1528,17 @@ unit cells along the tube length. Also returns the radius of the tube.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a0</strong> :  input float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1375,9 +1554,17 @@ unit cells along the tube length. Also returns the radius of the tube.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a</strong> :  input float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_cube</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_cube</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1393,11 +1580,18 @@ unit cells along the tube length. Also returns the radius of the tube.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1415,14 +1609,24 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>n</strong> :  input int</p>
-<p><strong>m</strong> :  input int</p>
-<p><strong>rep_x</strong> :  input int</p>
-<p><strong>rep_y</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>rep_x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>rep_y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>sheet</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>sheet</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1439,12 +1643,20 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1462,13 +1674,22 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>theta</strong> :  input float</p>
-<p><strong>width</strong> :  input float</p>
-<p><strong>height</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>theta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1485,14 +1706,24 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>b</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>u</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1509,12 +1740,20 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1531,14 +1770,24 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float, optional</p>
-<p><strong>z1</strong> :  input int, optional</p>
-<p><strong>z2</strong> :  input int, optional</p>
-<p><strong>u</strong> :  input float, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>z1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>z2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1554,12 +1803,20 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>u</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1575,7 +1832,11 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1592,15 +1853,26 @@ repeat units in the <span class="math notranslate">\(x\)</span> direction and <c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>u</strong> :  input float</p>
-<p><strong>x</strong> :  input float</p>
-<p><strong>y</strong> :  input float</p>
-<p><strong>z</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1618,7 +1890,11 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_water</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_water</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1634,11 +1910,18 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1654,9 +1937,17 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lat</strong> :  input rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_reduced_lat</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_reduced_lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1671,13 +1962,22 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a0</strong> :  input float</p>
-<p><strong>n1</strong> :  input int</p>
-<p><strong>n2</strong> :  input int</p>
-<p><strong>n3</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>n1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1693,11 +1993,18 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>p</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>l</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>b</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p class="last"><strong>close_threshold</strong> :  input float, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>close_threshold</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1714,11 +2021,18 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1735,11 +2049,18 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1756,12 +2077,20 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>c</strong> :  input float</p>
-<p><strong>z</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1778,24 +2107,24 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>Input (small) cell</p>
-</div></blockquote>
-<p><strong>i1</strong> :  input rank-2 array(‘i’) with bounds (3,3)</p>
-<blockquote>
-<div><p>combination of primitive lattice vectors to create supercell (a_out.lattice = a_in.lattice . i1).  column i specifies output pbc vector i.</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<blockquote>
-<div><p>if present, returned error status</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Input (small) cell</p>
+</dd>
+<dt><strong>i1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘i’) with bounds (3,3)</span></dt>
+<dd><p class="first last">combination of primitive lattice vectors to create supercell (a_out.lattice = a_in.lattice . i1).  column i specifies output pbc vector i.</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd><p class="first last">if present, returned error status</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>a_out</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote class="last">
-<div><p>Output (big) cell</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>a_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Output (big) cell</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1812,12 +2141,20 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input float</p>
-<p><strong>z1</strong> :  input int, optional</p>
-<p><strong>z2</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>z1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>z2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>myatoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>myatoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1833,23 +2170,27 @@ giving the correct density at 300K</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>surf_v</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<blockquote>
-<div><p>surface vector</p>
-</div></blockquote>
-<p><strong>lat</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<blockquote>
-<div><p>lattice</p>
-</div></blockquote>
-<p><strong>third_vec_normal</strong> :  input int, optional</p>
-<p><strong>tol</strong> :  input float, optional</p>
-<p><strong>max_n</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>surf_v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd><p class="first last">surface vector</p>
+</dd>
+<dt><strong>lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd><p class="first last">lattice</p>
+</dd>
+<dt><strong>third_vec_normal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>max_n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>i_out</strong> :  rank-2 array(‘i’) with bounds (3,3)</p>
-<blockquote class="last">
-<div><p>combination of primitive lattice vectors to create supercell (surf_lattice = latt . i_out).  column i specifies output pbc vector i.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘i’) with bounds (3,3)</span></dt>
+<dd><p class="first last">combination of primitive lattice vectors to create supercell (surf_lattice = latt . i_out).  column i specifies output pbc vector i.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1988,9 +2329,7 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -2003,7 +2342,7 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -2021,7 +2360,8 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -2040,14 +2380,13 @@ cell <cite>bulk</cite> of lattice type <cite>lat_type</cite></p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>FortranArray objects for one-based array indexing &mdash; quippy 22731ad+ documentation</title>
+  <title>FortranArray objects for one-based array indexing &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="prev" title="Fortran input/output" href="fortranio.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Fortran input/output" href="fortranio.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -149,7 +140,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -157,9 +148,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -280,13 +272,13 @@ array indexing.</p>
 <td>Create one or more rank-0 instances of <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">FortranArray</span></code></a> and inject them into the global namespace.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.f2n" title="quippy.farray.f2n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f2n</span></code></a>(x)</td>
-<td>Return <code class="docutils literal notranslate"><span class="pre">x.view(np.ndarray)</span></code>.</td>
+<td>Return <code class="docutils literal notranslate"><span class="pre">x.view(np.ndarray)</span></code></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.farray.n2f" title="quippy.farray.n2f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n2f</span></code></a>(x)</td>
-<td>Return <code class="docutils literal notranslate"><span class="pre">x.view(FortranArray)</span></code>.</td>
+<td>Return <code class="docutils literal notranslate"><span class="pre">x.view(FortranArray)</span></code></td>
 </tr>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">unravel_index</span></code>(x,&nbsp;dims)</td>
-<td>1-based version of np.</td>
+<td>1-based version of np.unravel_index</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">s2a</span></code>(d[,&nbsp;pad])</td>
 <td>Convert from list of strings to array of shape (pad, len(d)).</td>
@@ -316,18 +308,19 @@ highest index along a dimension. Slices are also Fortran-style,
 i.e. inclusive on the second element so 1:2 includes the one-based
 elements 1 and 2, equivalent to a C-style slice of 0:2. The <code class="docutils literal notranslate"><span class="pre">self.flat</span></code>
 iterator is still indexed from zero.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.farray.FortranArray.cols" title="quippy.farray.FortranArray.cols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cols</span></code></a></td>
-<td>Iterator for <code class="docutils literal notranslate"><span class="pre">MxN</span></code> arrays to return <code class="docutils literal notranslate"><span class="pre">cols</span> <span class="pre">[...,i]</span></code> for <code class="docutils literal notranslate"><span class="pre">i=1,N</span></code> one by one as <code class="docutils literal notranslate"><span class="pre">Mx1</span></code> arrays.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.farray.FortranArray.rows" title="quippy.farray.FortranArray.rows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rows</span></code></a></td>
-<td>Iterate over this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">FortranArray</span></code></a> treating first dimension as fastest varying</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.farray.FortranArray.cols" title="quippy.farray.FortranArray.cols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cols</span></code></a></dt>
+<dd><p class="first last">Iterator for <code class="docutils literal notranslate"><span class="pre">MxN</span></code> arrays to return <code class="docutils literal notranslate"><span class="pre">cols</span> <span class="pre">[...,i]</span></code> for <code class="docutils literal notranslate"><span class="pre">i=1,N</span></code> one by one as <code class="docutils literal notranslate"><span class="pre">Mx1</span></code> arrays.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.farray.FortranArray.rows" title="quippy.farray.FortranArray.rows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rows</span></code></a></dt>
+<dd><p class="first last">Iterate over this <a class="reference internal" href="#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">FortranArray</span></code></a> treating first dimension as fastest varying</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -597,9 +590,7 @@ If results contains farray, they will be converted back to ndarray.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -619,7 +610,7 @@ If results contains farray, they will be converted back to ndarray.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -637,7 +628,8 @@ If results contains farray, they will be converted back to ndarray.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -656,14 +648,13 @@ If results contains farray, they will be converted back to ndarray.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

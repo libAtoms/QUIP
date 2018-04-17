@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>MPI parallel interface &mdash; quippy 22731ad+ documentation</title>
+  <title>MPI parallel interface &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -148,7 +139,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -156,9 +147,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -297,11 +289,18 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>communicator</strong> :  input int, optional</p>
-<p><strong>context</strong> : <a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>dims</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
-<p><strong>periods</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>communicator</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>context</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>dims</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>periods</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -399,11 +398,18 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>v</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_mpi_context_all</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_mpi_context_all</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -420,11 +426,18 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>v</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_mpi_context_any</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_mpi_context_any</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -441,7 +454,11 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -724,11 +741,18 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>direction</strong> :  input int</p>
-<p><strong>displ</strong> :  input int</p>
-<p><strong>source</strong> :  int</p>
-<p><strong>dest</strong> :  int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>direction</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>displ</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>source</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>dest</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -745,19 +769,24 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>v_in</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>n2</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_v_out,0)</p>
-</div></blockquote>
-<p><strong>n3</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_v_out,1)</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>v_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_v_out,0)</p>
+</dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_v_out,1)</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>v_out</strong> :  rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>v_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -773,19 +802,24 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>v_in</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>n2</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_v_out,0)</p>
-</div></blockquote>
-<p><strong>n3</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_v_out,1)</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>v_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_v_out,0)</p>
+</dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_v_out,1)</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>v_out</strong> :  rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>v_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -802,7 +836,11 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -917,7 +955,11 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lines</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*))</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>lines</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -933,7 +975,11 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1036,11 +1082,18 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>split_index</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>split_index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>new_context</strong> : <a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_context</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1260,12 +1313,15 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>info</strong> :  in/output rank-0 array(int,’i’)</p>
-<blockquote>
-<div><p>MPI error code</p>
-</div></blockquote>
-<p><strong>fn</strong> :  input string(len=-1)</p>
-<p class="last"><strong>line</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>info</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’)</span></dt>
+<dd><p class="first last">MPI error code</p>
+</dd>
+<dt><strong>fn</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>line</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1278,9 +1334,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1293,7 +1347,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1311,7 +1365,8 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1330,14 +1385,13 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

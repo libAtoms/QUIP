@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.cinoutput &mdash; quippy 22731ad+ documentation</title>
+  <title>quippy.cinoutput &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="../../_static/hybrid.png" class="logo" />
+            <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -124,7 +115,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">quippy</a>
@@ -132,9 +123,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -163,8 +155,6 @@
     
     
       <li class="wy-breadcrumbs-aside">
-        
-            
         
       </li>
     
@@ -259,8 +249,8 @@
                 <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="n">__builtin__</span><span class="o">.</span><span class="n">str</span><span class="p">(</span><span class="n">re</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span>
-</div>
-        <span class="k">return</span> <span class="n">at</span>
+
+        <span class="k">return</span> <span class="n">at</span></div>
 
     <span class="n">read</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="vm">__doc__</span>
 
@@ -276,10 +266,10 @@
         <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">properties_array</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">int_format</span><span class="o">=</span><span class="n">int_format</span><span class="p">,</span>
                                    <span class="n">real_format</span><span class="o">=</span><span class="n">real_format</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span> <span class="n">deflate</span><span class="o">=</span><span class="n">deflate</span><span class="p">,</span>
                                    <span class="n">deflate_level</span><span class="o">=</span><span class="n">deflate_level</span><span class="p">,</span> <span class="n">estr</span><span class="o">=</span><span class="n">estr</span><span class="p">,</span> <span class="n">update_index</span><span class="o">=</span><span class="n">update_index</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">estr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span></div>
-            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">estr</span><span class="p">)</span>
-</div>
-    <span class="n">write</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="k">if</span> <span class="n">estr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">estr</span><span class="p">)</span></div>
+
+    <span class="n">write</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_cinoutput</span><span class="o">.</span><span class="n">CInOutput</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="vm">__doc__</span></div>
 
 
 <span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">FortranDerivedTypes</span>
@@ -353,8 +343,8 @@
                     <span class="k">return</span> <span class="n">a</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Attribute </span><span class="si">%s</span><span class="s1"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span></div>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Attribute </span><span class="si">%s</span><span class="s1"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Attribute </span><span class="si">%s</span><span class="s1"> not found&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span></div>
 
 
 <span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsReaders</span><span class="p">[</span><span class="s1">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> \
@@ -388,8 +378,8 @@
         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">write_kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;stdout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;extxyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">]</span> \
     <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="s1">&#39;nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AtomsWriters</span><span class="p">[</span><span class="n">CInOutput</span><span class="p">]</span> <span class="o">=</span> <span class="n">CInOutputWriter</span>
@@ -428,9 +418,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -443,7 +431,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -461,7 +449,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -480,14 +469,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

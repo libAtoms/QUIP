@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-level system routines &mdash; quippy 22731ad+ documentation</title>
+  <title>Low-level system routines &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="prev" title="Units and physical constants" href="units.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Units and physical constants" href="units.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -149,7 +140,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -157,9 +148,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -277,7 +269,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>OMIT</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.system_resync_rng" title="quippy.system.system_resync_rng"><code class="xref py py-obj docutils literal notranslate"><span class="pre">system_resync_rng</span></code></a>()</td>
-<td>.</td>
+<td></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.upper_case" title="quippy.system.upper_case"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper_case</span></code></a>(word)</td>
 <td>Convert a word to upper case</td>
@@ -289,7 +281,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 <td>Measure elapsed CPU and wall clock time between pairs of calls with matching <code class="docutils literal notranslate"><span class="pre">name</span></code> parameter.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.verbosity_of_str" title="quippy.system.verbosity_of_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbosity_of_str</span></code></a>(str)</td>
-<td>Map from descriptive verbosity names (<code class="docutils literal notranslate"><span class="pre">NORMAL</span></code>, <code class="docutils literal notranslate"><span class="pre">VERBOSE</span></code> etc.</td>
+<td>Map from descriptive verbosity names (<code class="docutils literal notranslate"><span class="pre">NORMAL</span></code>, <code class="docutils literal notranslate"><span class="pre">VERBOSE</span></code> etc.) to numbers</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.reference_true" title="quippy.system.reference_true"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reference_true</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -385,7 +377,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.enable_timing" title="quippy.system.enable_timing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_timing</span></code></a>()</td>
-<td>.</td>
+<td></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.mem_info" title="quippy.system.mem_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_info</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -562,7 +554,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.print_warning" title="quippy.system.print_warning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_warning</span></code></a>(message)</td>
-<td>Print a warning message to stderr, but don’t quit</td>
+<td>Print a warning message to log</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.get_cmd_arg" title="quippy.system.get_cmd_arg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cmd_arg</span></code></a>(i,[status])</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -670,7 +662,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.disable_timing" title="quippy.system.disable_timing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_timing</span></code></a>()</td>
-<td>.</td>
+<td></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.split_string_simple" title="quippy.system.split_string_simple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_string_simple</span></code></a>(str,separators,n0,[error])</td>
 <td>split a string into fields separated by possible separators no quoting, matching separators, just a simple split</td>
@@ -804,15 +796,26 @@ be set to false.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> :  input string(len=-1), optional</p>
-<p><strong>action</strong> :  input int, optional</p>
-<p><strong>isformatted</strong> :  input int, optional</p>
-<p><strong>append</strong> :  input int, optional</p>
-<p><strong>verbosity</strong> :  input int, optional</p>
-<p><strong>verbosity_cascade</strong> :  input int, optional</p>
-<p><strong>master_only</strong> :  input int, optional</p>
-<p><strong>unit</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>action</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>isformatted</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>append</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>verbosity_cascade</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>master_only</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>unit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -820,15 +823,16 @@ be set to false.</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.
 Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">InOutput</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.active" title="quippy.system.InOutput.active"><code class="xref py py-obj docutils literal notranslate"><span class="pre">active</span></code></a></td>
-<td>Does it print?</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.system.InOutput.active" title="quippy.system.InOutput.active"><code class="xref py py-obj docutils literal notranslate"><span class="pre">active</span></code></a></dt>
+<dd><p class="first last">Does it print?</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -920,7 +924,11 @@ formatted and unformatted files.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -952,7 +960,11 @@ formatted and unformatted files.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ret_inoutput_do_output</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_inoutput_do_output</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -968,7 +980,11 @@ formatted and unformatted files.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> :  input int, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -984,12 +1000,20 @@ formatted and unformatted files.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>delimiters</strong> :  input string(len=-1)</p>
-<p><strong>fields</strong> :  in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
-<p><strong>status</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>delimiters</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+<dt><strong>status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>num_fields</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>num_fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1005,7 +1029,11 @@ formatted and unformatted files.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">inoutput</span></code> object, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">inoutput</span></code> object, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1021,7 +1049,11 @@ formatted and unformatted files.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> :  input int, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1098,9 +1130,17 @@ end{itemize}</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>status</strong> :  in/output rank-0 array(int,’i’), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_inoutput_read_line</strong> :  string(len=1024)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_inoutput_read_line</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1131,13 +1171,22 @@ end{itemize}</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>closing_delim</strong> :  input string(len=-1)</p>
-<p><strong>opening_delims</strong> :  input string(len=-1)</p>
-<p><strong>closing_delims</strong> :  input string(len=-1)</p>
-<p><strong>matching</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>closing_delim</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>opening_delims</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>closing_delims</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>matching</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_pos</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1154,7 +1203,11 @@ end{itemize}</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_unit</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_unit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1177,9 +1230,17 @@ end{itemize}</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>word</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>word</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_upper_case</strong> :  string(len=1024)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_upper_case</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1196,18 +1257,17 @@ this routine aborts of _MPI is not defined</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>comm</strong> :  input int</p>
-<blockquote>
-<div><p>MPI communicator</p>
-</div></blockquote>
-<p><strong>nproc</strong> :  int</p>
-<blockquote>
-<div><p>Total number of processes</p>
-</div></blockquote>
-<p><strong>rank</strong> :  int</p>
-<blockquote class="last">
-<div><p>Rank of this process</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>comm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">MPI communicator</p>
+</dd>
+<dt><strong>nproc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Total number of processes</p>
+</dd>
+<dt><strong>rank</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Rank of this process</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1235,13 +1295,17 @@ maximum depth of calls is set by the <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>Unique identifier for this timer</p>
-</div></blockquote>
-<p><strong>do_always</strong> :  input int, optional</p>
-<p><strong>time_elapsed</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p class="last"><strong>do_print</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">Unique identifier for this timer</p>
+</dd>
+<dt><strong>do_always</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>time_elapsed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>do_print</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1258,9 +1322,17 @@ maximum depth of calls is set by the <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>str</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_val</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1275,7 +1347,11 @@ maximum depth of calls is set by the <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_reference_true</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_reference_true</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1291,9 +1367,17 @@ maximum depth of calls is set by the <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_th</strong> :  string(len=2)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_th</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=2)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1308,11 +1392,18 @@ maximum depth of calls is set by the <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start</strong> :  input int</p>
-<p><strong>end</strong> :  input int</p>
-<p><strong>separators</strong> :  input string(len=-1)</p>
-<p><strong>dist</strong> :  int</p>
-<p class="last"><strong>ret_c</strong> :  string(len=1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>start</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>end</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>separators</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>dist</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>ret_c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1330,15 +1421,15 @@ seed the random number generator.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>seed</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Seed for the random number generator.</p>
-</div></blockquote>
-<p><strong>common_seed</strong> :  input int, optional</p>
-<blockquote class="last">
-<div><p>If <code class="docutils literal notranslate"><span class="pre">common_seed</span></code> is true (default), random seed will be the same for each
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Seed for the random number generator.</p>
+</dd>
+<dt><strong>common_seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If <code class="docutils literal notranslate"><span class="pre">common_seed</span></code> is true (default), random seed will be the same for each
 MPI process.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1354,11 +1445,18 @@ MPI process.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> :  input string(len=-1)</p>
-<p><strong>status</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>arg</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>arg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1376,7 +1474,11 @@ with mean and variance of unity</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_r</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1396,13 +1498,22 @@ gives the total number of fields. <code class="docutils literal notranslate"><sp
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>delimiters</strong> :  input string(len=-1)</p>
-<p><strong>fields</strong> :  in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
-<p><strong>matching</strong> :  input int, optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>delimiters</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+<dt><strong>matching</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>num_fields</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>num_fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1422,11 +1533,18 @@ gives the total number of fields. <code class="docutils literal notranslate"><sp
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>delimiters</strong> :  input string(len=-1)</p>
-<p><strong>fields</strong> :  in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>delimiters</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>num_fields</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>num_fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1449,33 +1567,31 @@ arguments, and the arguments themselves.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>verbosity</strong> :  input int, optional</p>
-<blockquote>
-<div><p>mainlog output verbosity</p>
-</div></blockquote>
-<p><strong>seed</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Seed for the random number generator.</p>
-</div></blockquote>
-<p><strong>mpi_all_inoutput</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Print on all MPI nodes (false by default)</p>
-</div></blockquote>
-<p><strong>common_seed</strong> :  input int, optional</p>
-<p><strong>enable_timing</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Enable system_timer() calls</p>
-</div></blockquote>
-<p><strong>quippy_running</strong> :  input int, optional</p>
-<blockquote>
-<div><p>.true. if running under quippy (Python interface)</p>
-</div></blockquote>
-<p><strong>mainlog_file</strong> :  input string(len=-1), optional</p>
-<p><strong>mainlog_unit</strong> :  input int, optional</p>
-<blockquote class="last">
-<div><p>If <code class="docutils literal notranslate"><span class="pre">common_seed</span></code> is true (default), random seed will be the same for each
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">mainlog output verbosity</p>
+</dd>
+<dt><strong>seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Seed for the random number generator.</p>
+</dd>
+<dt><strong>mpi_all_inoutput</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Print on all MPI nodes (false by default)</p>
+</dd>
+<dt><strong>common_seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>enable_timing</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Enable system_timer() calls</p>
+</dd>
+<dt><strong>quippy_running</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">.true. if running under quippy (Python interface)</p>
+</dd>
+<dt><strong>mainlog_file</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>mainlog_unit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If <code class="docutils literal notranslate"><span class="pre">common_seed</span></code> is true (default), random seed will be the same for each
 MPI process.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1499,7 +1615,11 @@ MPI process.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_get_quippy_running</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_get_quippy_running</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1519,11 +1639,18 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>digits</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>digits</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_round</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_round</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1540,7 +1667,11 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_system_get_random_seed</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_system_get_random_seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1555,7 +1686,11 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>do_timing</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>do_timing</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1570,7 +1705,11 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_len</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_len</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1592,8 +1731,12 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>total_mem</strong> :  float</p>
-<p class="last"><strong>free_mem</strong> :  float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>total_mem</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>free_mem</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1609,13 +1752,22 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sourcename</strong> :  input string(len=-1)</p>
-<p><strong>basename</strong> :  input string(len=-1), optional</p>
-<p><strong>run_dir_i</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>sourcename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>basename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>run_dir_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dir</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dir</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1632,7 +1784,11 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_ran_uniform</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_ran_uniform</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1648,7 +1804,11 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_id</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1664,9 +1824,14 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>total</strong> :  input int</p>
-<p><strong>current</strong> :  input int</p>
-<p class="last"><strong>name</strong> :  input string(len=-1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>total</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>current</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1682,11 +1847,18 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>str</strong> :  input string(len=-1)</p>
-<p><strong>line_len</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>line_len</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lb_str</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_lb_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1712,8 +1884,12 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>title</strong> :  input string(len=-1)</p>
-<p class="last"><strong>verbosity</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>title</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1729,10 +1905,16 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> :  input string(len=-1)</p>
-<p><strong>max_wait_time</strong> :  input float</p>
-<p><strong>cycle_time</strong> :  input float, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>max_wait_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cycle_time</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1749,11 +1931,18 @@ Return a string which is the real number <code class="docutils literal notransla
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string</strong> :  input string(len=-1)</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>string</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_string_to_logical</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_string_to_logical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1773,13 +1962,22 @@ tokenizing</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>separators</strong> :  input string(len=-1)</p>
-<p><strong>quotes</strong> :  input string(len=-1)</p>
-<p><strong>fields</strong> :  in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
-<p><strong>matching</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>separators</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>quotes</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+<dt><strong>matching</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>num_fields</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>num_fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1796,9 +1994,17 @@ tokenizing</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>val</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_str</strong> :  string(len=10)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=10)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1814,11 +2020,18 @@ tokenizing</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string</strong> :  input string(len=-1)</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>string</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_string_to_int</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_string_to_int</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1834,9 +2047,17 @@ tokenizing</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>r</strong> :  input float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_len</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_len</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1851,8 +2072,12 @@ tokenizing</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>amt</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>amt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1868,10 +2093,16 @@ tokenizing</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lines</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*))</p>
-<p><strong>comm</strong> :  input int</p>
-<p><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>file</strong> : <a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>lines</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n0,(*))</span></dt>
+<dd></dd>
+<dt><strong>comm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1889,7 +2120,11 @@ stack and pushing 1 on to verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbosity</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1904,7 +2139,11 @@ stack and pushing 1 on to verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_current_version</strong> :  string(len=1024)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_current_version</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1919,9 +2158,17 @@ stack and pushing 1 on to verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stack_size</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>stack_size</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_increase_stack</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_increase_stack</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1937,7 +2184,11 @@ stack and pushing 1 on to verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_current_verbosity</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_current_verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1953,7 +2204,11 @@ stack and pushing 1 on to verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1970,10 +2225,16 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>total</strong> :  input int</p>
-<p><strong>current</strong> :  input int</p>
-<p><strong>name</strong> :  input string(len=-1)</p>
-<p class="last"><strong>elapsed_seconds</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>total</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>current</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>elapsed_seconds</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1989,7 +2250,11 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_reference_false</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_reference_false</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2004,7 +2269,11 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_cmd_arg_count</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_cmd_arg_count</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2020,8 +2289,12 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>error_code</strong> :  input int</p>
-<p class="last"><strong>routine_name</strong> :  input string(len=-1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>error_code</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>routine_name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2037,11 +2310,18 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>str</strong> :  input string(len=-1)</p>
-<p><strong>line_len</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>line_len</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_length</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_length</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2053,12 +2333,16 @@ based on the elapsed time so far</p>
 <dl class="function">
 <dt id="quippy.system.print_warning">
 <code class="descclassname">quippy.system.</code><code class="descname">print_warning</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.print_warning" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print a warning message to stderr, but don’t quit</p>
+<dd><p>Print a warning message to log</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>message</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2073,11 +2357,18 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>status</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>arg</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>arg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2094,9 +2385,17 @@ based on the elapsed time so far</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>l</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_ran_string</strong> :  string(len=1024)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_ran_string</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2120,8 +2419,12 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mainlog_ptr</strong> :  rank-1 array(‘i’) with bounds (2)</p>
-<p class="last"><strong>errorlog_ptr</strong> :  rank-1 array(‘i’) with bounds (2)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>mainlog_ptr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘i’) with bounds (2)</span></dt>
+<dd></dd>
+<dt><strong>errorlog_ptr</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘i’) with bounds (2)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2138,7 +2441,11 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2154,7 +2461,11 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_seed</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>new_seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2170,7 +2481,11 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_n</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2186,7 +2501,11 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_dran</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dran</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2202,9 +2521,17 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>word</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>word</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_lower_case</strong> :  string(len=1024)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_lower_case</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2219,7 +2546,11 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seed</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2235,9 +2566,17 @@ stack and popping from verbosity_cascade_stack</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>s</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_a</strong> :  rank-2 array(‘S’) with bounds (slen(qp_s),(1))</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘S’) with bounds (slen(qp_s),(1))</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2256,7 +2595,11 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>val</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2271,9 +2614,17 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>i</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_len</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_len</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2289,15 +2640,21 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>s</strong> :  input string(len=-1)</p>
-<p><strong>l</strong> :  input int</p>
-<p><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_ret_a,0)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>s</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_ret_a,0)</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_a</strong> :  rank-2 array(‘S’) with bounds (qp_n0,(1))</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘S’) with bounds (qp_n0,(1))</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2313,8 +2670,12 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>amt</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>amt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2331,11 +2692,18 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string</strong> :  input string(len=-1)</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>string</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_string_to_real</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_string_to_real</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2352,9 +2720,17 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(1))</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n0,(1))</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_s</strong> :  string(len=1024)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_s</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2370,9 +2746,17 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>values</strong> :  input rank-1 array(‘i’) with bounds (8)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>values</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (8)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_date_and_time_string</strong> :  string(len=21)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_date_and_time_string</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=21)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2387,7 +2771,11 @@ Don’t ever lower the verbosity if verbosity minimum is set,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_get_timing</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_get_timing</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2411,27 +2799,25 @@ no quoting, matching separators, just a simple split</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>str</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>string to be split</p>
-</div></blockquote>
-<p><strong>fields</strong> :  rank-2 array(‘S’) with bounds (qp_n0,(1024))</p>
-<blockquote>
-<div><p>on return, array of fields</p>
-</div></blockquote>
-<p><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_fields,0)</p>
-</div></blockquote>
-<p><strong>n_fields</strong> :  int</p>
-<blockquote>
-<div><p>on return, number of fields</p>
-</div></blockquote>
-<p><strong>separators</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>string of possible separators</p>
-</div></blockquote>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">string to be split</p>
+</dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘S’) with bounds (qp_n0,(1024))</span></dt>
+<dd><p class="first last">on return, array of fields</p>
+</dd>
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_fields,0)</p>
+</dd>
+<dt><strong>n_fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">on return, number of fields</p>
+</dd>
+<dt><strong>separators</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">string of possible separators</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2448,9 +2834,17 @@ no quoting, matching separators, just a simple split</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_is_file_readable</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_is_file_readable</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2465,9 +2859,14 @@ no quoting, matching separators, just a simple split</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cpu_t</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>wall_t</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p class="last"><strong>mpi_t</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cpu_t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>wall_t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>mpi_t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2484,7 +2883,11 @@ no quoting, matching separators, just a simple split</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_ran_normal</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_ran_normal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2499,13 +2902,22 @@ no quoting, matching separators, just a simple split</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>basename</strong> :  input string(len=-1), optional</p>
-<p><strong>force_run_dir_i</strong> :  input int, optional</p>
-<p><strong>run_dir_i</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>basename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>force_run_dir_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>run_dir_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dir</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dir</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -3224,9 +3636,7 @@ Other user-defined types define the Print interface in the same way.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -3246,7 +3656,7 @@ Other user-defined types define the Print interface in the same way.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -3264,7 +3674,8 @@ Other user-defined types define the Print interface in the same way.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -3283,14 +3694,13 @@ Other user-defined types define the Print interface in the same way.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

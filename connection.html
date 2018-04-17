@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Connection objects &mdash; quippy 22731ad+ documentation</title>
+  <title>Connection objects &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -148,7 +139,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -156,9 +147,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -320,16 +312,28 @@ connectivity information than the wrapped Fortran functions
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
-<p><strong>nbuffer</strong> :  input int</p>
-<p><strong>pos</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>g</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
-<p><strong>extent</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>nn_guess</strong> :  input int, optional</p>
-<p><strong>store_rij</strong> :  input int, optional</p>
-<p class="last"><strong>fill</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>nbuffer</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>origin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>extent</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>nn_guess</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_rij</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>fill</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -368,14 +372,24 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pos</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<p><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>shift</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
-<p><strong>d</strong> :  input float</p>
-<p><strong>dv</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>shift</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>dv</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -393,8 +407,12 @@ Overloaded assigment operators for Connection objects.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>to</strong> : <a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object</p>
-<p class="last"><strong>from</strong> : <a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>to</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.atoms.Connection" title="quippy.atoms.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -419,15 +437,26 @@ moved more than 0.5*cutoff_skin.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>own_neighbour</strong> :  input int, optional</p>
-<p><strong>store_is_min_image</strong> :  input int, optional</p>
-<p><strong>skip_zero_zero_bonds</strong> :  input int, optional</p>
-<p><strong>store_n_neighb</strong> :  input int, optional</p>
-<p><strong>cutoff_skin</strong> :  input float, optional</p>
-<p><strong>max_pos_change</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>did_rebuild</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>own_neighbour</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_is_min_image</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>skip_zero_zero_bonds</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_n_neighb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>cutoff_skin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>max_pos_change</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>did_rebuild</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -447,15 +476,26 @@ further than <code class="docutils literal notranslate"><span class="pre">cutoff
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>cutoff_factor</strong> :  input float</p>
-<p><strong>cutoff_break_factor</strong> :  input float</p>
-<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
-<p><strong>extent</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>own_neighbour</strong> :  input int, optional</p>
-<p><strong>store_is_min_image</strong> :  input int, optional</p>
-<p><strong>store_n_neighb</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>cutoff_factor</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_break_factor</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>origin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>extent</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>own_neighbour</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_is_min_image</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_n_neighb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -474,9 +514,14 @@ any atoms are moved (e.g. it is called by <code class="docutils literal notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>parallel</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>parallel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -492,13 +537,22 @@ any atoms are moved (e.g. it is called by <code class="docutils literal notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>k</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_cell_n</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_cell_n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -514,10 +568,16 @@ any atoms are moved (e.g. it is called by <code class="docutils literal notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lat_pos</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>i</strong> :  int</p>
-<p><strong>j</strong> :  int</p>
-<p class="last"><strong>k</strong> :  int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>lat_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -534,10 +594,16 @@ any atoms are moved (e.g. it is called by <code class="docutils literal notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cellsna</strong> :  input int</p>
-<p><strong>cellsnb</strong> :  input int</p>
-<p><strong>cellsnc</strong> :  input int</p>
-<p class="last"><strong>natoms</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cellsna</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cellsnb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cellsnc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>natoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -560,16 +626,28 @@ filtered by species (Z1,Z2)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
-<p><strong>nbuffer</strong> :  input int</p>
-<p><strong>pos</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>g</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3), optional</p>
-<p><strong>extent</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>nn_guess</strong> :  input int, optional</p>
-<p><strong>store_rij</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>nbuffer</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>origin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>extent</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>nn_guess</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>store_rij</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -673,9 +751,17 @@ then only neighbours closer than this cutoff are included.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_n</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -770,9 +856,14 @@ set (cellsNa,b,c). Pre-wiping of the cells can be skipped (e.g. if they are alre
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>dont_wipe</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>dont_wipe</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -792,8 +883,12 @@ logger or to a specificied Inoutput object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -809,10 +904,16 @@ logger or to a specificied Inoutput object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>shift</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>shift</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -829,9 +930,14 @@ logger or to a specificied Inoutput object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>bonds</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>bonds</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -912,13 +1018,22 @@ in the <span class="math notranslate">\(x\)</span> direction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rx</strong> :  input float</p>
-<p><strong>ry</strong> :  input float</p>
-<p><strong>rz</strong> :  input float</p>
-<p><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<p><strong>na</strong> :  int</p>
-<p><strong>nb</strong> :  int</p>
-<p class="last"><strong>nc</strong> :  int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>rx</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>ry</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>rz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+<dt><strong>na</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>nb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>nc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -938,26 +1053,23 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<blockquote>
-<div><p>Box defined by lattice vectors</p>
-</div></blockquote>
-<p><strong>cutoff</strong> :  input float</p>
-<blockquote>
-<div><p>Radius of sphere</p>
-</div></blockquote>
-<p><strong>na</strong> :  int</p>
-<blockquote>
-<div><p>Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
-</div></blockquote>
-<p><strong>nb</strong> :  int</p>
-<blockquote>
-<div><p>Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
-</div></blockquote>
-<p><strong>nc</strong> :  int</p>
-<blockquote class="last">
-<div><p>Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd><p class="first last">Box defined by lattice vectors</p>
+</dd>
+<dt><strong>cutoff</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last">Radius of sphere</p>
+</dd>
+<dt><strong>na</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
+</dd>
+<dt><strong>nb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
+</dd>
+<dt><strong>nc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -973,25 +1085,46 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>is_periodic</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
-<p><strong>cellsna</strong> :  input int</p>
-<p><strong>cellsnb</strong> :  input int</p>
-<p><strong>cellsnc</strong> :  input int</p>
-<p><strong>cell_image_na</strong> :  input int</p>
-<p><strong>cell_image_nb</strong> :  input int</p>
-<p><strong>cell_image_nc</strong> :  input int</p>
-<p><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>k</strong> :  input int</p>
-<p><strong>do_i</strong> :  input int</p>
-<p><strong>do_j</strong> :  input int</p>
-<p><strong>do_k</strong> :  input int</p>
-<p><strong>min_cell_image_na</strong> :  int</p>
-<p><strong>max_cell_image_na</strong> :  int</p>
-<p><strong>min_cell_image_nb</strong> :  int</p>
-<p><strong>max_cell_image_nb</strong> :  int</p>
-<p><strong>min_cell_image_nc</strong> :  int</p>
-<p class="last"><strong>max_cell_image_nc</strong> :  int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>is_periodic</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>cellsna</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cellsnb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cellsnc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cell_image_na</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cell_image_nb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>cell_image_nc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>do_i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>do_j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>do_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>min_cell_image_na</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>max_cell_image_na</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>min_cell_image_nb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>max_cell_image_nb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>min_cell_image_nc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+<dt><strong>max_cell_image_nc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1008,11 +1141,18 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_max_cutoff</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_max_cutoff</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1025,9 +1165,7 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1040,7 +1178,7 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1058,7 +1196,8 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1077,14 +1216,13 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command line argument parser &mdash; quippy 22731ad+ documentation</title>
+  <title>Command line argument parser &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="next" title="Fortran input/output" href="fortranio.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Fortran input/output" href="fortranio.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -147,7 +138,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -155,9 +146,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -269,7 +261,7 @@ options set by the parameter file.</p>
 <td>Explicity check if all mandatory values have now been specified Returns true or false accordingly.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.paramreader.param_write_string" title="quippy.paramreader.param_write_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">param_write_string</span></code></a>(dict)</td>
-<td>Return string representation of param dictionary, i.</td>
+<td>Return string representation of param dictionary, i.e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.paramreader.param_print" title="quippy.paramreader.param_print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">param_print</span></code></a>(dict,[verbosity,out])</td>
 <td>Print key/value pairs.</td>
@@ -324,27 +316,30 @@ the line.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<blockquote>
-<div><p>Dictionary of registered key/value pairs</p>
-</div></blockquote>
-<p><strong>myline</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>Line to parse</p>
-</div></blockquote>
-<p><strong>ignore_unknown</strong> :  input int, optional</p>
-<blockquote>
-<div><p>If true, ignore unknown keys in line</p>
-</div></blockquote>
-<p><strong>check_mandatory</strong> :  input int, optional</p>
-<blockquote>
-<div><p>If true, check for missing mandatory parameters</p>
-</div></blockquote>
-<p><strong>task</strong> :  input string(len=-1), optional</p>
-<p><strong>did_help</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd><p class="first last">Dictionary of registered key/value pairs</p>
+</dd>
+<dt><strong>myline</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">Line to parse</p>
+</dd>
+<dt><strong>ignore_unknown</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If true, ignore unknown keys in line</p>
+</dd>
+<dt><strong>check_mandatory</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If true, check for missing mandatory parameters</p>
+</dd>
+<dt><strong>task</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>did_help</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_status</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -360,12 +355,15 @@ the line.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<blockquote>
-<div><p>Dictionary of registered key/value pairs</p>
-</div></blockquote>
-<p><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>out</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd><p class="first last">Dictionary of registered key/value pairs</p>
+</dd>
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>out</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -384,18 +382,21 @@ of missing keys as a string.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<blockquote>
-<div><p>Dictionary of registered key/value pairs</p>
-</div></blockquote>
-<p><strong>missing_keys</strong> :  in/output rank-0 array(string(len=-1),’c’), optional</p>
-<blockquote>
-<div><p>On exit, string list of missing mandatory keys,
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd><p class="first last">Dictionary of registered key/value pairs</p>
+</dd>
+<dt><strong>missing_keys</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(string(len=-1),’c’), optional</span></dt>
+<dd><p class="first last">On exit, string list of missing mandatory keys,
 separated by spaces.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_status</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -413,13 +414,17 @@ separated by spaces.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<blockquote>
-<div><p>Dictionary of registered key/value pairs</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd><p class="first last">Dictionary of registered key/value pairs</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_s</strong> :  string(len=10240)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_s</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=10240)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -436,12 +441,15 @@ separated by spaces.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<blockquote>
-<div><p>Dictionary of registered key/value pairs</p>
-</div></blockquote>
-<p><strong>verbosity</strong> :  input int, optional</p>
-<p class="last"><strong>out</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd><p class="first last">Dictionary of registered key/value pairs</p>
+</dd>
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>out</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -462,28 +470,32 @@ all mandatory values have been specified fails.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dict</strong> : <a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</p>
-<blockquote>
-<div><p>Dictionary of registered key/value pairs</p>
-</div></blockquote>
-<p><strong>args</strong> :  input rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<blockquote>
-<div><p>Argument indices to use</p>
-</div></blockquote>
-<p><strong>check_mandatory</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Should we check if all mandatory parameters have been given</p>
-</div></blockquote>
-<p><strong>ignore_unknown</strong> :  input int, optional</p>
-<blockquote>
-<div><p>If true, ignore unknown keys in line</p>
-</div></blockquote>
-<p><strong>task</strong> :  input string(len=-1), optional</p>
-<p><strong>command_line</strong> :  in/output rank-0 array(string(len=-1),’c’), optional</p>
-<p><strong>did_help</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>dict</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="dictionary.html#quippy.dictionary.Dictionary" title="quippy.dictionary.Dictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dictionary</span></code></a> object</span></dt>
+<dd><p class="first last">Dictionary of registered key/value pairs</p>
+</dd>
+<dt><strong>args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd><p class="first last">Argument indices to use</p>
+</dd>
+<dt><strong>check_mandatory</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Should we check if all mandatory parameters have been given</p>
+</dd>
+<dt><strong>ignore_unknown</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If true, ignore unknown keys in line</p>
+</dd>
+<dt><strong>task</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>command_line</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(string(len=-1),’c’), optional</span></dt>
+<dd></dd>
+<dt><strong>did_help</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_status</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_status</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -667,9 +679,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -689,7 +699,7 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -707,7 +717,8 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -726,14 +737,13 @@ or ‘param_read_args’. For a parameter which shouldn’t be parsed, do not sp
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

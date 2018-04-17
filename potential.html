@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Potential objects &mdash; quippy 22731ad+ documentation</title>
+  <title>Potential objects &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -140,7 +131,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -148,9 +139,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -821,13 +813,22 @@ array in <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.array
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>b</strong> :  float</p>
-<p><strong>v0</strong> :  float</p>
-<p><strong>minimise_bulk</strong> :  input int, optional</p>
-<p><strong>eps</strong> :  input float, optional</p>
-<p class="last"><strong>args_str</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>v0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>minimise_bulk</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -979,14 +980,24 @@ default arguments.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>energy</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>force</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>virial</strong> :  in/output rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>local_energy</strong> :  in/output rank-1 array(‘d’) with bounds (qp_n2), optional</p>
-<p><strong>local_virial</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n3,qp_n4), optional</p>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>energy</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>virial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>local_energy</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘d’) with bounds (qp_n2), optional</span></dt>
+<dd></dd>
+<dt><strong>local_virial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n3,qp_n4), optional</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1002,46 +1013,38 @@ default arguments.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>Atoms object for which to compute <span class="math notranslate">\(C_{ij}\)</span></p>
-</div></blockquote>
-<p><strong>fd</strong> :  input float, optional</p>
-<blockquote>
-<div><p>Finite strain to apply. Default <span class="math notranslate">\(10^{-2}\)</span>.</p>
-</div></blockquote>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>Optional args_str to pass to <code class="docutils literal notranslate"><span class="pre">minim</span></code></p>
-</div></blockquote>
-<p><strong>c</strong> :  in/output rank-2 array(‘d’) with bounds (6,6), optional</p>
-<blockquote>
-<div><p>Elastic constants (with relaxation)</p>
-</div></blockquote>
-<p><strong>c0</strong> :  in/output rank-2 array(‘d’) with bounds (6,6), optional</p>
-<blockquote>
-<div><p>Elastic constants (without relaxation)</p>
-</div></blockquote>
-<p><strong>relax_initial</strong> :  input int, optional</p>
-<blockquote>
-<div><p>Should the initial cell be relaxed?</p>
-</div></blockquote>
-<p><strong>return_relaxed</strong> :  input int, optional</p>
-<blockquote>
-<div><p>If true, overwrite <code class="docutils literal notranslate"><span class="pre">at</span></code> with relaxed positions and lattice (default false)</p>
-</div></blockquote>
-<p><strong>relax_tol</strong> :  input float, optional</p>
-<blockquote>
-<div><p>Relaxation df:math:<cite>^2</cite> tolerance. Default 1e-8</p>
-</div></blockquote>
-<p><strong>relax_method</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>method to pass for minim</p>
-</div></blockquote>
-<p><strong>linmin_method</strong> :  input string(len=-1), optional</p>
-<blockquote class="last">
-<div><p>method to pass for minim</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Atoms object for which to compute <span class="math notranslate">\(C_{ij}\)</span></p>
+</dd>
+<dt><strong>fd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd><p class="first last">Finite strain to apply. Default <span class="math notranslate">\(10^{-2}\)</span>.</p>
+</dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">Optional args_str to pass to <code class="docutils literal notranslate"><span class="pre">minim</span></code></p>
+</dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (6,6), optional</span></dt>
+<dd><p class="first last">Elastic constants (with relaxation)</p>
+</dd>
+<dt><strong>c0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (6,6), optional</span></dt>
+<dd><p class="first last">Elastic constants (without relaxation)</p>
+</dd>
+<dt><strong>relax_initial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">Should the initial cell be relaxed?</p>
+</dd>
+<dt><strong>return_relaxed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">If true, overwrite <code class="docutils literal notranslate"><span class="pre">at</span></code> with relaxed positions and lattice (default false)</p>
+</dd>
+<dt><strong>relax_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd><p class="first last">Relaxation df:math:<cite>^2</cite> tolerance. Default 1e-8</p>
+</dd>
+<dt><strong>relax_method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">method to pass for minim</p>
+</dd>
+<dt><strong>linmin_method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">method to pass for minim</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1058,16 +1061,28 @@ default arguments.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>cluster</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>mark_name</strong> :  input string(len=-1)</p>
-<p><strong>ngrid</strong> :  input rank-1 array(‘i’) with bounds (3)</p>
-<p><strong>origin</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>extent</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>real_grid</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>pot</strong> :  in/output rank-3 array(‘d’) with bounds (qp_n2,qp_n3,qp_n4)</p>
-<p><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>cluster</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>mark_name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>ngrid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>origin</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>extent</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>real_grid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-3 array(‘d’) with bounds (qp_n2,qp_n3,qp_n4)</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1085,39 +1100,34 @@ This always triggers a force calculation, since the elements for dH and dS are a
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</p>
-<blockquote>
-<div><p>Atomic structure to use for TB matrix calculation</p>
-</div></blockquote>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>Additional arguments to pass to TB <cite>calc()</cite> routine</p>
-</div></blockquote>
-<p><strong>hd</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<blockquote>
-<div><p>Hamiltonian and overlap for real wavefunctions (gamma point)</p>
-</div></blockquote>
-<p><strong>sd</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
-<blockquote>
-<div><p>Hamiltonian and overlap for real wavefunctions (gamma point)</p>
-</div></blockquote>
-<p><strong>hz</strong> :  in/output rank-2 array(‘D’) with bounds (qp_n4,qp_n5), optional</p>
-<blockquote>
-<div><p>Complex Hamiltonian and overlap (multiple kpoints)</p>
-</div></blockquote>
-<p><strong>sz</strong> :  in/output rank-2 array(‘D’) with bounds (qp_n6,qp_n7), optional</p>
-<blockquote>
-<div><p>Complex Hamiltonian and overlap (multiple kpoints)</p>
-</div></blockquote>
-<p><strong>dh</strong> :  in/output rank-4 array(‘d’) with bounds (qp_n8,qp_n9,qp_n10,qp_n11), optional</p>
-<blockquote>
-<div><p>Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
-</div></blockquote>
-<p><strong>ds</strong> :  in/output rank-4 array(‘d’) with bounds (qp_n12,qp_n13,qp_n14,qp_n15), optional</p>
-<blockquote>
-<div><p>Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
-</div></blockquote>
-<p class="last"><strong>index</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</span></dt>
+<dd><p class="first last">Atomic structure to use for TB matrix calculation</p>
+</dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">Additional arguments to pass to TB <cite>calc()</cite> routine</p>
+</dd>
+<dt><strong>hd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
+<dd><p class="first last">Hamiltonian and overlap for real wavefunctions (gamma point)</p>
+</dd>
+<dt><strong>sd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</span></dt>
+<dd><p class="first last">Hamiltonian and overlap for real wavefunctions (gamma point)</p>
+</dd>
+<dt><strong>hz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘D’) with bounds (qp_n4,qp_n5), optional</span></dt>
+<dd><p class="first last">Complex Hamiltonian and overlap (multiple kpoints)</p>
+</dd>
+<dt><strong>sz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘D’) with bounds (qp_n6,qp_n7), optional</span></dt>
+<dd><p class="first last">Complex Hamiltonian and overlap (multiple kpoints)</p>
+</dd>
+<dt><strong>dh</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-4 array(‘d’) with bounds (qp_n8,qp_n9,qp_n10,qp_n11), optional</span></dt>
+<dd><p class="first last">Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
+</dd>
+<dt><strong>ds</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-4 array(‘d’) with bounds (qp_n12,qp_n13,qp_n14,qp_n15), optional</span></dt>
+<dd><p class="first last">Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
+</dd>
+<dt><strong>index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1188,9 +1198,17 @@ updates</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_potential_cutoff</strong> :  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_potential_cutoff</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1205,20 +1223,21 @@ updates</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>args_str</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>Valid arguments are <code class="docutils literal notranslate"><span class="pre">Sum</span></code>, <code class="docutils literal notranslate"><span class="pre">ForceMixing</span></code>, <code class="docutils literal notranslate"><span class="pre">EVB</span></code>, <code class="docutils literal notranslate"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal notranslate"><span class="pre">ONIOM</span></code>, and any type of simple_potential</p>
-</div></blockquote>
-<p><strong>param_filename</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>name of xml parameter file for potential initializers</p>
-</div></blockquote>
-<p><strong>bulk_scale</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object, optional</p>
-<blockquote>
-<div><p>optional bulk structure for calculating space and E rescaling</p>
-</div></blockquote>
-<p><strong>mpi_obj</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">Valid arguments are <code class="docutils literal notranslate"><span class="pre">Sum</span></code>, <code class="docutils literal notranslate"><span class="pre">ForceMixing</span></code>, <code class="docutils literal notranslate"><span class="pre">EVB</span></code>, <code class="docutils literal notranslate"><span class="pre">Local_E_Mix</span></code> and <code class="docutils literal notranslate"><span class="pre">ONIOM</span></code>, and any type of simple_potential</p>
+</dd>
+<dt><strong>param_filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">name of xml parameter file for potential initializers</p>
+</dd>
+<dt><strong>bulk_scale</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object, optional</span></dt>
+<dd><p class="first last">optional bulk structure for calculating space and E rescaling</p>
+</dd>
+<dt><strong>mpi_obj</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1328,76 +1347,67 @@ explanation):</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>starting configuration</p>
-</div></blockquote>
-<p><strong>method</strong> :  input string(len=-1)</p>
-<blockquote>
-<div><p>passed to minim()</p>
-</div></blockquote>
-<p><strong>convergence_tol</strong> :  input float</p>
-<blockquote>
-<div><p>Minimisation is treated as converged once <span class="math notranslate">\(|\mathbf{\nabla}f|^2 &lt;\)</span>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">starting configuration</p>
+</dd>
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd><p class="first last">passed to minim()</p>
+</dd>
+<dt><strong>convergence_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last">Minimisation is treated as converged once <span class="math notranslate">\(|\mathbf{\nabla}f|^2 &lt;\)</span>
 <code class="docutils literal notranslate"><span class="pre">convergence_tol</span></code>.</p>
-</div></blockquote>
-<p><strong>max_steps</strong> :  input int</p>
-<blockquote>
-<div><p>Maximum number of steps</p>
-</div></blockquote>
-<p><strong>linminroutine</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>Name of the line minisation routine to use, passed to base minim()</p>
-</div></blockquote>
-<p><strong>do_print</strong> :  input int, optional</p>
-<blockquote>
-<div><p>if true, print configurations using minim’s hook()</p>
-</div></blockquote>
-<p><strong>print_inoutput</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
-<blockquote>
-<div><p>inoutput object to print configs to, needed if do_print is true</p>
-</div></blockquote>
-<p><strong>print_cinoutput</strong> : <a class="reference internal" href="io.html#quippy.cinoutput.CInOutput" title="quippy.cinoutput.CInOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">CInOutput</span></code></a> object, optional</p>
-<blockquote>
-<div><p>cinoutput object to print configs to, needed if do_print is true</p>
-</div></blockquote>
-<p><strong>do_pos</strong> :  input int, optional</p>
-<blockquote>
-<div><p>do relaxation w.r.t. positions and/or lattice (if neither is included, do both)</p>
-</div></blockquote>
-<p><strong>do_lat</strong> :  input int, optional</p>
-<blockquote>
-<div><p>do relaxation w.r.t. positions and/or lattice (if neither is included, do both)</p>
-</div></blockquote>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>arguments to pass to calc()</p>
-</div></blockquote>
-<p><strong>eps_guess</strong> :  input float, optional</p>
-<blockquote>
-<div><p>eps_guess argument to pass to minim</p>
-</div></blockquote>
-<p><strong>fire_minim_dt0</strong> :  input float, optional</p>
-<blockquote>
-<div><p>if using fire minim, initial value for time step</p>
-</div></blockquote>
-<p><strong>fire_minim_dt_max</strong> :  input float, optional</p>
-<blockquote>
-<div><p>if using fire minim, max value for time step</p>
-</div></blockquote>
-<p><strong>external_pressure</strong> :  input rank-2 array(‘d’) with bounds (3,3), optional</p>
-<p><strong>use_precond</strong> :  input int, optional</p>
-<p><strong>hook_print_interval</strong> :  input int, optional</p>
-<blockquote>
-<div><p>how often to print xyz from hook function</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<blockquote>
-<div><p>set to 1 if an error occurred during minimisation</p>
-</div></blockquote>
+</dd>
+<dt><strong>max_steps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">Maximum number of steps</p>
+</dd>
+<dt><strong>linminroutine</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">Name of the line minisation routine to use, passed to base minim()</p>
+</dd>
+<dt><strong>do_print</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">if true, print configurations using minim’s hook()</p>
+</dd>
+<dt><strong>print_inoutput</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd><p class="first last">inoutput object to print configs to, needed if do_print is true</p>
+</dd>
+<dt><strong>print_cinoutput</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="io.html#quippy.cinoutput.CInOutput" title="quippy.cinoutput.CInOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">CInOutput</span></code></a> object, optional</span></dt>
+<dd><p class="first last">cinoutput object to print configs to, needed if do_print is true</p>
+</dd>
+<dt><strong>do_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">do relaxation w.r.t. positions and/or lattice (if neither is included, do both)</p>
+</dd>
+<dt><strong>do_lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">do relaxation w.r.t. positions and/or lattice (if neither is included, do both)</p>
+</dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">arguments to pass to calc()</p>
+</dd>
+<dt><strong>eps_guess</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd><p class="first last">eps_guess argument to pass to minim</p>
+</dd>
+<dt><strong>fire_minim_dt0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd><p class="first last">if using fire minim, initial value for time step</p>
+</dd>
+<dt><strong>fire_minim_dt_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd><p class="first last">if using fire minim, max value for time step</p>
+</dd>
+<dt><strong>external_pressure</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3), optional</span></dt>
+<dd></dd>
+<dt><strong>use_precond</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>hook_print_interval</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">how often to print xyz from hook function</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd><p class="first last">set to 1 if an error occurred during minimisation</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_potential_minim</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_potential_minim</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1414,12 +1424,20 @@ explanation):</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>do_pos</strong> :  input int, optional</p>
-<p><strong>do_lat</strong> :  input int, optional</p>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>dir_field</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>do_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>do_lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>dir_field</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1436,8 +1454,12 @@ explanation):</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1548,12 +1570,15 @@ of label.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>The atoms structure to compute energy and forces</p>
-</div></blockquote>
-<p><strong>args_str</strong> :  input string(len=-1)</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">The atoms structure to compute energy and forces</p>
+</dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1570,15 +1595,26 @@ of label.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>do_pos</strong> :  input int, optional</p>
-<p><strong>do_lat</strong> :  input int, optional</p>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<p><strong>dir_field</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>do_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>do_lat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>dir_field</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_pot_test_gradient</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_pot_test_gradient</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1595,8 +1631,12 @@ of label.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>args_str</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1709,9 +1749,7 @@ tolerance exactly, pass a value for the <cite>convergence_tol</cite> argument.</
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1724,7 +1762,7 @@ tolerance exactly, pass a value for the <cite>convergence_tol</cite> argument.</
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1742,7 +1780,8 @@ tolerance exactly, pass a value for the <cite>convergence_tol</cite> argument.</
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1761,14 +1800,13 @@ tolerance exactly, pass a value for the <cite>convergence_tol</cite> argument.</
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

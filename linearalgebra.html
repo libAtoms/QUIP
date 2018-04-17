@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Linear algebra routines &mdash; quippy 22731ad+ documentation</title>
+  <title>Linear algebra routines &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="next" title="Quaternions and rotation" href="quaternions.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quaternions and rotation" href="quaternions.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -140,7 +131,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -148,9 +139,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -253,7 +245,7 @@ as well as array searching, sorting and averaging.</p>
 <td>K-means clustering.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.round_prime_factors" title="quippy.linearalgebra.round_prime_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">round_prime_factors</span></code></a>(n,[max_prime_factor,error])</td>
-<td>round n to the nearest number greater or equal to n with prime factors of only 2, 3, 5, .</td>
+<td>round n to the nearest number greater or equal to n with prime factors of only 2, 3, 5, …</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.random_unit_vector" title="quippy.linearalgebra.random_unit_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_unit_vector</span></code></a>()</td>
 <td>Returns a random unit vector which is uniformly distributed over the unit sphere [See Knop, CACM 13 326 (1970)].</td>
@@ -358,7 +350,7 @@ as well as array searching, sorting and averaging.</p>
 <td>Subtract the average value from each element of a real array.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.unit_vector" title="quippy.linearalgebra.unit_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unit_vector</span></code></a>(theta,phi)</td>
-<td>Return a unit vector in the direction given by the angles <code class="docutils literal notranslate"><span class="pre">theta</span></code> and <code class="docutils literal notranslate"><span class="pre">phi</span></code>, i.</td>
+<td>Return a unit vector in the direction given by the angles <code class="docutils literal notranslate"><span class="pre">theta</span></code> and <code class="docutils literal notranslate"><span class="pre">phi</span></code>, i.e.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.d3poly_switch" title="quippy.linearalgebra.d3poly_switch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d3poly_switch</span></code></a>(r,cutoff_in,transition_width)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -576,7 +568,7 @@ as well as array searching, sorting and averaging.</p>
 <td>Adds the identity to a matrix</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.is_symmetric" title="quippy.linearalgebra.is_symmetric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_symmetric</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Test for matrix symmetry (with floating point equality test ‘.</td>
+<td>Test for matrix symmetry (with floating point equality test ‘.feq.’ as described above).</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.histogram" title="quippy.linearalgebra.histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histogram</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Returns a vector, contining a histogram of frequencies.</td>
@@ -596,34 +588,37 @@ as well as array searching, sorting and averaging.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.coordination_function" title="quippy.linearalgebra.coordination_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coordination_function</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">coordination_function</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.matrix_product_vect_asdiagonal_rl_sub" title="quippy.linearalgebra.matrix_product_vect_asdiagonal_rl_sub"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matrix_product_vect_asdiagonal_rl_sub</span></code></a>(*args,&nbsp;…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.make_hermitian" title="quippy.linearalgebra.make_hermitian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_hermitian</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Test for matrix hermiticity (with floating point equals test).</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.matrix_product_vect_asdiagonal_rl_sub" title="quippy.linearalgebra.matrix_product_vect_asdiagonal_rl_sub"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matrix_product_vect_asdiagonal_rl_sub</span></code></a>(*args,&nbsp;…)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">matrix_product_vect_asdiagonal_rl_sub</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.sort_array" title="quippy.linearalgebra.sort_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_array</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.sort_array" title="quippy.linearalgebra.sort_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_array</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sort_array</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.diagonalise" title="quippy.linearalgebra.diagonalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diagonalise</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.diagonalise" title="quippy.linearalgebra.diagonalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diagonalise</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Overloaded interfaces to textsc{lapack} matrix diagonlisation functions for real and complex matrices.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.rms_diff" title="quippy.linearalgebra.rms_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rms_diff</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.rms_diff" title="quippy.linearalgebra.rms_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rms_diff</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Root-mean-square difference calculation for components of two vectors or arrays.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.trace_mult" title="quippy.linearalgebra.trace_mult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_mult</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.trace_mult" title="quippy.linearalgebra.trace_mult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace_mult</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">trace_mult</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.norm" title="quippy.linearalgebra.norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.norm" title="quippy.linearalgebra.norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">norm</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Return the euclidean norm of a vector or of an array.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.heap_sort" title="quippy.linearalgebra.heap_sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">heap_sort</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.heap_sort" title="quippy.linearalgebra.heap_sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">heap_sort</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">heap_sort</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.d3coordination_function" title="quippy.linearalgebra.d3coordination_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d3coordination_function</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.d3coordination_function" title="quippy.linearalgebra.d3coordination_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d3coordination_function</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">d3coordination_function</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.is_orthogonal" title="quippy.linearalgebra.is_orthogonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_orthogonal</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Test is matrix is unitary i.</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.is_orthogonal" title="quippy.linearalgebra.is_orthogonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_orthogonal</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Test is matrix is unitary i.e.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.linearalgebra.check_size" title="quippy.linearalgebra.check_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_size</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.linearalgebra.check_size" title="quippy.linearalgebra.check_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_size</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Overloaded interface to assert that the size of an array is correct.</td>
 </tr>
 </tbody>
@@ -663,12 +658,20 @@ contents in first cell is less than 2nd, with 1st array taking precendence.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> :  input int</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_arrays_lt</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_arrays_lt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -688,36 +691,33 @@ its derivative (<span class="math notranslate">\(y^\prime_0\)</span> and <span c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x0</strong> :  input float</p>
-<blockquote>
-<div><p><span class="math notranslate">\(x_0\)</span>, <span class="math notranslate">\(y_0\)</span>, <span class="math notranslate">\(y^\prime_0\)</span></p>
-</div></blockquote>
-<p><strong>y0</strong> :  input float</p>
-<blockquote>
-<div><p><span class="math notranslate">\(x_0\)</span>, <span class="math notranslate">\(y_0\)</span>, <span class="math notranslate">\(y^\prime_0\)</span></p>
-</div></blockquote>
-<p><strong>y0p</strong> :  input float</p>
-<blockquote>
-<div><p><span class="math notranslate">\(x_0\)</span>, <span class="math notranslate">\(y_0\)</span>, <span class="math notranslate">\(y^\prime_0\)</span></p>
-</div></blockquote>
-<p><strong>x1</strong> :  input float</p>
-<blockquote>
-<div><p><span class="math notranslate">\(x_1\)</span>, <span class="math notranslate">\(y_1\)</span>, <span class="math notranslate">\(y^\prime_1\)</span></p>
-</div></blockquote>
-<p><strong>y1</strong> :  input float</p>
-<blockquote>
-<div><p><span class="math notranslate">\(x_1\)</span>, <span class="math notranslate">\(y_1\)</span>, <span class="math notranslate">\(y^\prime_1\)</span></p>
-</div></blockquote>
-<p><strong>y1p</strong> :  input float</p>
-<blockquote>
-<div><p><span class="math notranslate">\(x_1\)</span>, <span class="math notranslate">\(y_1\)</span>, <span class="math notranslate">\(y^\prime_1\)</span></p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last"><span class="math notranslate">\(x_0\)</span>, <span class="math notranslate">\(y_0\)</span>, <span class="math notranslate">\(y^\prime_0\)</span></p>
+</dd>
+<dt><strong>y0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last"><span class="math notranslate">\(x_0\)</span>, <span class="math notranslate">\(y_0\)</span>, <span class="math notranslate">\(y^\prime_0\)</span></p>
+</dd>
+<dt><strong>y0p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last"><span class="math notranslate">\(x_0\)</span>, <span class="math notranslate">\(y_0\)</span>, <span class="math notranslate">\(y^\prime_0\)</span></p>
+</dd>
+<dt><strong>x1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last"><span class="math notranslate">\(x_1\)</span>, <span class="math notranslate">\(y_1\)</span>, <span class="math notranslate">\(y^\prime_1\)</span></p>
+</dd>
+<dt><strong>y1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last"><span class="math notranslate">\(x_1\)</span>, <span class="math notranslate">\(y_1\)</span>, <span class="math notranslate">\(y^\prime_1\)</span></p>
+</dd>
+<dt><strong>y1p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd><p class="first last"><span class="math notranslate">\(x_1\)</span>, <span class="math notranslate">\(y_1\)</span>, <span class="math notranslate">\(y^\prime_1\)</span></p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>coeffs</strong> :  rank-1 array(‘d’) with bounds (4)</p>
-<blockquote class="last">
-<div><p><code class="docutils literal notranslate"><span class="pre">(/a,b,c,d/)</span></code></p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>coeffs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (4)</span></dt>
+<dd><p class="first last"><code class="docutils literal notranslate"><span class="pre">(/a,b,c,d/)</span></code></p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -735,12 +735,20 @@ its derivative (<span class="math notranslate">\(y^\prime_0\)</span> and <span c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>k</strong> :  input int</p>
-<p><strong>means</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</p>
-<p><strong>assign</strong> :  in/output rank-1 array(‘i’) with bounds (qp_n4)</p>
-<p><strong>err</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p class="last"><strong>initialisation</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>means</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</span></dt>
+<dd></dd>
+<dt><strong>assign</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘i’) with bounds (qp_n4)</span></dt>
+<dd></dd>
+<dt><strong>err</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>initialisation</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -758,12 +766,15 @@ with prime factors of only 2, 3, 5, … max_prime_factor</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  in/output rank-0 array(int,’i’)</p>
-<blockquote>
-<div><p>The number to be rounded</p>
-</div></blockquote>
-<p><strong>max_prime_factor</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’)</span></dt>
+<dd><p class="first last">The number to be rounded</p>
+</dd>
+<dt><strong>max_prime_factor</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -782,7 +793,11 @@ uniformly distributed over the unit sphere
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_v</strong> :  rank-1 array(‘d’) with bounds (3)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -797,11 +812,18 @@ uniformly distributed over the unit sphere
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>array1</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
-<p><strong>array2</strong> :  input rank-1 array(‘i’) with bounds (size(qp_array1))</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>array1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>array2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (size(qp_array1))</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_gt</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_gt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -819,11 +841,18 @@ pairs.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
-<p><strong>y</strong> :  input rank-1 array(‘d’) with bounds (qp_n1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_trapezoidintegral</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_trapezoidintegral</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -840,9 +869,17 @@ pairs.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>val</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_is_in_array</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_is_in_array</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -857,11 +894,18 @@ pairs.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>array1</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
-<p><strong>array2</strong> :  input rank-1 array(‘i’) with bounds (size(qp_array1))</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>array1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>array2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (size(qp_array1))</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_ge</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_ge</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -879,14 +923,24 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x0</strong> :  input float</p>
-<p><strong>y0</strong> :  input float</p>
-<p><strong>x1</strong> :  input float</p>
-<p><strong>y1</strong> :  input float</p>
-<p><strong>x</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>y0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>x1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>y1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_y</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -905,14 +959,24 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x0</strong> :  input float</p>
-<p><strong>y0</strong> :  input float</p>
-<p><strong>x1</strong> :  input float</p>
-<p><strong>y1</strong> :  input float</p>
-<p><strong>x</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>y0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>x1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>y1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_y</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -929,9 +993,17 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_oscillate</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_oscillate</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -946,7 +1018,11 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_eps</strong> :  rank-3 array(‘d’) with bounds (3,3,3)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-3 array(‘d’) with bounds (3,3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -962,9 +1038,17 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_res</strong> :  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_res</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -979,12 +1063,20 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>lattice</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
-<p><strong>g</strong> :  input rank-2 array(‘d’) with bounds (3,3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>lattice</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_c</strong> :  rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1001,7 +1093,11 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_ran_normal3</strong> :  rank-1 array(‘d’) with bounds (3)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_ran_normal3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1016,15 +1112,21 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>base</strong> :  input int</p>
-<p><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_iDigits,0)</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>base</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_iDigits,0)</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>idigits</strong> :  rank-1 array(‘i’) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>idigits</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1041,11 +1143,18 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> :  input int</p>
-<p><strong>r</strong> :  input int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_res</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_res</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1061,11 +1170,18 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>array1</strong> :  input rank-1 array(‘i’) with bounds (qp_n0)</p>
-<p><strong>array2</strong> :  input rank-1 array(‘i’) with bounds (size(qp_array1))</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>array1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>array2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (size(qp_array1))</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_lt</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_lt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1082,9 +1198,17 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>matrix</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_is_diagonal</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_is_diagonal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1100,9 +1224,17 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_res</strong> :  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_res</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1118,7 +1250,11 @@ Returns the interpolated <span class="math notranslate">\(y\)</span> at position
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>array</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1135,11 +1271,18 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> :  input float</p>
-<p><strong>phi</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>theta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>phi</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_unit_vector</strong> :  rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_unit_vector</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1155,12 +1298,20 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
-<p><strong>transition_width</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>transition_width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_d3poly_switch</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_d3poly_switch</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1176,12 +1327,20 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
-<p><strong>transition_width</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>transition_width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_poly_switch</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_poly_switch</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1197,15 +1356,21 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>m</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>a</strong> :  input rank-1 array(‘d’) with bounds (qp_n2)</p>
-<p><strong>n3</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_M_inv_a,0)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n2)</span></dt>
+<dd></dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_M_inv_a,0)</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>m_inv_a</strong> :  rank-1 array(‘d’) with bounds (qp_n3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>m_inv_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (qp_n3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1221,11 +1386,18 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dcos_cutoff_function</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dcos_cutoff_function</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1241,11 +1413,18 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>in_matrix</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>thresh</strong> :  input float, optional</p>
-<p><strong>result_inv</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
-<p><strong>u_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n4,qp_n5), optional</p>
-<p class="last"><strong>vt_out</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n6,qp_n7), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>in_matrix</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>thresh</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>result_inv</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</span></dt>
+<dd></dd>
+<dt><strong>u_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n4,qp_n5), optional</span></dt>
+<dd></dd>
+<dt><strong>vt_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n6,qp_n7), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1261,11 +1440,18 @@ convert the spherical polar coordinates point <span class="math notranslate">\((
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_cos_cutoff_function</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_cos_cutoff_function</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1285,11 +1471,18 @@ This is calculated as</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</p>
-<p><strong>b</strong> :  input rank-1 array(‘d’) with bounds (qp_n1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_angle</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_angle</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1305,12 +1498,20 @@ This is calculated as</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
-<p><strong>transition_width</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>transition_width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_dpoly_switch</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_dpoly_switch</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1326,12 +1527,20 @@ This is calculated as</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>r</strong> :  input float</p>
-<p><strong>cutoff_in</strong> :  input float</p>
-<p><strong>transition_width</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>cutoff_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>transition_width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_d2poly_switch</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_d2poly_switch</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1347,30 +1556,31 @@ This is calculated as</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>in_matrix</strong> :  input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
-<p><strong>u_out</strong> :  rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</p>
-<p><strong>n2</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_u_out,0)</p>
-</div></blockquote>
-<p><strong>n3</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_u_out,1)</p>
-</div></blockquote>
-<p><strong>s_out</strong> :  rank-1 array(‘d’) with bounds (qp_n4)</p>
-<p><strong>n4</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_s_out,0)</p>
-</div></blockquote>
-<p><strong>vt_out</strong> :  rank-2 array(‘d’) with bounds (qp_n5,qp_n6)</p>
-<p><strong>n5</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_vt_out,0)</p>
-</div></blockquote>
-<p><strong>n6</strong> :  input int</p>
-<blockquote class="last">
-<div><p>shape(qp_vt_out,1)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>in_matrix</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+<dt><strong>u_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</span></dt>
+<dd></dd>
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_u_out,0)</p>
+</dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_u_out,1)</p>
+</dd>
+<dt><strong>s_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (qp_n4)</span></dt>
+<dd></dd>
+<dt><strong>n4</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_s_out,0)</p>
+</dd>
+<dt><strong>vt_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (qp_n5,qp_n6)</span></dt>
+<dd></dd>
+<dt><strong>n5</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_vt_out,0)</p>
+</dd>
+<dt><strong>n6</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_vt_out,1)</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1387,9 +1597,17 @@ This is calculated as</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> :  input int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_res</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_res</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1406,9 +1624,17 @@ Avoids overhead of calling textsc{lapack} for simple case of <span class="math n
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> :  input rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>matrix</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>g</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1424,9 +1650,17 @@ Avoids overhead of calling textsc{lapack} for simple case of <span class="math n
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> :  input rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_det</strong> :  float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_det</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1441,15 +1675,21 @@ Avoids overhead of calling textsc{lapack} for simple case of <span class="math n
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_r,0)</p>
-</div></blockquote>
-<p><strong>n</strong> :  input int</p>
-<p><strong>b</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_r,0)</p>
+</dd>
+<dt><strong>n</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>r</strong> :  rank-1 array(‘i’) with bounds (qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘i’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1465,18 +1705,22 @@ Avoids overhead of calling textsc{lapack} for simple case of <span class="math n
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n2</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_inverse,0)</p>
-</div></blockquote>
-<p><strong>n3</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_inverse,1)</p>
-</div></blockquote>
-<p><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_inverse,0)</p>
+</dd>
+<dt><strong>n3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_inverse,1)</p>
+</dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>inverse</strong> :  rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>inverse</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (qp_n2,qp_n3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1494,12 +1738,20 @@ of the 3-vectors <code class="docutils literal notranslate"><span class="pre">x<
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>y</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>z</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_scalar_triple_product</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_scalar_triple_product</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1515,9 +1767,17 @@ of the 3-vectors <code class="docutils literal notranslate"><span class="pre">x<
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> :  input rank-1 array(‘d’) with bounds (qp_n0)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (qp_n0)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_invsqrt_real_array1d</strong> :  rank-1 array(‘d’) with bounds (size(qp_x))</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_invsqrt_real_array1d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (size(qp_x))</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1532,7 +1792,11 @@ of the 3-vectors <code class="docutils literal notranslate"><span class="pre">x<
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_norm</strong> :  float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_norm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2402,12 +2666,13 @@ of a matrix and return them as a vector.</p>
 <blockquote>
 <div><dl class="function">
 <dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">print_mathematica</code><span class="sig-paren">(</span><em>this</em><span class="optional">[</span>, <em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">print_mathematica</code><span class="sig-paren">(</span><em>label</em>, <em>this</em><span class="optional">[</span>, <em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>label</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 <li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 <li><strong>file</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional) – </li>
@@ -2421,12 +2686,13 @@ of a matrix and return them as a vector.</p>
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">print_mathematica</code><span class="sig-paren">(</span><em>this</em><span class="optional">[</span>, <em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">print_mathematica</code><span class="sig-paren">(</span><em>label</em>, <em>this</em><span class="optional">[</span>, <em>verbosity</em>, <em>file</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>label</strong> (<em>input string</em><em>(</em><em>len=-1</em><em>)</em>) – </li>
 <li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 <li><strong>verbosity</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 <li><strong>file</strong> (<a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional) – </li>
@@ -2956,6 +3222,51 @@ have been.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="quippy.linearalgebra.make_hermitian">
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">make_hermitian</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.make_hermitian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for matrix hermiticity (with floating point equals test).</p>
+<p>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">make_hermitian</span></code> containing multiple routines:</p>
+<blockquote>
+<div><dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">make_hermitian</code><span class="sig-paren">(</span><em>m</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>m</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">matrix_d_make_hermitian</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">make_hermitian</code><span class="sig-paren">(</span><em>m</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>m</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
+<li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">matrix_z_make_hermitian</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/linearalgebra.f95">src/libAtoms/linearalgebra.f95</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
 <dt id="quippy.linearalgebra.matrix_product_vect_asdiagonal_rl_sub">
 <code class="descclassname">quippy.linearalgebra.</code><code class="descname">matrix_product_vect_asdiagonal_rl_sub</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.linearalgebra.matrix_product_vect_asdiagonal_rl_sub" title="Permalink to this definition">¶</a></dt>
 <dd><p>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">matrix_product_vect_asdiagonal_rl_sub</span></code> containing multiple routines:</p>
@@ -3092,7 +3403,7 @@ complex hermitian postive definite matrices.</p>
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">diagonalise</code><span class="sig-paren">(</span><em>this</em>, <em>evals</em><span class="optional">[</span>, <em>evects</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">diagonalise</code><span class="sig-paren">(</span><em>this</em>, <em>evals</em><span class="optional">[</span>, <em>evects</em>, <em>ignore_symmetry</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3101,6 +3412,7 @@ complex hermitian postive definite matrices.</p>
 <li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 <li><strong>evals</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em>) – </li>
 <li><strong>evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'D'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>ignore_symmetry</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 <li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
@@ -3133,7 +3445,7 @@ complex hermitian postive definite matrices.</p>
 
 <dl class="function">
 <dt>
-<code class="descclassname">quippy.linearalgebra.</code><code class="descname">diagonalise</code><span class="sig-paren">(</span><em>this</em>, <em>evals</em><span class="optional">[</span>, <em>evects</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
+<code class="descclassname">quippy.linearalgebra.</code><code class="descname">diagonalise</code><span class="sig-paren">(</span><em>this</em>, <em>evals</em><span class="optional">[</span>, <em>evects</em>, <em>ignore_symmetry</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3142,6 +3454,7 @@ complex hermitian postive definite matrices.</p>
 <li><strong>this</strong> (<em>input rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n0</em><em>,</em><em>qp_n1</em><em>)</em>) – </li>
 <li><strong>evals</strong> (<em>in/output rank-1 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n2</em><em>)</em>) – </li>
 <li><strong>evects</strong> (<em>in/output rank-2 array</em><em>(</em><em>'d'</em><em>) </em><em>with bounds</em><em> (</em><em>qp_n3</em><em>,</em><em>qp_n4</em><em>)</em><em>, </em><em>optional</em>) – </li>
+<li><strong>ignore_symmetry</strong> (<em>input int</em><em>, </em><em>optional</em>) – </li>
 <li><strong>error</strong> (<em>in/output rank-0 array</em><em>(</em><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>,</em><em>'i'</em><em>)</em><em>, </em><em>optional</em>) – </li>
 </ul>
 </td>
@@ -3727,9 +4040,7 @@ constructed from the ‘arrayname’ and ‘caller’ arguments.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -3749,7 +4060,7 @@ constructed from the ‘arrayname’ and ‘caller’ arguments.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -3767,7 +4078,8 @@ constructed from the ‘arrayname’ and ‘caller’ arguments.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -3786,14 +4098,13 @@ constructed from the ‘arrayname’ and ‘caller’ arguments.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

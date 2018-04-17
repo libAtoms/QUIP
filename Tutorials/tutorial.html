@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy 22731ad+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,29 +27,20 @@
   
 
   
-  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="../index.html"/>
-        <link rel="up" title="Tutorials" href="index.html"/>
-        <link rel="next" title="Using Quippy to compute descriptors of atomic environments" href="quippy-descriptor-tutorial.html"/>
-        <link rel="prev" title="Interoperability with Atomic Simulation Environment" href="quippy-ase-interoperability.html"/> 
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using Quippy to compute descriptors of atomic environments" href="quippy-descriptor-tutorial.html" />
+    <link rel="prev" title="Interoperability with Atomic Simulation Environment" href="quippy-ase-interoperability.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +57,7 @@
 
           
             
-            <img src="../_static/hybrid.png" class="logo" />
+            <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -74,7 +65,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -142,7 +133,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">quippy</a>
@@ -150,9 +141,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -650,7 +642,7 @@ arithmetic:</p>
 <p>The <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">array()</span></code></a> is used here to combine the trajectory frames
 into a single array, and to convert from Fortran one-based indexing to
 the standard numpy zero-based indexing expected by matplotlib’s
-<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> function. If you want to retain the
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v2.2.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> function. If you want to retain the
 one-based indexing, using <a class="reference internal" href="../farray.html#quippy.farray.farray" title="quippy.farray.farray"><code class="xref py py-func docutils literal notranslate"><span class="pre">farray()</span></code></a> instead, which
 returns a <a class="reference internal" href="../farray.html#quippy.farray.FortranArray" title="quippy.farray.FortranArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">FortranArray</span></code></a>.</p>
 <p>Note the partial sums: the inner sum is over axis 1 of <code class="docutils literal notranslate"><span class="pre">al.velo</span></code>
@@ -693,9 +685,9 @@ temperature of 500K like this:</p>
 </pre></div>
 </div>
 <p>(If you want to clear the previous plot first, use the
-<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.clf.html#matplotlib.pyplot.clf" title="(in Matplotlib v2.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">clf()</span></code></a> matplotlib function). To add a
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.clf.html#matplotlib.pyplot.clf" title="(in Matplotlib v2.2.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">clf()</span></code></a> matplotlib function). To add a
 histogram of the speeds in the last frame of our <a class="reference internal" href="../io.html#quippy.io.AtomsList" title="quippy.io.AtomsList"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsList</span></code></a> to
-the plot, we make use of matplotlibs <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html#matplotlib.pyplot.hist" title="(in Matplotlib v2.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code></a> function:</p>
+the plot, we make use of matplotlibs <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html#matplotlib.pyplot.hist" title="(in Matplotlib v2.2.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code></a> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hist</span><span class="p">(</span><span class="n">al</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm</span><span class="p">(),</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1050,9 +1042,7 @@ sequence <cite>params</cite> for the first four arguments to
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1074,7 +1064,7 @@ sequence <cite>params</cite> for the first four arguments to
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1092,7 +1082,8 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1111,14 +1102,13 @@ sequence <cite>params</cite> for the first four arguments to
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

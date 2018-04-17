@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tools for fracture simulations &mdash; quippy 22731ad+ documentation</title>
+  <title>Tools for fracture simulations &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -144,7 +135,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -152,9 +143,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -261,7 +253,7 @@
 <td>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is near to an open surface of slab.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_parse_name" title="quippy.crack.crack_parse_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_parse_name</span></code></a>(crackname)</td>
-<td>Parse crack name in the format is (ijk)[lmn], with negative numbers denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (short for <code class="docutils literal notranslate"><span class="pre">bar</span></code>), e.</td>
+<td>Parse crack name in the format is (ijk)[lmn], with negative numbers denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (short for <code class="docutils literal notranslate"><span class="pre">bar</span></code>), e.g.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_hybrid_calc_args" title="quippy.crack.crack_hybrid_calc_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_hybrid_calc_args</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -489,7 +481,7 @@
 <td>Returns stress instensity factor for mode I loading (K_I) in MPa sqrt(m)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.make_crack_advance_map" title="quippy.crack.make_crack_advance_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_crack_advance_map</span></code></a>(atoms[,&nbsp;tol])</td>
-<td>Find mapping from atom indices to the index of atom one step ahead of them in the crack propagation direction (i.</td>
+<td>Find mapping from atom indices to the index of atom one step ahead of them in the crack propagation direction (i.e.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.find_crack_tip_coordination" title="quippy.crack.find_crack_tip_coordination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_crack_tip_coordination</span></code></a>(atoms[,&nbsp;…])</td>
 <td>Return position of crack tip in <cite>atoms</cite>, based on atomic coordination.</td>
@@ -561,8 +553,12 @@ only really appropriate for diamond structure silicon fracture.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>validate</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>validate</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -570,399 +566,400 @@ only really appropriate for diamond structure silicon fracture.</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/crackparams.f95">src/Utils/crackparams.f95</a>.
 Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">CrackParams</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Utils/crackparams.f95">src/Utils/crackparams.f95</a>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.classical_args" title="quippy.crack.CrackParams.classical_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classical_args</span></code></a></td>
-<td>Arguments used to initialise classical potential</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.classical_args_str" title="quippy.crack.CrackParams.classical_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classical_args_str</span></code></a></td>
-<td>Arguments used by Calc Potential</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.classical_force_reweight" title="quippy.crack.CrackParams.classical_force_reweight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classical_force_reweight</span></code></a></td>
-<td>Factor by which to reduce classical forces in the embed region.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_align_y" title="quippy.crack.CrackParams.crack_align_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_align_y</span></code></a></td>
-<td>Vertical alignment turned on</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_apply_initial_load" title="quippy.crack.CrackParams.crack_apply_initial_load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_apply_initial_load</span></code></a></td>
-<td>If <code class="docutils literal notranslate"><span class="pre">true</span></code>, apply initial loading field to crack slab</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_bulk_filename" title="quippy.crack.CrackParams.crack_bulk_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_bulk_filename</span></code></a></td>
-<td>Input file containing primitive cell</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_coordination_atom_type" title="quippy.crack.CrackParams.crack_check_coordination_atom_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_coordination_atom_type</span></code></a></td>
-<td>Atom type we check the coordination for</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_coordination_critical_nneigh" title="quippy.crack.CrackParams.crack_check_coordination_critical_nneigh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_coordination_critical_nneigh</span></code></a></td>
-<td>Critical number of neighbours in the connectivity checking</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_coordination_region" title="quippy.crack.CrackParams.crack_check_coordination_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_coordination_region</span></code></a></td>
-<td>Region (+/- around y=0 level) where the atomic coordination is checked.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_surface_coordination" title="quippy.crack.CrackParams.crack_check_surface_coordination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_surface_coordination</span></code></a></td>
-<td>Checking of the surface coordination before generating the crack seed</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_curvature" title="quippy.crack.CrackParams.crack_curvature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_curvature</span></code></a></td>
-<td>Curvature used when crack_curved_front=T</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_curved_front" title="quippy.crack.CrackParams.crack_curved_front"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_curved_front</span></code></a></td>
-<td>If true, initialise slab with a curved crack front</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_dislo_seed" title="quippy.crack.CrackParams.crack_dislo_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_dislo_seed</span></code></a></td>
-<td>atom at the core of the dislocation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_double_ended" title="quippy.crack.CrackParams.crack_double_ended"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_double_ended</span></code></a></td>
-<td>If true, we do a double ended crack with periodic boundary conditions along <span class="math notranslate">\(x\)</span> direction.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_edge_fix_tol" title="quippy.crack.CrackParams.crack_edge_fix_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_edge_fix_tol</span></code></a></td>
-<td>How close must an atom be to top or bottom to be fixed.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_element" title="quippy.crack.CrackParams.crack_element"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_element</span></code></a></td>
-<td>Element to make slab from.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_fix_dipoles" title="quippy.crack.CrackParams.crack_fix_dipoles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_fix_dipoles</span></code></a></td>
-<td>If true, we keep fixed dipoles for atoms at the edges.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_fix_dipoles_tol" title="quippy.crack.CrackParams.crack_fix_dipoles_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_fix_dipoles_tol</span></code></a></td>
-<td>How close must an atom be to top or bottom to keep fixed its dipole.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_fix_sides" title="quippy.crack.CrackParams.crack_fix_sides"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_fix_sides</span></code></a></td>
-<td>If true fix atoms close to left and right edges of slab</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_free_surfaces" title="quippy.crack.CrackParams.crack_free_surfaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_free_surfaces</span></code></a></td>
-<td>If true, crack is 3D with free surfaces at z= +/- depth/2</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_front_alpha" title="quippy.crack.CrackParams.crack_front_alpha"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_front_alpha</span></code></a></td>
-<td>Value of alpha to use when tip_method=alpha_shape</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_front_angle_threshold" title="quippy.crack.CrackParams.crack_front_angle_threshold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_front_angle_threshold</span></code></a></td>
-<td>Maximum bearing for segments to be included in crack front</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_front_window_size" title="quippy.crack.CrackParams.crack_front_window_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_front_window_size</span></code></a></td>
-<td>Size of windows along crack front.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_g" title="quippy.crack.CrackParams.crack_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g</span></code></a></td>
-<td>Initial energy release rate loading in J/m:math:<cite>^2</cite> (override strain)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_g_increment" title="quippy.crack.CrackParams.crack_g_increment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g_increment</span></code></a></td>
-<td>Rate of loading, expressed as increment in G (override strain_increment)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_graphene_notch_height" title="quippy.crack.CrackParams.crack_graphene_notch_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_graphene_notch_height</span></code></a></td>
-<td>Height of graphene notch.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_graphene_notch_width" title="quippy.crack.CrackParams.crack_graphene_notch_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_graphene_notch_width</span></code></a></td>
-<td>Width of graphene notch.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_graphene_theta" title="quippy.crack.CrackParams.crack_graphene_theta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_graphene_theta</span></code></a></td>
-<td>Rotation angle of graphene plane, in radians.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_height" title="quippy.crack.CrackParams.crack_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_height</span></code></a></td>
-<td>Height of crack slab, in AA{}.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_initial_velocity_field" title="quippy.crack.CrackParams.crack_initial_velocity_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_initial_velocity_field</span></code></a></td>
-<td>If true, initialise velocity field with dU/dc</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_lattice_guess" title="quippy.crack.CrackParams.crack_lattice_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_lattice_guess</span></code></a></td>
-<td>Guess at bulk lattice parameter, used to obtain accurate result.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_load_interp_length" title="quippy.crack.CrackParams.crack_load_interp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_load_interp_length</span></code></a></td>
-<td>Length over which linear interpolation between k-field and uniform strain field is carried out</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_loading" title="quippy.crack.CrackParams.crack_loading"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_loading</span></code></a></td>
-<td><code class="docutils literal notranslate"><span class="pre">uniform</span></code> for constant load, <code class="docutils literal notranslate"><span class="pre">ramp</span></code> for linearly decreasing load along <span class="math notranslate">\(x\)</span>, <code class="docutils literal notranslate"><span class="pre">kfield</span></code> for Irwin plane strain K-field, <code class="docutils literal notranslate"><span class="pre">interp_kfield_uniform</span></code> to linearly interpolate between k-field (at crack tip) and uniform at distance <code class="docutils literal notranslate"><span class="pre">crack_load_interp_length</span></code> <code class="docutils literal notranslate"><span class="pre">reduce_uniform</span></code> for reducing load</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_name" title="quippy.crack.CrackParams.crack_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_name</span></code></a></td>
-<td>Crack name, in format <code class="docutils literal notranslate"><span class="pre">(abc)[def]</span></code> with negative indices denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (for bar), e.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_num_layers" title="quippy.crack.CrackParams.crack_num_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_num_layers</span></code></a></td>
-<td>Number of primitive cells in <span class="math notranslate">\(z\)</span> direction</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_end_g" title="quippy.crack.CrackParams.crack_ramp_end_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_end_g</span></code></a></td>
-<td>Loading at end of ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_length" title="quippy.crack.CrackParams.crack_ramp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_length</span></code></a></td>
-<td>Length of ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_start_length" title="quippy.crack.CrackParams.crack_ramp_start_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_start_length</span></code></a></td>
-<td>Length of the region in between the crack tip and the start of the ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_relax_bulk" title="quippy.crack.CrackParams.crack_relax_bulk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_relax_bulk</span></code></a></td>
-<td>If true (default) relax bulk cell using classical potential</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_relax_loading_field" title="quippy.crack.CrackParams.crack_relax_loading_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_relax_loading_field</span></code></a></td>
-<td>Should <code class="docutils literal notranslate"><span class="pre">makecrack</span></code> relax the applied loading field</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_rescale_x" title="quippy.crack.CrackParams.crack_rescale_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_rescale_x</span></code></a></td>
-<td>Rescale atomsatoms  in x direction by v</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_rescale_x_z" title="quippy.crack.CrackParams.crack_rescale_x_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_rescale_x_z</span></code></a></td>
-<td>Rescale atomsatoms  in x direction by v and in z direction by v2</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_seed_embed_tol" title="quippy.crack.CrackParams.crack_seed_embed_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_seed_embed_tol</span></code></a></td>
-<td>Atoms closer than this distance from crack tip will be used to seed embed region.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_seed_length" title="quippy.crack.CrackParams.crack_seed_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_seed_length</span></code></a></td>
-<td>Length of seed crack.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_slab_filename" title="quippy.crack.CrackParams.crack_slab_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_slab_filename</span></code></a></td>
-<td>Input file to use instead of generating slabs.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_strain" title="quippy.crack.CrackParams.crack_strain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain</span></code></a></td>
-<td>Initial applied strain</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_strain_increment" title="quippy.crack.CrackParams.crack_strain_increment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain_increment</span></code></a></td>
-<td>Rate of loading, expressed as strain of initial loading</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_strain_zone_width" title="quippy.crack.CrackParams.crack_strain_zone_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain_zone_width</span></code></a></td>
-<td>Distance over which strain increases.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_structure" title="quippy.crack.CrackParams.crack_structure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_structure</span></code></a></td>
-<td>Structure: so far <code class="docutils literal notranslate"><span class="pre">diamond</span></code> and <code class="docutils literal notranslate"><span class="pre">graphene</span></code> are supported</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_thermostat_ramp_length" title="quippy.crack.CrackParams.crack_thermostat_ramp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_thermostat_ramp_length</span></code></a></td>
-<td>Length of thermostat ramp used for stadium damping at left and right edges</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_thermostat_ramp_max_tau" title="quippy.crack.CrackParams.crack_thermostat_ramp_max_tau"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_thermostat_ramp_max_tau</span></code></a></td>
-<td>Value of thermostat tau at end of ramp, in fs.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_tip_grid_size" title="quippy.crack.CrackParams.crack_tip_grid_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_tip_grid_size</span></code></a></td>
-<td>Size (in A) of grid used for locating crack tips</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_tip_method" title="quippy.crack.CrackParams.crack_tip_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_tip_method</span></code></a></td>
-<td>One of <code class="docutils literal notranslate"><span class="pre">coordination</span></code>, <code class="docutils literal notranslate"><span class="pre">percolation</span></code>, <code class="docutils literal notranslate"><span class="pre">local_energy</span></code> or <code class="docutils literal notranslate"><span class="pre">alpha_shape</span></code></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_tip_min_separation" title="quippy.crack.CrackParams.crack_tip_min_separation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_tip_min_separation</span></code></a></td>
-<td>Minimum seperation (in A) between a pair of crack tips for them to be considered distinct</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_vacuum_size" title="quippy.crack.CrackParams.crack_vacuum_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_vacuum_size</span></code></a></td>
-<td>Amount of vacuum around crack slab.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_width" title="quippy.crack.CrackParams.crack_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_width</span></code></a></td>
-<td>Width of crack slab, in AA{}.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_x_shift" title="quippy.crack.CrackParams.crack_x_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_x_shift</span></code></a></td>
-<td>Shift required to get “nice” surface terminations on vertical edges</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_y_shift" title="quippy.crack.CrackParams.crack_y_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_y_shift</span></code></a></td>
-<td>Shift required to align y=0 with centre of a vertical bond.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.crack_z" title="quippy.crack.CrackParams.crack_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_z</span></code></a></td>
-<td>Initialised automatically from crack element</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.fit_hops" title="quippy.crack.CrackParams.fit_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_hops</span></code></a></td>
-<td>Number of hops used to generate fit region from embed region</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.fit_method" title="quippy.crack.CrackParams.fit_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_method</span></code></a></td>
-<td>Method to use for force mixing: should be one of begin{itemize}  item <code class="docutils literal notranslate"><span class="pre">lotf_adj_pot_svd</span></code> — LOTF using SVD to optimised the Adj Pot  item <code class="docutils literal notranslate"><span class="pre">lotf_adj_pot_minim</span></code> — LOTF using conjugate gradients to optimise the Adj Pot  item <code class="docutils literal notranslate"><span class="pre">lotf_adj_pot_sw</span></code> — LOTF using old style SW Adj Pot  item <code class="docutils literal notranslate"><span class="pre">conserve_momentum</span></code> — divide the total force on QM region over the fit atoms to conserve momentum  item <code class="docutils literal notranslate"><span class="pre">force_mixing</span></code> — force mixing with details depending on values of      <code class="docutils literal notranslate"><span class="pre">buffer_hops</span></code>, <code class="docutils literal notranslate"><span class="pre">transtion_hops</span></code> and <code class="docutils literal notranslate"><span class="pre">weight_interpolation</span></code>  item <code class="docutils literal notranslate"><span class="pre">force_mixing_abrupt</span></code> — simply use QM forces on QM atoms and MM forces on MM atoms      (shorthand for <code class="docutils literal notranslate"><span class="pre">method=force_mixing</span> <span class="pre">buffer_hops=0</span> <span class="pre">transition_hops=0</span></code>)  item <code class="docutils literal notranslate"><span class="pre">force_mixing_smooth</span></code> — use QM forces in QM region, MM forces in MM region and    linearly interpolate in buffer region  (shorthand for <code class="docutils literal notranslate"><span class="pre">method=force_mixing</span> <span class="pre">weight_interpolation=hop_ramp</span></code>)  item <code class="docutils literal notranslate"><span class="pre">force_mixing_super_smooth</span></code> — as above, but weight forces on each atom by distance from    centre of mass of core region (shorthand for <code class="docutils literal notranslate"><span class="pre">method=force_mixing</span> <span class="pre">weight_interpolation=distance_ramp</span></code>) end{itemize}</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.fit_spring_hops" title="quippy.crack.CrackParams.fit_spring_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_spring_hops</span></code></a></td>
-<td>Number of hops used when creating list of springs</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.force_integration_end_file" title="quippy.crack.CrackParams.force_integration_end_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">force_integration_end_file</span></code></a></td>
-<td>XYZ file containing ending configuration for force integration.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.force_integration_n_steps" title="quippy.crack.CrackParams.force_integration_n_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">force_integration_n_steps</span></code></a></td>
-<td>Number of steps to take in force integration</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.hack_fit_on_eqm_coordination_only" title="quippy.crack.CrackParams.hack_fit_on_eqm_coordination_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hack_fit_on_eqm_coordination_only</span></code></a></td>
-<td>Only include fit atoms that have coordination number equal to <code class="docutils literal notranslate"><span class="pre">md_eqm_coordination</span></code> (used for graphene).</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.hack_qm_zero_z_force" title="quippy.crack.CrackParams.hack_qm_zero_z_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hack_qm_zero_z_force</span></code></a></td>
-<td>Zero <span class="math notranslate">\(z\)</span> component of all forces (used for graphene)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_backup" title="quippy.crack.CrackParams.io_backup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_backup</span></code></a></td>
-<td>If true, create backups of check files</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_checkpoint_interval" title="quippy.crack.CrackParams.io_checkpoint_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_checkpoint_interval</span></code></a></td>
-<td>Interval between writing checkpoint files, in fs.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_checkpoint_path" title="quippy.crack.CrackParams.io_checkpoint_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_checkpoint_path</span></code></a></td>
-<td>Path to write checkpoint files to.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_mpi_print_all" title="quippy.crack.CrackParams.io_mpi_print_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_mpi_print_all</span></code></a></td>
-<td>Print output on all nodes.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_netcdf" title="quippy.crack.CrackParams.io_netcdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_netcdf</span></code></a></td>
-<td>If true, output in NetCDF format instead of XYZ</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_print_all_properties" title="quippy.crack.CrackParams.io_print_all_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_print_all_properties</span></code></a></td>
-<td>If true, print all atom properties to movie file.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_print_interval" title="quippy.crack.CrackParams.io_print_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_print_interval</span></code></a></td>
-<td>Interval between movie XYZ frames, in fs.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_print_properties" title="quippy.crack.CrackParams.io_print_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_print_properties</span></code></a></td>
-<td>List of properties to print to movie file.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_timing" title="quippy.crack.CrackParams.io_timing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_timing</span></code></a></td>
-<td>If true, enable timing (default false)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.io_verbosity" title="quippy.crack.CrackParams.io_verbosity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_verbosity</span></code></a></td>
-<td>Output verbosity.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_eps_guess" title="quippy.crack.CrackParams.minim_eps_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_eps_guess</span></code></a></td>
-<td>Initial guess for line search step size <span class="math notranslate">\(\epsilon\)</span>.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_fire_dt0" title="quippy.crack.CrackParams.minim_fire_dt0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_fire_dt0</span></code></a></td>
-<td>If using fire_minim, the initial step size</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_fire_dt_max" title="quippy.crack.CrackParams.minim_fire_dt_max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_fire_dt_max</span></code></a></td>
-<td>If using fire_minim, the maximum step size</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_linminroutine" title="quippy.crack.CrackParams.minim_linminroutine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_linminroutine</span></code></a></td>
-<td>Linmin routine, e.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_max_steps" title="quippy.crack.CrackParams.minim_max_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_max_steps</span></code></a></td>
-<td>Maximum number of minimisation steps.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_method" title="quippy.crack.CrackParams.minim_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_method</span></code></a></td>
-<td>Minimisation method: use <code class="docutils literal notranslate"><span class="pre">cg</span></code> for conjugate gradients or <code class="docutils literal notranslate"><span class="pre">sd</span></code> for steepest descent.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_minimise_mm" title="quippy.crack.CrackParams.minim_minimise_mm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_minimise_mm</span></code></a></td>
-<td>Should we minimise classical degrees of freedom before each QM force evaluation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_args_str" title="quippy.crack.CrackParams.minim_mm_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_args_str</span></code></a></td>
-<td>Args string to be passed to MM calc() routine</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_eps_guess" title="quippy.crack.CrackParams.minim_mm_eps_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_eps_guess</span></code></a></td>
-<td>Initial guess for line search <span class="math notranslate">\(\epsilon\)</span> for MM minimisation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_linminroutine" title="quippy.crack.CrackParams.minim_mm_linminroutine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_linminroutine</span></code></a></td>
-<td>Linmin routine for MM minimisation</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_max_steps" title="quippy.crack.CrackParams.minim_mm_max_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_max_steps</span></code></a></td>
-<td>Maximum number of cg cycles for MM minimisation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_method" title="quippy.crack.CrackParams.minim_mm_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_method</span></code></a></td>
-<td>Minim method for MM minimisation, e.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_tol" title="quippy.crack.CrackParams.minim_mm_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_tol</span></code></a></td>
-<td>Target force tolerance for MM minimisation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_print_output" title="quippy.crack.CrackParams.minim_print_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_print_output</span></code></a></td>
-<td>Number of steps between XYZ confgurations printed</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.minim_tol" title="quippy.crack.CrackParams.minim_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_tol</span></code></a></td>
-<td>Target force tolerance - geometry optimisation is considered to be converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <code class="docutils literal notranslate"><span class="pre">tol</span></code></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_args" title="quippy.crack.CrackParams.qm_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_args</span></code></a></td>
-<td>Arguments used to initialise QM potential</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_args_str" title="quippy.crack.CrackParams.qm_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_args_str</span></code></a></td>
-<td>Arguments used by QM potential</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_buffer_hops" title="quippy.crack.CrackParams.qm_buffer_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_buffer_hops</span></code></a></td>
-<td>Number of bond hops used for buffer region</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_calc_force_error" title="quippy.crack.CrackParams.qm_calc_force_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_calc_force_error</span></code></a></td>
-<td>Do a full QM calculation at each stage in extrap and interp to measure force error</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_clusters" title="quippy.crack.CrackParams.qm_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_clusters</span></code></a></td>
-<td>Should we carve clusters? Default true.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_cp2k" title="quippy.crack.CrackParams.qm_cp2k"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_cp2k</span></code></a></td>
-<td>Enable CP2K mode.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_even_electrons" title="quippy.crack.CrackParams.qm_even_electrons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_even_electrons</span></code></a></td>
-<td>Discard a hydrogen if necessary to give an overall non-spin-polarised cluster</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_extra_args_str" title="quippy.crack.CrackParams.qm_extra_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_extra_args_str</span></code></a></td>
-<td>Extra arguments passed to ForceMixing potential</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_force_periodic" title="quippy.crack.CrackParams.qm_force_periodic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_force_periodic</span></code></a></td>
-<td>Force clusters to be periodic in <span class="math notranslate">\(z\)</span> direction.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer" title="quippy.crack.CrackParams.qm_hysteretic_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer</span></code></a></td>
-<td>If true, manage the buffer region hysteritcally</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer_inner_radius" title="quippy.crack.CrackParams.qm_hysteretic_buffer_inner_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer_inner_radius</span></code></a></td>
-<td>Inner radius used for hystertic buffer region</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer_nneighb_only" title="quippy.crack.CrackParams.qm_hysteretic_buffer_nneighb_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer_nneighb_only</span></code></a></td>
-<td>Should hysteretic buffer be formed by nearest neighbor hopping?</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer_outer_radius" title="quippy.crack.CrackParams.qm_hysteretic_buffer_outer_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer_outer_radius</span></code></a></td>
-<td>Outer radius used for hystertic buffer region</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect" title="quippy.crack.CrackParams.qm_hysteretic_connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect</span></code></a></td>
-<td>Enable hysteretic connectivity</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect_cluster_radius" title="quippy.crack.CrackParams.qm_hysteretic_connect_cluster_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect_cluster_radius</span></code></a></td>
-<td>Radius other which to keep track of hysteretic connectivity info.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect_inner_factor" title="quippy.crack.CrackParams.qm_hysteretic_connect_inner_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect_inner_factor</span></code></a></td>
-<td>Inner bond factor.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect_outer_factor" title="quippy.crack.CrackParams.qm_hysteretic_connect_outer_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect_outer_factor</span></code></a></td>
-<td>Outer bond factor.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_little_clusters" title="quippy.crack.CrackParams.qm_little_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_little_clusters</span></code></a></td>
-<td>One big cluster or lots of little ones?</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_randomise_buffer" title="quippy.crack.CrackParams.qm_randomise_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_randomise_buffer</span></code></a></td>
-<td>Randomise positions of outer layer of buffer atoms slightly to avoid systematic errors.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_rescale_r" title="quippy.crack.CrackParams.qm_rescale_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_rescale_r</span></code></a></td>
-<td>If true, rescale space in QM cluster to match QM lattice constant</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_terminate" title="quippy.crack.CrackParams.qm_terminate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_terminate</span></code></a></td>
-<td>Terminate clusters with hydrogen atoms</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_transition_hops" title="quippy.crack.CrackParams.qm_transition_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_transition_hops</span></code></a></td>
-<td>Number of transition hops used for buffer region</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.qm_vacuum_size" title="quippy.crack.CrackParams.qm_vacuum_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_vacuum_size</span></code></a></td>
-<td>Amount of vacuum surrounding cluster in non-periodic directions (<span class="math notranslate">\(x\)</span> and <span class="math notranslate">\(y\)</span> at least).</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.quasi_static_tip_move_tol" title="quippy.crack.CrackParams.quasi_static_tip_move_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quasi_static_tip_move_tol</span></code></a></td>
-<td>How far cracktip must advance before we consider fracture to have occurred.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_cutoff_plane" title="quippy.crack.CrackParams.selection_cutoff_plane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_cutoff_plane</span></code></a></td>
-<td>Only atoms within this distance from crack tip are candidates for QM selection.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_directionality" title="quippy.crack.CrackParams.selection_directionality"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_directionality</span></code></a></td>
-<td>Require good directionality of spring space spanning for atoms in embed region.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_edge_tol" title="quippy.crack.CrackParams.selection_edge_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_edge_tol</span></code></a></td>
-<td>Size of region at edges of crack slab which is ignored for selection purposes.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse" title="quippy.crack.CrackParams.selection_ellipse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse</span></code></a></td>
-<td>Principal radii of selection ellipse along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> in AA{}.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_bias" title="quippy.crack.CrackParams.selection_ellipse_bias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_bias</span></code></a></td>
-<td>Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate">\(x\)</span> direction.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_buffer" title="quippy.crack.CrackParams.selection_ellipse_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_buffer</span></code></a></td>
-<td>Difference in size between inner and outer selection ellipses, i.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_max_qm_atoms" title="quippy.crack.CrackParams.selection_max_qm_atoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_max_qm_atoms</span></code></a></td>
-<td>Maximum number of QM atoms to select</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_method" title="quippy.crack.CrackParams.selection_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_method</span></code></a></td>
-<td>One of <code class="docutils literal notranslate"><span class="pre">static</span></code>, <code class="docutils literal notranslate"><span class="pre">coordination</span></code>, <code class="docutils literal notranslate"><span class="pre">crack_front</span></code></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.selection_update_interval" title="quippy.crack.CrackParams.selection_update_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_update_interval</span></code></a></td>
-<td>intervals between QM selection updates, defaults to 0.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.simulation_classical" title="quippy.crack.CrackParams.simulation_classical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_classical</span></code></a></td>
-<td>Perform a purely classical simulation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.simulation_force_initial_load_step" title="quippy.crack.CrackParams.simulation_force_initial_load_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_force_initial_load_step</span></code></a></td>
-<td>Force a load step at beginning of simulation</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.simulation_initial_state" title="quippy.crack.CrackParams.simulation_initial_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_initial_state</span></code></a></td>
-<td>Initial state.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.simulation_seed" title="quippy.crack.CrackParams.simulation_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_seed</span></code></a></td>
-<td>Random number seed.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.simulation_task" title="quippy.crack.CrackParams.simulation_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_task</span></code></a></td>
-<td>Task to perform: <code class="docutils literal notranslate"><span class="pre">md</span></code>, <code class="docutils literal notranslate"><span class="pre">minim</span></code>, etc.</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.classical_args" title="quippy.crack.CrackParams.classical_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classical_args</span></code></a></dt>
+<dd><p class="first last">Arguments used to initialise classical potential</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.classical_args_str" title="quippy.crack.CrackParams.classical_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classical_args_str</span></code></a></dt>
+<dd><p class="first last">Arguments used by Calc Potential</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.classical_force_reweight" title="quippy.crack.CrackParams.classical_force_reweight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classical_force_reweight</span></code></a></dt>
+<dd><p class="first last">Factor by which to reduce classical forces in the embed region.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_align_y" title="quippy.crack.CrackParams.crack_align_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_align_y</span></code></a></dt>
+<dd><p class="first last">Vertical alignment turned on</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_apply_initial_load" title="quippy.crack.CrackParams.crack_apply_initial_load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_apply_initial_load</span></code></a></dt>
+<dd><p class="first last">If <code class="docutils literal notranslate"><span class="pre">true</span></code>, apply initial loading field to crack slab</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_bulk_filename" title="quippy.crack.CrackParams.crack_bulk_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_bulk_filename</span></code></a></dt>
+<dd><p class="first last">Input file containing primitive cell</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_coordination_atom_type" title="quippy.crack.CrackParams.crack_check_coordination_atom_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_coordination_atom_type</span></code></a></dt>
+<dd><p class="first last">Atom type we check the coordination for</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_coordination_critical_nneigh" title="quippy.crack.CrackParams.crack_check_coordination_critical_nneigh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_coordination_critical_nneigh</span></code></a></dt>
+<dd><p class="first last">Critical number of neighbours in the connectivity checking</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_coordination_region" title="quippy.crack.CrackParams.crack_check_coordination_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_coordination_region</span></code></a></dt>
+<dd><p class="first last">Region (+/- around y=0 level) where the atomic coordination is checked.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_check_surface_coordination" title="quippy.crack.CrackParams.crack_check_surface_coordination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_check_surface_coordination</span></code></a></dt>
+<dd><p class="first last">Checking of the surface coordination before generating the crack seed</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_curvature" title="quippy.crack.CrackParams.crack_curvature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_curvature</span></code></a></dt>
+<dd><p class="first last">Curvature used when crack_curved_front=T</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_curved_front" title="quippy.crack.CrackParams.crack_curved_front"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_curved_front</span></code></a></dt>
+<dd><p class="first last">If true, initialise slab with a curved crack front</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_dislo_seed" title="quippy.crack.CrackParams.crack_dislo_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_dislo_seed</span></code></a></dt>
+<dd><p class="first last">atom at the core of the dislocation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_double_ended" title="quippy.crack.CrackParams.crack_double_ended"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_double_ended</span></code></a></dt>
+<dd><p class="first last">If true, we do a double ended crack with periodic boundary conditions along <span class="math notranslate">\(x\)</span> direction.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_edge_fix_tol" title="quippy.crack.CrackParams.crack_edge_fix_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_edge_fix_tol</span></code></a></dt>
+<dd><p class="first last">How close must an atom be to top or bottom to be fixed.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_element" title="quippy.crack.CrackParams.crack_element"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_element</span></code></a></dt>
+<dd><p class="first last">Element to make slab from.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_fix_dipoles" title="quippy.crack.CrackParams.crack_fix_dipoles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_fix_dipoles</span></code></a></dt>
+<dd><p class="first last">If true, we keep fixed dipoles for atoms at the edges.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_fix_dipoles_tol" title="quippy.crack.CrackParams.crack_fix_dipoles_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_fix_dipoles_tol</span></code></a></dt>
+<dd><p class="first last">How close must an atom be to top or bottom to keep fixed its dipole.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_fix_sides" title="quippy.crack.CrackParams.crack_fix_sides"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_fix_sides</span></code></a></dt>
+<dd><p class="first last">If true fix atoms close to left and right edges of slab</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_free_surfaces" title="quippy.crack.CrackParams.crack_free_surfaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_free_surfaces</span></code></a></dt>
+<dd><p class="first last">If true, crack is 3D with free surfaces at z= +/- depth/2</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_front_alpha" title="quippy.crack.CrackParams.crack_front_alpha"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_front_alpha</span></code></a></dt>
+<dd><p class="first last">Value of alpha to use when tip_method=alpha_shape</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_front_angle_threshold" title="quippy.crack.CrackParams.crack_front_angle_threshold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_front_angle_threshold</span></code></a></dt>
+<dd><p class="first last">Maximum bearing for segments to be included in crack front</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_front_window_size" title="quippy.crack.CrackParams.crack_front_window_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_front_window_size</span></code></a></dt>
+<dd><p class="first last">Size of windows along crack front.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_g" title="quippy.crack.CrackParams.crack_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g</span></code></a></dt>
+<dd><p class="first last">Initial energy release rate loading in J/m:math:<cite>^2</cite> (override strain)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_g_increment" title="quippy.crack.CrackParams.crack_g_increment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g_increment</span></code></a></dt>
+<dd><p class="first last">Rate of loading, expressed as increment in G (override strain_increment)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_graphene_notch_height" title="quippy.crack.CrackParams.crack_graphene_notch_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_graphene_notch_height</span></code></a></dt>
+<dd><p class="first last">Height of graphene notch.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_graphene_notch_width" title="quippy.crack.CrackParams.crack_graphene_notch_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_graphene_notch_width</span></code></a></dt>
+<dd><p class="first last">Width of graphene notch.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_graphene_theta" title="quippy.crack.CrackParams.crack_graphene_theta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_graphene_theta</span></code></a></dt>
+<dd><p class="first last">Rotation angle of graphene plane, in radians.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_height" title="quippy.crack.CrackParams.crack_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_height</span></code></a></dt>
+<dd><p class="first last">Height of crack slab, in AA{}.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_initial_velocity_field" title="quippy.crack.CrackParams.crack_initial_velocity_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_initial_velocity_field</span></code></a></dt>
+<dd><p class="first last">If true, initialise velocity field with dU/dc</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_lattice_guess" title="quippy.crack.CrackParams.crack_lattice_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_lattice_guess</span></code></a></dt>
+<dd><p class="first last">Guess at bulk lattice parameter, used to obtain accurate result.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_load_interp_length" title="quippy.crack.CrackParams.crack_load_interp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_load_interp_length</span></code></a></dt>
+<dd><p class="first last">Length over which linear interpolation between k-field</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_loading" title="quippy.crack.CrackParams.crack_loading"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_loading</span></code></a></dt>
+<dd><p class="first last"><code class="docutils literal notranslate"><span class="pre">uniform</span></code> for constant load,</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_name" title="quippy.crack.CrackParams.crack_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_name</span></code></a></dt>
+<dd><p class="first last">Crack name, in format <code class="docutils literal notranslate"><span class="pre">(abc)[def]</span></code> with negative indices denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (for bar), e.g.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_num_layers" title="quippy.crack.CrackParams.crack_num_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_num_layers</span></code></a></dt>
+<dd><p class="first last">Number of primitive cells in <span class="math notranslate">\(z\)</span> direction</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_end_g" title="quippy.crack.CrackParams.crack_ramp_end_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_end_g</span></code></a></dt>
+<dd><p class="first last">Loading at end of ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_length" title="quippy.crack.CrackParams.crack_ramp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_length</span></code></a></dt>
+<dd><p class="first last">Length of ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_start_length" title="quippy.crack.CrackParams.crack_ramp_start_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_start_length</span></code></a></dt>
+<dd><p class="first last">Length of the region in between the crack tip and the start of the ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_relax_bulk" title="quippy.crack.CrackParams.crack_relax_bulk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_relax_bulk</span></code></a></dt>
+<dd><p class="first last">If true (default) relax bulk cell using classical potential</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_relax_loading_field" title="quippy.crack.CrackParams.crack_relax_loading_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_relax_loading_field</span></code></a></dt>
+<dd><p class="first last">Should <code class="docutils literal notranslate"><span class="pre">makecrack</span></code> relax the applied loading field</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_rescale_x" title="quippy.crack.CrackParams.crack_rescale_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_rescale_x</span></code></a></dt>
+<dd><p class="first last">Rescale atomsatoms  in x direction by v</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_rescale_x_z" title="quippy.crack.CrackParams.crack_rescale_x_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_rescale_x_z</span></code></a></dt>
+<dd><p class="first last">Rescale atomsatoms  in x direction by v and in z direction by v2</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_seed_embed_tol" title="quippy.crack.CrackParams.crack_seed_embed_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_seed_embed_tol</span></code></a></dt>
+<dd><p class="first last">Atoms closer than this distance from crack tip will be used to seed embed region.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_seed_length" title="quippy.crack.CrackParams.crack_seed_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_seed_length</span></code></a></dt>
+<dd><p class="first last">Length of seed crack.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_slab_filename" title="quippy.crack.CrackParams.crack_slab_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_slab_filename</span></code></a></dt>
+<dd><p class="first last">Input file to use instead of generating slabs.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.crack_strain" title="quippy.crack.crack_strain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain</span></code></a></dt>
+<dd><p class="first last">Initial applied strain</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_strain_increment" title="quippy.crack.CrackParams.crack_strain_increment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain_increment</span></code></a></dt>
+<dd><p class="first last">Rate of loading, expressed as strain of initial loading</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_strain_zone_width" title="quippy.crack.CrackParams.crack_strain_zone_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain_zone_width</span></code></a></dt>
+<dd><p class="first last">Distance over which strain increases.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_structure" title="quippy.crack.CrackParams.crack_structure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_structure</span></code></a></dt>
+<dd><p class="first last">Structure: so far <code class="docutils literal notranslate"><span class="pre">diamond</span></code> and <code class="docutils literal notranslate"><span class="pre">graphene</span></code> are supported</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_thermostat_ramp_length" title="quippy.crack.CrackParams.crack_thermostat_ramp_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_thermostat_ramp_length</span></code></a></dt>
+<dd><p class="first last">Length of thermostat ramp used for stadium damping at left and right edges</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_thermostat_ramp_max_tau" title="quippy.crack.CrackParams.crack_thermostat_ramp_max_tau"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_thermostat_ramp_max_tau</span></code></a></dt>
+<dd><p class="first last">Value of thermostat tau at end of ramp, in fs.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_tip_grid_size" title="quippy.crack.CrackParams.crack_tip_grid_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_tip_grid_size</span></code></a></dt>
+<dd><p class="first last">Size (in A) of grid used for locating crack tips</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_tip_method" title="quippy.crack.CrackParams.crack_tip_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_tip_method</span></code></a></dt>
+<dd><p class="first last">One of <code class="docutils literal notranslate"><span class="pre">coordination</span></code>, <code class="docutils literal notranslate"><span class="pre">percolation</span></code>, <code class="docutils literal notranslate"><span class="pre">local_energy</span></code> or <code class="docutils literal notranslate"><span class="pre">alpha_shape</span></code></p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_tip_min_separation" title="quippy.crack.CrackParams.crack_tip_min_separation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_tip_min_separation</span></code></a></dt>
+<dd><p class="first last">Minimum seperation (in A) between a pair of crack tips for them to be considered distinct</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_vacuum_size" title="quippy.crack.CrackParams.crack_vacuum_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_vacuum_size</span></code></a></dt>
+<dd><p class="first last">Amount of vacuum around crack slab.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_width" title="quippy.crack.CrackParams.crack_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_width</span></code></a></dt>
+<dd><p class="first last">Width of crack slab, in AA{}.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_x_shift" title="quippy.crack.CrackParams.crack_x_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_x_shift</span></code></a></dt>
+<dd><p class="first last">Shift required to get “nice” surface terminations on vertical edges</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_y_shift" title="quippy.crack.CrackParams.crack_y_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_y_shift</span></code></a></dt>
+<dd><p class="first last">Shift required to align y=0 with centre of a vertical bond.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_z" title="quippy.crack.CrackParams.crack_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_z</span></code></a></dt>
+<dd><p class="first last">Initialised automatically from crack element</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.fit_hops" title="quippy.crack.CrackParams.fit_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_hops</span></code></a></dt>
+<dd><p class="first last">Number of hops used to generate fit region from embed region</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.fit_method" title="quippy.crack.CrackParams.fit_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_method</span></code></a></dt>
+<dd><p class="first last">Method to use for force mixing: should be one of</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.fit_spring_hops" title="quippy.crack.CrackParams.fit_spring_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_spring_hops</span></code></a></dt>
+<dd><p class="first last">Number of hops used when creating list of springs</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.force_integration_end_file" title="quippy.crack.CrackParams.force_integration_end_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">force_integration_end_file</span></code></a></dt>
+<dd><p class="first last">XYZ file containing ending configuration for force integration.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.force_integration_n_steps" title="quippy.crack.CrackParams.force_integration_n_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">force_integration_n_steps</span></code></a></dt>
+<dd><p class="first last">Number of steps to take in force integration</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.hack_fit_on_eqm_coordination_only" title="quippy.crack.CrackParams.hack_fit_on_eqm_coordination_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hack_fit_on_eqm_coordination_only</span></code></a></dt>
+<dd><p class="first last">Only include fit atoms that have coordination number equal to <code class="docutils literal notranslate"><span class="pre">md_eqm_coordination</span></code> (used for graphene).</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.hack_qm_zero_z_force" title="quippy.crack.CrackParams.hack_qm_zero_z_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hack_qm_zero_z_force</span></code></a></dt>
+<dd><p class="first last">Zero <span class="math notranslate">\(z\)</span> component of all forces (used for graphene)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_backup" title="quippy.crack.CrackParams.io_backup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_backup</span></code></a></dt>
+<dd><p class="first last">If true, create backups of check files</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_checkpoint_interval" title="quippy.crack.CrackParams.io_checkpoint_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_checkpoint_interval</span></code></a></dt>
+<dd><p class="first last">Interval between writing checkpoint files, in fs.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_checkpoint_path" title="quippy.crack.CrackParams.io_checkpoint_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_checkpoint_path</span></code></a></dt>
+<dd><p class="first last">Path to write checkpoint files to.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_mpi_print_all" title="quippy.crack.CrackParams.io_mpi_print_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_mpi_print_all</span></code></a></dt>
+<dd><p class="first last">Print output on all nodes.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_netcdf" title="quippy.crack.CrackParams.io_netcdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_netcdf</span></code></a></dt>
+<dd><p class="first last">If true, output in NetCDF format instead of XYZ</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_print_all_properties" title="quippy.crack.CrackParams.io_print_all_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_print_all_properties</span></code></a></dt>
+<dd><p class="first last">If true, print all atom properties to movie file.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_print_interval" title="quippy.crack.CrackParams.io_print_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_print_interval</span></code></a></dt>
+<dd><p class="first last">Interval between movie XYZ frames, in fs.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_print_properties" title="quippy.crack.CrackParams.io_print_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_print_properties</span></code></a></dt>
+<dd><p class="first last">List of properties to print to movie file.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_timing" title="quippy.crack.CrackParams.io_timing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_timing</span></code></a></dt>
+<dd><p class="first last">If true, enable timing (default false)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.io_verbosity" title="quippy.crack.CrackParams.io_verbosity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_verbosity</span></code></a></dt>
+<dd><p class="first last">Output verbosity.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_eps_guess" title="quippy.crack.CrackParams.minim_eps_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_eps_guess</span></code></a></dt>
+<dd><p class="first last">Initial guess for line search step size <span class="math notranslate">\(\epsilon\)</span>.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_fire_dt0" title="quippy.crack.CrackParams.minim_fire_dt0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_fire_dt0</span></code></a></dt>
+<dd><p class="first last">If using fire_minim, the initial step size</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_fire_dt_max" title="quippy.crack.CrackParams.minim_fire_dt_max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_fire_dt_max</span></code></a></dt>
+<dd><p class="first last">If using fire_minim, the maximum step size</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_linminroutine" title="quippy.crack.CrackParams.minim_linminroutine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_linminroutine</span></code></a></dt>
+<dd><p class="first last">Linmin routine, e.g.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_max_steps" title="quippy.crack.CrackParams.minim_max_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_max_steps</span></code></a></dt>
+<dd><p class="first last">Maximum number of minimisation steps.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_method" title="quippy.crack.CrackParams.minim_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_method</span></code></a></dt>
+<dd><p class="first last">Minimisation method: use <code class="docutils literal notranslate"><span class="pre">cg</span></code> for conjugate gradients or <code class="docutils literal notranslate"><span class="pre">sd</span></code> for steepest descent.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_minimise_mm" title="quippy.crack.CrackParams.minim_minimise_mm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_minimise_mm</span></code></a></dt>
+<dd><p class="first last">Should we minimise classical degrees of freedom before each QM force evaluation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_args_str" title="quippy.crack.CrackParams.minim_mm_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_args_str</span></code></a></dt>
+<dd><p class="first last">Args string to be passed to MM calc() routine</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_eps_guess" title="quippy.crack.CrackParams.minim_mm_eps_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_eps_guess</span></code></a></dt>
+<dd><p class="first last">Initial guess for line search <span class="math notranslate">\(\epsilon\)</span> for MM minimisation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_linminroutine" title="quippy.crack.CrackParams.minim_mm_linminroutine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_linminroutine</span></code></a></dt>
+<dd><p class="first last">Linmin routine for MM minimisation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_max_steps" title="quippy.crack.CrackParams.minim_mm_max_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_max_steps</span></code></a></dt>
+<dd><p class="first last">Maximum number of cg cycles for MM minimisation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_method" title="quippy.crack.CrackParams.minim_mm_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_method</span></code></a></dt>
+<dd><p class="first last">Minim method for MM minimisation, e.g.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_tol" title="quippy.crack.CrackParams.minim_mm_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_tol</span></code></a></dt>
+<dd><p class="first last">Target force tolerance for MM minimisation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_print_output" title="quippy.crack.CrackParams.minim_print_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_print_output</span></code></a></dt>
+<dd><p class="first last">Number of steps between XYZ confgurations printed</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_tol" title="quippy.crack.CrackParams.minim_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_tol</span></code></a></dt>
+<dd><p class="first last">Target force tolerance - geometry optimisation is considered to be</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_args" title="quippy.crack.CrackParams.qm_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_args</span></code></a></dt>
+<dd><p class="first last">Arguments used to initialise QM potential</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_args_str" title="quippy.crack.CrackParams.qm_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_args_str</span></code></a></dt>
+<dd><p class="first last">Arguments used by QM potential</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_buffer_hops" title="quippy.crack.CrackParams.qm_buffer_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_buffer_hops</span></code></a></dt>
+<dd><p class="first last">Number of bond hops used for buffer region</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_calc_force_error" title="quippy.crack.CrackParams.qm_calc_force_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_calc_force_error</span></code></a></dt>
+<dd><p class="first last">Do a full QM calculation at each stage in extrap and interp to measure force error</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_clusters" title="quippy.crack.CrackParams.qm_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_clusters</span></code></a></dt>
+<dd><p class="first last">Should we carve clusters? Default true.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_cp2k" title="quippy.crack.CrackParams.qm_cp2k"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_cp2k</span></code></a></dt>
+<dd><p class="first last">Enable CP2K mode.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_even_electrons" title="quippy.crack.CrackParams.qm_even_electrons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_even_electrons</span></code></a></dt>
+<dd><p class="first last">Discard a hydrogen if necessary to give an overall non-spin-polarised cluster</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_extra_args_str" title="quippy.crack.CrackParams.qm_extra_args_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_extra_args_str</span></code></a></dt>
+<dd><p class="first last">Extra arguments passed to ForceMixing potential</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_force_periodic" title="quippy.crack.CrackParams.qm_force_periodic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_force_periodic</span></code></a></dt>
+<dd><p class="first last">Force clusters to be periodic in <span class="math notranslate">\(z\)</span> direction.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer" title="quippy.crack.CrackParams.qm_hysteretic_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer</span></code></a></dt>
+<dd><p class="first last">If true, manage the buffer region hysteritcally</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer_inner_radius" title="quippy.crack.CrackParams.qm_hysteretic_buffer_inner_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer_inner_radius</span></code></a></dt>
+<dd><p class="first last">Inner radius used for hystertic buffer region</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer_nneighb_only" title="quippy.crack.CrackParams.qm_hysteretic_buffer_nneighb_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer_nneighb_only</span></code></a></dt>
+<dd><p class="first last">Should hysteretic buffer be formed by nearest neighbor hopping?</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer_outer_radius" title="quippy.crack.CrackParams.qm_hysteretic_buffer_outer_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer_outer_radius</span></code></a></dt>
+<dd><p class="first last">Outer radius used for hystertic buffer region</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect" title="quippy.crack.CrackParams.qm_hysteretic_connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect</span></code></a></dt>
+<dd><p class="first last">Enable hysteretic connectivity</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect_cluster_radius" title="quippy.crack.CrackParams.qm_hysteretic_connect_cluster_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect_cluster_radius</span></code></a></dt>
+<dd><p class="first last">Radius other which to keep track of hysteretic connectivity info.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect_inner_factor" title="quippy.crack.CrackParams.qm_hysteretic_connect_inner_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect_inner_factor</span></code></a></dt>
+<dd><p class="first last">Inner bond factor.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_connect_outer_factor" title="quippy.crack.CrackParams.qm_hysteretic_connect_outer_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_connect_outer_factor</span></code></a></dt>
+<dd><p class="first last">Outer bond factor.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_little_clusters" title="quippy.crack.CrackParams.qm_little_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_little_clusters</span></code></a></dt>
+<dd><p class="first last">One big cluster or lots of little ones?</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_randomise_buffer" title="quippy.crack.CrackParams.qm_randomise_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_randomise_buffer</span></code></a></dt>
+<dd><p class="first last">Randomise positions of outer layer of buffer atoms slightly to avoid systematic errors.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_rescale_r" title="quippy.crack.CrackParams.qm_rescale_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_rescale_r</span></code></a></dt>
+<dd><p class="first last">If true, rescale space in QM cluster to match QM lattice constant</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_terminate" title="quippy.crack.CrackParams.qm_terminate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_terminate</span></code></a></dt>
+<dd><p class="first last">Terminate clusters with hydrogen atoms</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_transition_hops" title="quippy.crack.CrackParams.qm_transition_hops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_transition_hops</span></code></a></dt>
+<dd><p class="first last">Number of transition hops used for buffer region</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_vacuum_size" title="quippy.crack.CrackParams.qm_vacuum_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_vacuum_size</span></code></a></dt>
+<dd><p class="first last">Amount of vacuum surrounding cluster in non-periodic directions (<span class="math notranslate">\(x\)</span> and <span class="math notranslate">\(y\)</span> at least).</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.quasi_static_tip_move_tol" title="quippy.crack.CrackParams.quasi_static_tip_move_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quasi_static_tip_move_tol</span></code></a></dt>
+<dd><p class="first last">How far cracktip must advance before we consider fracture to have occurred.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_cutoff_plane" title="quippy.crack.CrackParams.selection_cutoff_plane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_cutoff_plane</span></code></a></dt>
+<dd><p class="first last">Only atoms within this distance from crack tip are candidates for QM selection.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_directionality" title="quippy.crack.CrackParams.selection_directionality"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_directionality</span></code></a></dt>
+<dd><p class="first last">Require good directionality of spring space spanning for atoms in embed region.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_edge_tol" title="quippy.crack.CrackParams.selection_edge_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_edge_tol</span></code></a></dt>
+<dd><p class="first last">Size of region at edges of crack slab which is ignored for selection purposes.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse" title="quippy.crack.CrackParams.selection_ellipse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse</span></code></a></dt>
+<dd><p class="first last">Principal radii of selection ellipse along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> in AA{}.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_bias" title="quippy.crack.CrackParams.selection_ellipse_bias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_bias</span></code></a></dt>
+<dd><p class="first last">Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate">\(x\)</span> direction.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_buffer" title="quippy.crack.CrackParams.selection_ellipse_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_buffer</span></code></a></dt>
+<dd><p class="first last">Difference in size between inner and outer selection ellipses, i.e.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_max_qm_atoms" title="quippy.crack.CrackParams.selection_max_qm_atoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_max_qm_atoms</span></code></a></dt>
+<dd><p class="first last">Maximum number of QM atoms to select</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_method" title="quippy.crack.CrackParams.selection_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_method</span></code></a></dt>
+<dd><p class="first last">One of <code class="docutils literal notranslate"><span class="pre">static</span></code>, <code class="docutils literal notranslate"><span class="pre">coordination</span></code>, <code class="docutils literal notranslate"><span class="pre">crack_front</span></code></p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_update_interval" title="quippy.crack.CrackParams.selection_update_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_update_interval</span></code></a></dt>
+<dd><p class="first last">intervals between QM selection updates, defaults to 0.0_dp meaning <code class="docutils literal notranslate"><span class="pre">every</span> <span class="pre">step</span></code></p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.simulation_classical" title="quippy.crack.CrackParams.simulation_classical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_classical</span></code></a></dt>
+<dd><p class="first last">Perform a purely classical simulation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.simulation_force_initial_load_step" title="quippy.crack.CrackParams.simulation_force_initial_load_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_force_initial_load_step</span></code></a></dt>
+<dd><p class="first last">Force a load step at beginning of simulation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.simulation_initial_state" title="quippy.crack.CrackParams.simulation_initial_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_initial_state</span></code></a></dt>
+<dd><p class="first last">Initial state.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.simulation_seed" title="quippy.crack.CrackParams.simulation_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_seed</span></code></a></dt>
+<dd><p class="first last">Random number seed.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.crack.CrackParams.simulation_task" title="quippy.crack.CrackParams.simulation_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_task</span></code></a></dt>
+<dd><p class="first last">Task to perform: <code class="docutils literal notranslate"><span class="pre">md</span></code>, <code class="docutils literal notranslate"><span class="pre">minim</span></code>, etc.</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -999,7 +996,11 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ret_crackparams_any_per_atom_tau</strong> :  int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crackparams_any_per_atom_tau</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1015,7 +1016,11 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> : <a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>file</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="system.html#quippy.system.InOutput" title="quippy.system.InOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InOutput</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1906,15 +1911,15 @@ converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <co
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms</strong> : ASE.atoms or quippy.Atoms</p>
-<blockquote>
-<div><p>Atomic configuration.</p>
-</div></blockquote>
-<p><strong>rigid_constraints</strong> : boolean</p>
-<blockquote class="last">
-<div><p>Apply (or not apply) strain to every atom.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ASE.atoms or quippy.Atoms</span></dt>
+<dd><p class="first last">Atomic configuration.</p>
+</dd>
+<dt><strong>rigid_constraints</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
+<dd><p class="first last">Apply (or not apply) strain to every atom.
 i.e. allow constrainted atoms to move during strain application</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1933,12 +1938,20 @@ Open surfaces are planes at <span class="math notranslate">\(x = \pm```OrigWidth
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>i</strong> :  input int</p>
-<p><strong>edge_gap</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>edge_gap</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_is_edge_atom</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_is_edge_atom</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1958,9 +1971,17 @@ Axes of crack slab returned as <span class="math notranslate">\(3\times3\)</span
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>crackname</strong> :  input string(len=-1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>crackname</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>axes</strong> :  rank-2 array(‘d’) with bounds (3,3)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>axes</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (3,3)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1975,14 +1996,24 @@ Axes of crack slab returned as <span class="math notranslate">\(3\times3\)</span
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>qm_args_str</strong> :  input string(len=-1)</p>
-<p><strong>extra_qm_args</strong> :  input string(len=-1)</p>
-<p><strong>mm_args_str</strong> :  input string(len=-1)</p>
-<p><strong>extra_mm_args</strong> :  input string(len=-1)</p>
-<p><strong>extra_args_str</strong> :  input string(len=-1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>qm_args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>extra_qm_args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>mm_args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>extra_mm_args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>extra_args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_hybrid_calc_args</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_hybrid_calc_args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2000,13 +2031,22 @@ Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>g</strong> :  input float</p>
-<p><strong>e</strong> :  input float</p>
-<p><strong>v</strong> :  input float</p>
-<p><strong>mode</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>mode</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_k</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2022,9 +2062,17 @@ Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>grid</strong> :  in/output rank-3 array(‘i’) with bounds (qp_n0,qp_n1,qp_n2)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>grid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-3 array(‘i’) with bounds (qp_n0,qp_n1,qp_n2)</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_percolation_step</strong> :  int</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_percolation_step</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2039,8 +2087,12 @@ Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>crack_slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crack_slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2056,8 +2108,12 @@ Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2075,12 +2131,20 @@ Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```Orig
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>i</strong> :  input int</p>
-<p><strong>edge_gap</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>i</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>edge_gap</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_is_topbottom_edge_atom</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_is_topbottom_edge_atom</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2096,15 +2160,26 @@ Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```Orig
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
-<p><strong>classicalpot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>crack_slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>width</strong> :  float</p>
-<p><strong>height</strong> :  float</p>
-<p><strong>e</strong> :  float</p>
-<p><strong>v</strong> :  float</p>
-<p><strong>v2</strong> :  float</p>
-<p class="last"><strong>bulk</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>classicalpot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>crack_slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>v2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>bulk</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2120,13 +2195,22 @@ Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```Orig
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>g1</strong> :  input float</p>
-<p><strong>g2</strong> :  input float</p>
-<p><strong>d1</strong> :  input float</p>
-<p><strong>d2</strong> :  input float</p>
-<p><strong>d3</strong> :  input float</p>
-<p class="last"><strong>d4</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>g1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>g2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>d1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>d2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>d3</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>d4</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2150,13 +2234,22 @@ from thin strip result. Quantities are:
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>strain</strong> :  input float</p>
-<p><strong>e</strong> :  input float</p>
-<p><strong>v</strong> :  input float</p>
-<p><strong>height</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_strain_to_g</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_strain_to_g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2173,13 +2266,22 @@ from thin strip result. Quantities are:
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
-<p><strong>n_tip_atoms</strong> :  in/output rank-0 array(int,’i’), optional</p>
-<p><strong>tip_indices</strong> :  in/output rank-1 array(‘i’) with bounds (qp_n0), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>n_tip_atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+<dt><strong>tip_indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_pos</strong> :  rank-1 array(‘d’) with bounds (2)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (2)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2197,11 +2299,18 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>d</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>ellipse</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>ellipse</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_in_ellipse</strong> :  int</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_in_ellipse</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2217,8 +2326,12 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2234,8 +2347,12 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2251,12 +2368,20 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mm_args_str</strong> :  input string(len=-1)</p>
-<p><strong>extra_mm_args</strong> :  input string(len=-1)</p>
-<p><strong>extra_args_str</strong> :  input string(len=-1)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>mm_args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>extra_mm_args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>extra_args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_mm_calc_args</strong> :  string(len=1024)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_mm_calc_args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=1024)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2272,8 +2397,12 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2290,24 +2419,23 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>ellipse</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<blockquote>
-<div><p>Principal radii of ellipse in <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> directions</p>
-</div></blockquote>
-<p><strong>ellipse_bias</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<blockquote>
-<div><p>Shift ellipse, positive values forward</p>
-</div></blockquote>
-<p><strong>list</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
-<blockquote>
-<div><p>On exit contains indexes of selected atoms, which
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>ellipse</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd><p class="first last">Principal radii of ellipse in <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> directions</p>
+</dd>
+<dt><strong>ellipse_bias</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd><p class="first last">Shift ellipse, positive values forward</p>
+</dd>
+<dt><strong>list</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd><p class="first last">On exit contains indexes of selected atoms, which
 are also reachable by nearest neighbour  bond hopping starting from c</p>
-</div></blockquote>
-<p><strong>c</strong> :  input int</p>
-<blockquote class="last">
-<div><p>Ellipse is centred around atom <code class="docutils literal notranslate"><span class="pre">c</span></code>.</p>
-</div></blockquote>
+</dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">Ellipse is centred around atom <code class="docutils literal notranslate"><span class="pre">c</span></code>.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2349,25 +2477,36 @@ avoid creation of defects.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
-<p><strong>l_crack_pos</strong> :  input float</p>
-<p><strong>r_crack_pos</strong> :  input float</p>
-<p><strong>zone_width</strong> :  input float</p>
-<p><strong>eps</strong> :  input float, optional</p>
-<p><strong>g</strong> :  input float, optional</p>
-<p><strong>apply_load</strong> :  input int, optional</p>
-<p><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_disp,0)</p>
-</div></blockquote>
-<p><strong>n1</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_disp,1)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>l_crack_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>r_crack_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>zone_width</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>apply_load</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_disp,0)</p>
+</dd>
+<dt><strong>n1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_disp,1)</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>disp</strong> :  rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>disp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (qp_n0,qp_n1)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2385,13 +2524,22 @@ Units are as the same as <code class="docutils literal notranslate"><span class=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>g</strong> :  input float</p>
-<p><strong>e</strong> :  input float</p>
-<p><strong>v</strong> :  input float</p>
-<p><strong>height</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_crack_g_to_strain</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_crack_g_to_strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2409,13 +2557,22 @@ Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>k</strong> :  input float</p>
-<p><strong>e</strong> :  input float</p>
-<p><strong>v</strong> :  input float</p>
-<p><strong>mode</strong> :  input string(len=-1), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>mode</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_g</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2437,8 +2594,12 @@ the (cheaper) nearest neighbour calc_connect always being perforemd.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2454,7 +2615,11 @@ the (cheaper) nearest neighbour calc_connect always being perforemd.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -2469,11 +2634,18 @@ the (cheaper) nearest neighbour calc_connect always being perforemd.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>crack_tips</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crack_tips</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2489,12 +2661,20 @@ the (cheaper) nearest neighbour calc_connect always being perforemd.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>crack_slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
-<p><strong>classicalpot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>load_method</strong> :  input string(len=-1)</p>
-<p><strong>overwrite_pos</strong> :  input int</p>
-<p class="last"><strong>mpi</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crack_slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>classicalpot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>load_method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>overwrite_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>mpi</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2513,8 +2693,12 @@ G and stores it in the atom parameter dictionary.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>g_increment</strong> :  input float, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>g_increment</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2536,13 +2720,22 @@ Otherwise, symbols and units are the same as in <code class="docutils literal no
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>e</strong> :  input float</p>
-<p><strong>v</strong> :  input float</p>
-<p><strong>orig_height</strong> :  input float</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>orig_height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_g</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_g</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2565,13 +2758,22 @@ displacement is a Cartesian vector <span class="math notranslate">\((u_x,u_y,u_z
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>k</strong> :  input float</p>
-<p><strong>mode</strong> :  input string(len=-1), optional</p>
-<p><strong>sig</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</p>
-<p><strong>disp</strong> :  in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</p>
-<p><strong>do_sig</strong> :  input int, optional</p>
-<p class="last"><strong>do_disp</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>mode</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>sig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>disp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</span></dt>
+<dd></dd>
+<dt><strong>do_sig</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>do_disp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2596,11 +2798,18 @@ If a through-going crack is detected the result table will have size zero.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>crack_tips</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crack_tips</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2621,8 +2830,12 @@ The value of <code class="docutils literal notranslate"><span class="pre">num_di
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2638,8 +2851,12 @@ The value of <code class="docutils literal notranslate"><span class="pre">num_di
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>crack_slab</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crack_slab</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2655,13 +2872,22 @@ The value of <code class="docutils literal notranslate"><span class="pre">num_di
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>params</strong> : <a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</p>
-<p><strong>j</strong> :  input int</p>
-<p><strong>y</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>x_boundaries</strong> :  input int, optional</p>
-<p><strong>neigh_removed</strong> :  in/output rank-1 array(‘i’) with bounds (qp_n0), optional</p>
-<p class="last"><strong>at_for_connectivity</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.crack.CrackParams" title="quippy.crack.CrackParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrackParams</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>x_boundaries</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>neigh_removed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-1 array(‘i’) with bounds (qp_n0), optional</span></dt>
+<dd></dd>
+<dt><strong>at_for_connectivity</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2766,36 +2992,34 @@ array ‘advance_map’ into the Atoms object.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms</strong> : :class:<a href="#id3"><span class="problematic" id="id4">`</span></a>~.Atoms’ object</p>
-<blockquote>
-<div><p>The Atoms object containing the crack slab.</p>
-</div></blockquote>
-<p><strong>edge_tol</strong> : float</p>
-<blockquote>
-<div><p>Distance from edge of system within which to exclude
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">:class:<a href="#id3"><span class="problematic" id="id4">`</span></a>~.Atoms’ object</span></dt>
+<dd><p class="first last">The Atoms object containing the crack slab.</p>
+</dd>
+<dt><strong>edge_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Distance from edge of system within which to exclude
 undercoodinated atoms.</p>
-</div></blockquote>
-<p><strong>strip_height</strong> : float</p>
-<blockquote>
-<div><p>Height of strip along centre of slab in which to look
+</dd>
+<dt><strong>strip_height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Height of strip along centre of slab in which to look
 for the track.</p>
-</div></blockquote>
-<p><strong>nneightol</strong> : float</p>
-<blockquote>
-<div><p>Nearest neighbour tolerance, as a fraction of sum of
+</dd>
+<dt><strong>nneightol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Nearest neighbour tolerance, as a fraction of sum of
 covalent radii of atomic species.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>crack_pos</strong> : array</p>
-<blockquote>
-<div><p>x, y, and z coordinates of the crack tip. Also set in <code class="docutils literal notranslate"><span class="pre">CrackPos</span></code>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crack_pos</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd><p class="first last">x, y, and z coordinates of the crack tip. Also set in <code class="docutils literal notranslate"><span class="pre">CrackPos</span></code>
 in <code class="docutils literal notranslate"><span class="pre">atoms.info</span></code> dictionary.</p>
-</div></blockquote>
-<p><strong>tip_atoms</strong> : array</p>
-<blockquote class="last">
-<div><p>Indices of atoms near the tip Also set in <code class="docutils literal notranslate"><span class="pre">crack_tip</span></code> property.</p>
-</div></blockquote>
+</dd>
+<dt><strong>tip_atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd><p class="first last">Indices of atoms near the tip Also set in <code class="docutils literal notranslate"><span class="pre">crack_tip</span></code> property.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2810,36 +3034,35 @@ in <code class="docutils literal notranslate"><span class="pre">atoms.info</span
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>K</strong> : float</p>
-<blockquote>
-<div><p>Mode I stress intensity factor. Units should match units of <cite>r</cite>.</p>
-</div></blockquote>
-<p><strong>r</strong> : array_like</p>
-<blockquote>
-<div><p>Radial distances from crack tip. Can be a multidimensional
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>K</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Mode I stress intensity factor. Units should match units of <cite>r</cite>.</p>
+</dd>
+<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
+<dd><p class="first last">Radial distances from crack tip. Can be a multidimensional
 array to evaluate stress field on a grid.</p>
-</div></blockquote>
-<p><strong>t</strong> : array_like</p>
-<blockquote>
-<div><p>Angles from horzontal line y=0 ahead of crack tip,
+</dd>
+<dt><strong>t</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
+<dd><p class="first last">Angles from horzontal line y=0 ahead of crack tip,
 measured anticlockwise. Should have same shape as <cite>r</cite>.</p>
-</div></blockquote>
-<p><strong>xy_only</strong> : bool</p>
-<blockquote>
-<div><p>If True (default) only xx, yy, xy and yx components will be set.</p>
-</div></blockquote>
-<p><strong>nu</strong> : float</p>
-<blockquote>
-<div><p>Poisson ratio. Used only when <code class="docutils literal notranslate"><span class="pre">xy_only=False</span></code>, to determine zz stresses</p>
-</div></blockquote>
-<p><strong>stress_state</strong> : str</p>
-<blockquote>
-<div><p>One of”plane stress” or “plane strain”. Used if xyz_only=False to
+</dd>
+<dt><strong>xy_only</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If True (default) only xx, yy, xy and yx components will be set.</p>
+</dd>
+<dt><strong>nu</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Poisson ratio. Used only when <code class="docutils literal notranslate"><span class="pre">xy_only=False</span></code>, to determine zz stresses</p>
+</dd>
+<dt><strong>stress_state</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">One of”plane stress” or “plane strain”. Used if xyz_only=False to
 determine zz stresses.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>sigma</strong> : array with shape <code class="docutils literal notranslate"><span class="pre">r.shape</span> <span class="pre">+</span> <span class="pre">(3,3)</span></code></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>sigma</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array with shape <code class="docutils literal notranslate"><span class="pre">r.shape</span> <span class="pre">+</span> <span class="pre">(3,3)</span></code></span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2854,29 +3077,28 @@ determine zz stresses.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>strain</strong> : float</p>
-<blockquote>
-<div><p>Dimensionless ratio <code class="docutils literal notranslate"><span class="pre">(current_height</span> <span class="pre">-</span> <span class="pre">orig_height)/orig_height</span></code></p>
-</div></blockquote>
-<p><strong>E</strong> : float</p>
-<blockquote>
-<div><p>Young’s modulus relevant for a pull in y direction sigma_yy/eps_yy</p>
-</div></blockquote>
-<p><strong>nu</strong> : float</p>
-<blockquote>
-<div><p>Poission ratio -eps_yy/eps_xx</p>
-</div></blockquote>
-<p><strong>orig_height</strong> : float</p>
-<blockquote>
-<div><p>Unstrained height of slab</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Dimensionless ratio <code class="docutils literal notranslate"><span class="pre">(current_height</span> <span class="pre">-</span> <span class="pre">orig_height)/orig_height</span></code></p>
+</dd>
+<dt><strong>E</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Young’s modulus relevant for a pull in y direction sigma_yy/eps_yy</p>
+</dd>
+<dt><strong>nu</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Poission ratio -eps_yy/eps_xx</p>
+</dd>
+<dt><strong>orig_height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Unstrained height of slab</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>G</strong> : float</p>
-<blockquote class="last">
-<div><p>Energy release rate in units consistent with input
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>G</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Energy release rate in units consistent with input
 (i.e. in eV/A**2 if eV/A/fs units used)</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2891,28 +3113,27 @@ determine zz stresses.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>G</strong> : float</p>
-<blockquote>
-<div><p>Energy release rate in units consistent with <cite>E</cite> and <cite>orig_height</cite></p>
-</div></blockquote>
-<p><strong>E</strong> : float</p>
-<blockquote>
-<div><p>Young’s modulus relevant for a pull in y direction sigma_yy/eps_yy</p>
-</div></blockquote>
-<p><strong>nu</strong> : float</p>
-<blockquote>
-<div><p>Poission ratio -eps_yy/eps_xx</p>
-</div></blockquote>
-<p><strong>orig_height</strong> : float</p>
-<blockquote>
-<div><p>Unstrained height of slab</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>G</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Energy release rate in units consistent with <cite>E</cite> and <cite>orig_height</cite></p>
+</dd>
+<dt><strong>E</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Young’s modulus relevant for a pull in y direction sigma_yy/eps_yy</p>
+</dd>
+<dt><strong>nu</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Poission ratio -eps_yy/eps_xx</p>
+</dd>
+<dt><strong>orig_height</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Unstrained height of slab</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>strain</strong> : float</p>
-<blockquote class="last">
-<div><p>Dimensionless ratio <code class="docutils literal notranslate"><span class="pre">(current_height</span> <span class="pre">-</span> <span class="pre">orig_height)/orig_height</span></code></p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Dimensionless ratio <code class="docutils literal notranslate"><span class="pre">(current_height</span> <span class="pre">-</span> <span class="pre">orig_height)/orig_height</span></code></p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2953,9 +3174,9 @@ far-field stress components to vary during the fit.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>Crack system. For the initial fit, the following keys are used
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first">Crack system. For the initial fit, the following keys are used
 from the <code class="xref py py-attr docutils literal notranslate"><span class="pre">info</span></code> dictionary:</p>
 <blockquote>
 <div><ul class="simple">
@@ -2970,63 +3191,57 @@ from the <code class="xref py py-attr docutils literal notranslate"><span class=
 far-field stress <code class="docutils literal notranslate"><span class="pre">sigma0</span></code> are computed from
 <code class="docutils literal notranslate"><span class="pre">YoungsModulus</span></code>, <code class="docutils literal notranslate"><span class="pre">PoissonRatio_yx</span></code>, <code class="docutils literal notranslate"><span class="pre">G</span></code> and <code class="docutils literal notranslate"><span class="pre">strain</span></code>,
 assuming plane strain in thin strip boundary conditions.</p>
-<p>On exit, new <code class="docutils literal notranslate"><span class="pre">K</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma0</span></code> and <code class="docutils literal notranslate"><span class="pre">CrackPos</span></code> entries are set
+<p class="last">On exit, new <code class="docutils literal notranslate"><span class="pre">K</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma0</span></code> and <code class="docutils literal notranslate"><span class="pre">CrackPos</span></code> entries are set
 in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">info</span></code> dictionary. These values are then
 used as starting guesses for subsequent fits.</p>
-</div></blockquote>
-<p><strong>r_range</strong> : sequence of two floats, optional</p>
-<blockquote>
-<div><p>If present, restrict the stress fit to an annular region
+</dd>
+<dt><strong>r_range</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sequence of two floats, optional</span></dt>
+<dd><p class="first last">If present, restrict the stress fit to an annular region
 <code class="docutils literal notranslate"><span class="pre">r_range[0]</span> <span class="pre">&lt;=</span> <span class="pre">r</span> <span class="pre">&lt;</span> <span class="pre">r_range[1]</span></code>, centred on the previous crack
 position (from the <code class="docutils literal notranslate"><span class="pre">CrackPos</span></code> entry in <code class="docutils literal notranslate"><span class="pre">atoms.info</span></code>). If
 r_range is <code class="docutils literal notranslate"><span class="pre">None</span></code>, fit is carried out for all atoms.</p>
-</div></blockquote>
-<p><strong>initial_params</strong> : dict</p>
-<blockquote>
-<div><p>Names and initial values of parameters. Missing initial values
+</dd>
+<dt><strong>initial_params</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">Names and initial values of parameters. Missing initial values
 are guessed from Atoms object.</p>
-</div></blockquote>
-<p><strong>fix_params</strong> : dict</p>
-<blockquote>
-<div><p>Names and values of parameters to fix during the fit,
+</dd>
+<dt><strong>fix_params</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">Names and values of parameters to fix during the fit,
 e.g. <code class="docutils literal notranslate"><span class="pre">{y0:</span> <span class="pre">0.0}</span></code> to constrain the fit to the line y=0</p>
-</div></blockquote>
-<p><strong>sigma</strong> : None or array with shape (len(atoms), 3, 3)</p>
-<blockquote>
-<div><p>Explicitly provide the per-atom stresses. Avoids calling Atoms’
+</dd>
+<dt><strong>sigma</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or array with shape (len(atoms), 3, 3)</span></dt>
+<dd><p class="first last">Explicitly provide the per-atom stresses. Avoids calling Atoms’
 calculators <a class="reference internal" href="potential.html#quippy.potential.Potential.get_stresses" title="quippy.potential.Potential.get_stresses"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_stresses()</span></code></a> method.</p>
-</div></blockquote>
-<p><strong>avg_sigma</strong> : None or array with shape (len(atoms), 3, 3)</p>
-<blockquote>
-<div><p>If present, use this array to accumulate the time-averaged
+</dd>
+<dt><strong>avg_sigma</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or array with shape (len(atoms), 3, 3)</span></dt>
+<dd><p class="first last">If present, use this array to accumulate the time-averaged
 stress field. Useful when processing a trajectory.</p>
-</div></blockquote>
-<p><strong>avg_decay</strong> : real</p>
-<blockquote>
-<div><p>Factor by which average stress is attenuated at each step.
+</dd>
+<dt><strong>avg_decay</strong> <span class="classifier-delimiter">:</span> <span class="classifier">real</span></dt>
+<dd><p class="first last">Factor by which average stress is attenuated at each step.
 Should be set to <code class="docutils literal notranslate"><span class="pre">dt/tau</span></code> where <code class="docutils literal notranslate"><span class="pre">dt</span></code> is MD time-step
 and <code class="docutils literal notranslate"><span class="pre">tau</span></code> is a characteristic averaging time.</p>
-</div></blockquote>
-<p><strong>calc</strong> : Calculator object, optional</p>
-<blockquote>
-<div><p>If present, override the calculator used to compute stresses
+</dd>
+<dt><strong>calc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Calculator object, optional</span></dt>
+<dd><p class="first">If present, override the calculator used to compute stresses
 on the atoms. Default is <code class="docutils literal notranslate"><span class="pre">atoms.get_calculator</span></code>.</p>
-<p>To use the atom resolved stress tensor pass an instance of the
+<p class="last">To use the atom resolved stress tensor pass an instance of the
 <a class="reference internal" href="elasticity.html#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomResolvedStressField</span></code></a> class.</p>
-</div></blockquote>
-<p><strong>verbose</strong> : bool, optional</p>
-<blockquote>
-<div><p>If set to True, print additional information about the fit.</p>
-</div></blockquote>
+</dd>
+<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If set to True, print additional information about the fit.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>params</strong> : dict with keys <code class="docutils literal notranslate"><span class="pre">[K,</span> <span class="pre">x0,</span> <span class="pre">y0,</span> <span class="pre">sxx0,</span> <span class="pre">syy0,</span> <span class="pre">sxy0]</span></code></p>
-<blockquote class="last">
-<div><p>Fitted parameters, in a form suitable for passin
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict with keys <code class="docutils literal notranslate"><span class="pre">[K,</span> <span class="pre">x0,</span> <span class="pre">y0,</span> <span class="pre">sxx0,</span> <span class="pre">syy0,</span> <span class="pre">sxy0]</span></code></span></dt>
+<dd><p class="first last">Fitted parameters, in a form suitable for passin
 <code class="xref py py-class docutils literal notranslate"><span class="pre">IrwinStressField</span></code> constructor. These are the stress intensity
 factor <cite>K</cite>, the centre of the stress field <code class="docutils literal notranslate"><span class="pre">(x0,</span> <span class="pre">y0)</span></code>, and the
 far field contribution to the stress <code class="docutils literal notranslate"><span class="pre">(sxx0,</span> <span class="pre">syy0,</span> <span class="pre">sxy0)</span></code>.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -3092,23 +3307,22 @@ parameters.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : array</p>
-<p><strong>y</strong> : array</p>
-<blockquote>
-<div><p>Atomic positions in unstrained slab, centered on origin x=0,y=0</p>
-</div></blockquote>
-<p><strong>strain</strong> : float</p>
-<blockquote>
-<div><p>Far field strain to apply</p>
-</div></blockquote>
-<p><strong>a</strong> : float</p>
-<blockquote>
-<div><p>x coordinate for beginning of strain ramp</p>
-</div></blockquote>
-<p><strong>b</strong> : float</p>
-<blockquote class="last">
-<div><p>x coordinate for end of strain ramp</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd></dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd><p class="first last">Atomic positions in unstrained slab, centered on origin x=0,y=0</p>
+</dd>
+<dt><strong>strain</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Far field strain to apply</p>
+</dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">x coordinate for beginning of strain ramp</p>
+</dd>
+<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">x coordinate for end of strain ramp</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -3128,9 +3342,7 @@ a sequence of three floats</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -3143,7 +3355,7 @@ a sequence of three floats</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -3161,7 +3373,8 @@ a sequence of three floats</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -3180,14 +3393,13 @@ a sequence of three floats</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Elasticity calculations &mdash; quippy 22731ad+ documentation</title>
+  <title>Elasticity calculations &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,28 +27,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/>
-        <link rel="prev" title="CP2K I/O and driver" href="cp2k.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="CP2K I/O and driver" href="cp2k.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -73,7 +64,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -143,7 +134,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -151,9 +142,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -289,10 +281,10 @@
 <td>Form a 6 component stress vector in Voight notation from a 3x3 matrix</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.fit_elastic_constants" title="quippy.elasticity.fit_elastic_constants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_elastic_constants</span></code></a>(configs[,&nbsp;symmetry,&nbsp;…])</td>
-<td>quippy.</td>
+<td>quippy.elasticity.fit_elastic_constants() deprecated, please use   matscipy.elasticity.fit_elastic_constants() instead</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.elasticity.elastic_constants" title="quippy.elasticity.elastic_constants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elastic_constants</span></code></a>(pot,&nbsp;at[,&nbsp;sym,&nbsp;relax,&nbsp;…])</td>
-<td>quippy.</td>
+<td>quippy.elasticity.elastic_contants() deprecated, please use    matscipy.elasticity.fit_elastic_constants() instead</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.elasticity.atomic_strain" title="quippy.elasticity.atomic_strain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_strain</span></code></a>(at,&nbsp;r0[,&nbsp;crystal_factor])</td>
 <td>Atomic strain as defined by JA Zimmerman in <cite>Continuum and Atomistic Modeling of Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford University (1999).</td>
@@ -321,30 +313,27 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>bulk: Atoms object, optional</strong></p>
-<blockquote>
-<div><p>If present, set <cite>a</cite> and <code class="docutils literal notranslate"><span class="pre">cij</span></code> from <code class="docutils literal notranslate"><span class="pre">bulk.cell[0,0]</span></code> and
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>bulk: Atoms object, optional</strong></dt>
+<dd><p class="first last">If present, set <cite>a</cite> and <code class="docutils literal notranslate"><span class="pre">cij</span></code> from <code class="docutils literal notranslate"><span class="pre">bulk.cell[0,0]</span></code> and
 <code class="docutils literal notranslate"><span class="pre">bulk.get_calculator().get_elastic_constants(bulk)</span></code>. This means
 <cite>bulk</cite> should be a relaxed cubic unit cell.</p>
-</div></blockquote>
-<p><strong>a</strong> : float, optional</p>
-<blockquote>
-<div><p>Lattice constant</p>
-</div></blockquote>
-<p><strong>cij</strong> : array_like, optional</p>
-<blockquote>
-<div><p>6 x 6 matrix of elastic constants <span class="math notranslate">\(C_{ij}\)</span>.
+</dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">Lattice constant</p>
+</dd>
+<dt><strong>cij</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like, optional</span></dt>
+<dd><p class="first last">6 x 6 matrix of elastic constants <span class="math notranslate">\(C_{ij}\)</span>.
 Can be obtained with :meth:<a href="#id1"><span class="problematic" id="id2">`</span></a>.Potential.get_elastic_constants’.</p>
-</div></blockquote>
-<p><strong>method</strong> : str</p>
-<blockquote>
-<div><p>Which routine to use: one of “fortran” or “python”.</p>
-</div></blockquote>
-<p><strong>**extra_args</strong> : dict</p>
-<blockquote class="last">
-<div><p>Extra arguments to be passed along to python <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal notranslate"><span class="pre">elastic_fields()</span></code></a>, e.g.
+</dd>
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Which routine to use: one of “fortran” or “python”.</p>
+</dd>
+<dt><strong>**extra_args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">Extra arguments to be passed along to python <a class="reference internal" href="#quippy.elasticity.elastic_fields" title="quippy.elasticity.elastic_fields"><code class="xref py py-func docutils literal notranslate"><span class="pre">elastic_fields()</span></code></a>, e.g.
 for non-cubic cells.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -385,29 +374,29 @@ for non-cubic cells.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<blockquote>
-<div><p>Potential to use</p>
-</div></blockquote>
-<p><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<blockquote>
-<div><p>Atoms structure - should be equilibrium bulk configuation</p>
-</div></blockquote>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>arg_str for potential_calc</p>
-</div></blockquote>
-<p><strong>ii</strong> :  input int, optional</p>
-<blockquote>
-<div><p>The atom to displace (default 1)</p>
-</div></blockquote>
-<p><strong>delta</strong> :  input float, optional</p>
-<blockquote>
-<div><p>How much to displace it (default 1e-4_dp)</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd><p class="first last">Potential to use</p>
+</dd>
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd><p class="first last">Atoms structure - should be equilibrium bulk configuation</p>
+</dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">arg_str for potential_calc</p>
+</dd>
+<dt><strong>ii</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd><p class="first last">The atom to displace (default 1)</p>
+</dd>
+<dt><strong>delta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd><p class="first last">How much to displace it (default 1e-4_dp)</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_w_e</strong> :  rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_w_e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -463,15 +452,21 @@ in plane Young’s modulus (GPa).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>pot</strong> : <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</p>
-<p><strong>a</strong> :  float</p>
-<p><strong>poisson</strong> :  float</p>
-<p><strong>young</strong> :  float</p>
-<p><strong>args_str</strong> :  input string(len=-1), optional</p>
-<blockquote>
-<div><p>arg_str for potential_calc</p>
-</div></blockquote>
-<p class="last"><strong>cb</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>pot</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>poisson</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>young</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd><p class="first last">arg_str for potential_calc</p>
+</dd>
+<dt><strong>cb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -492,12 +487,20 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cc</strong> :  input rank-2 array(‘d’) with bounds (6,6)</p>
-<p><strong>l</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
-<p><strong>m</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>cc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (6,6)</span></dt>
+<dd></dd>
+<dt><strong>l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_v</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_v</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -517,11 +520,18 @@ with semiconductor devices. J. Appl. Phys., 44, 534 (1973).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>c</strong> :  input rank-2 array(‘d’) with bounds (6,6)</p>
-<p><strong>l</strong> :  input rank-1 array(‘d’) with bounds (3)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (6,6)</span></dt>
+<dd></dd>
+<dt><strong>l</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ret_e</strong> :  float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_e</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -587,12 +597,20 @@ Dislocation Nucleation at Crystal Surface Ledges</cite>, PhD Thesis, Stanford Un
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>a</strong> :  input float</p>
-<p><strong>c11</strong> :  input float, optional</p>
-<p><strong>c12</strong> :  input float, optional</p>
-<p><strong>c44</strong> :  input float, optional</p>
-<p class="last"><strong>cij</strong> :  input rank-2 array(‘d’) with bounds (6,6), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>c11</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>c12</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>c44</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>cij</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘d’) with bounds (6,6), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -668,9 +686,7 @@ Rayleight speed returned is along the first (x) axis.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -690,7 +706,7 @@ Rayleight speed returned is along the first (x) axis.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -708,7 +724,8 @@ Rayleight speed returned is along the first (x) axis.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -727,14 +744,13 @@ Rayleight speed returned is along the first (x) axis.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

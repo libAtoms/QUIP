@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Learn on the Fly embedding scheme &mdash; quippy 22731ad+ documentation</title>
+  <title>Learn on the Fly embedding scheme &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -139,7 +130,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -147,9 +138,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -268,18 +260,19 @@ implements LOTF predictor/corrector dynamics. See the <a class="reference intern
 method for a description of the algorithm.</p>
 <p>The calculator associated with <cite>Atoms</cite> should be a
 <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">quippy.potential.Potential</span></code></a> object.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.extrapolate_steps" title="quippy.lotf.LOTFDynamics.extrapolate_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extrapolate_steps</span></code></a></td>
-<td>Number of small time-steps used when extrapolating or interpolating in the LOTF predictor-corrector loop.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.state_label" title="quippy.lotf.LOTFDynamics.state_label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_label</span></code></a></td>
-<td>One-character label for current dynamical state: either “E” or “I” for extrapolation or interpolation, respectively.</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.lotf.LOTFDynamics.extrapolate_steps" title="quippy.lotf.LOTFDynamics.extrapolate_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extrapolate_steps</span></code></a></dt>
+<dd><p class="first last">Number of small time-steps used when extrapolating or interpolating in the LOTF predictor-corrector loop.</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.lotf.LOTFDynamics.state_label" title="quippy.lotf.LOTFDynamics.state_label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_label</span></code></a></dt>
+<dd><p class="first last">One-character label for current dynamical state: either “E” or “I” for extrapolation or interpolation, respectively.</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -465,33 +458,31 @@ if the Atoms’ calculator is an instance of <a class="reference internal" href=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>old_qm_list</strong> : list</p>
-<blockquote>
-<div><p>List of QM atoms at previous update</p>
-</div></blockquote>
-<p><strong>qm_centre</strong> : array with shape (3,)</p>
-<blockquote>
-<div><p>Position of the new centre of the QM region</p>
-</div></blockquote>
-<p><strong>qm_inner_radius</strong> : float</p>
-<blockquote>
-<div><p>Atoms which come within this distance of any core atom will become
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>old_qm_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">List of QM atoms at previous update</p>
+</dd>
+<dt><strong>qm_centre</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array with shape (3,)</span></dt>
+<dd><p class="first last">Position of the new centre of the QM region</p>
+</dd>
+<dt><strong>qm_inner_radius</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Atoms which come within this distance of any core atom will become
 selected for QM treatment.</p>
-</div></blockquote>
-<p><strong>qm_outer_radius</strong> : float</p>
-<blockquote>
-<div><p>Atoms stay QM until they are more than this distance from any core atom</p>
-</div></blockquote>
-<p><strong>update_marks</strong> : bool</p>
-<blockquote>
-<div><p>If true (default), call <a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms" title="quippy.potential.ForceMixingPotential.set_qm_atoms"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_qm_atoms()</span></code></a> to mark the atoms</p>
-</div></blockquote>
+</dd>
+<dt><strong>qm_outer_radius</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Atoms stay QM until they are more than this distance from any core atom</p>
+</dd>
+<dt><strong>update_marks</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If true (default), call <a class="reference internal" href="potential.html#quippy.potential.ForceMixingPotential.set_qm_atoms" title="quippy.potential.ForceMixingPotential.set_qm_atoms"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_qm_atoms()</span></code></a> to mark the atoms</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>qm_list</strong> : list</p>
-<blockquote class="last">
-<div><p>List of the new QM atom indices</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>qm_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">List of the new QM atom indices</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -545,7 +536,7 @@ creation functions.</p>
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.adjustablepotential.adjustable_potential_finalise" title="quippy.adjustablepotential.adjustable_potential_finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjustable_potential_finalise</span></code></a>()</td>
-<td>.</td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -579,13 +570,22 @@ creation functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>fitlist</strong> : <a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</p>
-<p><strong>directionn</strong> :  input int</p>
-<p><strong>spring_hops</strong> :  input int, optional</p>
-<p><strong>map</strong> :  input int, optional</p>
-<p><strong>method</strong> :  input string(len=-1), optional</p>
-<p class="last"><strong>nnonly</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>atoms_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>fitlist</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="table.html#quippy.table.Table" title="quippy.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>directionn</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>spring_hops</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>map</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>nnonly</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -601,19 +601,29 @@ creation functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms_in</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>n0</strong> :  input int</p>
-<blockquote>
-<div><p>shape(qp_force,0)</p>
-</div></blockquote>
-<p><strong>interp</strong> :  input float, optional</p>
-<p><strong>interp_space</strong> :  input int, optional</p>
-<p><strong>interp_order</strong> :  input string(len=-1), optional</p>
-<p><strong>energy</strong> :  in/output rank-0 array(float,’d’), optional</p>
-<p><strong>power</strong> :  in/output rank-0 array(float,’d’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>atoms_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>n0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd><p class="first last">shape(qp_force,0)</p>
+</dd>
+<dt><strong>interp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>interp_space</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>interp_order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>energy</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+<dt><strong>power</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(float,’d’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>force</strong> :  rank-2 array(‘d’) with bounds (3,qp_n0)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">rank-2 array(‘d’) with bounds (3,qp_n0)</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -633,9 +643,7 @@ creation functions.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -648,7 +656,7 @@ creation functions.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -666,7 +674,8 @@ creation functions.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -685,14 +694,13 @@ creation functions.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

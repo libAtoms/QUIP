@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 22731ad+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -115,6 +106,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-quippy.cube">Gaussian CUBE</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-quippy.dan">DAN visualisation code</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-quippy.imd">IMD checkpoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nmwiz-plugin-for-vmd">NMWiz plugin for VMD</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-quippy.povray">POV-ray</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#vasp">VASP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ase-supported-files-types">ASE supported files types</a></li>
@@ -154,7 +146,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -162,9 +154,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -365,15 +358,16 @@ by indexing and slicing, e.g. <code class="docutils literal notranslate"><span c
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code> object within <code class="docutils literal notranslate"><span class="pre">al</span></code> and <code class="docutils literal notranslate"><span class="pre">al[i:j]</span></code> returns objects
 from <cite>i</cite> upto but not including <cite>j</cite>. Like ordinary Python lists,
 indices start from 0 and run up to <code class="docutils literal notranslate"><span class="pre">len(al)-1</span></code>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_access</span></code></a></td>
-<td>Read only property: True if this source supports random access, False if it does not</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.io.AtomsReader.random_access" title="quippy.io.AtomsReader.random_access"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_access</span></code></a></dt>
+<dd><p class="first last">Read only property: True if this source supports random access, False if it does not</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -636,7 +630,7 @@ reading from or writing to XYZ or NetCDF files.</p>
 <td><a class="reference internal" href="#asap"><span class="std std-ref">ASAP file format</span></a></td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">pov</span></code></td>
-<td><a class="reference internal" href="#povray"><span class="std std-ref">POV-ray</span></a></td>
+<td><a class="reference internal" href="#povray"><span class="std std-ref">NMWiz plugin for VMD</span></a></td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">POSCAR</span></code></td>
 <td><a class="reference internal" href="#vasp"><span class="std std-ref">VASP</span></a> coordinates</td>
@@ -970,16 +964,28 @@ line of XYZ file, or from special variables in NetCDF files</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>properties</strong> :  input string(len=-1), optional</p>
-<p><strong>properties_array</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</p>
-<p><strong>frame</strong> :  input int, optional</p>
-<p><strong>zero</strong> :  input int, optional</p>
-<p><strong>range</strong> :  input rank-1 array(‘i’) with bounds (2), optional</p>
-<p><strong>str</strong> :  input string(len=-1), optional</p>
-<p><strong>estr</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object, optional</p>
-<p><strong>indices</strong> :  input rank-1 array(‘i’) with bounds (qp_n1), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>properties</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>properties_array</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</span></dt>
+<dd></dd>
+<dt><strong>frame</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>zero</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>range</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (2), optional</span></dt>
+<dd></dd>
+<dt><strong>str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>estr</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object, optional</span></dt>
+<dd></dd>
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (qp_n1), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1001,19 +1007,34 @@ variables in NetCDF files</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>properties</strong> :  input string(len=-1), optional</p>
-<p><strong>properties_array</strong> :  input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</p>
-<p><strong>prefix</strong> :  input string(len=-1), optional</p>
-<p><strong>int_format</strong> :  input string(len=-1), optional</p>
-<p><strong>real_format</strong> :  input string(len=-1), optional</p>
-<p><strong>frame</strong> :  input int, optional</p>
-<p><strong>shuffle</strong> :  input int, optional</p>
-<p><strong>deflate</strong> :  input int, optional</p>
-<p><strong>deflate_level</strong> :  input int, optional</p>
-<p><strong>estr</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object, optional</p>
-<p><strong>update_index</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>properties</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>properties_array</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-2 array(‘S’) with bounds (qp_n0,(*)), optional</span></dt>
+<dd></dd>
+<dt><strong>prefix</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>int_format</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>real_format</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
+<dd></dd>
+<dt><strong>frame</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>shuffle</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>deflate</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>deflate_level</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>estr</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object, optional</span></dt>
+<dd></dd>
+<dt><strong>update_index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1045,7 +1066,11 @@ variables in NetCDF files</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ret_quip_getcwd</strong> : <code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ret_quip_getcwd</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extendable_str</span></code> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1174,7 +1199,10 @@ variables in NetCDF files</p>
 <span id="asap-file-format"></span><span id="asap"></span><h2>ASAP file format<a class="headerlink" href="#module-quippy.asap" title="Permalink to this headline">¶</a></h2>
 <p>This module contains utility functions for use with the ASAP code, which is developed
 by Paul Tangney and Sandro Scandolo.</p>
-<p>Module contents for <a class="reference internal" href="#module-quippy.asap" title="quippy.asap: ASAP file reader and writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.asap</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.asap" title="quippy.asap: ASAP file reader and writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.asap</span></code></a>:
+..</p>
+<blockquote>
+<div>!! processed by numpydoc !!</div></blockquote>
 </div>
 <div class="section" id="module-quippy.atomeyewriter">
 <span id="atomeye-image-writer"></span><span id="atomeyewriter"></span><h2>AtomEye Image Writer<a class="headerlink" href="#module-quippy.atomeyewriter" title="Permalink to this headline">¶</a></h2>
@@ -1209,10 +1237,10 @@ by Paul Tangney and Sandro Scandolo.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell" title="quippy.castep.CastepCell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CastepCell</span></code></a>([cellfile,&nbsp;xml,&nbsp;atoms])</td>
-<td>Class to wrap a CASTEP cell (.</td>
+<td>Class to wrap a CASTEP cell (.cell) file</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam" title="quippy.castep.CastepParam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CastepParam</span></code></a>([paramfile,&nbsp;xml,&nbsp;atoms])</td>
-<td>Class to wrap a CASTEP parameter (.</td>
+<td>Class to wrap a CASTEP parameter (.param) file</td>
 </tr>
 </tbody>
 </table>
@@ -1230,10 +1258,10 @@ by Paul Tangney and Sandro Scandolo.</p>
 <td>Invoke castep and return True if it completed successfully</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.read_formatted_potential" title="quippy.castep.read_formatted_potential"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_formatted_potential</span></code></a>(filename)</td>
-<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .</td>
+<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .cube file.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.read_formatted_density" title="quippy.castep.read_formatted_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_formatted_density</span></code></a>(filename)</td>
-<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .</td>
+<td>Load a potential write by CASTEP pot_write_formatted() routine, and convert to a 3-dimensional FortranArray suitable for writing to a .cube file.</td>
 </tr>
 </tbody>
 </table>
@@ -1249,10 +1277,10 @@ by Paul Tangney and Sandro Scandolo.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell.read" title="quippy.castep.CastepCell.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(cellfile)</td>
-<td>Read a CASTEP .</td>
+<td>Read a CASTEP .cell file.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepCell.write" title="quippy.castep.CastepCell.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([cellfile])</td>
-<td>Write CASTEP .</td>
+<td>Write CASTEP .cell file.</td>
 </tr>
 </tbody>
 </table>
@@ -1287,13 +1315,13 @@ by Paul Tangney and Sandro Scandolo.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.read" title="quippy.castep.CastepParam.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(paramfile)</td>
-<td>Read a CASTEP .</td>
+<td>Read a CASTEP .param file.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam.read_from_castep_output" title="quippy.castep.CastepParam.read_from_castep_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_castep_output</span></code></a>(castep_output)</td>
-<td>Read user parameters from .</td>
+<td>Read user parameters from .castep output.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.write" title="quippy.castep.CastepParam.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([paramfile])</td>
-<td>Write CASTEP .</td>
+<td>Write CASTEP .param file</td>
 </tr>
 </tbody>
 </table>
@@ -1358,19 +1386,75 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 </div>
 <div class="section" id="module-quippy.cube">
 <span id="gaussian-cube"></span><span id="cube"></span><h2>Gaussian CUBE<a class="headerlink" href="#module-quippy.cube" title="Permalink to this headline">¶</a></h2>
-<p>Module contents for <a class="reference internal" href="#module-quippy.cube" title="quippy.cube: Gaussian CUBE I/O"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.cube</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.cube" title="quippy.cube: Gaussian CUBE I/O"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.cube</span></code></a>:
+..</p>
+<blockquote>
+<div>!! processed by numpydoc !!</div></blockquote>
 </div>
 <div class="section" id="module-quippy.dan">
 <span id="dan-visualisation-code"></span><span id="dan"></span><h2>DAN visualisation code<a class="headerlink" href="#module-quippy.dan" title="Permalink to this headline">¶</a></h2>
-<p>Module contents for <a class="reference internal" href="#module-quippy.dan" title="quippy.dan: DAN visualisation code writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.dan</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.dan" title="quippy.dan: DAN visualisation code writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.dan</span></code></a>:
+..</p>
+<blockquote>
+<div>!! processed by numpydoc !!</div></blockquote>
 </div>
 <div class="section" id="module-quippy.imd">
 <span id="imd-checkpoint"></span><span id="imd"></span><h2>IMD checkpoint<a class="headerlink" href="#module-quippy.imd" title="Permalink to this headline">¶</a></h2>
-<p>Module contents for <a class="reference internal" href="#module-quippy.imd" title="quippy.imd: IMD checkpoint reader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.imd</span></code></a>:</p>
+<p>Module contents for <a class="reference internal" href="#module-quippy.imd" title="quippy.imd: IMD checkpoint reader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.imd</span></code></a>:
+..</p>
+<blockquote>
+<div>!! processed by numpydoc !!</div></blockquote>
+</div>
+<div class="section" id="nmwiz-plugin-for-vmd">
+<span id="povray"></span><h2>NMWiz plugin for VMD<a class="headerlink" href="#nmwiz-plugin-for-vmd" title="Permalink to this headline">¶</a></h2>
+<p>Supports the <code class="docutils literal notranslate"><span class="pre">.nmd</span></code> format used by <a class="reference external" href="http://prody.csb.pitt.edu/">ProDy</a> and the <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/plugins/nmwiz/">NMWiz</a> plugin for
+<a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a>.  The files can be read directly into VMD to visualise a molecule’s
+normal modes.</p>
+<span class="target" id="module-quippy.nmwiz"></span><dl class="class">
+<dt id="quippy.nmwiz.NMDWriter">
+<em class="property">class </em><code class="descclassname">quippy.nmwiz.</code><code class="descname">NMDWriter</code><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writer for the <code class="docutils literal notranslate"><span class="pre">.nmd</span></code> format</p>
+<p>The Atoms object must have normal modes – both eigenvectors and
+eigenvalues (force constants in the normal-mode basis) of the
+Hessian matrix – stored in <code class="docutils literal notranslate"><span class="pre">atoms.info['hessian_eigenvalue_X']</span></code>
+and <code class="docutils literal notranslate"><span class="pre">atoms.arrays['hessian_eigenvector_X']</span></code>, where <code class="docutils literal notranslate"><span class="pre">X</span></code> ranges
+from 1 to the number of stored normal modes.</p>
+<p>This writer implements the context manager protocol, so you can
+use it like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">NMDWriter</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the associated file will be closed automatically when done.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">.nmd</span></code> file format only supports single configurations, so
+this writer doesn’t accept trajectories.</p>
+<dl class="method">
+<dt id="quippy.nmwiz.NMDWriter.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open <code class="docutils literal notranslate"><span class="pre">filename</span></code> for writing (use <code class="docutils literal notranslate"><span class="pre">-</span></code> for stdout)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.nmwiz.NMDWriter.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>atoms</em>, <em>title=u'quippy atoms'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out the atoms and modes with an optional title</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="quippy.nmwiz.NMDWriter.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the file (unnecessary if using the <code class="docutils literal notranslate"><span class="pre">with</span></code> statment)</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-quippy.povray">
-<span id="pov-ray"></span><span id="povray"></span><h2>POV-ray<a class="headerlink" href="#module-quippy.povray" title="Permalink to this headline">¶</a></h2>
-<p>Module contents for <a class="reference internal" href="#module-quippy.povray" title="quippy.povray: POV-ray script writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.povray</span></code></a>:</p>
+<span id="pov-ray"></span><h2>POV-ray<a class="headerlink" href="#module-quippy.povray" title="Permalink to this headline">¶</a></h2>
+<p>Module contents for <a class="reference internal" href="#module-quippy.povray" title="quippy.povray: POV-ray script writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.povray</span></code></a>:
+..</p>
+<blockquote>
+<div>!! processed by numpydoc !!</div></blockquote>
 </div>
 <div class="section" id="vasp">
 <span id="id3"></span><h2>VASP<a class="headerlink" href="#vasp" title="Permalink to this headline">¶</a></h2>
@@ -1548,9 +1632,7 @@ which can be used to simplify the registration process:</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1563,7 +1645,7 @@ which can be used to simplify the registration process:</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1581,7 +1663,8 @@ which can be used to simplify the registration process:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1600,14 +1683,13 @@ which can be used to simplify the registration process:</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

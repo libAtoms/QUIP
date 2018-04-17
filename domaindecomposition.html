@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>DomainDecomposition objects &mdash; quippy 22731ad+ documentation</title>
+  <title>DomainDecomposition objects &mdash; quippy ea17acf+ documentation</title>
   
 
   
@@ -27,27 +27,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="quippy 22731ad+ documentation" href="index.html"/>
-        <link rel="up" title="Quippy library reference" href="quippy.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +55,7 @@
 
           
             
-            <img src="_static/hybrid.png" class="logo" />
+            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -72,7 +63,7 @@
             
             
               <div class="version">
-                22731ad+
+                ea17acf+
               </div>
             
           
@@ -148,7 +139,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">quippy</a>
@@ -156,9 +147,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -247,10 +239,16 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>decomposition</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
-<p><strong>verlet_shell</strong> :  input float, optional</p>
-<p><strong>mode</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>decomposition</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>verlet_shell</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>mode</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -258,108 +256,109 @@
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">__init__initialise</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.
 Class is wrapper around Fortran type <code class="docutils literal notranslate"><span class="pre">DomainDecomposition</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.atoms_properties" title="quippy.atoms.DomainDecomposition.atoms_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atoms_properties</span></code></a></td>
-<td>Fields to communicate if for particles</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.center" title="quippy.atoms.DomainDecomposition.center"><code class="xref py py-obj docutils literal notranslate"><span class="pre">center</span></code></a></td>
-<td>Center of the domain</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.decomposed" title="quippy.atoms.DomainDecomposition.decomposed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decomposed</span></code></a></td>
-<td>True if domain decomposition is active</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.decomposition" title="quippy.atoms.DomainDecomposition.decomposition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decomposition</span></code></a></td>
-<td>Type of decomposition</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ghost_properties" title="quippy.atoms.DomainDecomposition.ghost_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ghost_properties</span></code></a></td>
-<td>Fields to communicate for ghosts</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ghosts_l" title="quippy.atoms.DomainDecomposition.ghosts_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ghosts_l</span></code></a></td>
-<td>particles send to the left (where they become ghosts)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ghosts_r" title="quippy.atoms.DomainDecomposition.ghosts_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ghosts_r</span></code></a></td>
-<td>particles send to the right (where they become ghosts)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.global_to_local" title="quippy.atoms.DomainDecomposition.global_to_local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">global_to_local</span></code></a></td>
-<td>Global index to local index</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.l" title="quippy.atoms.DomainDecomposition.l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">l</span></code></a></td>
-<td>Ranks of left domains in x-, y- and z-direction</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.lower" title="quippy.atoms.DomainDecomposition.lower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower</span></code></a></td>
-<td>Lower domain boundary, in fraction of the total cell</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.lower_with_border" title="quippy.atoms.DomainDecomposition.lower_with_border"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower_with_border</span></code></a></td>
-<td>Lower domain boundary, including border</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.mpi" title="quippy.atoms.DomainDecomposition.mpi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi</span></code></a></td>
-<td>MPI communicator</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_ghosts_l" title="quippy.atoms.DomainDecomposition.n_ghosts_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_ghosts_l</span></code></a></td>
-<td>length of the ghost particle lists (left)</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_ghosts_r" title="quippy.atoms.DomainDecomposition.n_ghosts_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_ghosts_r</span></code></a></td>
-<td>length of the ghost particle lists (right)</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_recv_g_tot" title="quippy.atoms.DomainDecomposition.n_recv_g_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_recv_g_tot</span></code></a></td>
-<td>Statistics: Number of total ghosts received</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_recv_p_tot" title="quippy.atoms.DomainDecomposition.n_recv_p_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_recv_p_tot</span></code></a></td>
-<td>Statistics: Number of total particles received</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_send_g_tot" title="quippy.atoms.DomainDecomposition.n_send_g_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_send_g_tot</span></code></a></td>
-<td>Statistics: Number of total ghosts send</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_send_p_tot" title="quippy.atoms.DomainDecomposition.n_send_p_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_send_p_tot</span></code></a></td>
-<td>Statistics: Number of total particles send</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.nit_g" title="quippy.atoms.DomainDecomposition.nit_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nit_g</span></code></a></td>
-<td>Statistics: Number of ghost send events</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.nit_p" title="quippy.atoms.DomainDecomposition.nit_p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nit_p</span></code></a></td>
-<td>Statistics: Number of particle send events</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ntotal" title="quippy.atoms.DomainDecomposition.ntotal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ntotal</span></code></a></td>
-<td>Number of total particles in this simulation</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.off_l" title="quippy.atoms.DomainDecomposition.off_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off_l</span></code></a></td>
-<td>Distance vector to left domain</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.off_r" title="quippy.atoms.DomainDecomposition.off_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off_r</span></code></a></td>
-<td>Distance vector to right domain</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.periodic" title="quippy.atoms.DomainDecomposition.periodic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">periodic</span></code></a></td>
-<td>Periodicity for domain decomposition</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.r" title="quippy.atoms.DomainDecomposition.r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">r</span></code></a></td>
-<td>Ranks of right domains in x-, y- and z-direction</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.recv_l" title="quippy.atoms.DomainDecomposition.recv_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recv_l</span></code></a></td>
-<td>buffer for receiving from the left</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.recv_r" title="quippy.atoms.DomainDecomposition.recv_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recv_r</span></code></a></td>
-<td>buffer for receiving from the right</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.reverse_properties" title="quippy.atoms.DomainDecomposition.reverse_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reverse_properties</span></code></a></td>
-<td>Back-communication after force computations</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.send_l" title="quippy.atoms.DomainDecomposition.send_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">send_l</span></code></a></td>
-<td>buffer for sending to the left</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.send_r" title="quippy.atoms.DomainDecomposition.send_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">send_r</span></code></a></td>
-<td>buffer for sending to the right</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.upper" title="quippy.atoms.DomainDecomposition.upper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper</span></code></a></td>
-<td>Upper domain boundary, in fraction of the total cell</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.DomainDecomposition.upper_with_border" title="quippy.atoms.DomainDecomposition.upper_with_border"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper_with_border</span></code></a></td>
-<td>Upper domain boundary, including border</td>
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.atoms_properties" title="quippy.atoms.DomainDecomposition.atoms_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atoms_properties</span></code></a></dt>
+<dd><p class="first last">Fields to communicate if for particles</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.center" title="quippy.atoms.DomainDecomposition.center"><code class="xref py py-obj docutils literal notranslate"><span class="pre">center</span></code></a></dt>
+<dd><p class="first last">Center of the domain</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.decomposed" title="quippy.atoms.DomainDecomposition.decomposed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decomposed</span></code></a></dt>
+<dd><p class="first last">True if domain decomposition is active</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.decomposition" title="quippy.atoms.DomainDecomposition.decomposition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decomposition</span></code></a></dt>
+<dd><p class="first last">Type of decomposition</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ghost_properties" title="quippy.atoms.DomainDecomposition.ghost_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ghost_properties</span></code></a></dt>
+<dd><p class="first last">Fields to communicate for ghosts</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ghosts_l" title="quippy.atoms.DomainDecomposition.ghosts_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ghosts_l</span></code></a></dt>
+<dd><p class="first last">particles send to the left (where they become ghosts)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ghosts_r" title="quippy.atoms.DomainDecomposition.ghosts_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ghosts_r</span></code></a></dt>
+<dd><p class="first last">particles send to the right (where they become ghosts)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.global_to_local" title="quippy.atoms.DomainDecomposition.global_to_local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">global_to_local</span></code></a></dt>
+<dd><p class="first last">Global index to local index</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.l" title="quippy.atoms.DomainDecomposition.l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">l</span></code></a></dt>
+<dd><p class="first last">Ranks of left domains in x-, y- and z-direction</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.lower" title="quippy.atoms.DomainDecomposition.lower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower</span></code></a></dt>
+<dd><p class="first last">Lower domain boundary, in fraction of the total cell</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.lower_with_border" title="quippy.atoms.DomainDecomposition.lower_with_border"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower_with_border</span></code></a></dt>
+<dd><p class="first last">Lower domain boundary, including border</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.mpi" title="quippy.atoms.DomainDecomposition.mpi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi</span></code></a></dt>
+<dd><p class="first last">MPI communicator</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_ghosts_l" title="quippy.atoms.DomainDecomposition.n_ghosts_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_ghosts_l</span></code></a></dt>
+<dd><p class="first last">length of the ghost particle lists (left)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_ghosts_r" title="quippy.atoms.DomainDecomposition.n_ghosts_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_ghosts_r</span></code></a></dt>
+<dd><p class="first last">length of the ghost particle lists (right)</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_recv_g_tot" title="quippy.atoms.DomainDecomposition.n_recv_g_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_recv_g_tot</span></code></a></dt>
+<dd><p class="first last">Statistics: Number of total ghosts received</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_recv_p_tot" title="quippy.atoms.DomainDecomposition.n_recv_p_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_recv_p_tot</span></code></a></dt>
+<dd><p class="first last">Statistics: Number of total particles received</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_send_g_tot" title="quippy.atoms.DomainDecomposition.n_send_g_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_send_g_tot</span></code></a></dt>
+<dd><p class="first last">Statistics: Number of total ghosts send</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.n_send_p_tot" title="quippy.atoms.DomainDecomposition.n_send_p_tot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_send_p_tot</span></code></a></dt>
+<dd><p class="first last">Statistics: Number of total particles send</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.nit_g" title="quippy.atoms.DomainDecomposition.nit_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nit_g</span></code></a></dt>
+<dd><p class="first last">Statistics: Number of ghost send events</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.nit_p" title="quippy.atoms.DomainDecomposition.nit_p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nit_p</span></code></a></dt>
+<dd><p class="first last">Statistics: Number of particle send events</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.ntotal" title="quippy.atoms.DomainDecomposition.ntotal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ntotal</span></code></a></dt>
+<dd><p class="first last">Number of total particles in this simulation</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.off_l" title="quippy.atoms.DomainDecomposition.off_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off_l</span></code></a></dt>
+<dd><p class="first last">Distance vector to left domain</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.off_r" title="quippy.atoms.DomainDecomposition.off_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off_r</span></code></a></dt>
+<dd><p class="first last">Distance vector to right domain</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.periodic" title="quippy.atoms.DomainDecomposition.periodic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">periodic</span></code></a></dt>
+<dd><p class="first last">Periodicity for domain decomposition</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.r" title="quippy.atoms.DomainDecomposition.r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">r</span></code></a></dt>
+<dd><p class="first last">Ranks of right domains in x-, y- and z-direction</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.recv_l" title="quippy.atoms.DomainDecomposition.recv_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recv_l</span></code></a></dt>
+<dd><p class="first last">buffer for receiving from the left</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.recv_r" title="quippy.atoms.DomainDecomposition.recv_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recv_r</span></code></a></dt>
+<dd><p class="first last">buffer for receiving from the right</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.reverse_properties" title="quippy.atoms.DomainDecomposition.reverse_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reverse_properties</span></code></a></dt>
+<dd><p class="first last">Back-communication after force computations</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.send_l" title="quippy.atoms.DomainDecomposition.send_l"><code class="xref py py-obj docutils literal notranslate"><span class="pre">send_l</span></code></a></dt>
+<dd><p class="first last">buffer for sending to the left</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.send_r" title="quippy.atoms.DomainDecomposition.send_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">send_r</span></code></a></dt>
+<dd><p class="first last">buffer for sending to the right</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.upper" title="quippy.atoms.DomainDecomposition.upper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper</span></code></a></dt>
+<dd><p class="first last">Upper domain boundary, in fraction of the total cell</p>
+</dd>
+<dt><a class="reference internal" href="#quippy.atoms.DomainDecomposition.upper_with_border" title="quippy.atoms.DomainDecomposition.upper_with_border"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper_with_border</span></code></a></dt>
+<dd><p class="first last">Upper domain boundary, including border</p>
+</dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -411,9 +410,14 @@ Allocate internal buffer</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>range</strong> :  input rank-1 array(‘i’) with bounds (2), optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>range</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (2), optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -431,8 +435,12 @@ to the neighboring domains (former order routine)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -449,8 +457,12 @@ to the neighboring domains (former order routine)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -469,9 +481,14 @@ the border.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>new_list</strong> :  input int</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>new_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -490,8 +507,12 @@ border size in BOPs.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -508,9 +529,17 @@ border size in BOPs.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>from</strong> : <a class="reference internal" href="#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-class docutils literal notranslate"><span class="pre">DomainDecomposition</span></code></a> object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>from</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-class docutils literal notranslate"><span class="pre">DomainDecomposition</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>to</strong> : <a class="reference internal" href="#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-class docutils literal notranslate"><span class="pre">DomainDecomposition</span></code></a> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>to</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="#quippy.atoms.DomainDecomposition" title="quippy.atoms.DomainDecomposition"><code class="xref py py-class docutils literal notranslate"><span class="pre">DomainDecomposition</span></code></a> object</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -527,8 +556,12 @@ retains an identical copy of the system.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -546,12 +579,20 @@ remains only with the atoms in its local domain.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>mpi</strong> : <a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</p>
-<p><strong>decomposition</strong> :  input rank-1 array(‘i’) with bounds (3), optional</p>
-<p><strong>verlet_shell</strong> :  input float, optional</p>
-<p><strong>mode</strong> :  input int, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>mpi</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="mpi_context.html#quippy.mpi_context.MPI_context" title="quippy.mpi_context.MPI_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPI_context</span></code></a> object, optional</span></dt>
+<dd></dd>
+<dt><strong>decomposition</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘i’) with bounds (3), optional</span></dt>
+<dd></dd>
+<dt><strong>verlet_shell</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>mode</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -568,10 +609,16 @@ remains only with the atoms in its local domain.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>at</strong> : <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
-<p><strong>border</strong> :  input float</p>
-<p><strong>verlet_shell</strong> :  input float, optional</p>
-<p class="last"><strong>error</strong> :  in/output rank-0 array(int,’i’), optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
+<dd></dd>
+<dt><strong>border</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
+<dd></dd>
+<dt><strong>verlet_shell</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
+<dd></dd>
+<dt><strong>error</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -599,10 +646,16 @@ propagated on the domain they reside in only.</dd>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>propname</strong> :  input string(len=-1)</p>
-<p><strong>comm_atoms</strong> :  input int, optional</p>
-<p><strong>comm_ghosts</strong> :  input int, optional</p>
-<p class="last"><strong>comm_reverse</strong> :  input int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>propname</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>comm_atoms</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>comm_ghosts</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+<dt><strong>comm_reverse</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
+<dd></dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -809,9 +862,7 @@ propagated on the domain they reside in only.</dd>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -824,7 +875,7 @@ propagated on the domain they reside in only.</dd>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -842,7 +893,8 @@ propagated on the domain they reside in only.</dd>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'22731ad+',
+            VERSION:'ea17acf+',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -861,14 +913,13 @@ propagated on the domain they reside in only.</dd>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
