@@ -27,7 +27,7 @@ Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
 Winfield.
 
-Copyright 2006-2016.
+Copyright 2006-2018.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
@@ -260,5 +260,5 @@ to get up and running quickly.
 
 14. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
     into library form, and then follow the instructions in the
-    [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html).
+    [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later. 
 
