@@ -267,7 +267,7 @@
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_g_to_k" title="quippy.crack.crack_g_to_k"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g_to_k</span></code></a>(g,e,v,[mode])</td>
-<td>Convert from energy release rate <span class="math notranslate">\(G\)</span> to stress intensity factor <span class="math notranslate">\(K\)</span> Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</td>
+<td>Convert from energy release rate <span class="math notranslate nohighlight">\(G\)</span> to stress intensity factor <span class="math notranslate nohighlight">\(K\)</span> Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.percolation_step" title="quippy.crack.percolation_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">percolation_step</span></code></a>(grid)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -303,7 +303,7 @@
 </td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_is_topbottom_edge_atom" title="quippy.crack.crack_is_topbottom_edge_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_is_topbottom_edge_atom</span></code></a>(slab,i,edge_gap)</td>
-<td>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is the topbottom surface of slab Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```OrigHeight/2`\)</span></td>
+<td>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is the topbottom surface of slab Topbottom surfaces are planes at <span class="math notranslate nohighlight">\(y = \pm```OrigHeight/2`\)</span></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_make_slab" title="quippy.crack.crack_make_slab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_make_slab</span></code></a>(params,classicalpot)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -328,13 +328,13 @@
 </td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_strain_to_g" title="quippy.crack.crack_strain_to_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain_to_g</span></code></a>(strain,e,v,height)</td>
-<td>Calculate energy release rate <span class="math notranslate">\(G\)</span> from strain using :math:<code class="docutils literal notranslate"><span class="pre">G</span> <span class="pre">=</span> <span class="pre">\frac{1}{2}</span> <span class="pre">\frac{E}{1-\nu^2}</span> <span class="pre">\epsilon^2</span> <span class="pre">h:math:</span></code> from thin strip result.</td>
+<td>Calculate energy release rate <span class="math notranslate nohighlight">\(G\)</span> from strain using :math:<code class="docutils literal notranslate"><span class="pre">G</span> <span class="pre">=</span> <span class="pre">\frac{1}{2}</span> <span class="pre">\frac{E}{1-\nu^2}</span> <span class="pre">\epsilon^2</span> <span class="pre">h:math:</span></code> from thin strip result.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_find_tip_coordination" title="quippy.crack.crack_find_tip_coordination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_find_tip_coordination</span></code></a>(…)</td>
-<td>Return <span class="math notranslate">\(x\)</span> coordinate of rightmost undercoordinated atom</td>
+<td>Return <span class="math notranslate nohighlight">\(x\)</span> coordinate of rightmost undercoordinated atom</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.in_ellipse" title="quippy.crack.in_ellipse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_ellipse</span></code></a>(d,ellipse)</td>
-<td>Return true if the point <code class="docutils literal notranslate"><span class="pre">d</span></code> is within an ellipse centred at the origin with the <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span>, and <span class="math notranslate">\(z\)</span> radii specifeid in the vector <code class="docutils literal notranslate"><span class="pre">ellipse</span></code>.</td>
+<td>Return true if the point <code class="docutils literal notranslate"><span class="pre">d</span></code> is within an ellipse centred at the origin with the <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span>, and <span class="math notranslate nohighlight">\(z\)</span> radii specifeid in the vector <code class="docutils literal notranslate"><span class="pre">ellipse</span></code>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_find_tip_local_energy" title="quippy.crack.crack_find_tip_local_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_find_tip_local_energy</span></code></a>(at,params)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
@@ -387,10 +387,10 @@
 <td>Rescale atoms in slab, with atoms in front of either crack tip strained in y direction by <code class="docutils literal notranslate"><span class="pre">strain</span></code> and atoms behind crack tip rigidly shifted to keep top and bottom edges flat.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_g_to_strain" title="quippy.crack.crack_g_to_strain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_g_to_strain</span></code></a>(g,e,v,height)</td>
-<td>Calculate <span class="math notranslate">\(epsilon\)</span> from <span class="math notranslate">\(G\)</span>, inverse of above formula.</td>
+<td>Calculate <span class="math notranslate nohighlight">\(epsilon\)</span> from <span class="math notranslate nohighlight">\(G\)</span>, inverse of above formula.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_k_to_g" title="quippy.crack.crack_k_to_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_k_to_g</span></code></a>(k,e,v,[mode])</td>
-<td>Convert from stress intensity factor <span class="math notranslate">\(K\)</span> to energy release rate <span class="math notranslate">\(G\)</span> Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</td>
+<td>Convert from stress intensity factor <span class="math notranslate nohighlight">\(K\)</span> to energy release rate <span class="math notranslate nohighlight">\(G\)</span> Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_update_connect" title="quippy.crack.crack_update_connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_update_connect</span></code></a>(at,params)</td>
 <td>Use hysteretic version of calc_connect() so we can use relative cutoffs Update the connectivity of a crack slab.</td>
@@ -432,7 +432,7 @@
 <td>Increase the load by adding the the load displacement field to the atomic positions.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_measure_g" title="quippy.crack.crack_measure_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_measure_g</span></code></a>(at,e,v,orig_height)</td>
-<td>Measure the current height of slab and calculate energy release rate <span class="math notranslate">\(G\)</span> from current and original heights and elastic constants <span class="math notranslate">\(E\)</span> and <span class="math notranslate">\(\nu\)</span>, using the equation :math:`` G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:`` where <span class="math notranslate">\(h_0\)</span> is the original height and <span class="math notranslate">\(h\)</span> the new height.</td>
+<td>Measure the current height of slab and calculate energy release rate <span class="math notranslate nohighlight">\(G\)</span> from current and original heights and elastic constants <span class="math notranslate nohighlight">\(E\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span>, using the equation :math:`` G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:`` where <span class="math notranslate nohighlight">\(h_0\)</span> is the original height and <span class="math notranslate nohighlight">\(h\)</span> the new height.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_k_field" title="quippy.crack.crack_k_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_k_field</span></code></a>(…)</td>
 <td>Calculate Irwin K-field stresses and/or displacements for all atoms in <code class="docutils literal notranslate"><span class="pre">at</span></code>.</td>
@@ -611,7 +611,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">atom at the core of the dislocation</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_double_ended" title="quippy.crack.CrackParams.crack_double_ended"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_double_ended</span></code></a></dt>
-<dd><p class="first last">If true, we do a double ended crack with periodic boundary conditions along <span class="math notranslate">\(x\)</span> direction.</p>
+<dd><p class="first last">If true, we do a double ended crack with periodic boundary conditions along <span class="math notranslate nohighlight">\(x\)</span> direction.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_edge_fix_tol" title="quippy.crack.CrackParams.crack_edge_fix_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_edge_fix_tol</span></code></a></dt>
 <dd><p class="first last">How close must an atom be to top or bottom to be fixed.</p>
@@ -674,7 +674,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Crack name, in format <code class="docutils literal notranslate"><span class="pre">(abc)[def]</span></code> with negative indices denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (for bar), e.g.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_num_layers" title="quippy.crack.CrackParams.crack_num_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_num_layers</span></code></a></dt>
-<dd><p class="first last">Number of primitive cells in <span class="math notranslate">\(z\)</span> direction</p>
+<dd><p class="first last">Number of primitive cells in <span class="math notranslate nohighlight">\(z\)</span> direction</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.crack_ramp_end_g" title="quippy.crack.CrackParams.crack_ramp_end_g"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_ramp_end_g</span></code></a></dt>
 <dd><p class="first last">Loading at end of ramp for the case <code class="docutils literal notranslate"><span class="pre">crack_loading=&quot;ramp&quot;</span></code></p>
@@ -767,7 +767,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Only include fit atoms that have coordination number equal to <code class="docutils literal notranslate"><span class="pre">md_eqm_coordination</span></code> (used for graphene).</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.hack_qm_zero_z_force" title="quippy.crack.CrackParams.hack_qm_zero_z_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hack_qm_zero_z_force</span></code></a></dt>
-<dd><p class="first last">Zero <span class="math notranslate">\(z\)</span> component of all forces (used for graphene)</p>
+<dd><p class="first last">Zero <span class="math notranslate nohighlight">\(z\)</span> component of all forces (used for graphene)</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.io_backup" title="quippy.crack.CrackParams.io_backup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io_backup</span></code></a></dt>
 <dd><p class="first last">If true, create backups of check files</p>
@@ -800,7 +800,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Output verbosity.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_eps_guess" title="quippy.crack.CrackParams.minim_eps_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_eps_guess</span></code></a></dt>
-<dd><p class="first last">Initial guess for line search step size <span class="math notranslate">\(\epsilon\)</span>.</p>
+<dd><p class="first last">Initial guess for line search step size <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_fire_dt0" title="quippy.crack.CrackParams.minim_fire_dt0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_fire_dt0</span></code></a></dt>
 <dd><p class="first last">If using fire_minim, the initial step size</p>
@@ -824,7 +824,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Args string to be passed to MM calc() routine</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_eps_guess" title="quippy.crack.CrackParams.minim_mm_eps_guess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_eps_guess</span></code></a></dt>
-<dd><p class="first last">Initial guess for line search <span class="math notranslate">\(\epsilon\)</span> for MM minimisation</p>
+<dd><p class="first last">Initial guess for line search <span class="math notranslate nohighlight">\(\epsilon\)</span> for MM minimisation</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.minim_mm_linminroutine" title="quippy.crack.CrackParams.minim_mm_linminroutine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minim_mm_linminroutine</span></code></a></dt>
 <dd><p class="first last">Linmin routine for MM minimisation</p>
@@ -869,7 +869,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Extra arguments passed to ForceMixing potential</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_force_periodic" title="quippy.crack.CrackParams.qm_force_periodic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_force_periodic</span></code></a></dt>
-<dd><p class="first last">Force clusters to be periodic in <span class="math notranslate">\(z\)</span> direction.</p>
+<dd><p class="first last">Force clusters to be periodic in <span class="math notranslate nohighlight">\(z\)</span> direction.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_hysteretic_buffer" title="quippy.crack.CrackParams.qm_hysteretic_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_hysteretic_buffer</span></code></a></dt>
 <dd><p class="first last">If true, manage the buffer region hysteritcally</p>
@@ -911,7 +911,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Number of transition hops used for buffer region</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.qm_vacuum_size" title="quippy.crack.CrackParams.qm_vacuum_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qm_vacuum_size</span></code></a></dt>
-<dd><p class="first last">Amount of vacuum surrounding cluster in non-periodic directions (<span class="math notranslate">\(x\)</span> and <span class="math notranslate">\(y\)</span> at least).</p>
+<dd><p class="first last">Amount of vacuum surrounding cluster in non-periodic directions (<span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> at least).</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.quasi_static_tip_move_tol" title="quippy.crack.CrackParams.quasi_static_tip_move_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quasi_static_tip_move_tol</span></code></a></dt>
 <dd><p class="first last">How far cracktip must advance before we consider fracture to have occurred.</p>
@@ -926,10 +926,10 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <dd><p class="first last">Size of region at edges of crack slab which is ignored for selection purposes.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse" title="quippy.crack.CrackParams.selection_ellipse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse</span></code></a></dt>
-<dd><p class="first last">Principal radii of selection ellipse along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> in AA{}.</p>
+<dd><p class="first last">Principal radii of selection ellipse along <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span> in AA{}.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_bias" title="quippy.crack.CrackParams.selection_ellipse_bias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_bias</span></code></a></dt>
-<dd><p class="first last">Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate">\(x\)</span> direction.</p>
+<dd><p class="first last">Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate nohighlight">\(x\)</span> direction.</p>
 </dd>
 <dt><a class="reference internal" href="#quippy.crack.CrackParams.selection_ellipse_buffer" title="quippy.crack.CrackParams.selection_ellipse_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selection_ellipse_buffer</span></code></a></dt>
 <dd><p class="first last">Difference in size between inner and outer selection ellipses, i.e.</p>
@@ -1157,7 +1157,7 @@ First we reset to default values by calling <code class="docutils literal notran
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.crack_double_ended">
 <code class="descname">crack_double_ended</code><a class="headerlink" href="#quippy.crack.CrackParams.crack_double_ended" title="Permalink to this definition">¶</a></dt>
-<dd><p>If true, we do a double ended crack with periodic boundary conditions along <span class="math notranslate">\(x\)</span> direction.</p>
+<dd><p>If true, we do a double ended crack with periodic boundary conditions along <span class="math notranslate nohighlight">\(x\)</span> direction.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1273,7 +1273,7 @@ and uniform strain field is carried out</p>
 <dt id="quippy.crack.CrackParams.crack_loading">
 <code class="descname">crack_loading</code><a class="headerlink" href="#quippy.crack.CrackParams.crack_loading" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">uniform</span></code> for constant load,
-<code class="docutils literal notranslate"><span class="pre">ramp</span></code> for linearly decreasing load along <span class="math notranslate">\(x\)</span>,
+<code class="docutils literal notranslate"><span class="pre">ramp</span></code> for linearly decreasing load along <span class="math notranslate nohighlight">\(x\)</span>,
 <code class="docutils literal notranslate"><span class="pre">kfield</span></code> for Irwin plane strain K-field,
 <code class="docutils literal notranslate"><span class="pre">interp_kfield_uniform</span></code> to linearly interpolate between k-field
 (at crack tip) and uniform at distance <code class="docutils literal notranslate"><span class="pre">crack_load_interp_length</span></code>
@@ -1290,7 +1290,7 @@ denoted by a trailing <code class="docutils literal notranslate"><span class="pr
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.crack_num_layers">
 <code class="descname">crack_num_layers</code><a class="headerlink" href="#quippy.crack.CrackParams.crack_num_layers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of primitive cells in <span class="math notranslate">\(z\)</span> direction</p>
+<dd><p>Number of primitive cells in <span class="math notranslate nohighlight">\(z\)</span> direction</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1497,7 +1497,7 @@ number equal to <code class="docutils literal notranslate"><span class="pre">md_
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.hack_qm_zero_z_force">
 <code class="descname">hack_qm_zero_z_force</code><a class="headerlink" href="#quippy.crack.CrackParams.hack_qm_zero_z_force" title="Permalink to this definition">¶</a></dt>
-<dd><p>Zero <span class="math notranslate">\(z\)</span> component of all forces (used for graphene)</p>
+<dd><p>Zero <span class="math notranslate nohighlight">\(z\)</span> component of all forces (used for graphene)</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1566,7 +1566,7 @@ files but is useful for debugging.</p>
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.minim_eps_guess">
 <code class="descname">minim_eps_guess</code><a class="headerlink" href="#quippy.crack.CrackParams.minim_eps_guess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initial guess for line search step size <span class="math notranslate">\(\epsilon\)</span>.</p>
+<dd><p>Initial guess for line search step size <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1616,7 +1616,7 @@ See <code class="docutils literal notranslate"><span class="pre">minim()</span><
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.minim_mm_eps_guess">
 <code class="descname">minim_mm_eps_guess</code><a class="headerlink" href="#quippy.crack.CrackParams.minim_mm_eps_guess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initial guess for line search <span class="math notranslate">\(\epsilon\)</span> for MM minimisation</p>
+<dd><p>Initial guess for line search <span class="math notranslate nohighlight">\(\epsilon\)</span> for MM minimisation</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1653,7 +1653,7 @@ See <code class="docutils literal notranslate"><span class="pre">minim()</span><
 <dt id="quippy.crack.CrackParams.minim_tol">
 <code class="descname">minim_tol</code><a class="headerlink" href="#quippy.crack.CrackParams.minim_tol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Target force tolerance - geometry optimisation is considered to be
-converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <code class="docutils literal notranslate"><span class="pre">tol</span></code></p>
+converged when <span class="math notranslate nohighlight">\(|\mathbf{f}|^2 &lt;\)</span> <code class="docutils literal notranslate"><span class="pre">tol</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1707,7 +1707,7 @@ converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <co
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.qm_force_periodic">
 <code class="descname">qm_force_periodic</code><a class="headerlink" href="#quippy.crack.CrackParams.qm_force_periodic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Force clusters to be periodic in <span class="math notranslate">\(z\)</span> direction.</p>
+<dd><p>Force clusters to be periodic in <span class="math notranslate nohighlight">\(z\)</span> direction.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1791,7 +1791,7 @@ converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <co
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.qm_vacuum_size">
 <code class="descname">qm_vacuum_size</code><a class="headerlink" href="#quippy.crack.CrackParams.qm_vacuum_size" title="Permalink to this definition">¶</a></dt>
-<dd><p>Amount of vacuum surrounding cluster in non-periodic directions (<span class="math notranslate">\(x\)</span> and <span class="math notranslate">\(y\)</span> at least). Unit:~AA{}.</p>
+<dd><p>Amount of vacuum surrounding cluster in non-periodic directions (<span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> at least). Unit:~AA{}.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1821,13 +1821,13 @@ converged when <span class="math notranslate">\(|\mathbf{f}|^2 &lt;\)</span> <co
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.selection_ellipse">
 <code class="descname">selection_ellipse</code><a class="headerlink" href="#quippy.crack.CrackParams.selection_ellipse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Principal radii of selection ellipse along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> in AA{}.</p>
+<dd><p>Principal radii of selection ellipse along <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span> in AA{}.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="quippy.crack.CrackParams.selection_ellipse_bias">
 <code class="descname">selection_ellipse_bias</code><a class="headerlink" href="#quippy.crack.CrackParams.selection_ellipse_bias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate">\(x\)</span> direction.</p>
+<dd><p>Shift applied to ellipses, expressed as fraction of ellipse radius in <span class="math notranslate nohighlight">\(x\)</span> direction.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1932,7 +1932,7 @@ i.e. allow constrainted atoms to move during strain application</p>
 <dt id="quippy.crack.crack_is_edge_atom">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_is_edge_atom</code><span class="sig-paren">(</span><em>slab</em>, <em>i</em>, <em>edge_gap</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_is_edge_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is near to an open surface of slab.
-Open surfaces are planes at <span class="math notranslate">\(x = \pm```OrigWidth/2`\)</span> and <span class="math notranslate">\(y = \pm```OrigHeight/2`\)</span>.
+Open surfaces are planes at <span class="math notranslate nohighlight">\(x = \pm```OrigWidth/2`\)</span> and <span class="math notranslate nohighlight">\(y = \pm```OrigHeight/2`\)</span>.
 “Near to” means within <code class="docutils literal notranslate"><span class="pre">edge_gap</span></code> of the surface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1965,8 +1965,8 @@ Open surfaces are planes at <span class="math notranslate">\(x = \pm```OrigWidth
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_parse_name</code><span class="sig-paren">(</span><em>crackname</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_parse_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse crack name in the format is (ijk)[lmn], with negative numbers
 denoted by a trailing <code class="docutils literal notranslate"><span class="pre">b</span></code> (short for <code class="docutils literal notranslate"><span class="pre">bar</span></code>), e.g. <code class="docutils literal notranslate"><span class="pre">(111)[11b0]</span></code>
-Axes of crack slab returned as <span class="math notranslate">\(3\times3\)</span> matrix with columns
-<span class="math notranslate">\(\mathbf{x}\)</span>,:math:<cite>mathbf{y}</cite>,:math:<cite>mathbf{z}</cite>.</p>
+Axes of crack slab returned as <span class="math notranslate nohighlight">\(3\times3\)</span> matrix with columns
+<span class="math notranslate nohighlight">\(\mathbf{x}\)</span>,:math:<cite>mathbf{y}</cite>,:math:<cite>mathbf{z}</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2025,7 +2025,7 @@ Axes of crack slab returned as <span class="math notranslate">\(3\times3\)</span
 <dl class="function">
 <dt id="quippy.crack.crack_g_to_k">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_g_to_k</code><span class="sig-paren">(</span><em>g</em>, <em>e</em>, <em>v</em><span class="optional">[</span>, <em>mode</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_g_to_k" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert from energy release rate <span class="math notranslate">\(G\)</span> to stress intensity factor <span class="math notranslate">\(K\)</span>
+<dd><p>Convert from energy release rate <span class="math notranslate nohighlight">\(G\)</span> to stress intensity factor <span class="math notranslate nohighlight">\(K\)</span>
 Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2126,7 +2126,7 @@ Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <dt id="quippy.crack.crack_is_topbottom_edge_atom">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_is_topbottom_edge_atom</code><span class="sig-paren">(</span><em>slab</em>, <em>i</em>, <em>edge_gap</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_is_topbottom_edge_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns true if atom <code class="docutils literal notranslate"><span class="pre">i</span></code> is the topbottom surface of slab
-Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```OrigHeight/2`\)</span></p>
+Topbottom surfaces are planes at <span class="math notranslate nohighlight">\(y = \pm```OrigHeight/2`\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2222,13 +2222,13 @@ Topbottom surfaces are planes at <span class="math notranslate">\(y = \pm```Orig
 <dl class="function">
 <dt id="quippy.crack.crack_strain_to_g">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_strain_to_g</code><span class="sig-paren">(</span><em>strain</em>, <em>e</em>, <em>v</em>, <em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_strain_to_g" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate energy release rate <span class="math notranslate">\(G\)</span> from strain using
+<dd><p>Calculate energy release rate <span class="math notranslate nohighlight">\(G\)</span> from strain using
 :math:<code class="docutils literal notranslate"><span class="pre">G</span> <span class="pre">=</span> <span class="pre">\frac{1}{2}</span> <span class="pre">\frac{E}{1-\nu^2}</span> <span class="pre">\epsilon^2</span> <span class="pre">h:math:</span></code>
 from thin strip result. Quantities are:
-<code class="docutils literal notranslate"><span class="pre">strain</span></code>,:math:<cite>epsilon</cite>, dimensionless ratio <span class="math notranslate">\(\frac{\Delta y}{y}\)</span>;
-<code class="docutils literal notranslate"><span class="pre">E</span></code>, <span class="math notranslate">\(E\)</span>,  Young’s modulus, GPa;
-<code class="docutils literal notranslate"><span class="pre">v</span></code>, <span class="math notranslate">\(\nu\)</span>, Poisson ratio, dimensionless;
-<code class="docutils literal notranslate"><span class="pre">height</span></code>, <span class="math notranslate">\(h\)</span> AA{}, 10:math:<cite>^{-10}`~m;
+<code class="docutils literal notranslate"><span class="pre">strain</span></code>,:math:<cite>epsilon</cite>, dimensionless ratio <span class="math notranslate nohighlight">\(\frac{\Delta y}{y}\)</span>;
+<code class="docutils literal notranslate"><span class="pre">E</span></code>, <span class="math notranslate nohighlight">\(E\)</span>,  Young’s modulus, GPa;
+<code class="docutils literal notranslate"><span class="pre">v</span></code>, <span class="math notranslate nohighlight">\(\nu\)</span>, Poisson ratio, dimensionless;
+<code class="docutils literal notranslate"><span class="pre">height</span></code>, <span class="math notranslate nohighlight">\(h\)</span> AA{}, 10:math:<cite>^{-10}`~m;
 ``G`</cite>, Energy release rate, J/m:math:<cite>^2</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2261,7 +2261,7 @@ from thin strip result. Quantities are:
 <dl class="function">
 <dt id="quippy.crack.crack_find_tip_coordination">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_find_tip_coordination</code><span class="sig-paren">(</span><em>at</em>, <em>params</em><span class="optional">[</span>, <em>n_tip_atoms</em>, <em>tip_indices</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_find_tip_coordination" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <span class="math notranslate">\(x\)</span> coordinate of rightmost undercoordinated atom</p>
+<dd><p>Return <span class="math notranslate nohighlight">\(x\)</span> coordinate of rightmost undercoordinated atom</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2294,7 +2294,7 @@ from thin strip result. Quantities are:
 <dt id="quippy.crack.in_ellipse">
 <code class="descclassname">quippy.crack.</code><code class="descname">in_ellipse</code><span class="sig-paren">(</span><em>d</em>, <em>ellipse</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.in_ellipse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return true if the point <code class="docutils literal notranslate"><span class="pre">d</span></code> is within an ellipse centred at the origin
-with the <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span>, and <span class="math notranslate">\(z\)</span> radii specifeid in the vector <code class="docutils literal notranslate"><span class="pre">ellipse</span></code>.</p>
+with the <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span>, and <span class="math notranslate nohighlight">\(z\)</span> radii specifeid in the vector <code class="docutils literal notranslate"><span class="pre">ellipse</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2423,7 +2423,7 @@ with the <span class="math notranslate">\(x\)</span>, <span class="math notransl
 <dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
 <dd></dd>
 <dt><strong>ellipse</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
-<dd><p class="first last">Principal radii of ellipse in <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span> directions</p>
+<dd><p class="first last">Principal radii of ellipse in <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span> directions</p>
 </dd>
 <dt><strong>ellipse_bias</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input rank-1 array(‘d’) with bounds (3)</span></dt>
 <dd><p class="first last">Shift ellipse, positive values forward</p>
@@ -2518,7 +2518,7 @@ avoid creation of defects.</p>
 <dl class="function">
 <dt id="quippy.crack.crack_g_to_strain">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_g_to_strain</code><span class="sig-paren">(</span><em>g</em>, <em>e</em>, <em>v</em>, <em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_g_to_strain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate <span class="math notranslate">\(epsilon\)</span> from <span class="math notranslate">\(G\)</span>, inverse of above formula.
+<dd><p>Calculate <span class="math notranslate nohighlight">\(epsilon\)</span> from <span class="math notranslate nohighlight">\(G\)</span>, inverse of above formula.
 Units are as the same as <code class="docutils literal notranslate"><span class="pre">crack_strain_to_g</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2551,7 +2551,7 @@ Units are as the same as <code class="docutils literal notranslate"><span class=
 <dl class="function">
 <dt id="quippy.crack.crack_k_to_g">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_k_to_g</code><span class="sig-paren">(</span><em>k</em>, <em>e</em>, <em>v</em><span class="optional">[</span>, <em>mode</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_k_to_g" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert from stress intensity factor <span class="math notranslate">\(K\)</span> to energy release rate <span class="math notranslate">\(G\)</span>
+<dd><p>Convert from stress intensity factor <span class="math notranslate nohighlight">\(K\)</span> to energy release rate <span class="math notranslate nohighlight">\(G\)</span>
 Units: G (J/m:math:<cite>^2</cite>), E (GPa), K (Pa sqrt(m))</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2711,10 +2711,10 @@ G and stores it in the atom parameter dictionary.</p>
 <dt id="quippy.crack.crack_measure_g">
 <code class="descclassname">quippy.crack.</code><code class="descname">crack_measure_g</code><span class="sig-paren">(</span><em>at</em>, <em>e</em>, <em>v</em>, <em>orig_height</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.crack_measure_g" title="Permalink to this definition">¶</a></dt>
 <dd><p>Measure the current height of slab and calculate
-energy release rate <span class="math notranslate">\(G\)</span> from current and original
-heights and elastic constants <span class="math notranslate">\(E\)</span> and <span class="math notranslate">\(\nu\)</span>, using the equation
+energy release rate <span class="math notranslate nohighlight">\(G\)</span> from current and original
+heights and elastic constants <span class="math notranslate nohighlight">\(E\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span>, using the equation
 :math:`` G = frac{1}{2} frac{E}{1-nu^2} frac{{h - h_0}^2}{h_0} :math:``
-where <span class="math notranslate">\(h_0\)</span> is the original height and <span class="math notranslate">\(h\)</span> the new height.
+where <span class="math notranslate nohighlight">\(h_0\)</span> is the original height and <span class="math notranslate nohighlight">\(h\)</span> the new height.
 Otherwise, symbols and units are the same as in <code class="docutils literal notranslate"><span class="pre">crack_strain_to_g</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2752,8 +2752,8 @@ Atomic positions should be the original undistorted bulk crystal positions.
 <code class="docutils literal notranslate"><span class="pre">YoungsModulus</span></code> and <code class="docutils literal notranslate"><span class="pre">PoissonRatio_yx</span></code> parameters are extracted from <code class="docutils literal notranslate"><span class="pre">at</span></code>, along
 with <code class="docutils literal notranslate"><span class="pre">CrackPos</span></code> to specify the location of the crack tip. If neither <code class="docutils literal notranslate"><span class="pre">sig</span></code> nor <code class="docutils literal notranslate"><span class="pre">disp</span></code>
 are present thenn properties are added to at if do_disp or do_sig are true.
-Stress is in 6 component Voigt notation: <span class="math notranslate">\(1=xx, 2=yy, 3=zz, 4=yz, 5=zx\)</span> and <span class="math notranslate">\(6=xy\)</span>, and
-displacement is a Cartesian vector <span class="math notranslate">\((u_x,u_y,u_z)\)</span>.</p>
+Stress is in 6 component Voigt notation: <span class="math notranslate nohighlight">\(1=xx, 2=yy, 3=zz, 4=yz, 5=zx\)</span> and <span class="math notranslate nohighlight">\(6=xy\)</span>, and
+displacement is a Cartesian vector <span class="math notranslate nohighlight">\((u_x,u_y,u_z)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3267,7 +3267,7 @@ have the same meaning as there.</p>
 <p>Firstly a fit to the Irwin <cite>K</cite>-field solution is carried out using
 <a class="reference internal" href="#quippy.crack.fit_crack_stress_field" title="quippy.crack.fit_crack_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_crack_stress_field()</span></code></a>, and parameters have the same
 meaning as for that function. Then plots of the
-<span class="math notranslate">\(\sigma_{xx}\)</span>, <span class="math notranslate">\(\sigma_{yy}\)</span>, <span class="math notranslate">\(\sigma_{xy}\)</span>
+<span class="math notranslate nohighlight">\(\sigma_{xx}\)</span>, <span class="math notranslate nohighlight">\(\sigma_{yy}\)</span>, <span class="math notranslate nohighlight">\(\sigma_{xy}\)</span>
 fields are produced for atomistic and continuum cases, and for the
 residual error after fitting.</p>
 </dd></dl>
@@ -3276,8 +3276,8 @@ residual error after fitting.</p>
 <dt id="quippy.crack.thin_strip_displacement_y">
 <code class="descclassname">quippy.crack.</code><code class="descname">thin_strip_displacement_y</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>strain</em>, <em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#thin_strip_displacement_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.thin_strip_displacement_y" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return vertical displacement ramp used to apply initial strain to slab</p>
-<p>Strain is increased from 0 to strain over distance <span class="math notranslate">\(a &lt;= x &lt;= b\)</span>.
-Region <span class="math notranslate">\(x &lt; a\)</span> is rigidly shifted up/down by <code class="docutils literal notranslate"><span class="pre">strain*height/2</span></code>.</p>
+<p>Strain is increased from 0 to strain over distance <span class="math notranslate nohighlight">\(a &lt;= x &lt;= b\)</span>.
+Region <span class="math notranslate nohighlight">\(x &lt; a\)</span> is rigidly shifted up/down by <code class="docutils literal notranslate"><span class="pre">strain*height/2</span></code>.</p>
 <p>Here is an example of how to use this function on an artificial
 2D square atomic lattice. The positions are plotted before (left)
 and after (right) applying the displacement, and the horizontal and

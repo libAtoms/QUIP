@@ -254,13 +254,13 @@ and the syntax is very similar to Fortran.</p>
 <h2>Starting a fracture simulation<a class="headerlink" href="#starting-a-fracture-simulation" title="Permalink to this headline">¶</a></h2>
 <p>To maximise the amount of progress that we can make in the hands-on
 session, the first task is to get a fracture simulation running.</p>
-<p>We’re going to be modelling a crack in <span class="math notranslate">\(\alpha\)</span>-quartz opening
-on the basal plane <span class="math notranslate">\((0001)\)</span>, with the crack front parallel to
-the <span class="math notranslate">\([\bar{1}10]\)</span> direction. The input structure is an
-<code class="xref download docutils literal notranslate"><span class="pre">XYZ</span> <span class="pre">file</span></code> contains a <span class="math notranslate">\(150~\AA
+<p>We’re going to be modelling a crack in <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz opening
+on the basal plane <span class="math notranslate nohighlight">\((0001)\)</span>, with the crack front parallel to
+the <span class="math notranslate nohighlight">\([\bar{1}10]\)</span> direction. The input structure is an
+<code class="xref download docutils literal notranslate"><span class="pre">XYZ</span> <span class="pre">file</span></code> contains a <span class="math notranslate nohighlight">\(150~\AA
 \times 50 \AA\)</span> crack system with around 4000 atoms. The <cite>y</cite> axis is
-aligned with the <span class="math notranslate">\((0001)\)</span> plane, and the <cite>z</cite> axis with the
-<span class="math notranslate">\([\bar{1}10]\)</span> direction. The system contains a seed crack under
+aligned with the <span class="math notranslate nohighlight">\((0001)\)</span> plane, and the <cite>z</cite> axis with the
+<span class="math notranslate nohighlight">\([\bar{1}10]\)</span> direction. The system contains a seed crack under
 uniaxial tension in the <cite>y</cite> direction with a strain of 23%.</p>
 <a class="reference internal image-reference" href="Tutorials/quartz_seed_crack.png"><img alt="Tutorials/quartz_seed_crack.png" class="align-center" src="Tutorials/quartz_seed_crack.png" style="width: 600px;" /></a>
 <p>Download the following input files:</p>
@@ -358,14 +358,14 @@ primitive cell using <cite>quippy</cite>.</p>
 In [1]: from quippy import *
 </pre></div>
 </div>
-<p>Construct an <span class="math notranslate">\(\alpha\)</span>-quartz primitive unit cell and save it to
+<p>Construct an <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz primitive unit cell and save it to
 an XYZ file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aq</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.84038097073</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">5.3285240037</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="mf">0.464175616171</span><span class="p">,</span>
   <span class="n">x</span><span class="o">=</span><span class="mf">0.411742710542</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.278727453998</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.109736032769</span><span class="p">)</span>
 <span class="n">aq</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;quartz.xyz&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here <cite>a</cite> and <cite>c</cite> are the lattice parameters (in <span class="math notranslate">\(\AA\)</span>), <cite>u</cite> is
+<p>Here <cite>a</cite> and <cite>c</cite> are the lattice parameters (in <span class="math notranslate nohighlight">\(\AA\)</span>), <cite>u</cite> is
 the internal displacement of the silicon atoms and <cite>x</cite>, <cite>y</cite>, and <cite>z</cite>
 the internal coordinates of the oxygens (see image below).</p>
 <a class="reference internal image-reference" href="Tutorials/quartz_unit_cell.png"><img alt="Tutorials/quartz_unit_cell.png" class="align-center" src="Tutorials/quartz_unit_cell.png" style="width: 300px;" /></a>
@@ -407,23 +407,23 @@ vectors (<cite>a</cite> and <cite>b</cite>) resulting in 36 atoms.</p>
 <div class="section" id="calculating-elastic-properties">
 <h2>Calculating Elastic Properties<a class="headerlink" href="#calculating-elastic-properties" title="Permalink to this headline">¶</a></h2>
 <p>In order to predict the onset and velocity of fracture, we need to
-determine the values of the Young’s modulus <span class="math notranslate">\(E\)</span>, the Poisson
-ratio <span class="math notranslate">\(\nu\)</span>, surface energy density <span class="math notranslate">\(\gamma\)</span> and the
-Rayleigh Wave speed <span class="math notranslate">\(c_R\)</span>. These are all properties of the
+determine the values of the Young’s modulus <span class="math notranslate nohighlight">\(E\)</span>, the Poisson
+ratio <span class="math notranslate nohighlight">\(\nu\)</span>, surface energy density <span class="math notranslate nohighlight">\(\gamma\)</span> and the
+Rayleigh Wave speed <span class="math notranslate nohighlight">\(c_R\)</span>. These are all properties of the
 classical potential which in this case is a short-ranged version of
 the TS polarisable potential (see <a class="reference external" href="http://jcp.aip.org/resource/1/jcpsa6/v133/i9/p094102_s1">this paper</a> in
 <em>J. Chem. Phys.</em> for more about this potential).</p>
-<p>Apart from <span class="math notranslate">\(\gamma\)</span>, all of these quantities can be obtained
-from the <span class="math notranslate">\(6 \times 6\)</span> matrix of elastic constants
-<span class="math notranslate">\(C_{ij}\)</span>, so we will start by calculating this.</p>
-<p><span class="math notranslate">\(C\)</span> is defined by <span class="math notranslate">\(\bm\sigma = C\bm\epsilon\)</span> where <span class="math notranslate">\(\bm\sigma\)</span> and
-<span class="math notranslate">\(\bm\epsilon\)</span> are six component stress and strain vectors following
+<p>Apart from <span class="math notranslate nohighlight">\(\gamma\)</span>, all of these quantities can be obtained
+from the <span class="math notranslate nohighlight">\(6 \times 6\)</span> matrix of elastic constants
+<span class="math notranslate nohighlight">\(C_{ij}\)</span>, so we will start by calculating this.</p>
+<p><span class="math notranslate nohighlight">\(C\)</span> is defined by <span class="math notranslate nohighlight">\(\bm\sigma = C\bm\epsilon\)</span> where <span class="math notranslate nohighlight">\(\bm\sigma\)</span> and
+<span class="math notranslate nohighlight">\(\bm\epsilon\)</span> are six component stress and strain vectors following
 the Voigt convention:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\bm\sigma  = \left( \sigma_{xx}, \sigma_{yy}, \sigma_{zz},
     \sigma_{yz}, \sigma_{xz}, \sigma_{xy} \right)\\\bm\epsilon = \left( \varepsilon_{xx}, \varepsilon_{yy}, \varepsilon_{zz},
     2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)\end{aligned}\end{align} \]</div>
-<p>The simplest way to calculate <span class="math notranslate">\(C\)</span> with <cite>QUIP</cite> is to use the
+<p>The simplest way to calculate <span class="math notranslate nohighlight">\(C\)</span> with <cite>QUIP</cite> is to use the
 command line QUIP <cite>eval</cite> program. You will need the file <cite>quartz.xyz</cite>
 you made earlier, as well as an <code class="xref download docutils literal notranslate"><span class="pre">XML</span> <span class="pre">file</span></code>
 containing the parameters of the classical potential:</p>
@@ -445,9 +445,9 @@ matrix into <cite>quippy</cite> using the command</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;cij.dat&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Extension</strong>: For trigonal crystals like <span class="math notranslate">\(\alpha\)</span>-quartz, there
-are only actually 6 independent values in the <span class="math notranslate">\(C\)</span> matrix:</p>
-<div class="math notranslate">
+<p><strong>Extension</strong>: For trigonal crystals like <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz, there
+are only actually 6 independent values in the <span class="math notranslate nohighlight">\(C\)</span> matrix:</p>
+<div class="math notranslate nohighlight">
 \[\begin{split}C = \left(
 \begin{array}{cccccc}
 C_{11} &amp; C_{12} &amp; C_{13} &amp; C_{14} &amp; 0 &amp; 0\\
@@ -458,12 +458,12 @@ C_{14} &amp; -C_{14} &amp; 0 &amp; C_{44} &amp; 0 &amp; 0 \\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; C_{14} &amp; C_{66}
 \end{array}
 \right)\end{split}\]</div>
-<p>where <span class="math notranslate">\(C_{66}\)</span> is given by <span class="math notranslate">\(\frac{1}{2}(C_{11} -
+<p>where <span class="math notranslate nohighlight">\(C_{66}\)</span> is given by <span class="math notranslate nohighlight">\(\frac{1}{2}(C_{11} -
 C_{12})\)</span>. We can exploit this symmetry to get all these values using
-only two strain patterns: <span class="math notranslate">\(\epsilon_{xx}\)</span> and
-<span class="math notranslate">\(\epsilon_{yy}+\epsilon_{zz}\)</span>.</p>
+only two strain patterns: <span class="math notranslate nohighlight">\(\epsilon_{xx}\)</span> and
+<span class="math notranslate nohighlight">\(\epsilon_{yy}+\epsilon_{zz}\)</span>.</p>
 <p>If you like, you could try using the following <cite>quippy</cite> code to
-evaluate <span class="math notranslate">\(C\)</span> taking the cystal symmetry into account to see how
+evaluate <span class="math notranslate nohighlight">\(C\)</span> taking the cystal symmetry into account to see how
 the results differ from those obtained with <cite>eval</cite>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP TS&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;TS_params.xml&#39;</span><span class="p">)</span>
 <span class="n">C</span> <span class="o">=</span> <span class="n">elastic_constants</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">aq</span><span class="p">,</span> <span class="n">graphics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="s1">&#39;trigonal_low&#39;</span><span class="p">)</span>
@@ -471,7 +471,7 @@ the results differ from those obtained with <cite>eval</cite>.</p>
 </div>
 <p>Which components are most different? Why do you think this is? Think
 about the effect of internal relaxation: compare with the values of
-the <span class="math notranslate">\(C^0_{ij}\)</span> tensor obtained if internal relaxation is not
+the <span class="math notranslate nohighlight">\(C^0_{ij}\)</span> tensor obtained if internal relaxation is not
 allowed (use the <cite>c0ij</cite> option to the <cite>eval</cite> program). Why do you
 think some components are particularily sensitive to internal
 relaxation?</p>
@@ -479,22 +479,22 @@ relaxation?</p>
 <h3>Young’s Modulus and Poisson Ratio<a class="headerlink" href="#young-s-modulus-and-poisson-ratio" title="Permalink to this headline">¶</a></h3>
 <p>To calculate the effective Young’s modulus and Poisson ratio for our
 quartz fracture simulation, we need to rotate the elastic constant
-matrix to align it with the axes of our <span class="math notranslate">\((0001)[\bar{1}10]\)</span>
+matrix to align it with the axes of our <span class="math notranslate nohighlight">\((0001)[\bar{1}10]\)</span>
 fracture geometry. You can create the required rotation matrix using:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">(</span><span class="n">aq</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="nb">print</span> <span class="n">R</span>
 </pre></div>
 </div>
-<p>Next we transform <span class="math notranslate">\(C\)</span> using the rotation matrix, and calculate
-the compliance matrix <span class="math notranslate">\(S = C^{-1}\)</span>:</p>
+<p>Next we transform <span class="math notranslate nohighlight">\(C\)</span> using the rotation matrix, and calculate
+the compliance matrix <span class="math notranslate nohighlight">\(S = C^{-1}\)</span>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C_eff</span> <span class="o">=</span> <span class="n">transform_elasticity</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
 <span class="n">S_eff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">C_eff</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><cite>C</cite> transforms as a rank-4 tensor since the full relation between
-stress and strain is <span class="math notranslate">\(\sigma_{ij} = c_{ijkl} \epsilon_{kl}\)</span>,
+stress and strain is <span class="math notranslate nohighlight">\(\sigma_{ij} = c_{ijkl} \epsilon_{kl}\)</span>,
 meaning that the transformed tensor is</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[c'_{ijkl} = \sum_{p,q,r,s = 1}^{3} R_{pi}R_{qj}R_{rk}R_{sl} c_{pqrs}\]</div>
 <p>Finally we can work out the values of the effective Young’s modulus
 and Poisson ratio in the standard way from the components of the
@@ -512,7 +512,7 @@ compliance matrix:</p>
 </pre></div>
 </div>
 <p>Open <cite>quartz_rotated.xyz</cite> in AtomEye and confirm that it is oriented
-so that the <span class="math notranslate">\((0001)\)</span> surface is aligned with the vertical (<cite>y</cite>)
+so that the <span class="math notranslate nohighlight">\((0001)\)</span> surface is aligned with the vertical (<cite>y</cite>)
 axis like the fracture system or <cite>quartz_0001.xyz</cite>, pictured
 below. Use <cite>eval</cite> to directly compute the elastic constant matrix
 of the rotated cell. How well does this matrix compare to <cite>C_eff</cite>?</p>
@@ -520,9 +520,9 @@ of the rotated cell. How well does this matrix compare to <cite>C_eff</cite>?</p
 <div class="section" id="surface-energy">
 <h3>Surface Energy<a class="headerlink" href="#surface-energy" title="Permalink to this headline">¶</a></h3>
 <p>The file <code class="xref download docutils literal notranslate"><span class="pre">quartz_0001.xyz</span></code> contains a 54 atom unit cell for
-the (0001) surface of <span class="math notranslate">\(\alpha\)</span>-quartz (shown below). Use either
+the (0001) surface of <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz (shown below). Use either
 the QUIP <cite>eval</cite> program or <cite>quippy</cite> to calculate the surface energy
-density <span class="math notranslate">\(\gamma\)</span> predicted by our classical potential for this
+density <span class="math notranslate nohighlight">\(\gamma\)</span> predicted by our classical potential for this
 surface.</p>
 <img alt="Tutorials/quartz_0001.png" class="align-center" src="Tutorials/quartz_0001.png" />
 <p>If you use <cite>eval</cite>, use the <cite>E</cite> command line option to get the program
@@ -535,16 +535,16 @@ more details.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The energy unit of QUIP are electron volt (eV), and the distance
-units are Angstrom (<span class="math notranslate">\(\AA\)</span>).</p>
+units are Angstrom (<span class="math notranslate nohighlight">\(\AA\)</span>).</p>
 </div>
 <p><strong>Hint</strong>: you can use the expression</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\gamma = \frac{E_{surf} - E_{bulk}}{2A}\]</div>
-<p>where <span class="math notranslate">\(E_{surf}\)</span> and <span class="math notranslate">\(E_{bulk}\)</span> are the energies of
+<p>where <span class="math notranslate nohighlight">\(E_{surf}\)</span> and <span class="math notranslate nohighlight">\(E_{bulk}\)</span> are the energies of
 surface and bulk configurations containing the same number of atoms,
-and <span class="math notranslate">\(A\)</span> is the area of the open surface (with a factor of two
+and <span class="math notranslate nohighlight">\(A\)</span> is the area of the open surface (with a factor of two
 because there are two open surfaces in this unit cell).</p>
-<p>You should get a value for <span class="math notranslate">\(\gamma\)</span> of around 3.5 J/m<sup>2</sup>.</p>
+<p>You should get a value for <span class="math notranslate nohighlight">\(\gamma\)</span> of around 3.5 J/m<sup>2</sup>.</p>
 <p><strong>Extension</strong>: what effect does relaxing the atomic positions have on
 the surface energy? (use the <cite>relax</cite> argument to the <cite>eval</cite>
 program, or the <code class="xref py py-meth docutils literal notranslate"><span class="pre">minim()</span></code> function in <cite>quippy</cite>). What
@@ -560,14 +560,14 @@ onset of fracture, relaxed or unrelaxed?</p>
 <h3>Energy Release Rate for Static Fracture<a class="headerlink" href="#energy-release-rate-for-static-fracture" title="Permalink to this headline">¶</a></h3>
 <p>According to continuum elasticity, the strain energy release rate of an
 advancing crack is defined by</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[G = - \frac{\partial U_E}{\partial c}\]</div>
-<p>where <span class="math notranslate">\(U_E\)</span> is the total strain energy and <span class="math notranslate">\(c\)</span> is the crack length.
+<p>where <span class="math notranslate nohighlight">\(U_E\)</span> is the total strain energy and <span class="math notranslate nohighlight">\(c\)</span> is the crack length.
 The well-known Griffith criteria uses an energy-balance argument to
-equate the critical value of <span class="math notranslate">\(G\)</span> at which fracture can first occur to
+equate the critical value of <span class="math notranslate nohighlight">\(G\)</span> at which fracture can first occur to
 the energy required to create two new surfaces.</p>
 <p>According to Griffith, we should expect crack propagation to become
-favourable for <span class="math notranslate">\(G &gt; 2\gamma\)</span>, where <span class="math notranslate">\(\gamma\)</span> is the
+favourable for <span class="math notranslate nohighlight">\(G &gt; 2\gamma\)</span>, where <span class="math notranslate nohighlight">\(\gamma\)</span> is the
 surface energy density.</p>
 </div>
 <div class="section" id="calculating-g-for-a-thin-strip">
@@ -579,36 +579,36 @@ fracture simulations, with the top and bottom edges fixed.</p>
 does not depend on the crack length, and can be found analytically by
 considering the energetics of an advancing crack.</p>
 <p>The horizontal edges of the strip are given a uniform normal
-displacement <span class="math notranslate">\(\delta\)</span>, so the applied strain is
-<span class="math notranslate">\(\epsilon_0 = \delta / h\)</span>.  Far ahead of the crack, the strip is
-in uniaxial tension: <span class="math notranslate">\(\epsilon_{yy} \to \epsilon_0\)</span> as <span class="math notranslate">\(x
+displacement <span class="math notranslate nohighlight">\(\delta\)</span>, so the applied strain is
+<span class="math notranslate nohighlight">\(\epsilon_0 = \delta / h\)</span>.  Far ahead of the crack, the strip is
+in uniaxial tension: <span class="math notranslate nohighlight">\(\epsilon_{yy} \to \epsilon_0\)</span> as <span class="math notranslate nohighlight">\(x
 \to \infty\)</span>.</p>
-<p>The stress far ahead of the crack is given by <span class="math notranslate">\(\sigma_{0} = E'
+<p>The stress far ahead of the crack is given by <span class="math notranslate nohighlight">\(\sigma_{0} = E'
 \epsilon_{0}\)</span>, and therefore the elastic energy per unit length and
 per unit thickness far ahead of the crack tip is</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[W_\infty = \frac{1}{2}E'\epsilon_0^2\cdot 2h = \frac{\delta^2 E'}{h}\]</div>
-<p>where <span class="math notranslate">\(E'\)</span> is the effective Young’s modulus.</p>
+<p>where <span class="math notranslate nohighlight">\(E'\)</span> is the effective Young’s modulus.</p>
 <p>Far behind the tip, the energy density is zero. Since no energy
 disappears through the clamped edges, if the crack is to advance by
 unit distance, a vertical strip of material with energy density
-<span class="math notranslate">\(W_\infty\)</span> is effectively replaced by a strip with energy
+<span class="math notranslate nohighlight">\(W_\infty\)</span> is effectively replaced by a strip with energy
 density zero.</p>
-<p>The energy supplied to the crack tip is therefore equal to <span class="math notranslate">\(W_\infty\)</span>,
+<p>The energy supplied to the crack tip is therefore equal to <span class="math notranslate nohighlight">\(W_\infty\)</span>,
 so the energy release rate is simply</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[G = W_\infty = \frac{\delta^2 E'}{h}\]</div>
-<p>In our simulations we will use periodic boundary conditions in the <span class="math notranslate">\(z\)</span>
-direction, so we have plane strain loading (<span class="math notranslate">\(\epsilon_{zz} = 0\)</span>),
-which means that the effective Young’s modulus <span class="math notranslate">\(E'\)</span> is given by
-<span class="math notranslate">\(E/(1-\nu^2)\)</span>, where <span class="math notranslate">\(E\)</span> is the Young’s modulus in the <span class="math notranslate">\(y\)</span> relevant
-direction and <span class="math notranslate">\(\nu\)</span> is the Poisson ratio, so finally we have</p>
-<div class="math notranslate">
+<p>In our simulations we will use periodic boundary conditions in the <span class="math notranslate nohighlight">\(z\)</span>
+direction, so we have plane strain loading (<span class="math notranslate nohighlight">\(\epsilon_{zz} = 0\)</span>),
+which means that the effective Young’s modulus <span class="math notranslate nohighlight">\(E'\)</span> is given by
+<span class="math notranslate nohighlight">\(E/(1-\nu^2)\)</span>, where <span class="math notranslate nohighlight">\(E\)</span> is the Young’s modulus in the <span class="math notranslate nohighlight">\(y\)</span> relevant
+direction and <span class="math notranslate nohighlight">\(\nu\)</span> is the Poisson ratio, so finally we have</p>
+<div class="math notranslate nohighlight">
 \[G = \frac{E \delta^2}{(1- \nu^2)h} = \frac{E \epsilon_0^2 h}{1 - \nu^2}\]</div>
 <p>Use your values for the Young’s modulus, Poisson ratio and surface
-energy to calculate the value of <span class="math notranslate">\(G\)</span> (in units of J/m<sup>2</sup>)
-and strain <span class="math notranslate">\(\epsilon\)</span> at which a sample of <span class="math notranslate">\(\alpha\)</span>-quartz
-with a height of 50 <span class="math notranslate">\(\AA\)</span> is expected to fracture according to
+energy to calculate the value of <span class="math notranslate nohighlight">\(G\)</span> (in units of J/m<sup>2</sup>)
+and strain <span class="math notranslate nohighlight">\(\epsilon\)</span> at which a sample of <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz
+with a height of 50 <span class="math notranslate nohighlight">\(\AA\)</span> is expected to fracture according to
 the continuum Griffith criterium. How does this compare to the initial
 strain we applied to our fracture specimen?</p>
 </div>
@@ -660,28 +660,28 @@ cell it will not work correctly).</p>
 <h2>Energy Release Rate for Dynamic Fracture<a class="headerlink" href="#energy-release-rate-for-dynamic-fracture" title="Permalink to this headline">¶</a></h2>
 <p>Freund extended this approach to dynamic fracture by writing the total
 energy required to break bonds at the crack surface as the product of
-the static energy release rate <span class="math notranslate">\(G\)</span> and a universal velocity-dependent
+the static energy release rate <span class="math notranslate nohighlight">\(G\)</span> and a universal velocity-dependent
 function which he showed can be approximated as a linear
-function of the crack speed <span class="math notranslate">\(V\)</span></p>
-<div class="math notranslate">
+function of the crack speed <span class="math notranslate nohighlight">\(V\)</span></p>
+<div class="math notranslate nohighlight">
 \[2\gamma \sim G \left( 1 - \frac{V}{c_R} \right)\]</div>
-<p>The Rayleigh surface wave speed <span class="math notranslate">\(c_R\)</span> sets the ultimate limit for the
+<p>The Rayleigh surface wave speed <span class="math notranslate nohighlight">\(c_R\)</span> sets the ultimate limit for the
 crack propagation speed. The expected velocity as a function of the
-loading <span class="math notranslate">\(G/2\gamma\)</span> is then</p>
-<div class="math notranslate">
+loading <span class="math notranslate nohighlight">\(G/2\gamma\)</span> is then</p>
+<div class="math notranslate nohighlight">
 \[\frac{V}{c_R} = 1 - \frac{2 \gamma}{G}\]</div>
 <p>This is the Freund equation of motion. Calculating the Rayleigh wave
 speed - the speed with which elastic waves travel on a free surface - is
 fairly straightforward for isotropic materials. For anisotropic
 materials like quartz the calculation is more involved since the speed
 will be different for wave propagation in different crystallographic
-directions. For our case, the value turns out to be <span class="math notranslate">\(c_R \sim
+directions. For our case, the value turns out to be <span class="math notranslate nohighlight">\(c_R \sim
 9.3\)</span> km/s using the elastic constants calculated for the short-range
 TS classical potential.</p>
 <p>How does your measured value for the crack velocity compare to that
 predicted by the Freund equation of motion for the same <cite>G</cite>?</p>
 <p>At the end of the session we will try to combine everybody’s results
-to produce a plot of <span class="math notranslate">\(V(G)\)</span>.</p>
+to produce a plot of <span class="math notranslate nohighlight">\(V(G)\)</span>.</p>
 </div>
 <div class="section" id="extension-tasks">
 <h2>Extension tasks<a class="headerlink" href="#extension-tasks" title="Permalink to this headline">¶</a></h2>
@@ -697,7 +697,7 @@ something much larger, e.g. 1000 K. Is the fracture qualitatively
 different? What happens if you turn off the thermostat (change
 the <cite>ensemble</cite> setting from <cite>NVT</cite> to <cite>NVE</cite>).</p>
 </li>
-<li><p class="first">The expression <span class="math notranslate">\(E_y = 1/S_{22}\)</span> is an approximation and is
+<li><p class="first">The expression <span class="math notranslate nohighlight">\(E_y = 1/S_{22}\)</span> is an approximation and is
 not strictly valid for hexagonal materials. Check this
 approximation by performing a tensile test: take the rotated
 configuration <cite>aqr</cite> apply a series of small strains in the <cite>y</cite>
@@ -711,7 +711,7 @@ using code based on the following:</p>
 <span class="n">sig_yy</span> <span class="o">=</span> <span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">aqr_t</span><span class="o">.</span><span class="n">cell_volume</span><span class="p">()</span><span class="o">*</span><span class="n">GPA</span>       <span class="c1"># convert to stress</span>
 </pre></div>
 </div>
-<p>Calculate an improved estimate for <span class="math notranslate">\(E_y\)</span> by fitting a straight line
+<p>Calculate an improved estimate for <span class="math notranslate nohighlight">\(E_y\)</span> by fitting a straight line
 to <cite>sig_yy</cite> as function of <cite>eps_yy</cite>. How good is the approximation
 we used above?</p>
 </li>

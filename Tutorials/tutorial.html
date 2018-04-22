@@ -479,7 +479,7 @@ alpha-quartz Atoms object:</p>
 <span class="go">90.0 90.0 120.0</span>
 </pre></div>
 </div>
-<p>So we have <span class="math notranslate">\(a = b \ne c\)</span>, and <span class="math notranslate">\(\alpha = \beta \ne \gamma\)</span>,
+<p>So we have <span class="math notranslate nohighlight">\(a = b \ne c\)</span>, and <span class="math notranslate nohighlight">\(\alpha = \beta \ne \gamma\)</span>,
 i.e. trigonal symmetry.</p>
 <p>Let’s try out some of the more advanced indexing operations. Firstly,
 logical operations on arrays return arrays, which can be used for
@@ -664,7 +664,7 @@ that the time-step used for this simulation was appropriate. Let’s
 compare the distribution of atomic speeds in the second half of this
 simulation (to allow some time for equilibriation) with what we’d
 expect from the Maxwell-Boltzmann distribution of speeds, given by</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v\]</div>
 <p>The following function implements this distribution:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
@@ -850,9 +850,9 @@ construct a DynamicalSystem, and randomise the initial velocities to 1000K:</p>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet1" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet1"><code class="xref py py-meth docutils literal notranslate"><span class="pre">advance_verlet1()</span></code></a> advances the velocities by
-half the time-step <span class="math notranslate">\(\delta t\)</span> and the positions by the full
+half the time-step <span class="math notranslate nohighlight">\(\delta t\)</span> and the positions by the full
 time-step.  We then calculate at new forces from our potential at
-<span class="math notranslate">\(\mathbf{r}(t+\delta t)\)</span>.  Finally
+<span class="math notranslate nohighlight">\(\mathbf{r}(t+\delta t)\)</span>.  Finally
 <a class="reference internal" href="../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.advance_verlet2" title="quippy.dynamicalsystem.DynamicalSystem.advance_verlet2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">advance_verlet2()</span></code></a> advances the velocities by
 the second half time-step. <a class="reference internal" href="../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.print_status" title="quippy.dynamicalsystem.DynamicalSystem.print_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">print_status()</span></code></a>
 prints a status line with the current time, temperature, total energy,
@@ -890,7 +890,7 @@ configuration, you’ll need to use either the
 <p>In this tutorial we’ll consider the Stillinger-Weber potential we
 defined above.  Let’s use this to relax the positions and lattice of a
 cubic Si cell using conjugate-gradients (<code class="docutils literal notranslate"><span class="pre">cg</span></code>), to a tolerance of
-<span class="math notranslate">\(|\mathbf{f}|^2 &lt; 10^{-7}\)</span>, using a maximum of 100 steps.</p>
+<span class="math notranslate nohighlight">\(|\mathbf{f}|^2 &lt; 10^{-7}\)</span>, using a maximum of 100 steps.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span> <span class="o">=</span> <span class="n">diamond</span><span class="p">(</span><span class="mf">5.44</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">at0</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span> <span class="o">+</span> <span class="mf">2.0</span><span class="p">)</span>   <span class="c1">#crust of 2.0 Angstrom</span>
@@ -945,10 +945,10 @@ takes care of this.</p>
 the Stillinger-Weber potential. We’ll do this by fitting the
 <a class="reference external" href="http://en.wikipedia.org/wiki/Birch-Murnaghan_equation_of_state">Birch-Murnaghan equation of state</a>,
 which assumes the bulk modulus is of the form</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[B = B_0 + B'_0 P\]</div>
 <p>The energy as a function of volume is</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[E(V) = E_0 + \frac{9V_0B_0}{16}
 \left\{
 \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^3B_0^\prime +

@@ -746,7 +746,7 @@ with <cite>atoms</cite> to the new <a class="reference internal" href="#quippy.p
 <p class="first admonition-title">Note</p>
 <p class="last">QUIP potentials do not compute stress and per-atom stresses
 directly, but rather the virial tensor which has units of stress
-<span class="math notranslate">\(\times\)</span> volume, i.e. energy. If the total stress is
+<span class="math notranslate nohighlight">\(\times\)</span> volume, i.e. energy. If the total stress is
 requested, it is computed by dividing the virial by the atomic
 volume, obtained by calling <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.get_volume" title="quippy.atoms.Atoms.get_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Atoms.get_volume()</span></code></a>. If per-atom
 stresses are requested, a per-atom volume is needed. By default
@@ -1015,10 +1015,10 @@ default arguments.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
 <dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</span></dt>
-<dd><p class="first last">Atoms object for which to compute <span class="math notranslate">\(C_{ij}\)</span></p>
+<dd><p class="first last">Atoms object for which to compute <span class="math notranslate nohighlight">\(C_{ij}\)</span></p>
 </dd>
 <dt><strong>fd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float, optional</span></dt>
-<dd><p class="first last">Finite strain to apply. Default <span class="math notranslate">\(10^{-2}\)</span>.</p>
+<dd><p class="first last">Finite strain to apply. Default <span class="math notranslate nohighlight">\(10^{-2}\)</span>.</p>
 </dd>
 <dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
 <dd><p class="first last">Optional args_str to pass to <code class="docutils literal notranslate"><span class="pre">minim</span></code></p>
@@ -1277,7 +1277,7 @@ forces or stresses need to be re-computed.</p>
 <dt id="quippy.potential.Potential.get_elastic_constants">
 <code class="descname">get_elastic_constants</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.get_elastic_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate elastic constants of <cite>atoms</cite> using this Potential.</p>
-<p>Returns  6x6 matrix <span class="math notranslate">\(C_{ij}\)</span> of elastic constants.</p>
+<p>Returns  6x6 matrix <span class="math notranslate nohighlight">\(C_{ij}\)</span> of elastic constants.</p>
 <p>The elastic contants are calculated as finite difference
 derivatives of the virial stress tensor using positive and
 negative strains of magnitude the <cite>cij_dx</cite> entry in
@@ -1312,7 +1312,7 @@ negative strains of magnitude the <cite>cij_dx</cite> entry in
 <dt id="quippy.potential.Potential.get_unrelaxed_elastic_constants">
 <code class="descname">get_unrelaxed_elastic_constants</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_unrelaxed_elastic_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.get_unrelaxed_elastic_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate unrelaxed elastic constants of <cite>atoms</cite> using this Potential</p>
-<p>Returns 6x6 matrix <span class="math notranslate">\(C^0_{ij}\)</span> of unrelaxed elastic constants.</p>
+<p>Returns 6x6 matrix <span class="math notranslate nohighlight">\(C^0_{ij}\)</span> of unrelaxed elastic constants.</p>
 <p>The elastic contants are calculated as finite difference
 derivatives of the virial stress tensor using positive and
 negative strains of magnitude the <cite>cij_dx</cite> entry in
@@ -1355,7 +1355,7 @@ explanation):</p>
 <dd><p class="first last">passed to minim()</p>
 </dd>
 <dt><strong>convergence_tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input float</span></dt>
-<dd><p class="first last">Minimisation is treated as converged once <span class="math notranslate">\(|\mathbf{\nabla}f|^2 &lt;\)</span>
+<dd><p class="first last">Minimisation is treated as converged once <span class="math notranslate nohighlight">\(|\mathbf{\nabla}f|^2 &lt;\)</span>
 <code class="docutils literal notranslate"><span class="pre">convergence_tol</span></code>.</p>
 </dd>
 <dt><strong>max_steps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
@@ -1727,7 +1727,7 @@ at the end of the :meth`run` method.</p>
 <dd><p>Run the minimiser until maximum force is below <cite>fmax</cite>.</p>
 <p>Maximum number of minimisation steps is given by <cite>steps</cite>.</p>
 <p>Note that QUIP minim convergence criteria is actually based on
-<span class="math notranslate">\(|\mathbf{f}|^2\)</span> rather than on the maximum force. Here
+<span class="math notranslate nohighlight">\(|\mathbf{f}|^2\)</span> rather than on the maximum force. Here
 we convert using the relation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">convergence_tol</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span><span class="o">*</span><span class="n">fmax</span><span class="o">**</span><span class="mi">2</span>
 </pre></div>

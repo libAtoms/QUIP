@@ -239,12 +239,12 @@
 that fall within the neighbour cutoff. The different images are made distinct in the connection list
 by having different <code class="docutils literal notranslate"><span class="pre">shift</span></code> vectors associated with them.</p>
 <p>To save storage, the <code class="docutils literal notranslate"><span class="pre">neighbour1</span></code> table contains all information about the connection
-but is only filled in for <span class="math notranslate">\(i &lt;= j\)</span>. <code class="docutils literal notranslate"><span class="pre">neighbour2</span></code> is just a list of those of <span class="math notranslate">\(i\)</span>‘s neighbours
-with <span class="math notranslate">\(i &gt; j\)</span> together with an index into the <code class="docutils literal notranslate"><span class="pre">neighbour1</span></code> table of atom <span class="math notranslate">\(j\)</span>.</p>
+but is only filled in for <span class="math notranslate nohighlight">\(i &lt;= j\)</span>. <code class="docutils literal notranslate"><span class="pre">neighbour2</span></code> is just a list of those of <span class="math notranslate nohighlight">\(i\)</span>‘s neighbours
+with <span class="math notranslate nohighlight">\(i &gt; j\)</span> together with an index into the <code class="docutils literal notranslate"><span class="pre">neighbour1</span></code> table of atom <span class="math notranslate nohighlight">\(j\)</span>.</p>
 <p>In normal use (i.e. outside this module) you don’t need direct access to the tables
 so you should use the interface functions <code class="docutils literal notranslate"><span class="pre">atoms_n_neighbours</span></code> and <code class="docutils literal notranslate"><span class="pre">atoms_neighbour</span></code> which
-hide the distiction between the cases <span class="math notranslate">\(i &lt;= j\)</span> and <span class="math notranslate">\(i &gt; j\)</span>.</p>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal notranslate"><span class="pre">neighbour1</span></code> (i): <span class="math notranslate">\(i \le j\)</span> for all <span class="math notranslate">\(j\)</span> in table, <code class="docutils literal notranslate"><span class="pre">intsize=4</span></code>, <code class="docutils literal notranslate"><span class="pre">realsize=1</span></code></p>
+hide the distiction between the cases <span class="math notranslate nohighlight">\(i &lt;= j\)</span> and <span class="math notranslate nohighlight">\(i &gt; j\)</span>.</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal notranslate"><span class="pre">neighbour1</span></code> (i): <span class="math notranslate nohighlight">\(i \le j\)</span> for all <span class="math notranslate nohighlight">\(j\)</span> in table, <code class="docutils literal notranslate"><span class="pre">intsize=4</span></code>, <code class="docutils literal notranslate"><span class="pre">realsize=1</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">connect.neighbour1(i)%int</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+----------+----------+----------+</span>
 <span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>    <span class="mi">2</span>     <span class="o">|</span>    <span class="mi">3</span>     <span class="o">|</span>    <span class="mi">4</span>     <span class="o">|</span>
@@ -261,7 +261,7 @@ hide the distiction between the cases <span class="math notranslate">\(i &lt;= j
 <span class="o">+----------+</span>
 </pre></div>
 </div>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal notranslate"><span class="pre">neighbour2</span></code> (i): <span class="math notranslate">\(i &gt; j\)</span> for all <span class="math notranslate">\(j\)</span> in table, <code class="docutils literal notranslate"><span class="pre">intsize</span> <span class="pre">=2</span></code>, <code class="docutils literal notranslate"><span class="pre">realsize=0</span></code></p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code> <code class="xref py py-attr docutils literal notranslate"><span class="pre">neighbour2</span></code> (i): <span class="math notranslate nohighlight">\(i &gt; j\)</span> for all <span class="math notranslate nohighlight">\(j\)</span> in table, <code class="docutils literal notranslate"><span class="pre">intsize</span> <span class="pre">=2</span></code>, <code class="docutils literal notranslate"><span class="pre">realsize=0</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">connect.neighbour2(i)%int</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+----------+</span>
 <span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>    <span class="mi">2</span>     <span class="o">|</span>
@@ -279,9 +279,9 @@ hide the distiction between the cases <span class="math notranslate">\(i &lt;= j
 <span class="o">+----------+</span>
 </pre></div>
 </div>
-<p>N.B. If <span class="math notranslate">\(i\)</span> and <span class="math notranslate">\(j\)</span> are neighbours with shift <code class="docutils literal notranslate"><span class="pre">shift</span></code>, then
+<p>N.B. If <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(j\)</span> are neighbours with shift <code class="docutils literal notranslate"><span class="pre">shift</span></code>, then
 <code class="docutils literal notranslate"><span class="pre">norm(atoms.pos(j)</span> <span class="pre">-</span> <span class="pre">atoms.pos(i)</span> <span class="pre">+</span> <span class="pre">shift)</span></code> is a minimum.
-Mnemonic: <code class="docutils literal notranslate"><span class="pre">shift</span></code> is added to <span class="math notranslate">\(j\)</span> to get closer to <span class="math notranslate">\(i\)</span>.</p>
+Mnemonic: <code class="docutils literal notranslate"><span class="pre">shift</span></code> is added to <span class="math notranslate nohighlight">\(j\)</span> to get closer to <span class="math notranslate nohighlight">\(i\)</span>.</p>
 <p>Initialise a Connection object for a given number of atoms <code class="docutils literal notranslate"><span class="pre">N</span></code>.
 If the optional Atoms argument is present then we calculate
 the atomic density to initialise the default lengths of the neighbour
@@ -424,12 +424,12 @@ Overloaded assigment operators for Connection objects.</p>
 <dl class="method">
 <dt id="quippy.atoms.Connection.calc_connect">
 <code class="descname">calc_connect</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>own_neighbour</em>, <em>store_is_min_image</em>, <em>skip_zero_zero_bonds</em>, <em>store_n_neighb</em>, <em>cutoff_skin</em>, <em>max_pos_change</em>, <em>did_rebuild</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.calc_connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fast <span class="math notranslate">\(O(N)\)</span> connectivity calculation routine. It divides the unit
+<dd><p>Fast <span class="math notranslate nohighlight">\(O(N)\)</span> connectivity calculation routine. It divides the unit
 cell into similarly shaped subcells, of sufficient size that
 sphere of radius <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> is contained in a subcell, at least in
 the directions in which the unit cell is big enough. For very
 small unit cells, there is only one subcell, so the routine is
-equivalent to the standard <span class="math notranslate">\(O(N^2)\)</span> method.  If <code class="docutils literal notranslate"><span class="pre">cutoff_skin</span></code> is
+equivalent to the standard <span class="math notranslate nohighlight">\(O(N^2)\)</span> method.  If <code class="docutils literal notranslate"><span class="pre">cutoff_skin</span></code> is
 present, effective cutoff is increased by this amount, and full
 recalculation of connectivity is only done when any atom has
 moved more than 0.5*cutoff_skin.</p>
@@ -694,7 +694,7 @@ self_interaction=False.</p>
 <div><dl class="function">
 <dt>
 <code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>i</em><span class="optional">[</span>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
-<dd><p>Return the total number of neighbour that atom <span class="math notranslate">\(i\)</span> has.</p>
+<dd><p>Return the total number of neighbour that atom <span class="math notranslate nohighlight">\(i\)</span> has.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -716,7 +716,7 @@ self_interaction=False.</p>
 <dl class="function">
 <dt>
 <code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>at</em>, <em>i</em><span class="optional">[</span>, <em>max_dist</em>, <em>max_factor</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
-<dd><p>Return the number of neighbour that atom <span class="math notranslate">\(i\)</span> has.
+<dd><p>Return the number of neighbour that atom <span class="math notranslate nohighlight">\(i\)</span> has.
 If the optional arguments max_dist or max_factor are present
 then only neighbours closer than this cutoff are included.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -777,11 +777,11 @@ then only neighbours closer than this cutoff are included.</p>
 <div><dl class="function">
 <dt>
 <code class="descname">neighbour</code><span class="sig-paren">(</span><em>at</em>, <em>i</em>, <em>n</em><span class="optional">[</span>, <em>distance</em>, <em>diff</em>, <em>cosines</em>, <em>shift</em>, <em>index</em>, <em>max_dist</em>, <em>jn</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span></dt>
-<dd><p>Return the index of the <span class="math notranslate">\(n^{\mbox{\small{th}}}\)</span> neighbour of atom <span class="math notranslate">\(i\)</span>. Together with the
-previous function, this facilites a loop over the neighbours of atom <span class="math notranslate">\(i\)</span>. Optionally, we
+<dd><p>Return the index of the <span class="math notranslate nohighlight">\(n^{\mbox{\small{th}}}\)</span> neighbour of atom <span class="math notranslate nohighlight">\(i\)</span>. Together with the
+previous function, this facilites a loop over the neighbours of atom <span class="math notranslate nohighlight">\(i\)</span>. Optionally, we
 return other geometric information, such as distance, direction cosines and difference vector,
-and also an direct index into the neighbour tables. If <span class="math notranslate">\(i &lt;= j\)</span>, this is an index into <code class="docutils literal notranslate"><span class="pre">neighbour1(i)</span></code>,
-if <span class="math notranslate">\(i &gt; j\)</span>, it is an index into <code class="docutils literal notranslate"><span class="pre">neighbour1(j)</span></code></p>
+and also an direct index into the neighbour tables. If <span class="math notranslate nohighlight">\(i &lt;= j\)</span>, this is an index into <code class="docutils literal notranslate"><span class="pre">neighbour1(i)</span></code>,
+if <span class="math notranslate nohighlight">\(i &gt; j\)</span>, it is an index into <code class="docutils literal notranslate"><span class="pre">neighbour1(j)</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">do</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">atoms_n_neighbours</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
    <span class="n">j</span> <span class="o">=</span> <span class="n">atoms_neighbour</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">cosines</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
 
@@ -789,7 +789,7 @@ if <span class="math notranslate">\(i &gt; j\)</span>, it is an index into <code
 <span class="n">end</span> <span class="n">do</span>
 </pre></div>
 </div>
-<p>if distance <span class="math notranslate">\(&gt;\)</span> max_dist, return 0, and do not waste time calculating other quantities</p>
+<p>if distance <span class="math notranslate nohighlight">\(&gt;\)</span> max_dist, return 0, and do not waste time calculating other quantities</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1013,7 +1013,7 @@ and centred on the origin, what parameters must we pass to supercell to make a s
 enough from our original cell defined by lattice for the box to fit inside?</p>
 <p>The required supercell parameters are returned in <code class="docutils literal notranslate"><span class="pre">Na</span></code>, <code class="docutils literal notranslate"><span class="pre">Nb</span></code>, <code class="docutils literal notranslate"><span class="pre">Nc</span></code> respectively. If, e.g. <code class="docutils literal notranslate"><span class="pre">Na</span> <span class="pre">=</span> <span class="pre">1</span></code>
 then we don``t need to supercell in the a direction. <code class="docutils literal notranslate"><span class="pre">Na</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> means we must supercell by <a href="#id1"><span class="problematic" id="id2">``</span></a>Na’ times
-in the <span class="math notranslate">\(x\)</span> direction.</p>
+in the <span class="math notranslate nohighlight">\(x\)</span> direction.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1048,7 +1048,7 @@ in the <span class="math notranslate">\(x\)</span> direction.</p>
 <dd><p>Given a simulation cell defined by lattice vectors, how many
 times can the cell be divided along the lattice vectors into
 subcells such that a sphere of radius <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> with centre in
-one subcell does not spill out of the surrounding <span class="math notranslate">\(3 \times 3\)</span> subcell block?</p>
+one subcell does not spill out of the surrounding <span class="math notranslate nohighlight">\(3 \times 3\)</span> subcell block?</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1061,13 +1061,13 @@ one subcell does not spill out of the surrounding <span class="math notranslate"
 <dd><p class="first last">Radius of sphere</p>
 </dd>
 <dt><strong>na</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
+<dd><p class="first last">Number of supercells required along <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span></p>
 </dd>
 <dt><strong>nb</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
+<dd><p class="first last">Number of supercells required along <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span></p>
 </dd>
 <dt><strong>nc</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">Number of supercells required along <span class="math notranslate">\(x\)</span>, <span class="math notranslate">\(y\)</span> and <span class="math notranslate">\(z\)</span></p>
+<dd><p class="first last">Number of supercells required along <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span></p>
 </dd>
 </dl>
 </td>

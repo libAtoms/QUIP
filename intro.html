@@ -484,7 +484,7 @@ visualisation programme. To print values, and visualise structure:</p>
 </div>
 <div class="section" id="manipulating-atoms">
 <h3>Manipulating atoms<a class="headerlink" href="#manipulating-atoms" title="Permalink to this headline">¶</a></h3>
-<p>Setup <span class="math notranslate">\(\alpha\)</span>-quartz cell:</p>
+<p>Setup <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz cell:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span> <span class="o">=</span> <span class="n">alpha_quartz</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">4.92</span><span class="p">,</span>
 <span class="gp">... </span>                    <span class="n">c</span><span class="o">=</span><span class="mf">5.40</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aq</span> <span class="o">=</span> <span class="n">supercell</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -553,7 +553,7 @@ variety of formats:</p>
 </div>
 <a class="reference internal image-reference" href="_images/totalenergy2.png"><img alt="_images/totalenergy2.png" class="align-center" src="_images/totalenergy2.png" style="width: 600px;" /></a>
 <p>Maxwell-Boltzmann distribution of atomic velocities</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(v)\,\mathrm{d}v = 4 \pi \left( \frac{m}{2 \pi k_B T} \right)^{3/2} v^2 \exp \left[ -\frac{mv^2}{2 k_B T} \right] \mathrm{d}v\]</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
 <span class="gp">... </span>   <span class="s2">&quot;Maxwell-Boltmann distribution of speeds at temperature T for particles of mass m&quot;</span>
