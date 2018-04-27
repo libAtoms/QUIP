@@ -109,39 +109,45 @@ class Descriptor(RawDescriptor):
         """
         Calculates all descriptors of this type in the Atoms object, and
         gradients if grad=True. Results can be accessed dictionary- or
-        attribute-style; 'descriptor' contains descriptor values, 'grad'
-        contains gradients, 'index' contains indices to gradients
-        (descriptor, atom, coordinate). Cutoffs and gradients of cutoffs
-        are also returned.
+        attribute-style; 'descriptor' contains descriptor values, 
+        'descriptor_index_0based' contains the 0-based indices of the central 
+        atom(s) in each descriptor, 'grad' contains gradients, 
+        'grad_index_0based' contains indices to gradients (descriptor, atom).
+        Cutoffs and gradients of cutoffs are also returned.
         """
         if args_str is None:
             args_str = dict_to_args_str(calc_args)
 
-        n_desc, n_cross = self.descriptor_sizes(at)
+        n_index = fzeros(1,'i')
+        n_desc, n_cross = self.descriptor_sizes(at,n_index=n_index)
+        n_index = n_index[1]
         data = fzeros((self.n_dim, n_desc))
         cutoff = fzeros(n_desc)
+        data_index = fzeros((n_index,n_desc),'i')
 
         if grad:
             # n_cross is number of cross-terms, proportional to n_desc
             data_grad = fzeros((self.n_dim, 3 ,n_cross))
-            data_index = fzeros((2, n_cross), 'i')
+            data_grad_index = fzeros((2, n_cross), 'i')
             cutoff_grad = fzeros((3 ,n_cross))
 
         if not grad:
-            RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff,
-                    args_str=args_str)
+            RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff, 
+                    descriptor_index=data_index, args_str=args_str)
         else:
             RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff,
-                    grad_descriptor_out=data_grad, grad_descriptor_index=data_index,
-                    grad_covariance_cutoff=cutoff_grad,args_str=args_str)
+                    descriptor_index=data_index, grad_descriptor_out=data_grad, 
+                    grad_descriptor_index=data_grad_index, grad_covariance_cutoff=cutoff_grad,
+                    args_str=args_str)
 
         results = DescriptorCalcResult()
         convert = lambda data: np.array(data).T
         results.descriptor = convert(data)
         results.cutoff = convert(cutoff)
+        results.descriptor_index_0based = convert(data_index-1)
         if grad:
             results.grad = convert(data_grad)
-            results.index = convert(data_index)
+            results.grad_index_0based = convert(data_grad_index-1)
             results.cutoff_grad = convert(cutoff_grad)
 
         return results
