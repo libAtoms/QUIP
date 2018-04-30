@@ -60,9 +60,15 @@ docker run -it -p 8899:8899 -v ~/Work/DockerHome:/root/ libatomsquip/quip
    and **any changes that you want to keep after the container stops must be
    made in a mounted volume!**
 
-If you'd prefer to use a shell in the image just add ``bash`` to the very end
-of the command. Alternatively, the Jupyter notebook allows you to have fully
-functional terminal sessions in your web browser.
+This command will start the jupyter notebook server. One useful workflow is to
+stop this first container, and then restart it with ``docker container start <label>``, 
+after which shells can be opened into it with ``docker exec -it <label> bash``.  
+
+If you'd prefer to use a shell in the image right away, just add ``bash`` to the very end
+of the first run command. 
+
+Any any case, the first time you run a shell, you will be asked to agree to a license agreement 
+(basically non-commercial use), by typing your email. 
 
 Tips
 ----
