@@ -102,6 +102,8 @@ reading from or writing to XYZ or NetCDF files.
    +----------------+----------------------------+
    | ``nc``         | :ref:`netcdf`              |
    +----------------+----------------------------+
+   | ``nmd``        | :ref:`nmwiz`               |
+   +----------------+----------------------------+
    | ``pos``        | :ref:`asap`                |
    +----------------+----------------------------+
    | ``pov``        | :ref:`povray`              |
@@ -369,7 +371,7 @@ IMD checkpoint
    :synopsis: IMD checkpoint reader
    :members:
 
-.. _povray:
+.. _nmwiz:
 
 NMWiz plugin for VMD
 ------------------------------------
@@ -411,6 +413,8 @@ normal modes.
     .. automethod:: __init__
     .. automethod:: write
     .. automethod:: close
+
+.. _povray:
 
 POV-ray
 -------
