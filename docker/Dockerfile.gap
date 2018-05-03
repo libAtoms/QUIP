@@ -88,7 +88,7 @@ ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # GloSim also uses quippy and GAP (SOAP)
 
-RUN git clone --depth 1 https://github.com/cosmo-epfl/glosim /usr/local/src/glosim
+RUN git clone --depth 1 https://github.com/cosmo-epfl/glosim /opt/glosim
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
