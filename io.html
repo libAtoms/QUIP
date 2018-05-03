@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 6a666ec+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 64fd0ee+ documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                6a666ec+
+                64fd0ee+
               </div>
             
           
@@ -611,25 +611,28 @@ reading from or writing to XYZ or NetCDF files.</p>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">nc</span></code></td>
 <td><a class="reference internal" href="#netcdf"><span class="std std-ref">NetCDF</span></a></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">pos</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">nmd</span></code></td>
+<td><span class="xref std std-ref">nmwiz</span></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">pos</span></code></td>
 <td><a class="reference internal" href="#asap"><span class="std std-ref">ASAP file format</span></a></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">pov</span></code></td>
-<td><a class="reference internal" href="#povray"><span class="std std-ref">NMWiz plugin for VMD</span></a></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">pov</span></code></td>
+<td><a class="reference internal" href="#povray"><span class="std std-ref">POV-ray</span></a></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">POSCAR</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">POSCAR</span></code></td>
 <td><a class="reference internal" href="#vasp"><span class="std std-ref">VASP</span></a> coordinates</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">-</span></code>,
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">-</span></code>,
 <code class="docutils literal notranslate"><span class="pre">stdout</span></code></td>
 <td>Write to stdout in
 <a class="reference internal" href="#extendedxyz"><span class="std std-ref">Extended XYZ</span></a> format</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">string</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">string</span></code></td>
 <td>Write to string in
 <a class="reference internal" href="#extendedxyz"><span class="std std-ref">Extended XYZ</span></a> format</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">xyz</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">xyz</span></code></td>
 <td><a class="reference internal" href="#extendedxyz"><span class="std std-ref">Extended XYZ</span></a></td>
 </tr>
 </tbody>
@@ -1391,8 +1394,8 @@ to a 3-dimensional FortranArray suitable for writing to a .cube file.</p>
 <div>!! processed by numpydoc !!</div></blockquote>
 </div>
 <div class="section" id="nmwiz-plugin-for-vmd">
-<span id="povray"></span><h2>NMWiz plugin for VMD<a class="headerlink" href="#nmwiz-plugin-for-vmd" title="Permalink to this headline">¶</a></h2>
-<p>Supports the <code class="docutils literal notranslate"><span class="pre">.nmd</span></code> format used by <a class="reference external" href="http://prody.csb.pitt.edu/">ProDy</a> and the <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/plugins/nmwiz/">NMWiz</a> plugin for
+<span id="nmwiz"></span><h2>NMWiz plugin for VMD<a class="headerlink" href="#nmwiz-plugin-for-vmd" title="Permalink to this headline">¶</a></h2>
+<p>Supports the <code class="docutils literal notranslate"><span class="pre">.nmd</span></code> format used by <a class="reference external" href="http://prody.csb.pitt.edu/">ProDy</a> and the <a href="#id5"><span class="problematic" id="id6">NMWiz_</span></a> plugin for
 <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a>.  The files can be read directly into VMD to visualise a molecule’s
 normal modes.</p>
 <span class="target" id="module-quippy.nmwiz"></span><dl class="class">
@@ -1435,14 +1438,14 @@ this writer doesn’t accept trajectories.</p>
 
 </div>
 <div class="section" id="module-quippy.povray">
-<span id="pov-ray"></span><h2>POV-ray<a class="headerlink" href="#module-quippy.povray" title="Permalink to this headline">¶</a></h2>
+<span id="pov-ray"></span><span id="povray"></span><h2>POV-ray<a class="headerlink" href="#module-quippy.povray" title="Permalink to this headline">¶</a></h2>
 <p>Module contents for <a class="reference internal" href="#module-quippy.povray" title="quippy.povray: POV-ray script writer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.povray</span></code></a>:
 ..</p>
 <blockquote>
 <div>!! processed by numpydoc !!</div></blockquote>
 </div>
 <div class="section" id="vasp">
-<span id="id3"></span><h2>VASP<a class="headerlink" href="#vasp" title="Permalink to this headline">¶</a></h2>
+<span id="id4"></span><h2>VASP<a class="headerlink" href="#vasp" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="module-quippy.vasp"></span><p>Module contents for <a class="reference internal" href="#module-quippy.vasp" title="quippy.vasp: VASP POSCAR and OUTCAR readers and writers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.vasp</span></code></a>:</p>
 <p class="rubric">Classes</p>
 <table border="1" class="longtable docutils">
@@ -1648,7 +1651,7 @@ which can be used to simplify the registration process:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'6a666ec+',
+            VERSION:'64fd0ee+',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
