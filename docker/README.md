@@ -53,7 +53,10 @@ docker run -it -p 8899:8899 -v ~/Work/DockerHome:/root/ libatomsquip/quip
    and can interact with it.
  - ``-p 8899:8899`` the Jupyter notebook is set to run on port 8899, this
    allows access to that port from outside the container. Access the notebook
-   at http://localhost:8899/ in your browser.
+   at http://localhost:8899/ in your browser. **Note:** by default this
+   port will be exposed to all hosts, so if your machine in on a public IP
+   address take care; you may wish to use e.g. ``-p 127.0.0.1:8899:8899``
+   to restrict to local connections.
  - ``-v ~/Work/DockerHome:/root/`` makes the ``Work/DockerHome`` folder in
    your home directory become the ``$HOME`` directory of the docker user
    (root). This is the best way to make data available inside the container,
