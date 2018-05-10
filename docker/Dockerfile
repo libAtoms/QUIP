@@ -92,7 +92,7 @@ ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 WORKDIR /root/
 ADD files/demo.ipynb /root/
 
-CMD jupyter notebook --port=8899 --ip='*'
+CMD jupyter notebook --port=8899 --ip='*' --allow-root
 
 EXPOSE 8899
 
