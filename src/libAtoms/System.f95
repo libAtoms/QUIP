@@ -2219,10 +2219,11 @@ contains
 #endif
   end subroutine system_finalise
 
-  !% Print a warning message to stderr, but don't quit
+  !% Print a warning message to log
   subroutine print_warning(message)
     character(*), intent(in) :: message
-    write (0,*) 'WARNING: '//message
+    !write (0,*) 'WARNING: '//message
+    call print('WARNING: '//message)
   end subroutine print_warning
 
   !% Take the values from 'date_and_time' and make a nice string
@@ -2495,7 +2496,7 @@ contains
 
    subroutine current_times(cpu_t, wall_t, mpi_t)
       real(dp), intent(out), optional :: cpu_t, wall_t, mpi_t
-      integer wall_t_count, count_rate, max_count
+      integer(kind=8) wall_t_count, count_rate, max_count
 #ifdef _MPI
      include "mpif.h"
 #endif

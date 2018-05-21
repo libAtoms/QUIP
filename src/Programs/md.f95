@@ -37,11 +37,11 @@ private
 
   public :: md_params
   type md_params
-    character(len=STRING_LENGTH) :: atoms_filename, param_filename, trajectory_filename
+    character(len=STRING_LENGTH) :: atoms_filename, param_filename, trajectory_filename, flux_filename
     integer :: N_steps
     real(dp) :: max_time
     real(dp) :: dt,  T_increment_time, damping_tau
-    real(dp) :: T_initial, T_cur, T_final, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor
+    real(dp) :: T_initial, T_cur, T_hold, T_slope, T_increment, langevin_tau, adaptive_langevin_NH_tau, p_ext, barostat_tau, nose_hoover_tau, barostat_mass_factor, barostat_timescale_T
     logical :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
     logical :: langevin_OU
     real(dp) :: cutoff_skin
@@ -50,6 +50,8 @@ private
     real(dp) :: all_purpose_thermostat_NHL_tau, all_purpose_thermostat_NHL_NH_tau
     character(len=STRING_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, trajectory_print_interval, pot_print_interval
+    real(dp) :: flux_print_interval
+    real(dp) :: extra_calc_interval
     character(len=STRING_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
     logical :: damping, rescale_initial_velocity
@@ -66,15 +68,18 @@ private
     logical :: netcdf4
     real(dp):: avgtime
     logical :: NPT_NB
+    logical :: print_restraints
   end type md_params
 
 public :: get_params, print_params, do_prints, initialise_md_thermostat, update_md_thermostat
+
+integer, parameter, public :: uflux = 110
 
 contains
 
 subroutine get_params(params, mpi_glob)
   type(md_params), intent(inout) :: params
-  type(MPI_context), intent(in) :: mpi_glob
+  type(MPI_context), intent(inout) :: mpi_glob
 
   type(Dictionary) :: md_params_dict
   type(Extendable_Str) :: es
@@ -84,10 +89,15 @@ subroutine get_params(params, mpi_glob)
   logical :: has_N_steps
   logical p_ext_is_present
 
+  type(MPI_Context) :: mpi_loc
+  integer :: n_procs_per_task, n_param_strings
+  character(len=10240) :: param_strings(64)
+
   call initialise(md_params_dict)
   call param_register(md_params_dict, 'atoms_filename', 'stdin', params%atoms_filename, help_string="Initial atomic data file name")
   call param_register(md_params_dict, 'trajectory_filename', 'traj.xyz', params%trajectory_filename, help_string="Trajectory output file name ")
   call param_register(md_params_dict, 'param_filename', 'quip_params.xml', params%param_filename, help_string="QUIP XML parameter file name")
+  call param_register(md_params_dict, 'flux_filename', 'flux.dat', params%flux_filename, help_string="Name of output file for heat flux")
   call param_register(md_params_dict, 'rng_seed', '-1', params%rng_seed, help_string="Random seed")
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_value_target=has_N_steps, help_string="Number of MD steps to perform")
   call param_register(md_params_dict, 'max_time', '-1.0', params%max_time, help_string="Maximum simulation time (femtoseconds)")
@@ -99,12 +109,13 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'all_purpose_thermostat_NHL_NH_tau', '0.0', params%all_purpose_thermostat_NHL_NH_tau, help_string="tau of N-H part of NHL in all purpose thermostat")
   call param_register(md_params_dict, 'nose_hoover_thermostat', 'F', params%nose_hoover_thermostat, help_string="if true, use new plain Nose Hoover for const T")
   call param_register(md_params_dict, 'barostat_const_T', 'T', params%barostat_const_T, help_string="if true and running const_T, thermalize barostat for const T")
+  call param_register(md_params_dict, 'barostat_timescale_T', '-1.0', params%barostat_timescale_T, help_string="T used to set barostat timescale when barostat_const_T=F")
   ! call param_register(md_params_dict, 'const_T', 'F', params%const_T, help_string="if true, do constant T, set automatically when T >= 0.0")
   ! call param_register(md_params_dict, 'const_P', 'F', params%const_P, help_string="is true, do constant P")
   ! call param_register(md_params_dict, 'variable_T', 'F', params%variable_T, help_string="set automatically when T_final >= 0")
   call param_register(md_params_dict, 'T', '-1.0', params%T_initial, help_string="Initial simulation temperature (Kelvin), enables const_T if >= 0.0")
-  call param_register(md_params_dict, 'T_final', '-1.0', params%T_final, help_string="Final simulation temperature (enables variable_T if >= 0.0)")
-  call param_register(md_params_dict, 'T_increment', '10.0', params%T_increment, help_string="Temperature increments for variable_T")
+  call param_register(md_params_dict, 'T_hold', '-1.0', params%T_hold, help_string="Simulation temperature at end of ramp stage (enables variable_T if >= 0.0)")
+  call param_register(md_params_dict, 'T_slope', '0.01', params%T_slope, help_string="Temperature slope for ramp stage of variable_T")
   call param_register(md_params_dict, 'T_increment_time', '10.0', params%T_increment_time, help_string="time to wait between increments of T")
   call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext, help_string="External pressure (GPa), enables const_P if set explicitly", has_value_target=p_ext_is_present)
   call param_register(md_params_dict, 'hydrostatic_strain', 'T', params%hydrostatic_strain, help_string="If true, and using all purpose thermostat/barostat, force hydrostatic strain only")
@@ -128,6 +139,8 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval, help_string="how often to print summary line")
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
   call param_register(md_params_dict, 'trajectory_print_interval', '100', params%trajectory_print_interval, help_string="how often to print atomic config to traj file")
+  call param_register(md_params_dict, 'flux_print_interval', '-1', params%flux_print_interval, help_string="how often to print heat flux (fs)")
+  call param_register(md_params_dict, 'extra_calc_interval', '-1.0', params%extra_calc_interval, help_string="how often to do extra calcs (e.g. flux)")
   call param_register(md_params_dict, 'print_property_list', '', print_property_list_str, help_string="list of properties to print for atoms")
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval, help_string="how often to print potential object")
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum, help_string="zero total momentum before starting")
@@ -144,12 +157,21 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'verbosity', 'NORMAL', params%verbosity, help_string="verbosity level of run")
   call param_register(md_params_dict, 'calc_local_ke', 'F', params%calc_local_ke, help_string="if true, calculate local ke")
   call param_register(md_params_dict, 'netcdf4', 'F', params%netcdf4, help_string="if true, write trajectories in NetCDF4 (HDF5, compressed) format")
+  call param_register(md_params_dict, 'print_restraints', 'F', params%print_restraints, help_string="if true, print restraint stuff for PMF sampling")
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
     call print("WARNING: md reading parameters from 'md_params' file, ignoring anything on command line", PRINT_ALWAYS)
     call initialise(es)
-    call read(es, 'md_params', convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+    call read(es, 'md_params', convert_to_string=.true., mpi_comm=mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
+    if (any(es%s(1:es%len) == '^')) then ! multiple independent runs
+      call split_string_simple(string(es), param_strings, n_param_strings, '^')
+      if (mpi_glob%my_proc == 0) call print ("Multiple runs " // n_param_strings)
+      n_procs_per_task=mpi_glob%n_procs/n_param_strings
+      call split_context(mpi_glob, mpi_glob%my_proc/n_procs_per_task, mpi_loc)
+      es = param_strings(mpi_glob%my_proc/n_procs_per_task+1)
+      mpi_glob = mpi_loc
+    endif
     if (.not. param_read_line(md_params_dict, string(es))) then
       call param_print_help(md_params_dict)
       call system_abort("Error reading params from md_params file")
@@ -173,7 +195,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   params%variable_T = .false.
   if (p_ext_is_present) params%const_P = .true.
   if (params%T_initial >= 0.0_dp) params%const_T = .true.
-  if (params%T_final >= 0.0_dp) params%variable_T = .true.
+  if (params%T_hold >= 0.0_dp) params%variable_T = .true.
 
   system_use_fortran_random = params%use_fortran_random
 
@@ -204,6 +226,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   endif
 
   params%T_cur = params%T_initial
+  params%T_increment = params%T_slope * params%T_increment_time
 
 end subroutine get_params
 
@@ -218,6 +241,7 @@ subroutine print_params(params)
   call print("md_params%atoms_filename='" // trim(params%atoms_filename) // "'")
   call print("md_params%param_filename='" // trim(params%param_filename) // "'")
   call print("md_params%trajectory_filename='" // trim(params%trajectory_filename) // "'")
+  call print("md_params%flux_filename='" // trim(params%flux_filename) // "'")
   call print("md_params%cutoff_skin='" // params%cutoff_skin // "'")
   call print("md_params%rng_seed=" // params%rng_seed)
   call print("md_params%N_steps=" // params%N_steps)
@@ -229,8 +253,9 @@ subroutine print_params(params)
   call print("md_params%const_T=" // params%const_T)
   if (params%const_T) then
      call print("md_params%T_initial=" // params%T_initial)
-     call print("md_params%T_final=" //  params%T_initial)
-     if (params%T_final >= 0.0_dp) then
+     call print("md_params%T_hold=" //  params%T_hold)
+     if (params%T_hold >= 0.0_dp) then
+	call print("md_params%T_slope=" // params%T_slope)
 	call print("md_params%T_increment=" // params%T_increment)
 	call print("md_params%T_increment_time=" // params%T_increment_time)
      endif
@@ -253,6 +278,7 @@ subroutine print_params(params)
   call print("md_params%finite_strain_formulation=" // params%finite_strain_formulation)
   call print("md_params%barostat_tau=" // params%barostat_tau)
   call print("md_params%barostat_const_T=" // params%barostat_const_T)
+  call print("md_params%barostat_timescale_T=" // params%barostat_timescale_T)
   call print("md_params%barostat_mass_factor=" // params%barostat_mass_factor)
 
   call print("md_params%calc_virial=" // params%calc_virial)
@@ -260,6 +286,7 @@ subroutine print_params(params)
   call print("md_params%summary_interval=" // params%summary_interval)
   call print("md_params%params_print_interval=" // params%params_print_interval)
   call print("md_params%trajectory_print_interval=" // params%trajectory_print_interval)
+  call print("md_params%flux_print_interval=" // params%flux_print_interval)
   call print("md_params%print_property_list=", nocr=.true.)
   if (allocated(params%print_property_list)) then
     if (size(params%print_property_list) > 0) then
@@ -277,9 +304,11 @@ subroutine print_params(params)
   call print("md_params%do_timing=" // params%do_timing)
   call print("md_params%advance_md_substeps=" // params%advance_md_substeps)
   call print("md_params%v_dep_quants_extra_calc=" // params%v_dep_quants_extra_calc)
+  call print("md_params%extra_calc_interval=" // params%extra_calc_interval)
   call print("md_params%extra_heat=" // params%extra_heat)
   call print("md_params%continuation=" // params%continuation)
   call print("md_params%calc_local_ke=" // params%calc_local_ke)
+  call print("md_params%print_restraints=" // params%print_restraints)
 end subroutine print_params
 
 subroutine print_usage()
@@ -294,7 +323,7 @@ subroutine print_usage()
   call Print('  [print_property_list=prop1:prop2:...()] [pot_print_interval=n(-1)]', PRINT_ALWAYS)
   call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)]', PRINT_ALWAYS)
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
-  call Print('  [continuation=T/F(F)]', PRINT_ALWAYS)
+  call Print('  [extra_calc_interval=t(10.0) [continuation=T/F(F)]', PRINT_ALWAYS)
 end subroutine print_usage
 
 subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step, override_intervals)
@@ -306,19 +335,23 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
   type(Cinoutput), optional, intent(inout) :: traj_out
   integer, intent(in) :: i_step
   logical, optional :: override_intervals
+  real(dp) :: flux(3), tprin
 
   logical my_override_intervals
+  integer at_i_step
 
   my_override_intervals = optional_default(.false., override_intervals)
 
   if (params%summary_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%summary_interval) == 0) call print_summary(params, ds, e)
   endif
-  if (allocated(restraint_stuff)) then
-     if (params%summary_interval > 0) then
-	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) &
-	   call print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
-     endif
+  if (params%print_restraints) then
+      if (allocated(restraint_stuff)) then
+         if (params%summary_interval > 0) then
+            if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) &
+               call print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
+         endif
+      endif
   endif
 
   if (params%params_print_interval > 0) then
@@ -334,7 +367,18 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
 	call print_at(params, ds, e, pot, traj_out)
   endif
 
-end subroutine
+  if (params%flux_print_interval > 0.0_dp) then
+     ! just a short alias
+     tprin = params%flux_print_interval
+     ! if the time is close to a 
+     if (abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) then
+        call get_param_value(ds%atoms, "flux", flux)
+        call get_param_value(ds%atoms, "i_step", at_i_step)
+        write (uflux,'(I12,F16.3,F12.4,3E24.12)') at_i_step, ds%t, temperature(ds,instantaneous=.true.), flux
+     end if
+  end if
+
+end subroutine do_prints
 
 subroutine print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
   type(md_params), intent(in) :: params
@@ -424,9 +468,9 @@ subroutine print_at(params, ds, e, pot, out)
   endif
 
   if (allocated(params%print_property_list)) then
-    call write(out, ds%atoms, properties_array=params%print_property_list, real_format='%18.10f')
+    call write(out, ds%atoms, properties_array=params%print_property_list, real_format='%26.18f')
   else
-    call write(out, ds%atoms, real_format='%18.10f')
+    call write(out, ds%atoms, real_format='%26.18f')
   endif
   !call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format='f18.10')
 end subroutine print_at
@@ -435,8 +479,8 @@ subroutine initialise_md_thermostat(ds, params)
   type(md_params), intent(inout) :: params
   type(DynamicalSystem), intent(inout) :: ds
 
-  params%T_increment = sign(params%T_increment, params%T_final-params%T_initial)
-  params%variable_T = params%T_final >= 0.0_dp
+  params%T_increment = sign(params%T_increment, params%T_hold-params%T_initial)
+  params%variable_T = params%T_hold >= 0.0_dp
 
   if(params%rescale_initial_velocity) then
     call print('Rescaling initial velocities to T='//params%rescale_initial_velocity_T)
@@ -460,10 +504,10 @@ subroutine initialise_md_thermostat(ds, params)
 	 if (params%const_P) then
 	    if (params%const_T .and. params%barostat_const_T) then
 	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor)
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor, thermalise=.true.)
 	    else
 	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, W_epsilon_factor=params%barostat_mass_factor)
+		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%barostat_timescale_T, W_epsilon_factor=params%barostat_mass_factor, thermalise=.false.)
 	    endif
 	 endif
 	 if (params%const_T) then
@@ -554,10 +598,12 @@ function cur_temp(params, ds_t) result(T_cur)
 
   integer :: i_increment
 
-  if (params%T_final > 0.0_dp) then
+  if (params%T_hold >= 0.0_dp) then
     i_increment = ds_t/params%T_increment_time
     T_cur = params%T_initial + i_increment*params%T_increment
-    if (T_cur > params%T_final) T_cur = params%T_final
+    ! check for hold stage
+    if ((params%T_increment > 0.0 .and. T_cur > params%T_hold) .or. &
+        (params%T_increment < 0.0 .and. T_cur < params%T_hold)) T_cur = params%T_hold
   else
     T_cur = params%T_initial
   endif
@@ -575,7 +621,7 @@ use restraints_constraints_xml_module
 
 implicit none
   type (Potential) :: pot
-  type(MPI_context) :: mpi_glob
+  type(MPI_context) :: mpi_glob, mpi_glob_orig
   type(Cinoutput) :: traj_out, atoms_in_cio
   type(Atoms) :: at_in
   type(DynamicalSystem) :: ds
@@ -598,6 +644,7 @@ implicit none
   call system_initialise()
 
   call initialise(mpi_glob)
+  mpi_glob_orig = mpi_glob
 
   call get_params(params, mpi_glob)
 
@@ -649,6 +696,9 @@ implicit none
   call finalise(params_es)
 
   call initialise(traj_out, params%trajectory_filename, OUTPUT, mpi=mpi_glob, netcdf4=params%netcdf4)
+  if (params%flux_print_interval > 0.0_dp) then
+    open(uflux, file=params%flux_filename, position='append')
+  endif
 
   call initialise_md_thermostat(ds, params)
 
@@ -673,6 +723,7 @@ implicit none
   if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
   if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
   call calc(pot, ds%atoms, args_str=trim(params%first_pot_calc_args)//" "//trim(extra_calc_args))
+  call do_v_dep_calcs(ds, params, pot, override_interval=.true.)
   if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
   if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
   if (params%quiet_calc) call verbosity_pop()
@@ -723,6 +774,7 @@ implicit none
   end do
   call system_timer("md_loop")
 
+  call do_v_dep_calcs(ds, params, pot, override_interval=.true.)
   call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, params%N_steps, override_intervals = .true.)
 
   call system_finalise()
@@ -824,8 +876,12 @@ contains
     logical, intent(in) :: store_constraint_force
 
     real(dp), pointer :: force_p(:,:)
+    integer :: i, j
+    integer, pointer :: move_mask_p(:), move_mask_3_p(:,:)
     real(dp) :: E, virial(3,3)
     character(STRING_LENGTH) :: extra_calc_args
+
+    real(dp) :: tprin
 
     ! start with have p(t), v(t), a(t)
 
@@ -861,6 +917,18 @@ contains
     if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
     if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
     if (.not. assign_pointer(ds%atoms, "force", force_p)) call system_abort("md failed to get force")
+    if (assign_pointer(ds%atoms, "move_mask", move_mask_p)) then
+        do i=1, ds%atoms%N
+            if (move_mask_p(i) == 0) force_p(:,i) = 0.0_dp
+        end do
+    endif
+    if (assign_pointer(ds%atoms, "move_mask_3", move_mask_3_p)) then
+        do i=1, ds%atoms%N
+            do j=1, 3
+                if (move_mask_3_p(j,i) == 0) force_p(j,i) = 0.0_dp
+            end do
+        end do
+    endif
 
     if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
 
@@ -879,16 +947,44 @@ contains
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
-    ! call calc again if needed for v dep. forces
-    if (params%v_dep_quants_extra_calc) then
-      if (params%quiet_calc) call verbosity_push_decrement()
-      call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
-      if (params%quiet_calc) call verbosity_pop()
-
-      if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
-    end if
+    call do_v_dep_calcs(ds, params, pot)
 
   end subroutine advance_md_one
+
+  subroutine do_v_dep_calcs(ds, params, pot, override_interval)
+    type(DynamicalSystem), intent(inout) :: ds
+    type(md_params), intent(in) :: params
+    type(Potential), intent(inout) :: pot
+    logical, optional :: override_interval
+
+    logical :: use_override_interval
+    real(dp) :: tprin
+    logical :: do_extra_calc
+
+    use_override_interval = optional_default(.false., override_interval)
+
+    ! call calc again if needed for v dep. forces
+    if (params%v_dep_quants_extra_calc) then
+      do_extra_calc = .true.
+      if (params%extra_calc_interval > 0.0_dp) then
+         do_extra_calc = .false.
+         ! just a short alias
+         tprin = params%extra_calc_interval
+         ! if the time is close to a 
+         if (abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) do_extra_calc = .true.
+       end if
+
+       if (do_extra_calc) then
+         call system_timer("md/extra_calc")
+         if (params%quiet_calc) call verbosity_push_decrement()
+         call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+         if (params%quiet_calc) call verbosity_pop()
+
+         if (params%extra_heat > 0.0_dp .and. mod(floor(ds%t/1000.0_dp),2) == 0) call add_extra_heat(force_p, params%extra_heat, extra_heat_mask)
+         call system_timer("md/extra_calc")
+      endif
+    end if
+  end subroutine do_v_dep_calcs
 
   subroutine add_extra_heat(force, extra_heat_mag, extra_heat_mask)
      real(dp), intent(inout) :: force(:,:)

@@ -199,6 +199,12 @@ interface transpose_sub
   module procedure TBMatrix_transpose_sub
 end interface transpose_sub
 
+
+public :: make_hermitian
+interface make_hermitian
+  module procedure TBMatrix_make_hermitian
+end interface make_hermitian
+
 contains
 
 subroutine TBMatrix_sum_in_place(this, mpi)
@@ -605,11 +611,12 @@ subroutine TBMatrix_add_block_z(this, im, block, block_nr, block_nc, first_row, 
 
 end subroutine TBMatrix_add_block_z
 
-subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
+subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, ignore_symmetry, error)
   type(TBMatrix), intent(in) :: this
   type(TBMatrix), intent(in) :: overlap
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   integer i
@@ -623,27 +630,28 @@ subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   endif
   PASS_ERROR(error)
 end subroutine TBMatrix_diagonalise_gen
 
-subroutine TBMatrix_diagonalise(this, evals, evecs, error)
+subroutine TBMatrix_diagonalise(this, evals, evecs, ignore_symmetry, error)
   type(TBMatrix), intent(in) :: this
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   integer i
@@ -657,17 +665,17 @@ subroutine TBMatrix_diagonalise(this, evals, evecs, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry = ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), ignore_symmetry = ignore_symmetry, error = error)
       endif
     end do
   endif
@@ -1281,5 +1289,22 @@ subroutine TBMatrix_transpose_sub(this, m)
   end do
 
 end subroutine TBMatrix_transpose_sub
+
+subroutine TBMatrix_make_hermitian(this)
+  type(TBMatrix), intent(inout) :: this
+
+  integer :: im
+
+  if (this%is_sparse) call system_abort("Can't do TBMatrix_make_hermitian on a sparse TBMatrix")
+
+  do im=1, this%n_matrices
+    if (this%is_complex) then
+      call make_hermitian(this%data_z(im))
+    else
+      call make_hermitian(this%data_d(im))
+    endif
+  end do
+
+end subroutine TBMatrix_make_hermitian
 
 end module TBMatrix_module

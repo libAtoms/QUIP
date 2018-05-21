@@ -53,16 +53,27 @@ docker run -it -p 8899:8899 -v ~/Work/DockerHome:/root/ libatomsquip/quip
    and can interact with it.
  - ``-p 8899:8899`` the Jupyter notebook is set to run on port 8899, this
    allows access to that port from outside the container. Access the notebook
-   at http://localhost:8899/ in your browser.
+   at http://localhost:8899/ in your browser. **Note:** by default this
+   port will be exposed to all hosts, so if your machine in on a public IP
+   address take care; you may wish to use e.g. ``-p 127.0.0.1:8899:8899``
+   to restrict to local connections.
  - ``-v ~/Work/DockerHome:/root/`` makes the ``Work/DockerHome`` folder in
    your home directory become the ``$HOME`` directory of the docker user
    (root). This is the best way to make data available inside the container,
    and **any changes that you want to keep after the container stops must be
    made in a mounted volume!**
 
-If you'd prefer to use a shell in the image just add ``bash`` to the very end
-of the command. Alternatively, the Jupyter notebook allows you to have fully
-functional terminal sessions in your web browser.
+This command will start the jupyter notebook server. One useful workflow is to
+stop this first container, and then restart it with ``docker container start <label>``, 
+after which shells can be opened into it with ``docker exec -it <label> bash``.  
+
+You can get a list of available containers and their labels (even stopped ones) by typing ``docker container ls -a``. The hexademical labels can be replaced with the friendly names provided by docker, or even renamed to your own, e.g. ``docker container rename <label> quip`` after which you can refer to the container by use the ``quip`` label. 
+
+If you'd prefer to use a shell in the image right away, just add ``bash`` to the very end
+of the first run command. 
+
+Any any case, the first time you run a shell, you will be asked to agree to a license agreement 
+(basically non-commercial use), by typing your email. 
 
 Tips
 ----

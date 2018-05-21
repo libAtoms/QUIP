@@ -495,15 +495,15 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
     if (this%tbsys%tbmodel%is_orthogonal) then
       if (do_evecs) then
-	call diagonalise(this%tbsys%H, this%evals, this%evecs, error = diag_error)
+	call diagonalise(this%tbsys%H, this%evals, this%evecs, ignore_symmetry = .true., error = diag_error)
       else
-	call diagonalise(this%tbsys%H, this%evals, error = diag_error)
+	call diagonalise(this%tbsys%H, this%evals, ignore_symmetry = .true., error = diag_error)
       end if
     else
       if (do_evecs) then
-	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, this%evecs, error = diag_error)
+	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, this%evecs, ignore_symmetry = .true., error = diag_error)
       else
-	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, error = diag_error)
+	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, ignore_symmetry = .true., error = diag_error)
       endif
     endif
 

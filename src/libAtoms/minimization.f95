@@ -2522,6 +2522,8 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     real(dp) tt
     real(dp) t_a, t_b, t_c, Ebar, pbar, soln_1, soln_2
 
+    integer :: n_pure_linesearch
+    integer :: max_pure_linesearch = 10
     logical done, use_cubic, got_valid_cubic
 
     integer l_error
@@ -2674,7 +2676,9 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     done = .false.
     t_projected = 2.0_dp*sqrt(accuracy)
     !new_p_dot = accuracy*2.0_dp
-    do while (normsq(t_projected) .ge. accuracy .and. (.not. done))
+    n_pure_linesearch = 0
+    do while (n_pure_linesearch < max_pure_linesearch .and. normsq(t_projected) .ge. accuracy .and. (.not. done))
+        n_pure_linesearch = n_pure_linesearch + 1 
         call print ("n_linmin starting true minimization loop", PRINT_NERD)
 
 	use_cubic = .false.

@@ -88,7 +88,7 @@ ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 # GloSim also uses quippy and GAP (SOAP)
 
-RUN git clone --depth 1 https://github.com/cosmo-epfl/glosim /usr/local/src/glosim
+RUN git clone --depth 1 https://github.com/cosmo-epfl/glosim /opt/glosim
 
 # ENTRYPOINT ["/bin/bash", "-c"]
 
@@ -103,6 +103,6 @@ RUN mkdir -p /bin/real/ \
 
 ADD docker/files/fakebash /bin/bash
 
-CMD bash -c exit && jupyter notebook --port=8899 --ip='*' --allow-root --NotebookApp.token='' --NotebookApp.password=''
+CMD bash -c exit && jupyter notebook --port=8899 --ip='*' --allow-root
 
 EXPOSE 8899
