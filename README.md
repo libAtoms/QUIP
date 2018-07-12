@@ -80,13 +80,14 @@ The following external packages can be called:
 QUIP was born because of the need to efficiently tie together a wide
 variety of different models, both empirical and quantum mechanical. It
 will not be competitive in terms of performance with codes such as LAMMPS
-and Gromacs, but has a number of unique features:
+and Gromacs. The Atomic Simulation Environment also does does this, and 
+is much more widely used, but QUIP has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
   ``quippy`` package
 - Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html)
 - Does not assume minimum image convention, so interatomic potentials can
-  have cutoffs that are larger than the unit cell size
+  have cutoffs that are larger than the periodic unit cell size
 
 ## Precompiled Containers
 
@@ -118,8 +119,9 @@ to get up and running quickly.
 
         export QUIP_ARCH=linux_x86_64_gfortran
 
-    for standard gfortran on Linux. You may need to create your own
-    ``arch/Makefile.${QUIP_ARCH}`` file based on an existing file for
+    for standard gfortran on Linux. Here is where you can adjust which
+    compiler is being used, if you do not like the defaults. You may need to
+    create your own ``arch/Makefile.${QUIP_ARCH}`` file based on an existing file for
     more exotic systems.
 
 4.  Customise QUIP, set the maths libraries and provide linking options::
@@ -131,7 +133,7 @@ to get up and running quickly.
     questions about where you keep libraries and other stuff, if you
     don't use something it is asking for, just leave it blank. The
     answers will be stored in ``Makefile.inc`` in the ``build/${QUIP_ARCH}``
-    directory, and you can edit them later (e.g. to change optimisation
+    directory, and you can edit them later (e.g. to change compiler, optimisation
     or debug options).
 
     If you later make significant changes to the configuration such as
@@ -262,3 +264,9 @@ to get up and running quickly.
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later. 
 
+### Mac OS
+
+We do not recommend Apple-shipped compilers and python, and we do not test
+compatibility with them. Either use MacPorts or Homebrew to obtain GNU compilers,
+and also use the python from there or Anaconda. As of this edit, gcc-8.1 produces as 
+internal compiler error, but gcc-4.6 through to gcc-7 is fine. 
