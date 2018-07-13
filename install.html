@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation of QUIP and quippy &mdash; quippy 531330f+ documentation</title>
+  <title>Installation of QUIP and quippy &mdash; quippy 18188c7+ documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                531330f+
+                18188c7+
               </div>
             
           
@@ -302,8 +302,9 @@ define an environmental variable <code class="docutils literal notranslate"><spa
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">QUIP_ARCH</span><span class="o">=</span><span class="n">linux_x86_64_gfortran</span>
 </pre></div>
 </div>
-<p>for standard gfortran on Linux. You may need to create your own
-<code class="docutils literal notranslate"><span class="pre">arch/Makefile.${QUIP_ARCH}</span></code> file based on an existing file for
+<p>for standard gfortran on Linux. Here is where you can adjust which
+compiler is being used, if you do not like the defaults. You may need to
+create your own <code class="docutils literal notranslate"><span class="pre">arch/Makefile.${QUIP_ARCH}</span></code> file based on an existing file for
 more exotic systems.</p>
 </li>
 <li><p class="first">Customise QUIP, set the maths libraries and provide linking options:</p>
@@ -315,7 +316,7 @@ and all the building happen there. First it will ask you some
 questions about where you keep libraries and other stuff, if you
 don’t use something it is asking for, just leave it blank. The
 answers will be stored in <code class="docutils literal notranslate"><span class="pre">Makefile.inc</span></code> in the <code class="docutils literal notranslate"><span class="pre">build/${QUIP_ARCH}</span></code>
-directory, and you can edit them later (e.g. to change optimisation
+directory, and you can edit them later (e.g. to change compiler, optimisation
 or debug options).</p>
 <p>If you later make significant changes to the configuration such as
 enabling or disabling tight-binding support you should force a
@@ -445,6 +446,11 @@ into library form, and then follow the instructions in the
 [LAMMPS documentation](<a class="reference external" href="http://lammps.sandia.gov/doc/pair_quip.html">http://lammps.sandia.gov/doc/pair_quip.html</a>). You need at least 11 Aug 2017 version or later.</p>
 </li>
 </ol>
+<p>### Mac OS</p>
+<p>We do not recommend Apple-shipped compilers and python, and we do not test
+compatibility with them. Either use MacPorts or Homebrew to obtain GNU compilers,
+and also use the python from there or Anaconda. As of this edit, gcc-8.1 produces as
+internal compiler error, but gcc-4.6 through to gcc-7 is fine.</p>
 </div></blockquote>
 <p>If that still doesn’t work or you’re using a nonstandard architecture, try
 looking at <a class="reference internal" href="#custom-settings">Custom settings</a> and <a class="reference internal" href="#common-problems">Common Problems</a>.  As a last resort you can
@@ -709,7 +715,7 @@ threading with <code class="docutils literal notranslate"><span class="pre">expo
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'531330f+',
+            VERSION:'18188c7+',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
