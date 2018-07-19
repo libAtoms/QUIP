@@ -559,53 +559,62 @@ covariance function</td>
 <td>PARAM_MANDATORY</td>
 <td>Cutoff for soap-type descriptors</td>
 </tr>
-<tr class="row-even"><td>cutoff_transition_width</td>
+<tr class="row-even"><td>cutoff_dexp</td>
+<td>None</td>
+<td>0</td>
+<td>Cutoff decay exponent</td>
+</tr>
+<tr class="row-odd"><td>cutoff_rate</td>
+<td>None</td>
+<td>1.0</td>
+<td>Inverse cutoff decay rate</td>
+</tr>
+<tr class="row-even"><td>cutoff_scale</td>
+<td>None</td>
+<td>1.0</td>
+<td>Cutoff decay scale</td>
+</tr>
+<tr class="row-odd"><td>cutoff_transition_width</td>
 <td>None</td>
 <td>0.50</td>
 <td>Cutoff transition width for soap-type
 descriptors</td>
 </tr>
-<tr class="row-odd"><td>diagonal_radial</td>
+<tr class="row-even"><td>diagonal_radial</td>
 <td>None</td>
 <td>False</td>
 <td>Only return the n1=n2 elements of the
 power spectrum.</td>
 </tr>
-<tr class="row-even"><td>l_max</td>
+<tr class="row-odd"><td>l_max</td>
 <td>None</td>
 <td>PARAM_MANDATORY</td>
 <td>L_max (spherical harmonics basis band
 limit) for soap-type descriptors</td>
 </tr>
-<tr class="row-odd"><td>n_Z</td>
+<tr class="row-even"><td>n_Z</td>
 <td>None</td>
 <td>1</td>
 <td>How many different types of central
 atoms to consider</td>
 </tr>
-<tr class="row-even"><td>n_max</td>
+<tr class="row-odd"><td>n_max</td>
 <td>None</td>
 <td>PARAM_MANDATORY</td>
 <td>N_max (number of radial basis
 functions) for soap-type descriptors</td>
 </tr>
-<tr class="row-odd"><td>n_species</td>
+<tr class="row-even"><td>n_species</td>
 <td>None</td>
 <td>1</td>
 <td>Number of species for the descriptor</td>
 </tr>
-<tr class="row-even"><td>normalise</td>
+<tr class="row-odd"><td>normalise</td>
 <td>None</td>
 <td>True</td>
 <td>Normalise descriptor so magnitude is 1.
 In this case the kernel of two
 equivalent environments is 1.</td>
-</tr>
-<tr class="row-odd"><td>radial_decay</td>
-<td>None</td>
-<td>0.0</td>
-<td>Exponent of radial decay imposed on
-Gaussians</td>
 </tr>
 <tr class="row-even"><td>species_Z</td>
 <td>None</td>
