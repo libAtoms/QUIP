@@ -246,7 +246,7 @@ test: quippy
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 
 git_pull_all:
-	git pull
+	git pull --recurse-submodules
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
 distribution:
