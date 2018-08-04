@@ -486,7 +486,7 @@ directory of the QUIP git repository.</p>
 <dl class="class">
 <dt id="quippy.potential.Potential">
 <em class="property">class </em><code class="descclassname">quippy.potential.</code><code class="descname">Potential</code><span class="sig-paren">(</span><em>init_args</em><span class="optional">[</span>, <em>pot1</em>, <em>pot2</em>, <em>param_str</em>, <em>param_filename</em>, <em>bulk_scale</em>, <em>mpi_obj</em>, <em>callback</em>, <em>calculator</em>, <em>atoms</em>, <em>calculation_always_required</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">quippy._potential.Potential</span></code>, <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ase.calculators.calculator.Calculator</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">quippy._potential.Potential</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ase.calculators.calculator.Calculator</span></code></p>
 <p>Provides interface to all energy/force/virial calculating schemes,
 including actual calculations, as well as abstract hybrid schemes
 such as LOTF, Force Mixing, ONIOM, and the local energy scheme.</p>
@@ -694,7 +694,7 @@ match</td>
 
 </div></blockquote>
 <p>The <a class="reference internal" href="#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> class also implements the ASE
-<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#ase.calculators.interface.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ase.calculators.interface.Calculator</span></code></a> interface via the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ase.calculators.interface.Calculator</span></code> interface via the
 the <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_forces()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_stress()</span></code>, <a class="reference internal" href="#quippy.potential.Potential.get_stresses" title="quippy.potential.Potential.get_stresses"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_stresses()</span></code></a>,
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_potential_energy()</span></code>, <a class="reference internal" href="#quippy.potential.Potential.get_potential_energies" title="quippy.potential.Potential.get_potential_energies"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_potential_energies()</span></code></a>
 methods. For example:</p>
