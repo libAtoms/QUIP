@@ -355,7 +355,7 @@ copy goes out of scope</p>
 <code class="xref py py-class docutils literal notranslate"><span class="pre">quippy._atoms.Atoms</span></code> class. Atoms object are usually
 constructed either by reading from an input file in one of the
 <a class="reference internal" href="io.html#fileformats"><span class="std std-ref">Supported File Formats</span></a>, or by using the structure creation functions in
-the <a class="reference internal" href="structures.html#module-quippy.structures" title="quippy.structures: Structure building routines"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.structures</span></code></a> or <code class="xref py py-mod docutils literal notranslate"><span class="pre">ase.lattice</span></code> modules.</p>
+the <a class="reference internal" href="structures.html#module-quippy.structures" title="quippy.structures: Structure building routines"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.structures</span></code></a> or <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/lattice.html#module-ase.lattice" title="(in ASE)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ase.lattice</span></code></a> modules.</p>
 <p>For example to read from an <a class="reference internal" href="io.html#extendedxyz"><span class="std std-ref">Extended XYZ</span></a> file, use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;filename.xyz&#39;</span><span class="p">)</span>
@@ -3990,7 +3990,7 @@ conditions of the Atoms object will be used.</dd>
 <dd>Small number to prevent slightly negative coordinates from being
 wrapped.</dd>
 </dl>
-<p>See also the <code class="xref py py-func docutils literal notranslate"><span class="pre">ase.geometry.wrap_positions()</span></code> function.
+<p>See also the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/geometry.html#ase.geometry.wrap_positions" title="(in ASE)"><code class="xref py py-func docutils literal notranslate"><span class="pre">ase.geometry.wrap_positions()</span></code></a> function.
 Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">,</span>
 <span class="gp">... </span>          <span class="p">[[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.01</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">]],</span>
