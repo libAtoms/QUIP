@@ -223,7 +223,7 @@
 that fall within the neighbour cutoff. The different images are made distinct in the connection list
 by having different <code class="docutils literal notranslate"><span class="pre">shift</span></code> vectors associated with them.</p>
 <p>To save storage, the <code class="docutils literal notranslate"><span class="pre">neighbour1</span></code> table contains all information about the connection
-but is only filled in for <span class="math notranslate nohighlight">\(i &lt;= j\)</span>. <code class="docutils literal notranslate"><span class="pre">neighbour2</span></code> is just a list of those of <span class="math notranslate nohighlight">\(i\)</span>‘s neighbours
+but is only filled in for <span class="math notranslate nohighlight">\(i &lt;= j\)</span>. <code class="docutils literal notranslate"><span class="pre">neighbour2</span></code> is just a list of those of <span class="math notranslate nohighlight">\(i\)</span>’s neighbours
 with <span class="math notranslate nohighlight">\(i &gt; j\)</span> together with an index into the <code class="docutils literal notranslate"><span class="pre">neighbour1</span></code> table of atom <span class="math notranslate nohighlight">\(j\)</span>.</p>
 <p>In normal use (i.e. outside this module) you don’t need direct access to the tables
 so you should use the interface functions <code class="docutils literal notranslate"><span class="pre">atoms_n_neighbours</span></code> and <code class="docutils literal notranslate"><span class="pre">atoms_neighbour</span></code> which

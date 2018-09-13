@@ -213,7 +213,7 @@ session, the first task is to get a fracture simulation running.</p>
 <p>We’re going to be modelling a crack in <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz opening
 on the basal plane <span class="math notranslate nohighlight">\((0001)\)</span>, with the crack front parallel to
 the <span class="math notranslate nohighlight">\([\bar{1}10]\)</span> direction. The input structure is an
-<a class="reference download internal" href="_downloads/quartz_crack.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">XYZ</span> <span class="pre">file</span></code></a> contains a <span class="math notranslate nohighlight">\(150~\AA
+<a class="reference download internal" download="" href="_downloads/e7c581edbb89203e1aba1f2bd24600ca/quartz_crack.xyz"><code class="xref download docutils literal notranslate"><span class="pre">XYZ</span> <span class="pre">file</span></code></a> contains a <span class="math notranslate nohighlight">\(150~\AA
 \times 50 \AA\)</span> crack system with around 4000 atoms. The <cite>y</cite> axis is
 aligned with the <span class="math notranslate nohighlight">\((0001)\)</span> plane, and the <cite>z</cite> axis with the
 <span class="math notranslate nohighlight">\([\bar{1}10]\)</span> direction. The system contains a seed crack under
@@ -222,9 +222,9 @@ uniaxial tension in the <cite>y</cite> direction with a strain of 23%.</p>
 <p>Download the following input files:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><a class="reference download internal" href="_downloads/quartz_crack.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xyz</span></code></a> - the input structure, pictured above</li>
-<li><a class="reference download internal" href="_downloads/quartz_crack.xml" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xml</span></code></a> - parameters for potential and molecular dynamics</li>
-<li><a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - structure of the quartz primitive cell</li>
+<li><a class="reference download internal" download="" href="_downloads/e7c581edbb89203e1aba1f2bd24600ca/quartz_crack.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xyz</span></code></a> - the input structure, pictured above</li>
+<li><a class="reference download internal" download="" href="_downloads/676433684c3b421039548a5dea529af4/quartz_crack.xml"><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xml</span></code></a> - parameters for potential and molecular dynamics</li>
+<li><a class="reference download internal" download="" href="_downloads/0332cdc6f20a59ff6256b4075e609522/quartz_crack_bulk.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - structure of the quartz primitive cell</li>
 </ol>
 </div></blockquote>
 <p>Before we begin, we need to make sure that the QUIP <cite>crack</cite> program is compiled
@@ -273,7 +273,7 @@ forwards or backwards through the trajectory - note the frame number
 in the title bar of the window. You can quit <cite>AtomEye</cite> by pressing <cite>q</cite>.</p>
 <p>For more help on <cite>AtomEye</cite> see its <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">web page</a> or my notes on this
 <a class="reference external" href="http://www.jrkermode.co.uk/AtomEye">modified version</a>. In
-particular, you might find this <a class="reference download internal" href="_downloads/atomeyerc" download=""><code class="xref download docutils literal notranslate"><span class="pre">startup</span> <span class="pre">file</span></code></a>
+particular, you might find this <a class="reference download internal" download="" href="_downloads/a8d62c7f187b63a335db4fcb0de3a4a1/atomeyerc"><code class="xref download docutils literal notranslate"><span class="pre">startup</span> <span class="pre">file</span></code></a>
 useful (copy to <cite>~/.A</cite> to use).</p>
 <p>Have a look at the output in <cite>quartz_crack.out</cite>. To see how the
 simulation is progressing, you can search this for lines starting with
@@ -349,7 +349,7 @@ you could take a look at the online <a class="reference internal" href="tutorial
 <cite>quartz.xyz</cite> file you created with <cite>AtomEye</cite>. You should see something
 like this:</p>
 <a class="reference internal image-reference" href="_images/quartz.png"><img alt="_images/quartz.png" class="align-center" src="_images/quartz.png" style="width: 300px;" /></a>
-<p>You can also download <a class="reference download internal" href="_downloads/quartz.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz.xyz</span></code></a> for comparison.</p>
+<p>You can also download <a class="reference download internal" download="" href="_downloads/b17ab09f81cd68a95dda76e2153bd432/quartz.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz.xyz</span></code></a> for comparison.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The main advantage of <cite>AtomEye</cite> is that it scales well to very
@@ -381,7 +381,7 @@ the Voigt convention:</p>
     2\,\varepsilon_{yz}, 2\,\varepsilon_{xz}, 2\,\varepsilon_{xy} \right)\end{aligned}\end{align} \]</div>
 <p>The simplest way to calculate <span class="math notranslate nohighlight">\(C\)</span> with <cite>QUIP</cite> is to use the
 command line QUIP <cite>eval</cite> program. You will need the file <cite>quartz.xyz</cite>
-you made earlier, as well as an <a class="reference download internal" href="_downloads/TS_params.xml" download=""><code class="xref download docutils literal notranslate"><span class="pre">XML</span> <span class="pre">file</span></code></a>
+you made earlier, as well as an <a class="reference download internal" download="" href="_downloads/9d818a9cb867e1a67dc1a3646c0e0944/TS_params.xml"><code class="xref download docutils literal notranslate"><span class="pre">XML</span> <span class="pre">file</span></code></a>
 containing the parameters of the classical potential:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ eval init_args=&quot;IP TS&quot; at_file=quartz.xyz param_file=TS_params.xml cij
 </pre></div>
@@ -475,7 +475,7 @@ of the rotated cell. How well does this matrix compare to <cite>C_eff</cite>?</p
 </div>
 <div class="section" id="surface-energy">
 <h3>Surface Energy<a class="headerlink" href="#surface-energy" title="Permalink to this headline">¶</a></h3>
-<p>The file <a class="reference download internal" href="_downloads/quartz_0001.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_0001.xyz</span></code></a> contains a 54 atom unit cell for
+<p>The file <a class="reference download internal" download="" href="_downloads/4f640b2bf0d3a0c5d2edad9c7f364651/quartz_0001.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz_0001.xyz</span></code></a> contains a 54 atom unit cell for
 the (0001) surface of <span class="math notranslate nohighlight">\(\alpha\)</span>-quartz (shown below). Use either
 the QUIP <cite>eval</cite> program or <cite>quippy</cite> to calculate the surface energy
 density <span class="math notranslate nohighlight">\(\gamma\)</span> predicted by our classical potential for this
@@ -607,7 +607,7 @@ estimate the crack velocity from looking at the XYZ file (right-click
 on an atom in <cite>AtomEye</cite> to print out its position; the interval
 between frames is 10 fs) or by plotting the crack position as a
 function of time by extracting lines starting with <cite>CRACK_TIP</cite> from
-the output file (you might find this <a class="reference download internal" href="_downloads/crack-velo.sh" download=""><code class="xref download docutils literal notranslate"><span class="pre">crack-velo.sh</span></code></a> script
+the output file (you might find this <a class="reference download internal" download="" href="_downloads/61133fd9552e3397bc71d03a2f8a1246/crack-velo.sh"><code class="xref download docutils literal notranslate"><span class="pre">crack-velo.sh</span></code></a> script
 useful to do this; note however that the crack tip position is found
 using the atomic coordination numbers so if thre are defects in your
 cell it will not work correctly).</p>
@@ -687,16 +687,16 @@ limitations be overcome in a more complete simulation?</p>
 <div class="section" id="input-files-and-solutions">
 <h2>Input files and Solutions<a class="headerlink" href="#input-files-and-solutions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><a class="reference download internal" href="_downloads/quartz_crack.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xyz</span></code></a>, <a class="reference download internal" href="_downloads/quartz_crack.xml" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xml</span></code></a>, <a class="reference download internal" href="_downloads/quartz_crack_bulk.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - input files for crack simulation</li>
-<li><a class="reference download internal" href="_downloads/quartz.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz.xyz</span></code></a> - quartz primitive cell</li>
-<li><a class="reference download internal" href="_downloads/quartz_0001.xyz" download=""><code class="xref download docutils literal notranslate"><span class="pre">quartz_0001.xyz</span></code></a> - quartz (0001) surface cell</li>
-<li><a class="reference download internal" href="_downloads/TS_params.xml" download=""><code class="xref download docutils literal notranslate"><span class="pre">TS_params.xml</span></code></a> - potential parameters</li>
-<li><a class="reference download internal" href="_downloads/elastic.sh" download=""><code class="xref download docutils literal notranslate"><span class="pre">elastic.sh</span></code></a> - script to compute elastic constants</li>
-<li><a class="reference download internal" href="_downloads/cij.dat" download=""><code class="xref download docutils literal notranslate"><span class="pre">cij.dat</span></code></a> - elastic constants obtained with <cite>eval</cite> program</li>
-<li><a class="reference download internal" href="_downloads/surface-energy.sh" download=""><code class="xref download docutils literal notranslate"><span class="pre">surface-energy.sh</span></code></a> - script to compute surface energy</li>
-<li><a class="reference download internal" href="_downloads/surface-energy-relaxed.sh" download=""><code class="xref download docutils literal notranslate"><span class="pre">surface-energy-relaxed.sh</span></code></a> - script to compute relaxed surface energy</li>
-<li><a class="reference download internal" href="_downloads/surface-energy-annealed.sh" download=""><code class="xref download docutils literal notranslate"><span class="pre">surface-energy-annealed.sh</span></code></a> - script to compute annealed surface energy</li>
-<li><a class="reference download internal" href="_downloads/crack-velo.sh" download=""><code class="xref download docutils literal notranslate"><span class="pre">crack-velo.sh</span></code></a> - script to crack velocity</li>
+<li><a class="reference download internal" download="" href="_downloads/e7c581edbb89203e1aba1f2bd24600ca/quartz_crack.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xyz</span></code></a>, <a class="reference download internal" download="" href="_downloads/676433684c3b421039548a5dea529af4/quartz_crack.xml"><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack.xml</span></code></a>, <a class="reference download internal" download="" href="_downloads/0332cdc6f20a59ff6256b4075e609522/quartz_crack_bulk.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz_crack_bulk.xyz</span></code></a> - input files for crack simulation</li>
+<li><a class="reference download internal" download="" href="_downloads/b17ab09f81cd68a95dda76e2153bd432/quartz.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz.xyz</span></code></a> - quartz primitive cell</li>
+<li><a class="reference download internal" download="" href="_downloads/4f640b2bf0d3a0c5d2edad9c7f364651/quartz_0001.xyz"><code class="xref download docutils literal notranslate"><span class="pre">quartz_0001.xyz</span></code></a> - quartz (0001) surface cell</li>
+<li><a class="reference download internal" download="" href="_downloads/9d818a9cb867e1a67dc1a3646c0e0944/TS_params.xml"><code class="xref download docutils literal notranslate"><span class="pre">TS_params.xml</span></code></a> - potential parameters</li>
+<li><a class="reference download internal" download="" href="_downloads/795646dcd8a872e8ed12588e5a549266/elastic.sh"><code class="xref download docutils literal notranslate"><span class="pre">elastic.sh</span></code></a> - script to compute elastic constants</li>
+<li><a class="reference download internal" download="" href="_downloads/36c14fd9f90fcd3961151e006a74dcf6/cij.dat"><code class="xref download docutils literal notranslate"><span class="pre">cij.dat</span></code></a> - elastic constants obtained with <cite>eval</cite> program</li>
+<li><a class="reference download internal" download="" href="_downloads/f6e026f2cd3ac9ff8cf27543eca5a2dc/surface-energy.sh"><code class="xref download docutils literal notranslate"><span class="pre">surface-energy.sh</span></code></a> - script to compute surface energy</li>
+<li><a class="reference download internal" download="" href="_downloads/6f9f1801c5fd11b820f8d7e35e57b588/surface-energy-relaxed.sh"><code class="xref download docutils literal notranslate"><span class="pre">surface-energy-relaxed.sh</span></code></a> - script to compute relaxed surface energy</li>
+<li><a class="reference download internal" download="" href="_downloads/7d7a62726e4b4436bea35e51b894745e/surface-energy-annealed.sh"><code class="xref download docutils literal notranslate"><span class="pre">surface-energy-annealed.sh</span></code></a> - script to compute annealed surface energy</li>
+<li><a class="reference download internal" download="" href="_downloads/61133fd9552e3397bc71d03a2f8a1246/crack-velo.sh"><code class="xref download docutils literal notranslate"><span class="pre">crack-velo.sh</span></code></a> - script to crack velocity</li>
 </ul>
 </div>
 </div>
