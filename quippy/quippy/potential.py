@@ -432,6 +432,9 @@ with `atoms` to the new :class:`Potential` instance, by calling
                     self.results[key] = self.quippy_atoms.info[key]
 
 
+    def get_potential_energy(self, atoms, force_consistent=True):
+        return self.get_property('energy', atoms)
+
     def get_potential_energies(self, atoms):
         """
         Return array of atomic energies calculated with this Potential
