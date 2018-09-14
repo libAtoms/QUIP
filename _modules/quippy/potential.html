@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.potential &mdash; quippy 1d7624f+ documentation</title>
+  <title>quippy.potential &mdash; quippy f158a28+ documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1d7624f+
+                f158a28+
               </div>
             
           
@@ -600,6 +600,9 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quippy_atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 
 
+    <span class="k">def</span> <span class="nf">get_potential_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">force_consistent</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
+
 <div class="viewcode-block" id="Potential.get_potential_energies"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.get_potential_energies">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return array of atomic energies calculated with this Potential</span>
@@ -954,7 +957,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1d7624f+',
+            VERSION:'f158a28+',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
