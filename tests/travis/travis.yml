@@ -5,12 +5,12 @@ env:
   matrix:
     # Every build (gcc-4.8 on Ubuntu 14.04)
     - BUILD=VANILLA
-    - BUILD=VANILLA PAR=openmp
-    - BUILD=VANILLA PAR=openmpi
+#    - BUILD=VANILLA PAR=openmp
+#    - BUILD=VANILLA PAR=openmpi
     # Daily deps
     - BUILD=ALL DOCS=true
-    - BUILD=ALL PAR=openmp
-    - BUILD=ALL PAR=openmpi
+#    - BUILD=ALL PAR=openmp
+#    - BUILD=ALL PAR=openmpi
     # Oldest supported compilers (gcc-4.4)
 #    - GCC_VERSION=4.4 BUILD=VANILLA
 #    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
