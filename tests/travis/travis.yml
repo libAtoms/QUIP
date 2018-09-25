@@ -12,12 +12,12 @@ env:
     - BUILD=ALL PAR=openmp
     - BUILD=ALL PAR=openmpi
     # Oldest supported compilers (gcc-4.4)
-    - GCC_VERSION=4.4 BUILD=VANILLA
-    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
-    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmpi
-    - GCC_VERSION=4.4 BUILD=ALL
-    - GCC_VERSION=4.4 BUILD=ALL PAR=openmp
-    - GCC_VERSION=4.4 BUILD=ALL PAR=openmpi
+#    - GCC_VERSION=4.4 BUILD=VANILLA
+#    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
+#    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmpi
+#    - GCC_VERSION=4.4 BUILD=ALL
+#    - GCC_VERSION=4.4 BUILD=ALL PAR=openmp
+#    - GCC_VERSION=4.4 BUILD=ALL PAR=openmpi
     # Most up to date compilers (gcc-7)
 #     - GCC_VERSION=7 BUILD=VANILLA
 #     - GCC_VERSION=7 BUILD=VANILLA PAR=openmp
