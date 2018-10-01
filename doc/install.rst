@@ -66,6 +66,7 @@ Now you can get the code and compile:
 ::
 
     $ git clone --recursive https://github.com/libAtoms/QUIP.git
+    $ cd QUIP
     $ export QUIP_ARCH=linux_x86_64_gfortran
     $ export QUIPPY_INSTALL_OPTS=--user  # omit for a system-wide installation
     $ make config
