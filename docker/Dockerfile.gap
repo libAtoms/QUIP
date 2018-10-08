@@ -27,7 +27,10 @@ ENV LAMMPS_PATH /opt/lammps
 RUN cd ${QUIP_ROOT} \
     && mkdir -p build/${QUIP_ARCH} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
+    && make > /dev/null \
     && make libquip > /dev/null \
+    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
+    && make install-quippy > /dev/null \
     && find build/${QUIP_ARCH} -type f ! \( -name 'libquip.a' -o -name 'Makefile.inc' \) -delete
 
 # TODO: prune any unwanted directories in this command
@@ -53,36 +56,36 @@ ENV PATH ${LAMMPS_PATH}/src/:${PATH}
 
 # MPI QUIP for parallel within QUIP
 # Installs with _mpi suffix, e.g. quip_mpi
-ENV QUIP_ARCH linux_x86_64_gfortran_openmpi
-
-RUN cd ${QUIP_ROOT} \
-    && mkdir -p build/${QUIP_ARCH} \
-    && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
-    && make > /dev/null \
-    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
-    && find build/${QUIP_ARCH} -type f ! \( -name 'libquip.a' -o -name 'Makefile.inc' \) -delete
+#ENV QUIP_ARCH linux_x86_64_gfortran_openmpi
+#
+#RUN cd ${QUIP_ROOT} \
+#    && mkdir -p build/${QUIP_ARCH} \
+#    && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
+#    && make > /dev/null \
+#    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
+#    && find build/${QUIP_ARCH} -type f ! \( -name 'libquip.a' -o -name 'Makefile.inc' \) -delete
 
 
 # QUIP for general use is the OpenMP version.
 # Installs with no suffix, e.g. quip
 # Also installs quippy
 # Keep all libraries for AtomEye
-ENV QUIP_ARCH linux_x86_64_gfortran_openmp
-
-RUN cd ${QUIP_ROOT} \
-    && mkdir -p build/${QUIP_ARCH} \
-    && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
-    && make > /dev/null \
-    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
-    && make install-quippy > /dev/null \
-    && find build/${QUIP_ARCH} -type f ! \( -name '*.a' -o -name 'Makefile.inc' \) -delete
+#ENV QUIP_ARCH linux_x86_64_gfortran_openmp
+#
+#RUN cd ${QUIP_ROOT} \
+#    && mkdir -p build/${QUIP_ARCH} \
+#    && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
+#    && make > /dev/null \
+#    && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
+#    && make install-quippy > /dev/null \
+#    && find build/${QUIP_ARCH} -type f ! \( -name '*.a' -o -name 'Makefile.inc' \) -delete
 
 # AtomEye needs to link with QUIP for xyz read-write
-RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}/src/AtomEye \
-    && cd ${QUIP_ROOT}/src/AtomEye \
-    && make \
-    && cd ${QUIP_ROOT}/src/AtomEye/Python \
-    && python setup.py install
+#RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git ${QUIP_ROOT}/src/AtomEye \
+#    && cd ${QUIP_ROOT}/src/AtomEye \
+#    && make \
+#    && cd ${QUIP_ROOT}/src/AtomEye/Python \
+#    && python setup.py install
 
 ENV PATH ${QUIP_ROOT}/bin:${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
