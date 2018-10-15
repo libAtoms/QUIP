@@ -1285,7 +1285,7 @@ contains
     real(dp), dimension(3)     :: j_pos
     logical :: do_parallel
 
-    real(dp), parameter :: small_number = epsilon(1.0_dp)
+    real(dp), parameter :: small_number = 1.0e-10_dp
 #ifdef _MPI
     integer:: Nelements, mpi_pos, mpi_old_pos
     include "mpif.h"

@@ -63,7 +63,7 @@ module QUIP_LAMMPS_wrapper_module
       logical, dimension(:), pointer :: local
       real(dp) :: r_ij
 
-      real(dp), parameter :: small_number = epsilon(1.0_dp)
+      real(dp), parameter :: small_number = 1.0e-10_dp
 
       if( n_quip_potential == 0 ) then
          call system_abort('quip_lammps_wrapper: quip_potential not initialised')
