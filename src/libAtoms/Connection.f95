@@ -1284,6 +1284,8 @@ contains
     integer, dimension(3)      :: shift
     real(dp), dimension(3)     :: j_pos
     logical :: do_parallel
+
+    real(dp), parameter :: small_number = epsilon(1.0_dp)
 #ifdef _MPI
     integer:: Nelements, mpi_pos, mpi_old_pos
     include "mpif.h"
@@ -1348,7 +1350,7 @@ contains
           j_pos(:) = at%pos(:,j) + ( at%lattice(:,1) * shift(1) + at%lattice(:,2) * shift(2) + at%lattice(:,3) * shift(3) )
 
           r_ij = norm(j_pos - at%pos(:,i))
-          if( r_ij == 0.0_dp ) then
+          if( r_ij < small_number ) then
              RAISE_ERROR("connection_calc_dists: atoms "//i//" and "//j//" overlap exactly.",error)
           endif
 

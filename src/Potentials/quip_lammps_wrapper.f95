@@ -63,6 +63,8 @@ module QUIP_LAMMPS_wrapper_module
       logical, dimension(:), pointer :: local
       real(dp) :: r_ij
 
+      real(dp), parameter :: small_number = epsilon(1.0_dp)
+
       if( n_quip_potential == 0 ) then
          call system_abort('quip_lammps_wrapper: quip_potential not initialised')
       else
@@ -126,7 +128,7 @@ module QUIP_LAMMPS_wrapper_module
                   at%connect%neighbour1(i)%t%int(2:4,i_n1n) = 0                      ! Set the shift to zero
 
                   r_ij = norm(at%pos(:,i) - at%pos(:,j))
-                  if( r_ij == 0.0_dp ) call system_abort('quip_lammps_wrapper: atoms '//i//' and '//j//' overlap exactly.')
+                  if( r_ij < small_number ) call system_abort('quip_lammps_wrapper: atoms '//i//' and '//j//' overlap exactly.')
                   at%connect%neighbour1(i)%t%real(1,i_n1n) = r_ij
 
                   at%connect%neighbour2(j)%t%N = at%connect%neighbour2(j)%t%N + 1 ! Fill the connection for the other atom in the pair.
