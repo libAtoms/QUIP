@@ -1,6 +1,6 @@
 module QUIP_LAMMPS_wrapper_module
 
-   use system_module, only : dp, system_initialise, PRINT_SILENT, system_abort, a2s
+   use system_module
    use linearalgebra_module
    use connection_module
    use atoms_types_module
@@ -61,6 +61,7 @@ module QUIP_LAMMPS_wrapper_module
       type(quip_lammps_potential) :: am
       type(Potential), pointer :: pot
       logical, dimension(:), pointer :: local
+      real(dp) :: r_ij
 
       if( n_quip_potential == 0 ) then
          call system_abort('quip_lammps_wrapper: quip_potential not initialised')
@@ -123,7 +124,10 @@ module QUIP_LAMMPS_wrapper_module
                   at%connect%neighbour1(i)%t%N = at%connect%neighbour1(i)%t%N + 1    ! Increase size of neighbour list by one
                   at%connect%neighbour1(i)%t%int(1,i_n1n) = j                        ! The last neighbour is j
                   at%connect%neighbour1(i)%t%int(2:4,i_n1n) = 0                      ! Set the shift to zero
-                  at%connect%neighbour1(i)%t%real(1,i_n1n) = norm(at%pos(:,i) - at%pos(:,j))
+
+                  r_ij = norm(at%pos(:,i) - at%pos(:,j))
+                  if( r_ij == 0.0_dp ) call system_abort('quip_lammps_wrapper: atoms '//i//' and '//j//' overlap exactly.')
+                  at%connect%neighbour1(i)%t%real(1,i_n1n) = r_ij
 
                   at%connect%neighbour2(j)%t%N = at%connect%neighbour2(j)%t%N + 1 ! Fill the connection for the other atom in the pair.
                   j_n2n = at%connect%neighbour2(j)%t%N
