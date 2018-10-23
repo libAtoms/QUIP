@@ -103,6 +103,5 @@ RUN mkdir -p /bin/real/ \
 
 ADD docker/files/fakebash /bin/bash
 
-CMD bash -c exit && jupyter notebook --port=8899 --ip='*' --allow-root
-
+CMD bash -c exit && jupyter notebook --ip=$(hostname -i) --port=8899 --allow-root
 EXPOSE 8899
