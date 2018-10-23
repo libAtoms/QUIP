@@ -33,7 +33,7 @@ RUN cd ${QUIP_ROOT} \
 # TODO: prune any unwanted directories in this command
 RUN mkdir -p ${LAMMPS_PATH} \
     && cd ${LAMMPS_PATH} \
-    && curl http://lammps.sandia.gov/tars/lammps-stable.tar.gz | tar xz --strip-components 1
+    && curl https://lammps.sandia.gov/tars/lammps-stable.tar.gz | tar xz --strip-components 1
 
 # Build `shlib` objects first so they have `-fPIC` then symlink the directory
 # so they can be reused to build the binaries halving the compilation time.

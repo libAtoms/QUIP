@@ -1280,9 +1280,12 @@ contains
     logical, optional, intent(in) :: parallel
     integer, optional, intent(out) :: error
     integer                    :: i, j, n, index
+    real(dp)                   :: r_ij
     integer, dimension(3)      :: shift
     real(dp), dimension(3)     :: j_pos
     logical :: do_parallel
+
+    real(dp), parameter :: small_number = 1.0e-10_dp
 #ifdef _MPI
     integer:: Nelements, mpi_pos, mpi_old_pos
     include "mpif.h"
@@ -1346,10 +1349,15 @@ contains
           ! j_pos = at%pos(:,j) + ( at%lattice .mult. shift )
           j_pos(:) = at%pos(:,j) + ( at%lattice(:,1) * shift(1) + at%lattice(:,2) * shift(2) + at%lattice(:,3) * shift(3) )
 
+          r_ij = norm(j_pos - at%pos(:,i))
+          if( r_ij < small_number ) then
+             RAISE_ERROR("connection_calc_dists: atoms "//i//" and "//j//" overlap exactly.",error)
+          endif
+
           if (i <= j) then
-             this%neighbour1(i)%t%real(1,index) = norm(j_pos - at%pos(:,i))
+             this%neighbour1(i)%t%real(1,index) = r_ij
           else
-             this%neighbour1(j)%t%real(1,index) = norm(j_pos - at%pos(:,i))
+             this%neighbour1(j)%t%real(1,index) = r_ij
           end if
 
        end do

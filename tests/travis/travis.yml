@@ -5,19 +5,19 @@ env:
   matrix:
     # Every build (gcc-4.8 on Ubuntu 14.04)
     - BUILD=VANILLA
-    - BUILD=VANILLA PAR=openmp
-    - BUILD=VANILLA PAR=openmpi
+#    - BUILD=VANILLA PAR=openmp
+#    - BUILD=VANILLA PAR=openmpi
     # Daily deps
     - BUILD=ALL DOCS=true
-    - BUILD=ALL PAR=openmp
-    - BUILD=ALL PAR=openmpi
+#    - BUILD=ALL PAR=openmp
+#    - BUILD=ALL PAR=openmpi
     # Oldest supported compilers (gcc-4.4)
-    - GCC_VERSION=4.4 BUILD=VANILLA
-    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
-    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmpi
-    - GCC_VERSION=4.4 BUILD=ALL
-    - GCC_VERSION=4.4 BUILD=ALL PAR=openmp
-    - GCC_VERSION=4.4 BUILD=ALL PAR=openmpi
+#    - GCC_VERSION=4.4 BUILD=VANILLA
+#    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmp
+#    - GCC_VERSION=4.4 BUILD=VANILLA PAR=openmpi
+#    - GCC_VERSION=4.4 BUILD=ALL
+#    - GCC_VERSION=4.4 BUILD=ALL PAR=openmp
+#    - GCC_VERSION=4.4 BUILD=ALL PAR=openmpi
     # Most up to date compilers (gcc-7)
 #     - GCC_VERSION=7 BUILD=VANILLA
 #     - GCC_VERSION=7 BUILD=VANILLA PAR=openmp
@@ -161,19 +161,19 @@ jobs:
             docker build -t $DOCKER_USERNAME/quip .;
             docker push $DOCKER_USERNAME/quip;
           fi
-    - stage: docker
-      install: skip
-      script:
-        - if [ "${TRAVIS_REPO_SLUG}" == "libAtoms/QUIP" ] && [ "${TRAVIS_BRANCH}" == "public" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
-            openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
-            bash get_deps.sh > /dev/null 2>&1;
-            bin/gitversion > GIT_VERSION;
-            bin/gapversion.sh > src/GAP/GAP_VERSION;
-            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-            ln -s docker/Dockerfile.private Dockerfile;
-            docker build -t $DOCKER_USERNAME/quip-private .;
-            docker push $DOCKER_USERNAME/quip-private;
-          fi
+    #- stage: docker
+    #  install: skip
+    #  script:
+    #    - if [ "${TRAVIS_REPO_SLUG}" == "libAtoms/QUIP" ] && [ "${TRAVIS_BRANCH}" == "public" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+    #        openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
+    #        bash get_deps.sh > /dev/null 2>&1;
+    #        bin/gitversion > GIT_VERSION;
+    #        bin/gapversion.sh > src/GAP/GAP_VERSION;
+    #        docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    #        ln -s docker/Dockerfile.private Dockerfile;
+    #        docker build -t $DOCKER_USERNAME/quip-private .;
+    #        docker push $DOCKER_USERNAME/quip-private;
+    #      fi
 
 notifications:
   email:
