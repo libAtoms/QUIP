@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 6140523+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy f6e0528+ documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                6140523+
+                f6e0528+
               </div>
             
           
@@ -842,7 +842,18 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_getcwd" title="quippy.cinoutput.quip_getcwd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_getcwd</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_md5sum" title="quippy.cinoutput.quip_md5sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_md5sum</span></code></a>(filename,[stat])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_getcwd" title="quippy.cinoutput.quip_getcwd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_getcwd</span></code></a>()</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -853,13 +864,13 @@ NetCDF reading and writing routines, in pure Python.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_dirname</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_dirname</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">quip_dirname</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_chdir</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_chdir</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">quip_chdir</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_basename</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_basename</span></code></a>(*args,&nbsp;**kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">quip_basename</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -1044,6 +1055,33 @@ variables in NetCDF files</p>
 <em class="property">class </em><code class="descclassname">quippy.cinoutput.</code><code class="descname">CInOutputWriter</code><span class="sig-paren">(</span><em>dest</em>, <em>append=False</em>, <em>netcdf4=False</em>, <em>one_frame_per_file=False</em>, <em>string=False</em>, <em>**write_kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/cinoutput.html#CInOutputWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.cinoutput.CInOutputWriter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class to write atoms sequentially to a CInOutput stream</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="quippy.cinoutput.quip_md5sum">
+<code class="descclassname">quippy.cinoutput.</code><code class="descname">quip_md5sum</code><span class="sig-paren">(</span><em>filename</em><span class="optional">[</span>, <em>stat</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cinoutput.quip_md5sum" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>filename</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1)</span></dt>
+<dd></dd>
+<dt><strong>stat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-0 array(int,’i’), optional</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>md5sum</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string(len=32)</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">quip_md5sum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/CInOutput.f95">src/libAtoms/CInOutput.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
