@@ -185,11 +185,12 @@
 <span class="kn">import</span> <span class="nn">ase.units</span> <span class="k">as</span> <span class="nn">units</span>
 <span class="kn">from</span> <span class="nn">ase.atom</span> <span class="k">import</span> <span class="n">Atom</span>
 <span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="k">import</span> <span class="n">FixConstraint</span><span class="p">,</span> <span class="n">FixBondLengths</span>
-<span class="kn">from</span> <span class="nn">ase.data</span> <span class="k">import</span> <span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">chemical_symbols</span><span class="p">,</span> <span class="n">atomic_masses</span>
-<span class="kn">from</span> <span class="nn">ase.utils</span> <span class="k">import</span> <span class="n">basestring</span><span class="p">,</span> <span class="n">formula_hill</span><span class="p">,</span> <span class="n">formula_metal</span>
+<span class="kn">from</span> <span class="nn">ase.data</span> <span class="k">import</span> <span class="n">atomic_masses</span>
+<span class="kn">from</span> <span class="nn">ase.utils</span> <span class="k">import</span> <span class="n">basestring</span>
 <span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="k">import</span> <span class="p">(</span><span class="n">wrap_positions</span><span class="p">,</span> <span class="n">find_mic</span><span class="p">,</span> <span class="n">cellpar_to_cell</span><span class="p">,</span>
                           <span class="n">cell_to_cellpar</span><span class="p">,</span> <span class="n">complete_cell</span><span class="p">,</span> <span class="n">is_orthorhombic</span><span class="p">,</span>
                           <span class="n">get_angles</span><span class="p">,</span> <span class="n">get_distances</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ase.symbols</span> <span class="k">import</span> <span class="n">Symbols</span><span class="p">,</span> <span class="n">symbols2numbers</span>
 
 
 <span class="k">class</span> <span class="nc">Atoms</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -406,6 +407,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Symbols</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numbers</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Atoms.set_calculator"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_calculator">[docs]</a>    <span class="k">def</span> <span class="nf">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Attach calculator object.&quot;&quot;&quot;</span>
@@ -633,13 +638,13 @@
 
 <div class="viewcode-block" id="Atoms.get_chemical_symbols"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_chemical_symbols">[docs]</a>    <span class="k">def</span> <span class="nf">get_chemical_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get list of chemical symbol strings.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">]</span> <span class="k">for</span> <span class="n">Z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;numbers&#39;</span><span class="p">]]</span></div>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">set_chemical_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set chemical symbols.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="n">symbols2numbers</span><span class="p">(</span><span class="n">symbols</span><span class="p">),</span> <span class="nb">int</span><span class="p">,</span> <span class="p">())</span>
 
-<div class="viewcode-block" id="Atoms.get_chemical_formula"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_chemical_formula">[docs]</a>    <span class="k">def</span> <span class="nf">get_chemical_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;hill&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Atoms.get_chemical_formula"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_chemical_formula">[docs]</a>    <span class="k">def</span> <span class="nf">get_chemical_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;hill&#39;</span><span class="p">,</span> <span class="n">empirical</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the chemical formula as a string based on the chemical symbols.</span>
 
 <span class="sd">        Parameters:</span>
@@ -661,38 +666,12 @@
 
 <span class="sd">            &#39;metal&#39;: The list of chemical symbols (alphabetical metals,</span>
 <span class="sd">            and alphabetical non-metals)</span>
+
+<span class="sd">        empirical, bool (optional, default=False)</span>
+<span class="sd">            Divide the symbol counts by their greatest common divisor to yield</span>
+<span class="sd">            an empirical formula. Only for mode `metal` and `hill`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
-
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;reduce&#39;</span><span class="p">:</span>
-            <span class="n">numbers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
-            <span class="n">changes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)[</span><span class="n">numbers</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span>
-                                                           <span class="n">numbers</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
-            <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">[</span><span class="n">changes</span><span class="p">]]</span>
-            <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">changes</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">changes</span>
-
-            <span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
-                <span class="n">formula</span> <span class="o">+=</span> <span class="n">s</span>
-                <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">formula</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;hill&#39;</span><span class="p">:</span>
-            <span class="n">formula</span> <span class="o">=</span> <span class="n">formula_hill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
-            <span class="n">numbers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
-            <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">]</span>
-
-            <span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
-                <span class="n">formula</span> <span class="o">+=</span> <span class="n">s</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;metal&#39;</span><span class="p">:</span>
-            <span class="n">formula</span> <span class="o">=</span> <span class="n">formula_metal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Use mode = &#39;all&#39;, &#39;reduce&#39; or &#39;hill&#39;.&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">formula</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">get_chemical_formula</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">empirical</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atoms.set_tags"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_tags">[docs]</a>    <span class="k">def</span> <span class="nf">set_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set tags for all atoms. If only one tag is supplied, it is</span>
@@ -730,7 +709,7 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Atoms.set_masses"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_masses">[docs]</a>    <span class="k">def</span> <span class="nf">set_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masses</span><span class="o">=</span><span class="s1">&#39;defaults&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set atomic masses.</span>
+        <span class="sd">&quot;&quot;&quot;Set atomic masses in atomic mass units.</span>
 
 <span class="sd">        The array masses should contain a list of masses.  In case</span>
 <span class="sd">        the masses argument is not given or for those elements of the</span>
@@ -749,7 +728,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="p">())</span></div>
 
 <div class="viewcode-block" id="Atoms.get_masses"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_masses">[docs]</a>    <span class="k">def</span> <span class="nf">get_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get array of masses.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Get array of masses in atomic mass units.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s1">&#39;masses&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;masses&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1366,7 +1345,6 @@
 <span class="sd">        Rotate 90 degrees around the z-axis, so that the x-axis is</span>
 <span class="sd">        rotated into the y-axis:</span>
 
-<span class="sd">        &gt;&gt;&gt; from math import pi</span>
 <span class="sd">        &gt;&gt;&gt; atoms = Atoms()</span>
 <span class="sd">        &gt;&gt;&gt; atoms.rotate(90, &#39;z&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; atoms.rotate(90, (0, 0, 1))</span>
@@ -1577,15 +1555,20 @@
 <div class="viewcode-block" id="Atoms.set_dihedral"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_dihedral">[docs]</a>    <span class="k">def</span> <span class="nf">set_dihedral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a3</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a4</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the dihedral angle (degrees) between vectors a1-&gt;a2 and</span>
-<span class="sd">        a3-&gt;a4 by changing the atom indexed by a4</span>
-<span class="sd">        if mask is not None, all the atoms described in mask</span>
-<span class="sd">        (read: the entire subgroup) are moved. Alternatively to the mask,</span>
-<span class="sd">        the indices of the atoms to be rotated can be supplied.</span>
+<span class="sd">        a3-&gt;a4 by changing the atom indexed by a4.</span>
 
-<span class="sd">        example: the following defines a very crude</span>
+<span class="sd">        If mask is not None, all the atoms described in mask</span>
+<span class="sd">        (read: the entire subgroup) are moved. Alternatively to the mask,</span>
+<span class="sd">        the indices of the atoms to be rotated can be supplied. If both</span>
+<span class="sd">        *mask* and *indices* are given, *indices* overwrites *mask*.</span>
+
+<span class="sd">        **Important**: If *mask* or *indices* is given and does not contain</span>
+<span class="sd">        *a4*, *a4* will NOT be moved. In most cases you therefore want</span>
+<span class="sd">        to include *a4* in *mask*/*indices*.</span>
+
+<span class="sd">        Example: the following defines a very crude</span>
 <span class="sd">        ethane-like molecule and twists one half of it by 30 degrees.</span>
 
-<span class="sd">        &gt;&gt;&gt; from math import pi</span>
 <span class="sd">        &gt;&gt;&gt; atoms = Atoms(&#39;HHCCHH&#39;, [[-1, 1, 0], [-1, -1, 0], [0, 0, 0],</span>
 <span class="sd">        ...                          [1, 0, 0], [2, 1, 0], [2, -1, 0]])</span>
 <span class="sd">        &gt;&gt;&gt; atoms.set_dihedral(1, 2, 3, 4, 210, mask=[0, 0, 0, 1, 1, 1])</span>
@@ -1613,7 +1596,7 @@
         <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="n">mask</span><span class="p">[</span><span class="n">a4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">elif</span> <span class="n">indices</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span> <span class="ow">in</span> <span class="n">indices</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))]</span>
 
         <span class="c1"># compute necessary in dihedral change, from current value</span>
@@ -1624,16 +1607,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_masked_rotate</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atoms.rotate_dihedral"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.rotate_dihedral">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_dihedral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a3</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a4</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                        <span class="n">angle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                        <span class="n">angle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Rotate dihedral angle.</span>
 
-<span class="sd">        Complementing the two routines above: rotate a group by a</span>
-<span class="sd">        predefined dihedral angle, starting from its current</span>
-<span class="sd">        configuration</span>
+<span class="sd">        Same usage as in :meth:`ase.Atoms.set_dihedral`: Rotate a group by a</span>
+<span class="sd">        predefined dihedral angle, starting from its current configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dihedral</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">,</span> <span class="n">a4</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_dihedral</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">,</span> <span class="n">a4</span><span class="p">,</span> <span class="n">angle</span> <span class="o">+</span> <span class="n">start</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_dihedral</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">,</span> <span class="n">a4</span><span class="p">,</span> <span class="n">angle</span> <span class="o">+</span> <span class="n">start</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="s1">&#39;Please use new API: &#39;</span>
@@ -1641,12 +1623,12 @@
                 <span class="s1">&#39;where angle is given in degrees&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">angle</span> <span class="o">=</span> <span class="n">a2</span>
-                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">mask</span> <span class="o">=</span> <span class="n">a3</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="n">a2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a3</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a4</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dihedral</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_dihedral</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">angle</span> <span class="o">+</span> <span class="n">start</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_dihedral</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">angle</span> <span class="o">+</span> <span class="n">start</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atoms.get_angle"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_angle">[docs]</a>    <span class="k">def</span> <span class="nf">get_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get angle formed by three atoms.</span>
@@ -1663,7 +1645,7 @@
         <span class="n">a1s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">indices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]</span>
         <span class="n">a2s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">indices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span>
         <span class="n">a3s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">indices</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]]</span>
-        
+
         <span class="n">v12</span> <span class="o">=</span> <span class="n">a1s</span> <span class="o">-</span> <span class="n">a2s</span>
         <span class="n">v32</span> <span class="o">=</span> <span class="n">a3s</span> <span class="o">-</span> <span class="n">a2s</span>
 
@@ -1673,14 +1655,14 @@
         <span class="k">if</span> <span class="n">mic</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span>
             <span class="n">pbc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span>
-        
+
         <span class="k">return</span> <span class="n">get_angles</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v32</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="n">pbc</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Atoms.get_angles"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_angles">[docs]</a>    <span class="k">def</span> <span class="nf">get_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get angle formed by three atoms for multiple groupings.</span>
 
-<span class="sd">        calculate angle in degrees between vectors between atoms a2-&gt;a1 </span>
+<span class="sd">        calculate angle in degrees between vectors between atoms a2-&gt;a1</span>
 <span class="sd">        and a2-&gt;a3, where a1, a2, and a3 are in each row of indices.</span>
 
 <span class="sd">        Use mic=True to use the Minimum Image Convention and calculate</span>
@@ -1702,16 +1684,20 @@
         <span class="k">if</span> <span class="n">mic</span><span class="p">:</span>
             <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell</span>
             <span class="n">pbc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pbc</span>
-        
+
         <span class="k">return</span> <span class="n">get_angles</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v32</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="n">pbc</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Atoms.set_angle"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_angle">[docs]</a>    <span class="k">def</span> <span class="nf">set_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a3</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Atoms.set_angle"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_angle">[docs]</a>    <span class="k">def</span> <span class="nf">set_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a3</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set angle (in degrees) formed by three atoms.</span>
 
-<span class="sd">        Sets the angle between vectors a2-&gt;a1 and a2-&gt;a3.</span>
+<span class="sd">        Sets the angle between vectors *a2*-&gt;*a1* and *a2*-&gt;*a3*.</span>
 
-<span class="sd">        Same usage as in set_dihedral().&quot;&quot;&quot;</span>
+<span class="sd">        If *add* is `True`, the angle will be changed by the value given.</span>
+
+<span class="sd">        Same usage as in :meth:`ase.Atoms.set_dihedral`. If *mask* and *indices*</span>
+<span class="sd">        are given, *indices* overwrites *mask*. If *mask* and *indices* are not set,</span>
+<span class="sd">        only *a3* is moved.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="c1"># old API (uses radians)</span>
@@ -1729,12 +1715,19 @@
             <span class="n">angle</span> <span class="o">*=</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span>
 
         <span class="c1"># If not provided, set mask to the last atom in the angle description</span>
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="n">mask</span><span class="p">[</span><span class="n">a3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="c1"># Compute necessary in angle change, from current value</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_angle</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">)</span>
-        <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">angle</span> <span class="o">-</span> <span class="n">current</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+        <span class="k">elif</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span> <span class="ow">in</span> <span class="n">indices</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))]</span>
+
+        <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">angle</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Compute necessary in angle change, from current value</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_angle</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">)</span>
+
+        <span class="n">diff</span> <span class="o">*=</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
         <span class="c1"># Do rotation of subgroup by copying it to temporary atoms object and</span>
         <span class="c1"># then rotating that</span>
         <span class="n">v10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">a2</span><span class="p">]</span>
@@ -1744,6 +1737,7 @@
         <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">v10</span><span class="p">,</span> <span class="n">v12</span><span class="p">)</span>
         <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">a2</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_masked_rotate</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Atoms.rattle"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.rattle">[docs]</a>    <span class="k">def</span> <span class="nf">rattle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stdev</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Randomly displace atoms.</span>
@@ -1836,13 +1830,31 @@
             <span class="k">return</span> <span class="n">D_len</span></div>
 
 
-<div class="viewcode-block" id="Atoms.set_distance"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_distance">[docs]</a>    <span class="k">def</span> <span class="nf">set_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">fix</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Atoms.set_distance"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.set_distance">[docs]</a>    <span class="k">def</span> <span class="nf">set_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">fix</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the distance between two atoms.</span>
 
 <span class="sd">        Set the distance between atoms *a0* and *a1* to *distance*.</span>
 <span class="sd">        By default, the center of the two atoms will be fixed.  Use</span>
 <span class="sd">        *fix=0* to fix the first atom, *fix=1* to fix the second</span>
-<span class="sd">        atom and *fix=0.5* (default) to fix the center of the bond.&quot;&quot;&quot;</span>
+<span class="sd">        atom and *fix=0.5* (default) to fix the center of the bond.</span>
+
+<span class="sd">        If *mask* or *indices* are set (*mask* overwrites *indices*),</span>
+<span class="sd">        only the atoms defined there are moved (see :meth:`ase.Atoms.set_dihedral`).</span>
+
+<span class="sd">        When *add* is true, the distance is changed by the value given. In combination</span>
+<span class="sd">        with *factor* True, the value given is a factor scaling the distance.</span>
+
+<span class="sd">        It is assumed that the atoms in *mask*/*indices* move together</span>
+<span class="sd">        with *a1*. If *fix=1*, only *a0* will therefore be moved.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
+            <span class="n">oldDist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="n">mic</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">factor</span><span class="p">:</span>
+                <span class="n">newDist</span> <span class="o">=</span> <span class="n">oldDist</span> <span class="o">*</span> <span class="n">distance</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">newDist</span> <span class="o">=</span> <span class="n">oldDist</span> <span class="o">+</span> <span class="n">distance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">newDist</span><span class="p">,</span> <span class="n">fix</span><span class="o">=</span><span class="n">fix</span><span class="p">,</span> <span class="n">mic</span><span class="o">=</span><span class="n">mic</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">add</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span>
 
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span>
         <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]])</span>
@@ -1852,8 +1864,18 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">D_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())])</span>
         <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">distance</span> <span class="o">/</span> <span class="n">D_len</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">fix</span><span class="p">)</span> <span class="o">*</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">R</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fix</span><span class="p">))</span> <span class="o">*</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span> <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">mask</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">a0</span><span class="p">:</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">a0</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">fix</span><span class="p">)</span> <span class="o">*</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fix</span><span class="p">))</span> <span class="o">*</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
 
 <div class="viewcode-block" id="Atoms.get_scaled_positions"><a class="viewcode-back" href="../../atoms.html#quippy.atoms.Atoms.get_scaled_positions">[docs]</a>    <span class="k">def</span> <span class="nf">get_scaled_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get positions relative to unit cell.</span>
@@ -2039,70 +2061,6 @@
         <span class="n">images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
         <span class="n">gui</span> <span class="o">=</span> <span class="n">GUI</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
         <span class="n">gui</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
-
-
-<span class="k">def</span> <span class="nf">string2symbols</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert string to list of chemical symbols.&quot;&quot;&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">[]</span>
-
-    <span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">string2symbols</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
-
-    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span>
-                <span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span>
-                <span class="n">p</span> <span class="o">-=</span> <span class="mi">1</span>
-                <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">break</span>
-        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">m</span> <span class="o">*</span> <span class="n">string2symbols</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">string2symbols</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">:])</span>
-
-    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isupper</span><span class="p">():</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">islower</span><span class="p">():</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span>
-        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">:</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">symbol</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">atomic_numbers</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span>
-        <span class="k">return</span> <span class="n">m</span> <span class="o">*</span> <span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+</span> <span class="n">string2symbols</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">:])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span>
-
-
-<span class="k">def</span> <span class="nf">symbols2numbers</span><span class="p">(</span><span class="n">symbols</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
-        <span class="n">symbols</span> <span class="o">=</span> <span class="n">string2symbols</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span>
-    <span class="n">numbers</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
-            <span class="n">numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atomic_numbers</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">numbers</span>
 
 
 <span class="k">def</span> <span class="nf">string2vector</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>

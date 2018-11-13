@@ -1923,7 +1923,7 @@ angle across periodic boundaries.</p>
 <dt id="quippy.atoms.Atoms.get_angles">
 <code class="descname">get_angles</code><span class="sig-paren">(</span><em>indices</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get angle formed by three atoms for multiple groupings.</p>
-<p>calculate angle in degrees between vectors between atoms a2-&gt;a1 
+<p>calculate angle in degrees between vectors between atoms a2-&gt;a1
 and a2-&gt;a3, where a1, a2, and a3 are in each row of indices.</p>
 <p>Use mic=True to use the Minimum Image Convention and calculate
 the angle across periodic boundaries.</p>
@@ -2002,7 +2002,7 @@ is returned.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_chemical_formula">
-<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode='hill'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode='hill'</em>, <em>empirical=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the chemical formula as a string based on the chemical symbols.</p>
 <p>Parameters:</p>
 <dl class="docutils">
@@ -2020,6 +2020,9 @@ first), e.g. ‘CHHHOCHHH’ is reduced to ‘C2H6O’ and ‘SOOHOHO’ to
 <p class="last">‘metal’: The list of chemical symbols (alphabetical metals,
 and alphabetical non-metals)</p>
 </dd>
+<dt>empirical, bool (optional, default=False)</dt>
+<dd>Divide the symbol counts by their greatest common divisor to yield
+an empirical formula. Only for mode <cite>metal</cite> and <cite>hill</cite>.</dd>
 </dl>
 </dd></dl>
 
@@ -2107,7 +2110,7 @@ to the forces but to the momenta.</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_masses">
 <code class="descname">get_masses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_masses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get array of masses.</p>
+<dd><p>Get array of masses in atomic mass units.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3279,11 +3282,10 @@ to <em>(r,r,r)</em>.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.rotate_dihedral">
-<code class="descname">rotate_dihedral</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.rotate_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.rotate_dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotate_dihedral</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.rotate_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.rotate_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate dihedral angle.</p>
-<p>Complementing the two routines above: rotate a group by a
-predefined dihedral angle, starting from its current
-configuration</p>
+<p>Same usage as in <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.Atoms.set_dihedral" title="(in ASE)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ase.Atoms.set_dihedral()</span></code></a>: Rotate a group by a
+predefined dihedral angle, starting from its current configuration.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3302,10 +3304,13 @@ back to the original larger Atoms object.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_angle">
-<code class="descname">set_angle</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>angle=None</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_angle</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em>, <em>add=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set angle (in degrees) formed by three atoms.</p>
-<p>Sets the angle between vectors a2-&gt;a1 and a2-&gt;a3.</p>
-<p>Same usage as in set_dihedral().</p>
+<p>Sets the angle between vectors <em>a2</em>-&gt;*a1* and <em>a2</em>-&gt;*a3*.</p>
+<p>If <em>add</em> is <cite>True</cite>, the angle will be changed by the value given.</p>
+<p>Same usage as in <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.Atoms.set_dihedral" title="(in ASE)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ase.Atoms.set_dihedral()</span></code></a>. If <em>mask</em> and <em>indices</em>
+are given, <em>indices</em> overwrites <em>mask</em>. If <em>mask</em> and <em>indices</em> are not set,
+only <em>a3</em> is moved.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3526,14 +3531,17 @@ Optionally set <code class="docutils literal notranslate"><span class="pre">cuto
 <dt id="quippy.atoms.Atoms.set_dihedral">
 <code class="descname">set_dihedral</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the dihedral angle (degrees) between vectors a1-&gt;a2 and
-a3-&gt;a4 by changing the atom indexed by a4
-if mask is not None, all the atoms described in mask
+a3-&gt;a4 by changing the atom indexed by a4.</p>
+<p>If mask is not None, all the atoms described in mask
 (read: the entire subgroup) are moved. Alternatively to the mask,
-the indices of the atoms to be rotated can be supplied.</p>
-<p>example: the following defines a very crude
+the indices of the atoms to be rotated can be supplied. If both
+<em>mask</em> and <em>indices</em> are given, <em>indices</em> overwrites <em>mask</em>.</p>
+<p><strong>Important</strong>: If <em>mask</em> or <em>indices</em> is given and does not contain
+<em>a4</em>, <em>a4</em> will NOT be moved. In most cases you therefore want
+to include <em>a4</em> in <em>mask</em>/<em>indices</em>.</p>
+<p>Example: the following defines a very crude
 ethane-like molecule and twists one half of it by 30 degrees.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">pi</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;HHCCHH&#39;</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;HHCCHH&#39;</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
 <span class="gp">... </span>                         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">atoms</span><span class="o">.</span><span class="n">set_dihedral</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 </pre></div>
@@ -3542,12 +3550,18 @@ ethane-like molecule and twists one half of it by 30 degrees.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_distance">
-<code class="descname">set_distance</code><span class="sig-paren">(</span><em>a0</em>, <em>a1</em>, <em>distance</em>, <em>fix=0.5</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_distance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_distance</code><span class="sig-paren">(</span><em>a0</em>, <em>a1</em>, <em>distance</em>, <em>fix=0.5</em>, <em>mic=False</em>, <em>mask=None</em>, <em>indices=None</em>, <em>add=False</em>, <em>factor=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the distance between two atoms.</p>
 <p>Set the distance between atoms <em>a0</em> and <em>a1</em> to <em>distance</em>.
 By default, the center of the two atoms will be fixed.  Use
 <em>fix=0</em> to fix the first atom, <em>fix=1</em> to fix the second
 atom and <em>fix=0.5</em> (default) to fix the center of the bond.</p>
+<p>If <em>mask</em> or <em>indices</em> are set (<em>mask</em> overwrites <em>indices</em>),
+only the atoms defined there are moved (see <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.Atoms.set_dihedral" title="(in ASE)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ase.Atoms.set_dihedral()</span></code></a>).</p>
+<p>When <em>add</em> is true, the distance is changed by the value given. In combination
+with <em>factor</em> True, the value given is a factor scaling the distance.</p>
+<p>It is assumed that the atoms in <em>mask</em>/<em>indices</em> move together
+with <em>a1</em>. If <em>fix=1</em>, only <em>a0</em> will therefore be moved.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3594,7 +3608,7 @@ and recalculate connectivity (by default scale_positions=False).</p>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_masses">
 <code class="descname">set_masses</code><span class="sig-paren">(</span><em>masses='defaults'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set atomic masses.</p>
+<dd><p>Set atomic masses in atomic mass units.</p>
 <p>The array masses should contain a list of masses.  In case
 the masses argument is not given or for those elements of the
 masses list that are None, standard values are set.</p>

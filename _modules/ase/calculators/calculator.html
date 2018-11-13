@@ -176,12 +176,66 @@
 <span class="kn">from</span> <span class="nn">ase.dft.kpoints</span> <span class="k">import</span> <span class="n">bandpath</span><span class="p">,</span> <span class="n">monkhorst_pack</span>
 
 
-<span class="k">class</span> <span class="nc">ReadError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">CalculatorError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class of error types related to ASE calculators.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">CalculatorSetupError</span><span class="p">(</span><span class="n">CalculatorError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculation cannot be performed with the given parameters.</span>
+
+<span class="sd">    Reasons to raise this errors are:</span>
+<span class="sd">      * The calculator is not properly configured</span>
+<span class="sd">        (missing executable, environment variables, ...)</span>
+<span class="sd">      * The given atoms object is not supported</span>
+<span class="sd">      * Calculator parameters are unsupported</span>
+
+<span class="sd">    Typically raised before a calculation.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">EnvironmentError</span><span class="p">(</span><span class="n">CalculatorSetupError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if calculator is not properly set up with ASE.</span>
+
+<span class="sd">    May be missing an executable or environment variables.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">InputError</span><span class="p">(</span><span class="n">CalculatorSetupError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised if inputs given to the calculator were incorrect.</span>
+
+<span class="sd">    Bad input keywords or values, or missing pseudopotentials.</span>
+
+<span class="sd">    This may be raised before or during calculation, depending on</span>
+<span class="sd">    when the problem is detected.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">CalculationFailed</span><span class="p">(</span><span class="n">CalculatorError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculation failed unexpectedly.</span>
+
+<span class="sd">    Reasons to raise this error are:</span>
+<span class="sd">      * Calculation did not converge</span>
+<span class="sd">      * Calculation ran out of memory</span>
+<span class="sd">      * Segmentation fault or other abnormal termination</span>
+<span class="sd">      * Arithmetic trouble (singular matrices, NaN, ...)</span>
+
+<span class="sd">    Typically raised during calculation.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">SCFError</span><span class="p">(</span><span class="n">CalculationFailed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SCF loop did not converge.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">ReadError</span><span class="p">(</span><span class="n">CalculatorError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unexpected irrecoverable error while reading calculation results.&quot;&quot;&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">PropertyNotImplementedError</span><span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;Raised if a calculator does not implement the requested property.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">PropertyNotPresent</span><span class="p">(</span><span class="n">CalculatorError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Requested property is missing.</span>
+
+<span class="sd">    Maybe it was never calculated, or for some reason was not extracted</span>
+<span class="sd">    with the rest of the results, without being a fatal ReadError.&quot;&quot;&quot;</span>
 
 
 <span class="k">def</span> <span class="nf">compare_atoms</span><span class="p">(</span><span class="n">atoms1</span><span class="p">,</span> <span class="n">atoms2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
@@ -222,7 +276,7 @@
          <span class="s1">&#39;exciting&#39;</span><span class="p">,</span> <span class="s1">&#39;fleur&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;gpaw&#39;</span><span class="p">,</span> <span class="s1">&#39;gromacs&#39;</span><span class="p">,</span> <span class="s1">&#39;gulp&#39;</span><span class="p">,</span>
          <span class="s1">&#39;hotbit&#39;</span><span class="p">,</span> <span class="s1">&#39;jacapo&#39;</span><span class="p">,</span> <span class="s1">&#39;lammpsrun&#39;</span><span class="p">,</span>
          <span class="s1">&#39;lammpslib&#39;</span><span class="p">,</span> <span class="s1">&#39;lj&#39;</span><span class="p">,</span> <span class="s1">&#39;mopac&#39;</span><span class="p">,</span> <span class="s1">&#39;morse&#39;</span><span class="p">,</span> <span class="s1">&#39;nwchem&#39;</span><span class="p">,</span> <span class="s1">&#39;octopus&#39;</span><span class="p">,</span> <span class="s1">&#39;onetep&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;siesta&#39;</span><span class="p">,</span> <span class="s1">&#39;tip3p&#39;</span><span class="p">,</span> <span class="s1">&#39;turbomole&#39;</span><span class="p">,</span> <span class="s1">&#39;vasp&#39;</span><span class="p">]</span>
+         <span class="s1">&#39;openmx&#39;</span><span class="p">,</span> <span class="s1">&#39;siesta&#39;</span><span class="p">,</span> <span class="s1">&#39;tip3p&#39;</span><span class="p">,</span> <span class="s1">&#39;turbomole&#39;</span><span class="p">,</span> <span class="s1">&#39;vasp&#39;</span><span class="p">]</span>
 
 
 <span class="n">special</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;cp2k&#39;</span><span class="p">:</span> <span class="s1">&#39;CP2K&#39;</span><span class="p">,</span>
@@ -239,6 +293,7 @@
            <span class="s1">&#39;mopac&#39;</span><span class="p">:</span> <span class="s1">&#39;MOPAC&#39;</span><span class="p">,</span>
            <span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="s1">&#39;MorsePotential&#39;</span><span class="p">,</span>
            <span class="s1">&#39;nwchem&#39;</span><span class="p">:</span> <span class="s1">&#39;NWChem&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;openmx&#39;</span><span class="p">:</span> <span class="s1">&#39;OpenMX&#39;</span><span class="p">,</span>
            <span class="s1">&#39;tip3p&#39;</span><span class="p">:</span> <span class="s1">&#39;TIP3P&#39;</span><span class="p">}</span>
 
 
@@ -250,6 +305,8 @@
         <span class="kn">from</span> <span class="nn">gpaw</span> <span class="k">import</span> <span class="n">GPAW</span> <span class="k">as</span> <span class="n">Calculator</span>
     <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;hotbit&#39;</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">hotbit</span> <span class="k">import</span> <span class="n">Calculator</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;vasp2&#39;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ase.calculators.vasp</span> <span class="k">import</span> <span class="n">Vasp2</span> <span class="k">as</span> <span class="n">Calculator</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">classname</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
         <span class="n">module</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">&#39;ase.calculators.&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="p">{},</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="n">classname</span><span class="p">])</span>
@@ -493,7 +550,7 @@
                 <span class="c1"># Atoms were read from file.  Update atoms:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">equal</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">)</span> <span class="ow">and</span>
                         <span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Atoms not compatible with file&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s1">&#39;Atoms not compatible with file&#39;</span><span class="p">)</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span>
 
@@ -617,6 +674,8 @@
         <span class="k">if</span> <span class="n">force_consistent</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;free_energy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+                <span class="c1"># XXX but we don&#39;t know why the energy is not there.</span>
+                <span class="c1"># We should raise PropertyNotPresent.  Discuss</span>
                 <span class="k">raise</span> <span class="n">PropertyNotImplementedError</span><span class="p">(</span>
                     <span class="s1">&#39;Force consistent/free energy (&quot;free_energy&quot;) &#39;</span>
                     <span class="s1">&#39;not provided by </span><span class="si">{0}</span><span class="s1"> calculator&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
@@ -812,7 +871,7 @@
         <span class="n">Calculator</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="n">CalculatorSetupError</span><span class="p">(</span>
                 <span class="s1">&#39;Please set $</span><span class="si">{}</span><span class="s1"> environment variable &#39;</span>
                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;ASE_&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_COMMAND&#39;</span><span class="p">)</span> <span class="o">+</span>
                 <span class="s1">&#39;or supply the command keyword&#39;</span><span class="p">)</span>
@@ -820,8 +879,9 @@
         <span class="n">errorcode</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">errorcode</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1"> returned an error: </span><span class="si">{}</span><span class="s1">&#39;</span>
-                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">errorcode</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">CalculationFailed</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1"> returned an error: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+                                            <span class="n">errorcode</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">read_results</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">write_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_changes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
