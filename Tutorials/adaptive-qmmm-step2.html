@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 3313985+ documentation</title>
+  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 0be1566+ documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
   
   
   
@@ -26,14 +26,16 @@
 
   
 
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html" />
+    <link rel="prev" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html" /> 
 
   
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -49,12 +51,12 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> quippy
+            <a href="../index.html" class="icon icon-home"> quippy
           
 
           
             
-            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
+            <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -62,14 +64,14 @@
             
             
               <div class="version">
-                3313985+
+                0be1566+
               </div>
             
           
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -87,24 +89,46 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-theory.html">Theoretical background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step1.html">Step 1: Setup of the Silicon model system</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Step 2: Classical MD simulation of fracture in Si</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#initialisation-of-the-atomic-system-20-minutes">2.1 Initialisation of the atomic system (20 minutes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-and-run-the-classical-md-20-minutes">2.2 Setup and run the classical MD (20 minutes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#visualisation-and-analysis-as-time-permits">2.3 Visualisation and Analysis (as time permits)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step3.html">Step 3: LOTF hybrid MD simulation of fracture in Si</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-solutions.html">Solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-references.html">References</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
 </ul>
 
             
           
     <p></p>
     <ul>
-        <li><a href="genindex.html">Index</a></li>
-        <li><a href="py-modindex.html">Module Index</a></li>
-        <li><a href="search.html">Search Page</a></li>
-        <li><a href="_modules/index.html">Module Source Code</a></li>
+        <li><a href="../genindex.html">Index</a></li>
+        <li><a href="../py-modindex.html">Module Index</a></li>
+        <li><a href="../search.html">Search Page</a></li>
+        <li><a href="../_modules/index.html">Module Source Code</a></li>
     </ul>
   
         </div>
@@ -117,7 +141,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">quippy</a>
+          <a href="../index.html">quippy</a>
         
       </nav>
 
@@ -146,7 +170,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+          <li><a href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li>
         
       <li>Step 2: Classical MD simulation of fracture in Si</li>
     
@@ -154,7 +182,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/adaptive-qmmm-step2.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/Tutorials/adaptive-qmmm-step2.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -190,7 +218,7 @@
 <span id="step2"></span><h1>Step 2: Classical MD simulation of fracture in Si<a class="headerlink" href="#step-2-classical-md-simulation-of-fracture-in-si" title="Permalink to this headline">¶</a></h1>
 <p>This part of the tutorial requires the initial crack structure <code class="docutils literal notranslate"><span class="pre">crack.xyz</span></code>
 produced in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a>. If you had problems completing the first part, you
-can <a class="reference download internal" download="" href="_downloads/8af0ac837b0f93817cdb0f97ebf5e86e/crack.xyz"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">it</span> <span class="pre">here</span></code></a> instead. Start by creating a new
+can <code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">it</span> <span class="pre">here</span></code> instead. Start by creating a new
 empty script, named <code class="docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code>.</p>
 <div class="section" id="initialisation-of-the-atomic-system-20-minutes">
 <h2>2.1 Initialisation of the atomic system (20 minutes)<a class="headerlink" href="#initialisation-of-the-atomic-system-20-minutes" title="Permalink to this headline">¶</a></h2>
@@ -215,7 +243,7 @@ empty script, named <code class="docutils literal notranslate"><span class="pre"
 </pre></div>
 </div>
 <p>Note that the molecular dynamics classes and functions come from
-<cite>ASE</cite>, while the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object, potentials and
+<cite>ASE</cite>, while the <a class="reference internal" href="../atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object, potentials and
 crack-specific functionality come from <cite>quippy</cite>.</p>
 </div>
 <div class="section" id="definition-of-the-simulation-parameters">
@@ -244,7 +272,7 @@ in the comments on the right of each line:</p>
 <div class="section" id="setup-of-the-atomic-structure">
 <h3>Setup of the atomic structure<a class="headerlink" href="#setup-of-the-atomic-structure" title="Permalink to this headline">¶</a></h3>
 <p>As a first step, we need to initialise the
-<a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object by loading the atomic structure created
+<a class="reference internal" href="../atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object by loading the atomic structure created
 in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a> from the <cite>input_file</cite> <code class="docutils literal notranslate"><span class="pre">crack.xyz</span></code>. Note that the global
 <cite>fortran_indexing</cite> setting should be set to <cite>False</cite>. Otherwise <cite>quippy</cite> uses
 atom indices in the range <span class="math notranslate nohighlight">\(1 \ldots N\)</span>, which would not be consistent with
@@ -292,18 +320,18 @@ the same way we did it in <cite>Step 1</cite> (i.e., using the
 </pre></div>
 </div>
 <p>This constraint needs to be attached to our <cite>atoms</cite> object
-(see <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_constraint" title="quippy.atoms.Atoms.set_constraint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_constraint()</span></code></a>):</p>
+(see <a class="reference internal" href="../atoms.html#quippy.atoms.Atoms.set_constraint" title="quippy.atoms.Atoms.set_constraint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_constraint()</span></code></a>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span> <span class="o">...</span>  <span class="c1"># Attach the constraints to atoms</span>
 </pre></div>
 </div>
 <p>To increase <span class="math notranslate nohighlight">\(\epsilon_{yy}\)</span> of all atoms at a constant rate (see
 the <cite>strain_rate</cite> and <cite>timestep</cite> <a class="reference internal" href="#parameters2"><span class="std std-ref">parameters</span></a>), we
-use the <a class="reference internal" href="crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstantStrainRate</span></code></a> class:</p>
+use the <a class="reference internal" href="../crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstantStrainRate</span></code></a> class:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">strain_atoms</span> <span class="o">=</span> <span class="n">ConstantStrainRate</span><span class="p">(</span><span class="n">orig_height</span><span class="p">,</span> <span class="n">strain_rate</span><span class="o">*</span><span class="n">timestep</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can look at the documentation for the
-<a class="reference internal" href="crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstantStrainRate</span></code></a> class to see how this works. The
+<a class="reference internal" href="../crack.html#quippy.crack.ConstantStrainRate" title="quippy.crack.ConstantStrainRate"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstantStrainRate</span></code></a> class to see how this works. The
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">adjust_positions()</span></code> routine simply increases the strain of
 all atoms. We will attach this to the dynamics in step 2.2 below.</p>
 </div>
@@ -311,7 +339,7 @@ all atoms. We will attach this to the dynamics in step 2.2 below.</p>
 <h3>Setup of the potential<a class="headerlink" href="#setup-of-the-potential" title="Permalink to this headline">¶</a></h3>
 <p>Before starting the MD simulation, the SW classical potential must be
 initialised and attached to the <cite>atoms</cite> object.  As in <cite>Step 1</cite>, we
-use quippy’s <a class="reference internal" href="potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> class, but now we
+use quippy’s <a class="reference internal" href="../potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> class, but now we
 need to pass the <cite>cutoff_skin</cite> parameter, which is used to decide when
 the neighbour list needs to be updated (see the attribute
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">cutoff_skin</span></code>). Moreover, we request
@@ -319,7 +347,7 @@ the potential to compute per-atom stresses whenever we compute forces
 using <code class="xref py py-meth docutils literal notranslate"><span class="pre">set_default_quantities()</span></code>, to
 save time when locating the crack tip (discussed in more detail
 <a class="reference internal" href="#position-crack-tip"><span class="std std-ref">below</span></a>). The
-<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.set_calculator" title="quippy.atoms.Atoms.set_calculator"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_calculator()</span></code></a> method should then be used
+<a class="reference internal" href="../atoms.html#quippy.atoms.Atoms.set_calculator" title="quippy.atoms.Atoms.set_calculator"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_calculator()</span></code></a> method should then be used
 to set the calculator to the SW potential:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mm_pot</span> <span class="o">=</span> <span class="o">...</span>   <span class="c1"># Initialise the SW potential with cutoff_skin</span>
 <span class="n">mm_pot</span><span class="o">.</span><span class="n">set_default_quantities</span><span class="p">([</span><span class="s1">&#39;stresses&#39;</span><span class="p">])</span>
@@ -329,7 +357,7 @@ to set the calculator to the SW potential:</p>
 </div>
 <div class="section" id="milestone-2-1">
 <h3>Milestone 2.1<a class="headerlink" href="#milestone-2-1" title="Permalink to this headline">¶</a></h3>
-<p>At this stage your script should look something like <a class="reference download internal" download="" href="_downloads/30e95806dbe56791c6478e1a62f14f76/run_crack_classical_1.py"><code class="xref download docutils literal notranslate"><span class="pre">this</span></code></a>.</p>
+<p>At this stage your script should look something like <a class="reference download internal" download="" href="../_downloads/88e6e0210271f9314e0fe935df418a02/run_crack_classical_1.py"><code class="xref download docutils literal notranslate"><span class="pre">this</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="setup-and-run-the-classical-md-20-minutes">
@@ -357,7 +385,7 @@ arguments: the atoms and the time step (which should come from the
 <h3>Printing status information<a class="headerlink" href="#printing-status-information" title="Permalink to this headline">¶</a></h3>
 <p>Let’s also define a function that prints the relevant information at
 each time step of the MD simulation. The information can be saved
-inside the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms.info" title="quippy.atoms.Atoms.info"><code class="xref py py-attr docutils literal notranslate"><span class="pre">info</span></code></a> dictionary, so that it
+inside the <a class="reference internal" href="../atoms.html#quippy.atoms.Atoms.info" title="quippy.atoms.Atoms.info"><code class="xref py py-attr docutils literal notranslate"><span class="pre">info</span></code></a> dictionary, so that it
 also gets saved to the trajectory file <cite>traj_file</cite>.</p>
 <p>The elapsed simulation time can be obtained with
 <code class="docutils literal notranslate"><span class="pre">dynamics.get_time()</span></code> (note that the time unit in ASE is
@@ -365,8 +393,8 @@ also gets saved to the trajectory file <cite>traj_file</cite>.</p>
 should use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_kinetic_energy()</span></code> method to
 calculate the temperature (<em>Note</em>: you will need the <code class="xref py py-attr docutils literal notranslate"><span class="pre">units.kB</span></code>
 constant, which gives the value of the Boltzmann constant in eV/K),
-and the functions <a class="reference internal" href="crack.html#quippy.crack.get_strain" title="quippy.crack.get_strain"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_strain()</span></code></a> and
-<a class="reference internal" href="crack.html#quippy.crack.get_energy_release_rate" title="quippy.crack.get_energy_release_rate"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_energy_release_rate()</span></code></a> to return the current
+and the functions <a class="reference internal" href="../crack.html#quippy.crack.get_strain" title="quippy.crack.get_strain"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_strain()</span></code></a> and
+<a class="reference internal" href="../crack.html#quippy.crack.get_energy_release_rate" title="quippy.crack.get_energy_release_rate"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_energy_release_rate()</span></code></a> to return the current
 strain energy release rate, respectively.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">printstatus</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">dynamics</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -427,15 +455,15 @@ of <cite>strain_atoms</cite> to the dynamics:</p>
 <p>Finally, we need to initialise the trajectory file <cite>traj_file</cite> and to
 save frames to the trajectory every <cite>traj_interval</cite> time steps. This
 is done by creating a trajectory object with the
-<a class="reference internal" href="io.html#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><code class="xref py py-func docutils literal notranslate"><span class="pre">AtomsWriter()</span></code></a> function, and then attaching this
+<a class="reference internal" href="../io.html#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><code class="xref py py-func docutils literal notranslate"><span class="pre">AtomsWriter()</span></code></a> function, and then attaching this
 trajectory to the <cite>dynamics</cite>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trajectory</span> <span class="o">=</span> <span class="o">...</span>    <span class="c1"># Initialise the trajectory</span>
 <span class="n">dynamics</span><span class="o">.</span> <span class="o">...</span>       <span class="c1"># Attach the trajectory with an interval of</span>
                     <span class="c1"># traj_interval, passing atoms as an extra argument</span>
 </pre></div>
 </div>
-<p>We will save the trajectory in <a class="reference internal" href="io.html#netcdf"><span class="std std-ref">NetCDF</span></a> format. This is a binary
-file format that is similar with the <a class="reference internal" href="io.html#extendedxyz"><span class="std std-ref">Extended XYZ</span></a> format we used
+<p>We will save the trajectory in <a class="reference internal" href="../io.html#netcdf"><span class="std std-ref">NetCDF</span></a> format. This is a binary
+file format that is similar with the <a class="reference internal" href="../io.html#extendedxyz"><span class="std std-ref">Extended XYZ</span></a> format we used
 earlier, with the advantage of being more efficient for large files.</p>
 </div>
 <div class="section" id="running-the-dynamics">
@@ -489,8 +517,8 @@ support enabled, using the shell command:</p>
 simulation while it continues to run. All the example code given in
 this section should be entered directly at the <cite>ipython</cite> prompt.</p>
 <p>The first step is to import everything from <cite>quippy</cite> using the
-<a class="reference internal" href="qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code></a> interactive module, then open your trajectory using the
-<a class="reference internal" href="qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a> function:</p>
+<a class="reference internal" href="../qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code></a> interactive module, then open your trajectory using the
+<a class="reference internal" href="../qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">qlab</span> <span class="k">import</span> <span class="o">*</span>
 <span class="n">set_fortran_indexing</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">view</span><span class="p">(</span><span class="s2">&quot;traj.nc&quot;</span><span class="p">)</span>
@@ -504,13 +532,13 @@ trajectory, or <cite>Ctrl+Insert</cite> and <cite>Ctrl+Delete</cite> to jump to 
 frame – note that the focus must be on the AtomEye viewer window when you use
 any keyboard shortcuts. The current frame number is shown in the title bar of
 the window.</p>
-<p>The function <a class="reference internal" href="qlab.html#qlab.gcat" title="qlab.gcat"><code class="xref py py-func docutils literal notranslate"><span class="pre">gcat()</span></code></a> (short for “get current atoms”) returns a
-reference to the <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object currently being visualised (i.e. to the
-current frame from the trajectory file). Similarly, the <a class="reference internal" href="qlab.html#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal notranslate"><span class="pre">gcv()</span></code></a>
+<p>The function <a class="reference internal" href="../qlab.html#qlab.gcat" title="qlab.gcat"><code class="xref py py-func docutils literal notranslate"><span class="pre">gcat()</span></code></a> (short for “get current atoms”) returns a
+reference to the <a class="reference internal" href="../atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object currently being visualised (i.e. to the
+current frame from the trajectory file). Similarly, the <a class="reference internal" href="../qlab.html#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal notranslate"><span class="pre">gcv()</span></code></a>
 function returns a reference to the entire trajectory currently being viewed as
-an <a class="reference internal" href="qlab.html#qlab.AtomsReaderViewer" title="qlab.AtomsReaderViewer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReaderViewer</span></code></a> object.</p>
+an <a class="reference internal" href="../qlab.html#qlab.AtomsReaderViewer" title="qlab.AtomsReaderViewer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReaderViewer</span></code></a> object.</p>
 <p>You can change the frame increment rate by setting
-the <a class="reference internal" href="atomeye.html#atomeye.AtomEyeViewer.delta" title="atomeye.AtomEyeViewer.delta"><code class="xref py py-attr docutils literal notranslate"><span class="pre">delta</span></code></a> attribute of the viewer, e.g. to
+the <a class="reference internal" href="../atomeye.html#atomeye.AtomEyeViewer.delta" title="atomeye.AtomEyeViewer.delta"><code class="xref py py-attr docutils literal notranslate"><span class="pre">delta</span></code></a> attribute of the viewer, e.g. to
 advance by ten frames at a time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">set_delta</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
@@ -549,7 +577,7 @@ do</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">sigma_yy</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/sigma_yy.png"><img alt="_images/sigma_yy.png" class="align-center" src="_images/sigma_yy.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/sigma_yy.png"><img alt="../_images/sigma_yy.png" class="align-center" src="../_images/sigma_yy.png" style="width: 600px;" /></a>
 <p>The concept of per-atom stresses is a little arbitrary. The values we
 are plotting here were obtained from partitioning the total virial
 stress tensor, which is given by</p>
@@ -567,7 +595,7 @@ the <span class="math notranslate nohighlight">\(j\)</span>th component of the f
 near zero temperature, and it is common to use the second term to
 define a per-atom stress tensor.</p>
 <p>Note, however, that this requires a definition of the atomic volume. By default
-the <a class="reference internal" href="potential.html#quippy.potential.Potential.get_stresses" title="quippy.potential.Potential.get_stresses"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_stresses()</span></code></a> function simply divides the
+the <a class="reference internal" href="../potential.html#quippy.potential.Potential.get_stresses" title="quippy.potential.Potential.get_stresses"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_stresses()</span></code></a> function simply divides the
 total cell volume by the number of atoms to get the volume per atom. This is
 not a very good approximation for our cell, which contains a lot of empty
 vacuum, so the volume per atom comes out much too large, and the stress
@@ -601,10 +629,10 @@ produce a plot.</p>
 Reload with <code class="docutils literal notranslate"><span class="pre">view(&quot;traj.nc&quot;)</span></code> to see what is happening. You can jump to the
 end with <cite>Ctrl+Delete</cite>, or by typing <cite>last()</cite> into the <cite>ipython</cite> console. Here
 is what the instantaneous <span class="math notranslate nohighlight">\(\sigma_{yy}\)</span> looks like after 5 ps of dynamics:</p>
-<a class="reference internal image-reference" href="_images/classical-crack-sigma-yy.png"><img alt="_images/classical-crack-sigma-yy.png" class="align-center" src="_images/classical-crack-sigma-yy.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/classical-crack-sigma-yy.png"><img alt="../_images/classical-crack-sigma-yy.png" class="align-center" src="../_images/classical-crack-sigma-yy.png" style="width: 600px;" /></a>
 <p>As you can see, the stress field is rather noisy because of
 contributions made by the random thermal motion of atoms. The
-<a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a> uses an exponential
+<a class="reference internal" href="../crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a> uses an exponential
 moving average of the stress field when finding the tip. This average
 is stored in the <code class="docutils literal notranslate"><span class="pre">avg_sigma</span></code> <code class="xref py py-attr docutils literal notranslate"><span class="pre">array</span> <span class="pre">entry</span></code> inside the Atoms object, which is saved
 with each frame in the trajectory. For techical reasons this is stored
@@ -616,12 +644,12 @@ i.e.</p>
 </pre></div>
 </div>
 <p>You should find that the crack tip is more well defined in the average stress:</p>
-<a class="reference internal image-reference" href="_images/classical-crack-sigma-yy-average.png"><img alt="_images/classical-crack-sigma-yy-average.png" class="align-center" src="_images/classical-crack-sigma-yy-average.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/classical-crack-sigma-yy-average.png"><img alt="../_images/classical-crack-sigma-yy-average.png" class="align-center" src="../_images/classical-crack-sigma-yy-average.png" style="width: 600px;" /></a>
 </div>
 <div class="section" id="geometry-and-coordination-analysis">
 <span id="coordination"></span><h3>Geometry and coordination analysis<a class="headerlink" href="#geometry-and-coordination-analysis" title="Permalink to this headline">¶</a></h3>
 <p>Press <cite>k</cite> to colour the atoms by coordination. This is based on the
-<a class="reference internal" href="atoms.html#quippy.atoms.Atoms.nneightol" title="quippy.atoms.Atoms.nneightol"><code class="xref py py-attr docutils literal notranslate"><span class="pre">nneightol</span></code></a> attribute of the Atoms object, which we set
+<a class="reference internal" href="../atoms.html#quippy.atoms.Atoms.nneightol" title="quippy.atoms.Atoms.nneightol"><code class="xref py py-attr docutils literal notranslate"><span class="pre">nneightol</span></code></a> attribute of the Atoms object, which we set
 to a value of 1.3 in the <code class="docutils literal notranslate"><span class="pre">make_crack.py</span></code> script. This factor acts as
 a multipler for the covalent radii of the atomic species, taken from
 the <code class="xref py py-attr docutils literal notranslate"><span class="pre">quippy.periodictable.ElementCovRad</span></code> array. You can check
@@ -637,12 +665,12 @@ large number of defects, indicating that the fracture surface is not
 atomically smooth as we find it to be in experiments. In your
 simulation you may be able to spot signs of energy dissipation
 mechanisms, such as dislocation emission from the crack tip.</p>
-<a class="reference internal image-reference" href="_images/classical-crack-coordination.png"><img alt="_images/classical-crack-coordination.png" class="align-center" src="_images/classical-crack-coordination.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/classical-crack-coordination.png"><img alt="../_images/classical-crack-coordination.png" class="align-center" src="../_images/classical-crack-coordination.png" style="width: 600px;" /></a>
 </div>
 <div class="section" id="rendering-a-movie-of-the-simulation">
 <span id="render-movie"></span><h3>Rendering a movie of the simulation<a class="headerlink" href="#rendering-a-movie-of-the-simulation" title="Permalink to this headline">¶</a></h3>
 <p>If you would like to make a movie of your simulation, you can use
-the <a class="reference internal" href="qlab.html#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-func docutils literal notranslate"><span class="pre">render_movie()</span></code></a> function. Arrange the AtomEye window so that the
+the <a class="reference internal" href="../qlab.html#qlab.render_movie" title="qlab.render_movie"><code class="xref py py-func docutils literal notranslate"><span class="pre">render_movie()</span></code></a> function. Arrange the AtomEye window so that the
 crack is on the left hand side of the window at the beginning of the simulation
 and near the right hand side at the end, then run the command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">render_movie</span><span class="p">(</span><span class="s1">&#39;movie.mp4&#39;</span><span class="p">)</span>
@@ -669,7 +697,7 @@ way short.</p>
 </div>
 <div class="section" id="position-of-the-crack-tip">
 <span id="position-crack-tip"></span><h3>Position of the crack tip<a class="headerlink" href="#position-of-the-crack-tip" title="Permalink to this headline">¶</a></h3>
-<p>The <a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a> function works by
+<p>The <a class="reference internal" href="../crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a> function works by
 fitting per-atom stresses calculated with the SW potential (the
 concept of per-atom stresses will be discussed in more detail below)
 in the region near the crack tip to the Irwin solution for a singular
@@ -680,7 +708,7 @@ crack tip under Mode I loading, which is of the form</p>
 angular dependence is given by the set of universal functions
 <span class="math notranslate nohighlight">\(f_{ij}(\theta)\)</span>.</p>
 <p>You can verify this by comparing the position detected by
-<a class="reference internal" href="crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a>,  stored in the
+<a class="reference internal" href="../crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a>,  stored in the
 <cite>crack_pos</cite> attribute, with the positions of atoms that visually look
 to be near the tip — <cite>right click</cite> on atoms in the AtomEye
 viewer window to print information about them, including their
@@ -694,9 +722,9 @@ crack tip to be treated at the QM level?</p>
 </div>
 <div class="section" id="evolution-of-energy-release-rate-and-crack-position">
 <span id="plot-g-and-crack-pos-x"></span><h3>Evolution of energy release rate and crack position<a class="headerlink" href="#evolution-of-energy-release-rate-and-crack-position" title="Permalink to this headline">¶</a></h3>
-<p>For <a class="reference internal" href="io.html#netcdf"><span class="std std-ref">NetCDF</span></a> trajectories,
+<p>For <a class="reference internal" href="../io.html#netcdf"><span class="std std-ref">NetCDF</span></a> trajectories,
 the <code class="xref py py-attr docutils literal notranslate"><span class="pre">AtomsReaderViewer.reader.netcdf_file</span></code> attribute of the current
-viewer object <a class="reference internal" href="qlab.html#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal notranslate"><span class="pre">gcv()</span></code></a> provides direct access to the underlying NetCDF
+viewer object <a class="reference internal" href="../qlab.html#qlab.gcv" title="qlab.gcv"><code class="xref py py-func docutils literal notranslate"><span class="pre">gcv()</span></code></a> provides direct access to the underlying NetCDF
 file using the Python <a class="reference external" href="http://code.google.com/p/netcdf4-python/">netCDF4 module</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traj</span> <span class="o">=</span> <span class="n">gcv</span><span class="p">()</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">netcdf_file</span>
@@ -719,7 +747,7 @@ that we increment at a constant rate).</p>
 position of the crack (red; stored as <cite>crack_pos_x</cite>). Note that a
 second vertical axis can be produced with the
 <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.twinx.html#matplotlib.pyplot.twinx" title="(in Matplotlib v3.0.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">twinx()</span></code></a> function.</p>
-<a class="reference internal image-reference" href="_images/energy-release-rate-crack-position.png"><img alt="_images/energy-release-rate-crack-position.png" class="align-center" src="_images/energy-release-rate-crack-position.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/energy-release-rate-crack-position.png"><img alt="../_images/energy-release-rate-crack-position.png" class="align-center" src="../_images/energy-release-rate-crack-position.png" style="width: 600px;" /></a>
 <p>In this case the crack actually arrests for a while at around <span class="math notranslate nohighlight">\(t
 = 6\)</span> ps. This is another characteristic feature of non-brittle
 fracture, indicating that our simulation is failing to match well
@@ -734,7 +762,7 @@ choice of interatomic potential? How would you check this?</p>
 <p>Using the method above, plot the evolution of the temperature during
 your simulation. Here is another example plot, with the temperature
 shown in blue and the crack position in red.</p>
-<a class="reference internal image-reference" href="_images/temperature-crack-position.png"><img alt="_images/temperature-crack-position.png" class="align-center" src="_images/temperature-crack-position.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/temperature-crack-position.png"><img alt="../_images/temperature-crack-position.png" class="align-center" src="../_images/temperature-crack-position.png" style="width: 600px;" /></a>
 <p>You will see that lots of heat is produced once the crack starts to
 move, indicating that the system is far from equilibrium. This is
 another sign that our system is rather small and our strain rate is
@@ -765,7 +793,7 @@ trajectory and use the speeds data to produce a histogram:</p>
 <span class="n">plot</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">max_bolt</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">ss</span><span class="p">),</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/crack-max-bolt-distrib.png"><img alt="_images/crack-max-bolt-distrib.png" class="align-center" src="_images/crack-max-bolt-distrib.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/crack-max-bolt-distrib.png"><img alt="../_images/crack-max-bolt-distrib.png" class="align-center" src="../_images/crack-max-bolt-distrib.png" style="width: 600px;" /></a>
 </div>
 <div class="section" id="atom-resolved-strain-tensor">
 <span id="arsf"></span><h3>Atom-resolved strain tensor<a class="headerlink" href="#atom-resolved-strain-tensor" title="Permalink to this headline">¶</a></h3>
@@ -809,7 +837,7 @@ axes:</p>
 <p>Finally if we assume linear elasticity applies, the atomistic stress
 can be computed simply as <span class="math notranslate nohighlight">\(\bm\sigma = C \bm\epsilon\)</span> where
 <span class="math notranslate nohighlight">\(C\)</span> is the <span class="math notranslate nohighlight">\(6\times6\)</span> matrix of elastic constants.</p>
-<p>The <a class="reference internal" href="elasticity.html#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomResolvedStressField</span></code></a> class
+<p>The <a class="reference internal" href="../elasticity.html#quippy.elasticity.AtomResolvedStressField" title="quippy.elasticity.AtomResolvedStressField"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomResolvedStressField</span></code></a> class
 implements this approach. To use it to calculate the stress in your
 <cite>crack_slab</cite> Atoms object, you can use the following code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">arsf</span> <span class="o">=</span> <span class="n">AtomResolvedStressField</span><span class="p">(</span><span class="n">bulk</span><span class="o">=</span><span class="n">si_bulk</span><span class="p">)</span>
@@ -834,6 +862,15 @@ components computed using the two methods change much?</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="adaptive-qmmm-step3.html" class="btn btn-neutral float-right" title="Step 3: LOTF hybrid MD simulation of fracture in Si" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="adaptive-qmmm-step1.html" class="btn btn-neutral" title="Step 1: Setup of the Silicon model system" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -861,16 +898,16 @@ components computed using the two methods change much?</p>
 
     
     
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
 
-  <script type="text/javascript" src="_static/js/theme.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

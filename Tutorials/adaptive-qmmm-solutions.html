@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Solutions &mdash; quippy 3313985+ documentation</title>
+  <title>Solutions &mdash; quippy 0be1566+ documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
   
   
   
@@ -26,14 +26,16 @@
 
   
 
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="References" href="adaptive-qmmm-references.html" />
+    <link rel="prev" title="Step 3: LOTF hybrid MD simulation of fracture in Si" href="adaptive-qmmm-step3.html" /> 
 
   
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -49,12 +51,12 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> quippy
+            <a href="../index.html" class="icon icon-home"> quippy
           
 
           
             
-            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
+            <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -62,14 +64,14 @@
             
             
               <div class="version">
-                3313985+
+                0be1566+
               </div>
             
           
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -87,24 +89,46 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-theory.html">Theoretical background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step1.html">Step 1: Setup of the Silicon model system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step2.html">Step 2: Classical MD simulation of fracture in Si</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step3.html">Step 3: LOTF hybrid MD simulation of fracture in Si</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Solutions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-solution-make-crack-py">Step 1 solution — <code class="docutils literal notranslate"><span class="pre">make_crack.py</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-solution-run-crack-classical-py">Step 2 solution — <code class="docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-solution-run-crack-lotf-py">Step 3 solution — <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-references.html">References</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
 </ul>
 
             
           
     <p></p>
     <ul>
-        <li><a href="genindex.html">Index</a></li>
-        <li><a href="py-modindex.html">Module Index</a></li>
-        <li><a href="search.html">Search Page</a></li>
-        <li><a href="_modules/index.html">Module Source Code</a></li>
+        <li><a href="../genindex.html">Index</a></li>
+        <li><a href="../py-modindex.html">Module Index</a></li>
+        <li><a href="../search.html">Search Page</a></li>
+        <li><a href="../_modules/index.html">Module Source Code</a></li>
     </ul>
   
         </div>
@@ -117,7 +141,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">quippy</a>
+          <a href="../index.html">quippy</a>
         
       </nav>
 
@@ -146,7 +170,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+          <li><a href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li>
         
       <li>Solutions</li>
     
@@ -154,7 +182,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/adaptive-qmmm-solutions.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/Tutorials/adaptive-qmmm-solutions.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -190,7 +218,7 @@
 <h1>Solutions<a class="headerlink" href="#solutions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="step-1-solution-make-crack-py">
 <span id="make-crack"></span><h2>Step 1 solution — <code class="docutils literal notranslate"><span class="pre">make_crack.py</span></code><a class="headerlink" href="#step-1-solution-make-crack-py" title="Permalink to this headline">¶</a></h2>
-<p>Download <a class="reference download internal" download="" href="_downloads/7f1167b842dba54a5bddebd9d219fd95/make_crack.py"><code class="xref download docutils literal notranslate"><span class="pre">make_crack.py</span></code></a></p>
+<p>Download <a class="reference download internal" download="" href="../_downloads/df41e1fe21e67c537e56c9c0bac21586/make_crack.py"><code class="xref download docutils literal notranslate"><span class="pre">make_crack.py</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">make_crack.py</span>
 
@@ -442,7 +470,7 @@
 </div>
 <div class="section" id="step-2-solution-run-crack-classical-py">
 <span id="run-crack-classical"></span><h2>Step 2 solution — <code class="docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code><a class="headerlink" href="#step-2-solution-run-crack-classical-py" title="Permalink to this headline">¶</a></h2>
-<p>Download <a class="reference download internal" download="" href="_downloads/3b62bc7be2e1367b52d7558ffb93db5c/run_crack_classical.py"><code class="xref download docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code></a></p>
+<p>Download <a class="reference download internal" download="" href="../_downloads/97a9026d6ccedee9572afdff54b93c12/run_crack_classical.py"><code class="xref download docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">run_crack_classical.py</span>
 
@@ -582,7 +610,7 @@
 </div>
 <div class="section" id="step-3-solution-run-crack-lotf-py">
 <span id="run-crack-lotf"></span><h2>Step 3 solution — <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code><a class="headerlink" href="#step-3-solution-run-crack-lotf-py" title="Permalink to this headline">¶</a></h2>
-<p>Download <a class="reference download internal" download="" href="_downloads/03d27d83aea59e942a138b1ad37271f8/run_crack_lotf.py"><code class="xref download docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code></a></p>
+<p>Download <a class="reference download internal" download="" href="../_downloads/6796d4b41d5c4d2b74d531df497da8ef/run_crack_lotf.py"><code class="xref download docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">run_crack_lotf.py</span>
 <span class="sd">Script to run LOTF molecular dynamics for a crack slab,</span>
@@ -790,6 +818,15 @@
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="adaptive-qmmm-references.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="adaptive-qmmm-step3.html" class="btn btn-neutral" title="Step 3: LOTF hybrid MD simulation of fracture in Si" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
   <hr/>
 
@@ -816,16 +853,16 @@
 
     
     
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
 
-  <script type="text/javascript" src="_static/js/theme.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

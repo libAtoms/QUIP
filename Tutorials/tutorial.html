@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introductory Tutorial &mdash; quippy 3313985+ documentation</title>
+  <title>Introductory Tutorial &mdash; quippy 0be1566+ documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                3313985+
+                0be1566+
               </div>
             
           
@@ -370,7 +370,7 @@ your new Atoms object by creating an <a class="reference internal" href="../qlab
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">dia</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="Tutorials/si8.png" class="align-center" src="Tutorials/si8.png" />
+<img alt="../_images/si8.png" class="align-center" src="../_images/si8.png" />
 <p>An AtomEye window should pop up with a 3D representation of the
 silicon crystal. Right clicking on an atom prints information about it:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Atom</span> <span class="mi">3</span>
@@ -427,7 +427,7 @@ of 3 x 3 x 3 <a class="reference internal" href="../structures.html#quippy.struc
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq</span><span class="p">)</span> <span class="c1"># only do this if AtomEye plugin is installed</span>
 </pre></div>
 </div>
-<img alt="Tutorials/alphaquartz.png" class="align-center" src="Tutorials/alphaquartz.png" />
+<img alt="../_images/alphaquartz.png" class="align-center" src="../_images/alphaquartz.png" />
 <p>This cell contains 243 atoms. Let’s look at the
 <a class="reference internal" href="../atoms.html#quippy.atoms.Atoms.lattice" title="quippy.atoms.Atoms.lattice"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lattice</span></code></a> vectors, which are stored in a 3 x 3 matrix
 with <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">aq.lattice[:,1]</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">aq.lattice[:,2]</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">=</span>
@@ -505,7 +505,7 @@ are within the first unit cell using <a class="reference internal" href="../atom
 <span class="gp">&gt;&gt;&gt; </span><span class="n">view</span><span class="p">(</span><span class="n">aq2</span><span class="p">)</span> <span class="c1"># only if AtomEye is available</span>
 </pre></div>
 </div>
-<img alt="Tutorials/alphaquartz2.png" class="align-center" src="Tutorials/alphaquartz2.png" />
+<img alt="../_images/alphaquartz2.png" class="align-center" src="../_images/alphaquartz2.png" />
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">AtomEye has a different idea of the first unit-cell than quippy.
@@ -521,7 +521,7 @@ simulations conducted with QUIP and libAtoms. It can read and write
 Atoms objects to and from a variety of file formats, with extended XYZ
 and NetCDF being the natively supported formats. Let’s see how we
 might construct a simple script to load and analyse some simulation data.</p>
-<p>The first example is <code class="xref download docutils literal notranslate"><span class="pre">si-1000.xyz</span></code>, which contains snapshots
+<p>The first example is <a class="reference download internal" download="" href="../_downloads/566b02ca4fe98438297e98184fb22b44/si-1000.xyz"><code class="xref download docutils literal notranslate"><span class="pre">si-1000.xyz</span></code></a>, which contains snapshots
 from a molecular dynamics simulation of silicon with the
 Stillinger-Weber potential, starting from a randomised velocity
 distribution at a temperature of 1000K (see <a class="reference internal" href="../tutorial.html#moleculardynamics"><span class="std std-ref">Potentials and DynamicalSystems</span></a>
@@ -612,7 +612,7 @@ within the file (length 100 here), the second to the spatial dimension
 <p>The last command is only necessary if you want to save the plot. See the
 <a class="reference external" href="http://matplotlib.sourceforge.net/">matplotlib documentation</a> for a lot more
 information about plotting.</p>
-<a class="reference internal image-reference" href="Tutorials/potentialenergy.png"><img alt="Tutorials/potentialenergy.png" class="align-center" src="Tutorials/potentialenergy.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/potentialenergy.png"><img alt="../_images/potentialenergy.png" class="align-center" src="../_images/potentialenergy.png" style="width: 600px;" /></a>
 <p>We can calculate the kinetic energy of each frame with another
 list comprehension:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ke</span> <span class="o">=</span> <span class="p">[</span><span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">mass</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">velo</span><span class="o">.</span><span class="n">norm2</span><span class="p">())</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">al</span><span class="p">]</span>
@@ -642,7 +642,7 @@ energies to our graph:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;Potential energy&#39;</span><span class="p">,</span> <span class="s1">&#39;Kinetic energy&#39;</span><span class="p">,</span> <span class="s1">&#39;Total energy&#39;</span><span class="p">],</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center right&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="Tutorials/totalenergy.png"><img alt="Tutorials/totalenergy.png" class="align-center" src="Tutorials/totalenergy.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/totalenergy.png"><img alt="../_images/totalenergy.png" class="align-center" src="../_images/totalenergy.png" style="width: 600px;" /></a>
 <p>We can see that the total energy is fairly well conserved, indicating
 that the time-step used for this simulation was appropriate. Let’s
 compare the distribution of atomic speeds in the second half of this
@@ -700,7 +700,7 @@ enclosing them between dollar signs: <code class="docutils literal notranslate">
 Python to treat it as a <cite>raw string</cite>, meaning that backslash characters
 do not have to be escaped.</p>
 </div>
-<a class="reference internal image-reference" href="Tutorials/velocitydistribution.png"><img alt="Tutorials/velocitydistribution.png" class="align-center" src="Tutorials/velocitydistribution.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/velocitydistribution.png"><img alt="../_images/velocitydistribution.png" class="align-center" src="../_images/velocitydistribution.png" style="width: 600px;" /></a>
 </div>
 <div class="section" id="potentials-and-dynamicalsystems">
 <span id="moleculardynamics"></span><h2><a class="toc-backref" href="#id7">Potentials and DynamicalSystems</a><a class="headerlink" href="#potentials-and-dynamicalsystems" title="Permalink to this headline">¶</a></h2>
@@ -809,7 +809,7 @@ using the <a class="reference internal" href="../atomeye.html#atomeye.draw_arrow
 <span class="gp">&gt;&gt;&gt; </span><span class="n">draw_arrows</span><span class="p">(</span><span class="s1">&#39;force&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="Tutorials/forces.png"><img alt="Tutorials/forces.png" class="align-center" src="Tutorials/forces.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/forces.png"><img alt="../_images/forces.png" class="align-center" src="../_images/forces.png" style="width: 600px;" /></a>
 <p>To perform a molecular dynamics calculation using our potential, we
 need to create a <a class="reference internal" href="../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem" title="quippy.dynamicalsystem.DynamicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicalSystem</span></code></a> object from our <a class="reference internal" href="../atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a>
 object. This stores all the dynamical variables and has methods
@@ -973,7 +973,7 @@ energy using <a class="reference internal" href="../atoms.html#quippy.atoms.Atom
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">volumes</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="s1">&#39;bo&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Unrelaxed&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="Tutorials/energyvolume1.png"><img alt="Tutorials/energyvolume1.png" class="align-center" src="Tutorials/energyvolume1.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/energyvolume1.png"><img alt="../_images/energyvolume1.png" class="align-center" src="../_images/energyvolume1.png" style="width: 600px;" /></a>
 <p>Fitting the equation of state requires the <code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.optimize</span></code>
 module, so you need <a class="reference external" href="http://www.scipy.org">scipy</a> installed to run
 this example. We need to define an error function, which will make use
@@ -1020,7 +1020,7 @@ sequence <cite>params</cite> for the first four arguments to
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">birch_energy</span><span class="p">(</span><span class="n">vo</span> <span class="p">,</span> <span class="n">eo</span> <span class="p">,</span> <span class="n">bo</span> <span class="p">,</span> <span class="n">bop</span> <span class="p">,</span> <span class="n">vs</span><span class="p">))</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="Tutorials/energyvolume2.png"><img alt="Tutorials/energyvolume2.png" class="align-center" src="Tutorials/energyvolume2.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/energyvolume2.png"><img alt="../_images/energyvolume2.png" class="align-center" src="../_images/energyvolume2.png" style="width: 600px;" /></a>
 </div>
 </div>
 

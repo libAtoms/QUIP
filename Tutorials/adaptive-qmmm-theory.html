@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Theoretical background &mdash; quippy 3313985+ documentation</title>
+  <title>Theoretical background &mdash; quippy 0be1566+ documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
   
   
   
@@ -26,14 +26,16 @@
 
   
 
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Step 1: Setup of the Silicon model system" href="adaptive-qmmm-step1.html" />
+    <link rel="prev" title="Introduction" href="adaptive-qmmm-step0.html" /> 
 
   
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -49,12 +51,12 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> quippy
+            <a href="../index.html" class="icon icon-home"> quippy
           
 
           
             
-            <img src="_static/hybrid.png" class="logo" alt="Logo"/>
+            <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -62,14 +64,14 @@
             
             
               <div class="version">
-                3313985+
+                0be1566+
               </div>
             
           
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -87,24 +89,46 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="teach_sparse.html">Command line options of the teach_sparse main program</a></li>
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Theoretical background</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#introduction-to-atomic-scale-modelling-of-fracture">Introduction to Atomic-scale Modelling of Fracture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classical-interatomic-potentials-for-silicon">Classical interatomic potentials for silicon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">QM/MM Force Mixing and the ‘Learn on the Fly’ scheme</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step1.html">Step 1: Setup of the Silicon model system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step2.html">Step 2: Classical MD simulation of fracture in Si</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step3.html">Step 3: LOTF hybrid MD simulation of fracture in Si</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-solutions.html">Solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-references.html">References</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../teach_sparse.html">Command line options of the teach_sparse main program</a></li>
 </ul>
 
             
           
     <p></p>
     <ul>
-        <li><a href="genindex.html">Index</a></li>
-        <li><a href="py-modindex.html">Module Index</a></li>
-        <li><a href="search.html">Search Page</a></li>
-        <li><a href="_modules/index.html">Module Source Code</a></li>
+        <li><a href="../genindex.html">Index</a></li>
+        <li><a href="../py-modindex.html">Module Index</a></li>
+        <li><a href="../search.html">Search Page</a></li>
+        <li><a href="../_modules/index.html">Module Source Code</a></li>
     </ul>
   
         </div>
@@ -117,7 +141,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">quippy</a>
+          <a href="../index.html">quippy</a>
         
       </nav>
 
@@ -146,7 +170,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+          <li><a href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a> &raquo;</li>
         
       <li>Theoretical background</li>
     
@@ -154,7 +182,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/adaptive-qmmm-theory.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/Tutorials/adaptive-qmmm-theory.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -194,7 +222,7 @@
 metals to ceramics and glasses. There are two broad classes of
 fracture: <em>brittle</em> and <em>ductile</em>.</p>
 <div class="figure align-center" id="id27">
-<a class="reference internal image-reference" href="_images/brittle-vs-ductile.png"><img alt="_images/brittle-vs-ductile.png" src="_images/brittle-vs-ductile.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/brittle-vs-ductile.png"><img alt="../_images/brittle-vs-ductile.png" src="../_images/brittle-vs-ductile.png" style="width: 600px;" /></a>
 <p class="caption"><span class="caption-text">Brittle and ductile failure of steel, at low and high temperature
 respectively. Image credit: <a class="reference external" href="http://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html">Internet Electron Microscopy website, UMIST</a></span></p>
 </div>
@@ -206,7 +234,7 @@ upon closer examination: brittle cracks are found to be atomically sharp,
 proceeding bond by bond, while ductile cracks remain rough at the microscale,
 driven by the formation and coalescence of microscopic voids.</p>
 <div class="figure align-center" id="id28">
-<a class="reference internal image-reference" href="_images/brittle-vs-ductile-microscale.png"><img alt="_images/brittle-vs-ductile-microscale.png" src="_images/brittle-vs-ductile-microscale.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/brittle-vs-ductile-microscale.png"><img alt="../_images/brittle-vs-ductile-microscale.png" src="../_images/brittle-vs-ductile-microscale.png" style="width: 600px;" /></a>
 <p class="caption"><span class="caption-text">Brittle and ductile failure mechanisms, for silica and aluminium respectively.
 Image credits: C. Marlière and A. Weck.</span></p>
 </div>
@@ -217,7 +245,7 @@ central panel is tilted to show the crack front). At higher temperatures,
 fracture is ductile, with the emission of multiple dislocations from the tip
 (right panel).</p>
 <div class="figure align-center" id="id29">
-<span id="si-tem-images"></span><a class="reference internal image-reference" href="_images/lawn-fracture-silicon.png"><img alt="_images/lawn-fracture-silicon.png" src="_images/lawn-fracture-silicon.png" style="width: 600px;" /></a>
+<span id="si-tem-images"></span><a class="reference internal image-reference" href="../_images/lawn-fracture-silicon.png"><img alt="../_images/lawn-fracture-silicon.png" src="../_images/lawn-fracture-silicon.png" style="width: 600px;" /></a>
 <p class="caption"><span class="caption-text">Transmission electron microscopy (TEM) images of a crack in silicon.
 Image reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id1">[Lawn1993]</a>.</span></p>
 </div>
@@ -239,7 +267,7 @@ well-known Griffith criterion for fracture propagation is based on thermodynamic
 energy balance between the release of elastic energy in an area
 proportional to <cite>c</cite><sup>2</sup> and the cost of creating new surfaces,
 which is proportional to <cite>c</cite>, as illustrated below.</p>
-<a class="reference internal image-reference" href="_images/griffith-criterion.png"><img alt="_images/griffith-criterion.png" class="align-center" src="_images/griffith-criterion.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/griffith-criterion.png"><img alt="../_images/griffith-criterion.png" class="align-center" src="../_images/griffith-criterion.png" style="width: 600px;" /></a>
 <p>This leads to a Griffith fracture strength for glass of</p>
 <div class="math notranslate nohighlight">
 \[\sigma_{fracture} = \sqrt{\frac{E\gamma\rho}{4ac}} \sim 100 \;\mathrm{MPa}\]</div>
@@ -280,7 +308,7 @@ to stress concentration which has been shown to diverge as
 to anharmonic stretching and rupture of bonds, which is typically not
 well captured by simple interatomic potentials.</p>
 <div class="figure align-center" id="id30">
-<span id="irwin-sig-yy"></span><a class="reference internal image-reference" href="_images/irwin-sig-yy.png"><img alt="_images/irwin-sig-yy.png" src="_images/irwin-sig-yy.png" style="width: 300px;" /></a>
+<span id="irwin-sig-yy"></span><a class="reference internal image-reference" href="../_images/irwin-sig-yy.png"><img alt="../_images/irwin-sig-yy.png" src="../_images/irwin-sig-yy.png" style="width: 300px;" /></a>
 <p class="caption"><span class="caption-text">Irwin near-field solution for <span class="math notranslate nohighlight">\(\sigma_{yy}\)</span> for a singular crack.
 Black is zero stress and yellow very high stress; note the divergence at the
 crack tip.</span></p>
@@ -298,7 +326,7 @@ with one another until surprisingly close to the crack tip (~1nm),
 where non-linear effects become important, as illustrated in the
 figure below.</p>
 <div class="figure align-center" id="id31">
-<a class="reference internal image-reference" href="_images/atomistic-vs-continuum.png"><img alt="_images/atomistic-vs-continuum.png" src="_images/atomistic-vs-continuum.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="../_images/atomistic-vs-continuum.png"><img alt="../_images/atomistic-vs-continuum.png" src="../_images/atomistic-vs-continuum.png" style="width: 400px;" /></a>
 <p class="caption"><span class="caption-text">Atomic and continuum calculations for the stress along the line ahead of a
 crack tip in silicon. Agreement is excellent beyond ~ 2 nm from the tip.
 Reproduced from G. Singh, J.R. Kermode, A. De Vita, R.W. Zimmerman,
@@ -325,7 +353,7 @@ describe how classical and QM descriptions can be coupled to study
 problems in fracture using the ‘Learn on the Fly’ (LOTF) approach in
 <a class="reference internal" href="#theory3"><span class="std std-ref">more detail</span></a> later in this tutorial.</p>
 <div class="figure align-center" id="id32">
-<a class="reference internal image-reference" href="_images/multiscale-coupling.png"><img alt="_images/multiscale-coupling.png" src="_images/multiscale-coupling.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/multiscale-coupling.png"><img alt="../_images/multiscale-coupling.png" src="../_images/multiscale-coupling.png" style="width: 500px;" /></a>
 <p class="caption"><span class="caption-text">Hierarchy of materials modelling techniques, showing simultaneous coupling
 of QM methods and empirical interatomic potentials. Image source: G. Csányi.</span></p>
 </div>
@@ -335,7 +363,7 @@ of QM methods and empirical interatomic potentials. Image source: G. Csányi.</
 <p>We will use the thin strip fracture loading geometry illustrated below for our
 fracture simulations, where the load is applied by displacing the top and bottom
 surfaces.</p>
-<a class="reference internal image-reference" href="_images/thin-strip.png"><img alt="_images/thin-strip.png" class="align-center" src="_images/thin-strip.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/thin-strip.png"><img alt="../_images/thin-strip.png" class="align-center" src="../_images/thin-strip.png" style="width: 500px;" /></a>
 <p>The advantage of this setup is that the energy release rate <cite>G</cite> does not depend
 on the crack length, and can be found analytically by considering the energetics
 of an advancing crack.</p>
@@ -458,7 +486,7 @@ region”, as illustrated below. The calculation of the QM forces is
 carried out on a cluster made from the QM + buffer regions, after
 suitable termination with H atoms.</p>
 <div class="figure align-center" id="id33">
-<a class="reference internal image-reference" href="_images/buffer-region.png"><img alt="_images/buffer-region.png" src="_images/buffer-region.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../_images/buffer-region.png"><img alt="../_images/buffer-region.png" src="../_images/buffer-region.png" style="width: 600px;" /></a>
 <p class="caption"><span class="caption-text">The finite buffer termination strategy. Force on the atoms in the buffer
 region (dark grey) are discarded to give accurate QM or MM forces on all atoms
 (right hand panel). Reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id22">[Bernstein2009]</a>.</span></p>
@@ -509,7 +537,7 @@ algorithm, these atoms will remain QM until they move further than the
 away from the crack tip. In our simulation, this outer radius will be 10 A. We
 refer to the current set of QM atoms in as the <em>QM active region</em>.</p>
 <div class="figure align-center" id="id34">
-<a class="reference internal image-reference" href="_images/hysteresis.png"><img alt="_images/hysteresis.png" src="_images/hysteresis.png" style="height: 200px;" /></a>
+<a class="reference internal image-reference" href="../_images/hysteresis.png"><img alt="../_images/hysteresis.png" src="../_images/hysteresis.png" style="height: 200px;" /></a>
 <p class="caption"><span class="caption-text">Hysteretic QM selection algorithm. For fracture simulations the black <em>active region</em>
 can be reduced to a single point at the crack tip. Reproduced from <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id25">[Bernstein2009]</a>.</span></p>
 </div>
@@ -559,7 +587,7 @@ the error associated with computing QM forces using clusters with a finite
 buffer radius (which can be as much as <span class="math notranslate nohighlight">\(\sim 0.1\)</span> eV/A compared to a
 reference QM calculation in the full system with PBC). The figure below
 illustrates the force fitting process.</p>
-<a class="reference internal image-reference" href="_images/lotf-overview.png"><img alt="_images/lotf-overview.png" class="align-center" src="_images/lotf-overview.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/lotf-overview.png"><img alt="../_images/lotf-overview.png" class="align-center" src="../_images/lotf-overview.png" style="width: 500px;" /></a>
 <p>The definition of this new adjustable potential is very beneficial to
 our simulation because it allows us to employ a predictor-corrector
 algorithm that, as mentioned before, significantly speeds up our
@@ -597,7 +625,7 @@ re-running the dynamics with the adjustable potential
 parameters linear interpolated between <span class="math notranslate nohighlight">\(\alpha_0\)</span> and <span class="math notranslate nohighlight">\(\alpha_1\)</span>.</p>
 </div></blockquote>
 <p>We then return to step 2. and iterate.</p>
-<a class="reference internal image-reference" href="_images/lotf-pred-corr.png"><img alt="_images/lotf-pred-corr.png" class="align-center" src="_images/lotf-pred-corr.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/lotf-pred-corr.png"><img alt="../_images/lotf-pred-corr.png" class="align-center" src="../_images/lotf-pred-corr.png" style="width: 500px;" /></a>
 <p>The number of extrapolation steps that can be made before the potential
 parameters change too much can be checked by keeping an eye on the force errors
 made by the LOTF scheme in comparison with doing a QM force evaluation at each
@@ -612,6 +640,15 @@ this tutorial to do exactly that.</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="adaptive-qmmm-step1.html" class="btn btn-neutral float-right" title="Step 1: Setup of the Silicon model system" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="adaptive-qmmm-step0.html" class="btn btn-neutral" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -639,16 +676,16 @@ this tutorial to do exactly that.</p>
 
     
     
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
 
-  <script type="text/javascript" src="_static/js/theme.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {
