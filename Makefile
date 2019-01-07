@@ -188,8 +188,18 @@ libquip.a: ${MODULES}
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
+#quippy: libquip.a
+#	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
+
 quippy: libquip.a
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
+	echo milestone_1 ### for debugging DONE
+	rm -f ${BUILDDIR}/Makefile
+	echo milestone_2 ### for debugging DONE
+	cp ${PWD}/quippy/Makefile_test ${BUILDDIR}/Makefile
+	echo milestone_3 ### for debugging DONE
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch build
+	echo milestone_4 ### for debugging
+	rm ${BUILDDIR}/Makefile
 
 install-quippy: quippy
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
