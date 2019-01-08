@@ -45,10 +45,10 @@ CFLAGS = -fPIC
 
 
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95
-#POT_SOURCES =  Potential.f95
+POT_SOURCES =  Potential.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
-#POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
+POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
 
 WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
 WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
@@ -72,82 +72,23 @@ clean:
 	-rm -rf src.*
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
+	echo quippy_stone_1 ### debug
 	for f in ${WRAP_FILES}; do \
 	  ${FPP} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
+	echo quippy_stone_2 ### debug
 	-rm -r quippy
 	mkdir quippy
+	echo quippy_stone_3 ### debug
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
+	echo quippy_stone_4 ### debug
 	f90wrap -v -m quippy ${WRAP_FPP_FILES} -P \
 	   -a c_error_abort --init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		 --shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
-		 --skip atoms_finalise atoms_shallowcopy atoms_initialise_ptr \
-#atoms_shallowcopy \
-################# atoms_finalise \
-###atoms_finalise_ptr \
-#atoms_finalise_multi \
-#atoms_assignment \
-###atoms_copy_without_connect \
-#atoms_select \
-#atoms_remove_property \
-###atoms_set_param_value_int \
-#atoms_set_param_value_int_a \
-#atoms_set_param_value_real \
-#atoms_set_param_value_real_a \
-###atoms_set_param_value_real_a2 \
-#atoms_set_param_value_logical \
-#atoms_set_param_value_str \
-#atoms_get_param_value_int \
-##atoms_get_param_value_int_a \
-#atoms_get_param_value_real \
-#atoms_get_param_value_real_a \
-#atoms_get_param_value_real_a2 \
-#atoms_get_param_value_str \
-#atoms_get_param_value_es \
-#atoms_get_param_value_logical \
-#atoms_set_cutoff_minimum \
-#atoms_set_cutoff \
-#atoms_zero \
-#atoms_set_lattice \
-#atoms_set_atoms_singlez \
-#atoms_set_atoms \
-#add_atom_single \
-#add_atom_multiple \
-#atoms_join \
-#remove_atom_single \
-#atoms_shuffle \
-#remove_atom_multiple \
-#remove_atom_multiple_mask \
-#atoms_map_into_cell \
-#atoms_unskew_cell \
-#set_map_shift \
-#get_lattice_params \
-#directionality \
-#atoms_print \
-#parse_atom_mask \
-#property_to_list \
-#list_to_property \
-#list_matching_prop \
-#complement \
-#difference \
-#coalesce_in_one_periodic_image \
-#atoms_bcast \
-#atoms_filter_cone \
-#atoms_copy_properties \
-#atoms_sort_by_rindex \
-#atoms_transform_basis \
-#atoms_rotate \
-#atoms_calc_connect_hysteretic \
-#atoms_calc_connect \
-#atoms_calc_dists \
-#atoms_set_comm_property \
-#atoms_set_Zs \
-#undo_pbc_jumps \
-#undo_CoM_motion \
-#calc_msd \
-#fake_smooth_pos \
+		 --skip atoms_finalise atoms_shallowcopy atoms_initialise_ptr
+	echo quippy_stone_5 ### debug
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		 -L. -lquip --link-lapack
