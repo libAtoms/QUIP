@@ -43,7 +43,7 @@ QUIPPY_SRC_DIR := ../../quippy
 FPP = gfortran -E -cpp
 CFLAGS = -fPIC
 
-LIBATOMS_SOURCES = Atoms.f95
+LIBATOMS_SOURCES =  Atoms_types.f95 #Atoms.f95
 
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
@@ -79,8 +79,8 @@ _quippy.so: ${WRAP_FPP_FILES}
 	mkdir quippy
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
 	f90wrap -v -m quippy ${WRAP_FPP_FILES} -P \
-	   -a c_error_abort --init-file $(QUIPPY_SRC_DIR)/init.py  --move-methods \
-		 --shorten-routine-names --conf-file ${QUIPPY_SRC_DIR}/f90wrap_conf.py
+	   -a c_error_abort --init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
+		 --shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP #--conf-file ${QUIPPY_SRC_DIR}/f90wrap_conf.py
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		 -L. -lquip --link-lapack
 
