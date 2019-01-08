@@ -38,7 +38,7 @@ include Makefile.rules
 # working on python3
 PYTHON := python
 
-QUIPPY_SRC_DIR := ../../quippy/
+QUIPPY_SRC_DIR := ../../quippy
 
 FPP = gfortran -E -cpp
 CFLAGS = -fPIC
@@ -85,6 +85,6 @@ _quippy.so: ${WRAP_FPP_FILES}
 		 -L. -lquip --link-lapack
 
 install: build
-    QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages
+	QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages
 	cp -r quippy ${QUIPPY_INSTALL_DIR}
 	cp _quippy.so ${QUIPPY_INSTALL_DIR}

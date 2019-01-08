@@ -197,7 +197,7 @@ quippy: libquip.a
 	echo milestone_2 ### for debugging DONE
 	cp ${PWD}/quippy/Makefile_test ${BUILDDIR}/Makefile
 	echo milestone_3 ### for debugging DONE
-	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch build
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
 	echo milestone_4 ### for debugging
 	rm ${BUILDDIR}/Makefile
 
