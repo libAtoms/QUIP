@@ -23,120 +23,120 @@ Maintained by James Kermode <j.r.kermode@warwick.ac.uk>
 Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 <http://libatoms.github.org/QUIP>. """
 
-import sys
-assert sys.version_info >= (2,4,0)
+# import sys
+# assert sys.version_info >= (2,4,0)
+#
+# import atexit, os, numpy, logging
+# from ConfigParser import ConfigParser
+#
+# # Read ${HOME}/.quippyrc config file if it exists
+# cfg = ConfigParser()
+# quippyrc = os.path.join(os.environ['HOME'],'.quippyrc')
+# if os.path.exists(quippyrc):
+#     cfg.read(quippyrc)
+#
+# # Read config file given in ${QUIPPY_CFG} if it exists
+# if 'QUIPPY_CFG' in os.environ and os.path.exists(os.environ['QUIPPY_CFG']):
+#     cfg.read(os.environ['QUIPPY_CFG'])
+#
+# _fortran_indexing = True
+#
+# def set_fortran_indexing(fortran_indexing):
+#     """
+#     Global setting for ``fortran_indexing``.
+#
+#     Set to ``True`` to use 1-based indices on all arrays using the
+#     :class:`~quippy.farray.FortranArray` wrapper class or ``False`` to
+#     use conventional numpy 0-based array indexing. Default setting is
+#     ``True``, but can be overridden in the ``~/.quippprc`` config
+#     file.
+#     """
+#     global _fortran_indexing
+#     _fortran_indexing = fortran_indexing
+#
+# def get_fortran_indexing():
+#     """
+#     Return the current ``fortran_indexing`` global setting.
+#
+#     ``True`` for 1-based indexing; ``False`` for 0-based indexing.
+#     """
+#     global _fortran_indexing
+#     return _fortran_indexing
+#
+# if 'general' in cfg.sections():
+#     if 'fortran_indexing' in cfg.options('general'):
+#         set_fortran_indexing(bool(cfg.get('general', 'fortran_indexing')))
+#
+# if 'logging' in cfg.sections():
+#     if 'level' in cfg.options('logging'):
+#         logging.root.setLevel(getattr(logging, cfg.get('logging', 'level')))
+#
+# disabled_modules = []
+# if 'modules' in cfg.sections():
+#     for name, value in cfg.items('modules'):
+#         if not int(value):
+#             disabled_modules.append(name)
+#
+# # External dependencies
+# available_modules = []
+# unavailable_modules = []
+#
+# for mod in ['netCDF4', 'scipy', 'ase', 'atomeye', 'enthought.mayavi', 'phonopy']:
+#     if mod in disabled_modules: continue
+#     try:
+#         __import__(mod)
+#         available_modules.append(mod)
+#     except ImportError:
+#         unavailable_modules.append(mod)
+#
+# logging.debug('disabled_modules %r' % disabled_modules)
+# logging.debug('available_modules %r' % available_modules)
+# logging.debug('unavailable_modules %r' % unavailable_modules)
+#
+# if 'netCDF4' in available_modules:
+#     from netCDF4 import Dataset
+#     netcdf_file = Dataset
+# else:
+#     from quippy.pupynere import netcdf_file
+#
+# # if _quippy.so is dynamically linked with openmpi, we need to change dlopen() flags before importing it
+# if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
+#        ('QUIP_ARCH' in os.environ and os.environ['QUIP_ARCH'].endswith('openmpi')):
+#     try:
+#         # Python 2.5 or newer
+#         from ctypes import RTLD_GLOBAL
+#     except ImportError:
+#         # Python 2.4
+#         from dl import RTLD_GLOBAL
+#     flags = sys.getdlopenflags()
+#     sys.setdlopenflags(flags | RTLD_GLOBAL)
+#     available_modules.append('mpi')
+#
+# try:
+#     import _quippy
+# except ImportError as err:
+#     raise ImportError(err.message +
+#                     " - perhaps you are trying to import quippy from the source directory?")
+#
+# # Reference values of .true. and .false. from Fortran
+# QUIPPY_TRUE = quippy.system.reference_true()
+# QUIPPY_FALSE = quippy.system.reference_false()
+#
+# def quippy_cleanup():
+#     try:
+#         quippy.system.verbosity_pop()
+#         quippy.system.system_finalise()
+#     except AttributeError:
+#         pass
 
-import atexit, os, numpy, logging
-from ConfigParser import ConfigParser
-
-# Read ${HOME}/.quippyrc config file if it exists
-cfg = ConfigParser()
-quippyrc = os.path.join(os.environ['HOME'],'.quippyrc')
-if os.path.exists(quippyrc):
-    cfg.read(quippyrc)
-
-# Read config file given in ${QUIPPY_CFG} if it exists
-if 'QUIPPY_CFG' in os.environ and os.path.exists(os.environ['QUIPPY_CFG']):
-    cfg.read(os.environ['QUIPPY_CFG'])
-
-_fortran_indexing = True
-
-def set_fortran_indexing(fortran_indexing):
-    """
-    Global setting for ``fortran_indexing``.
-
-    Set to ``True`` to use 1-based indices on all arrays using the
-    :class:`~quippy.farray.FortranArray` wrapper class or ``False`` to
-    use conventional numpy 0-based array indexing. Default setting is
-    ``True``, but can be overridden in the ``~/.quippprc`` config
-    file.
-    """
-    global _fortran_indexing
-    _fortran_indexing = fortran_indexing
-
-def get_fortran_indexing():
-    """
-    Return the current ``fortran_indexing`` global setting.
-
-    ``True`` for 1-based indexing; ``False`` for 0-based indexing.
-    """
-    global _fortran_indexing
-    return _fortran_indexing
-
-if 'general' in cfg.sections():
-    if 'fortran_indexing' in cfg.options('general'):
-        set_fortran_indexing(bool(cfg.get('general', 'fortran_indexing')))
-
-if 'logging' in cfg.sections():
-    if 'level' in cfg.options('logging'):
-        logging.root.setLevel(getattr(logging, cfg.get('logging', 'level')))
-
-disabled_modules = []
-if 'modules' in cfg.sections():
-    for name, value in cfg.items('modules'):
-        if not int(value):
-            disabled_modules.append(name)
-
-# External dependencies
-available_modules = []
-unavailable_modules = []
-
-for mod in ['netCDF4', 'scipy', 'ase', 'atomeye', 'enthought.mayavi', 'phonopy']:
-    if mod in disabled_modules: continue
-    try:
-        __import__(mod)
-        available_modules.append(mod)
-    except ImportError:
-        unavailable_modules.append(mod)
-
-logging.debug('disabled_modules %r' % disabled_modules)
-logging.debug('available_modules %r' % available_modules)
-logging.debug('unavailable_modules %r' % unavailable_modules)
-
-if 'netCDF4' in available_modules:
-    from netCDF4 import Dataset
-    netcdf_file = Dataset
-else:
-    from quippy.pupynere import netcdf_file
-
-# if _quippy.so is dynamically linked with openmpi, we need to change dlopen() flags before importing it
-if ('openmpi' in cfg.sections() and 'dynamic' in cfg.options['openmpi']) or \
-       ('QUIP_ARCH' in os.environ and os.environ['QUIP_ARCH'].endswith('openmpi')):
-    try:
-        # Python 2.5 or newer
-        from ctypes import RTLD_GLOBAL
-    except ImportError:
-        # Python 2.4
-        from dl import RTLD_GLOBAL
-    flags = sys.getdlopenflags()
-    sys.setdlopenflags(flags | RTLD_GLOBAL)
-    available_modules.append('mpi')
-
-try:
-    import _quippy
-except ImportError as err:
-    raise ImportError(err.message +
-                    " - perhaps you are trying to import quippy from the source directory?")
-
-# Reference values of .true. and .false. from Fortran
-QUIPPY_TRUE = quippy.system.reference_true()
-QUIPPY_FALSE = quippy.system.reference_false()
-
-def quippy_cleanup():
-    try:
-        quippy.system.verbosity_pop()
-        quippy.system.system_finalise()
-    except AttributeError:
-        pass
-
-quippy.system.system_initialise(-1, quippy_running=QUIPPY_TRUE)
-quippy.system.verbosity_push(0)
-atexit.register(quippy_cleanup)
-
-# List of Fortran modules which have Python wrappers in this package
-python_wrappers = ['periodictable', 'table', 'potential',
-                   'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
-                   'extendable_str', 'structures', 'elasticity']
+# quippy.system.system_initialise(-1, quippy_running=QUIPPY_TRUE)
+# quippy.system.verbosity_push(0)
+# atexit.register(quippy_cleanup)
+#
+# # List of Fortran modules which have Python wrappers in this package
+# python_wrappers = ['periodictable', 'table', 'potential',
+#                    'dictionary', 'dynamicalsystem', 'cinoutput', 'atoms',
+#                    'extendable_str', 'structures', 'elasticity']
 
 # Python modules which extend Fortran modules
 
