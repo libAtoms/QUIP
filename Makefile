@@ -29,7 +29,7 @@
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ### debug option added to it only for quippy development
-.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH install-quippy libquip debug-quippy
+.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH install-quippy libquip debug-clean
 
 ifndef QUIP_ARCH
 $(error "You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.")
@@ -227,6 +227,7 @@ debug-clean:
 	# for debugging only, deletes some files laying around from previous builds
 	cd ${BUILDDIR}
 	rm *.fpp f90wrap_*.f95 _quippy*.so
+	cd ${QUIP_ROOT}
 
 install-structures:
 ifeq (${QUIP_STRUCTS_DIR},)
