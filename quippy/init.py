@@ -118,20 +118,24 @@ Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 #     raise ImportError(err.message +
 #                     " - perhaps you are trying to import quippy from the source directory?")
 #
-# # Reference values of .true. and .false. from Fortran
-# QUIPPY_TRUE = quippy.system.reference_true()
-# QUIPPY_FALSE = quippy.system.reference_false()
-#
-# def quippy_cleanup():
-#     try:
-#         quippy.system.verbosity_pop()
-#         quippy.system.system_finalise()
-#     except AttributeError:
-#         pass
 
-# quippy.system.system_initialise(-1, quippy_running=QUIPPY_TRUE)
-# quippy.system.verbosity_push(0)
-# atexit.register(quippy_cleanup)
+import atexit
+import quippy.system_module
+# Reference values of .true. and .false. from Fortran
+QUIPPY_TRUE = quippy.system_module.reference_true()
+QUIPPY_FALSE = quippy.system_module.reference_false()
+
+def quippy_cleanup():
+    # TODO check what we actually need from here
+    try:
+        quippy.system_module.verbosity_pop()
+        quippy.system_module.system_finalise()
+    except AttributeError:
+        pass
+# TODO check what we actually need from here
+quippy.system_module.system_initialise(-1, quippy_running=QUIPPY_TRUE)
+quippy.system_module.verbosity_push(0)
+atexit.register(quippy_cleanup)
 #
 # # List of Fortran modules which have Python wrappers in this package
 # python_wrappers = ['periodictable', 'table', 'potential',
