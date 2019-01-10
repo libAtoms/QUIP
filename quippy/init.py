@@ -119,7 +119,13 @@ Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 #                     " - perhaps you are trying to import quippy from the source directory?")
 #
 
+import quippy.potential
+import quippy.convert
+import quippy.atoms
+
 import atexit
+
+# this is supposed to be added while wrapping too, but let's make sure
 import quippy.system_module
 
 # Reference values of .true. and .false. from Fortran
