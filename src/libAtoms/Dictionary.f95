@@ -277,7 +277,7 @@ module dictionary_module
 #endif
   end interface assignment(=)
 
-  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary_get_array, lookup_entry_i
+  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary__array__, lookup_entry_i
 
 contains
 
@@ -3094,7 +3094,7 @@ contains
 
   end subroutine dictionary_deepcopy_no_error
 
-  subroutine dictionary_get_array(this, key, nd, dtype, dshape, dloc)
+  subroutine dictionary__array__(this, key, nd, dtype, dshape, dloc)
     use iso_c_binding, only: c_intptr_t
     type(Dictionary), intent(in) :: this
     character(len=*), intent(in) :: key
@@ -3155,7 +3155,7 @@ contains
           dloc = loc(this%entries(entry_i)%r_a2)
     end select
 
-  end subroutine dictionary_get_array
+  end subroutine dictionary__array__
 
 
 #ifdef POINTER_COMPONENT_MANUAL_COPY
