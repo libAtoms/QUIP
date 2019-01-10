@@ -44,7 +44,7 @@ FPP = gfortran -E -cpp
 CFLAGS = -fPIC
 
 
-LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 Table.f95 System.f95
+LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 Table.f95 System.f95 Dictionary.f95
 POT_SOURCES =  Potential.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})

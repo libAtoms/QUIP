@@ -121,9 +121,11 @@ Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 
 import atexit
 import quippy.system_module
+
 # Reference values of .true. and .false. from Fortran
 QUIPPY_TRUE = quippy.system_module.reference_true()
 QUIPPY_FALSE = quippy.system_module.reference_false()
+
 
 def quippy_cleanup():
     # TODO check what we actually need from here
@@ -132,6 +134,8 @@ def quippy_cleanup():
         quippy.system_module.system_finalise()
     except AttributeError:
         pass
+
+
 # TODO check what we actually need from here
 quippy.system_module.system_initialise(-1, quippy_running=QUIPPY_TRUE)
 quippy.system_module.verbosity_push(0)
