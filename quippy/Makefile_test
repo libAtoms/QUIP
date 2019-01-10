@@ -44,14 +44,21 @@ FPP = gfortran -E -cpp
 CFLAGS = -fPIC
 
 
-LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 Table.f95 System.f95 Dictionary.f95
+LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95   # Table.f95
 POT_SOURCES =  Potential.f95
+GAP_SOURCES =  descriptors.f95 #descriptors_wrapper.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
 POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
+GAP_FILES = $(addprefix ../../src/GAP/,${GAP_SOURCES})
 
-WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
-WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
+ifeq (${HAVE_GAP},1)
+	WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES} ${GAP_SOURCES}
+	WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES} ${GAP_FILES}
+else
+	WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
+	WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
+endif
 
 WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 
