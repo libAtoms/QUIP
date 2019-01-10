@@ -1,5 +1,5 @@
 """
-ASE-compatible Calculator from a fortran-potential object
+ASE-compatible Calculator from a quip-potential object
 
 """
 
@@ -23,11 +23,11 @@ class potential(ase.calculators.calculator.Calculator):
 
     def __init__(self, args_str, param_str, atoms=None, **kwargs):
 
-        # update_docstring not implemented yet, it was oo_fortran.update_doc_string() in the earlier version
+        # update_docstring not implemented yet, it was oo_quip.update_doc_string() in the earlier version
 
         """
 
-        from fortran_docstring:
+        from quip_docstring:
 
         args_str : str
             Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
@@ -76,10 +76,10 @@ class potential(ase.calculators.calculator.Calculator):
 
         ase.calculators.calculator.Calculator.__init__(self, restart=None, ignore_bad_restart_file=False, label=None,
                                                        atoms=atoms, **kwargs)
-        # init the fortran potential
-        self._fortran_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
-        # init the fortran atoms as None, to have the variable
-        self._fortran_atoms = None
+        # init the quip potential
+        self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
+        # init the quip atoms as None, to have the variable
+        self._quip_atoms = None
 
         # from old
         if atoms is not None:
@@ -122,14 +122,14 @@ class potential(ase.calculators.calculator.Calculator):
 
         if atoms is not None:
             self.atoms = atoms.copy()
-        # construct the fortran atoms object which we will use to calculate on
-        self._fortran_atoms = quippy.convert.ase_to_fortran(self.atoms, self._fortran_atoms)
+        # construct the quip atoms object which we will use to calculate on
+        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, self._quip_atoms)
 
         # construct adequate arrays to put the results into
-        force = np.zeros((3, self._fortran_atoms.n), order='F')
+        force = np.zeros((3, self._quip_atoms.n), order='F')
 
         # perform the calculation
-        energy, _ferror = self._fortran_potential.calc(self._fortran_atoms, force=force)
+        energy, _ferror = self._quip_potential.calc(self._quip_atoms, force=force)
 
         # store the results according to ase's standards
         self.results = {'energy': energy,
