@@ -21,7 +21,7 @@ class potential(ase.calculators.calculator.Calculator):
     #  'numeric_forces', 'elastic_constants',
     #  'unrelaxed_elastic_constants']
 
-    def __init__(self, args_str, param_str, atoms, **kwargs):
+    def __init__(self, args_str, param_str, atoms=None, **kwargs):
 
         # update_docstring not implemented yet, it was oo_fortran.update_doc_string() in the earlier version
 
@@ -118,10 +118,12 @@ class potential(ase.calculators.calculator.Calculator):
         implementation to set the atoms attribute.
         """
 
+        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
+
         if atoms is not None:
             self.atoms = atoms.copy()
         # construct the fortran atoms object which we will use to calculate on
-        quippy.convert.ase_to_fortran(self.atoms, self._fortran_atoms)
+        self._fortran_atoms = quippy.convert.ase_to_fortran(self.atoms, self._fortran_atoms)
 
         # construct adequate arrays to put the results into
         force = np.zeros((3, self._fortran_atoms.n), order='F')
