@@ -92,7 +92,8 @@ class potential(ase.calculators.calculator.Calculator):
 
         pass
 
-    def calculate(self, atoms=None, properties=None,
+    def calculate(self, atoms=None, force=None, virial=None,
+                  local_energy=None, local_virial=None, properties=None,
                   system_changes=None, vol_per_atom=None):
         """Do the calculation.
 
@@ -135,13 +136,13 @@ receive the quantity in question, as set out in the table
 below.
 
         ================ ============= ================ =========================
-        Array argument Quantity Shape Default storage location
+        Array argument   Quantity       Shape           Default storage location
         ================ ============= ================ =========================
-        ``energy``        Energy        ``()``                  ``energy`` param
-        ``local_energy`` Local energy ``(at.n,)`` ``local_energy`` property
+        ``energy``        Energy        ``()``           ``energy`` param
+        ``local_energy``  Local energy  ``(at.n,)``      ``local_energy`` property
         ``force``         Force         ``(3,at.n)``     ``force`` property
         ``virial``        Virial tensor ``(3,3)``        ``virial`` param
-        ``local_virial`` Local virial ``(3,3,at.n)`` ``local_virial`` property
+        ``local_virial``  Local virial  ``(3,3,at.n)``   ``local_virial`` property
         ================ ============= ================ =========================
 
 
@@ -160,6 +161,39 @@ below.
             if property not in self.implemented_properties:
                 raise RuntimeError("Don't know how to calculate property '%s'" % property)
 
+        # passing arguments which will be changed by the calculator
+        _dict_args = {}
+        # TODO implement this for energy too
+
+        val = _check_arg(force)
+        if val == 'y':
+            properties += ['force']
+        elif val == 'add':
+            properties += ['force']
+            _dict_args['force'] = force
+
+        val = _check_arg(virial)
+        if val == 'y':
+            properties += ['virial']
+        elif val == 'add':
+            properties += ['virial']
+            _dict_args['virial'] = virial
+
+        val = _check_arg(local_energy)
+        if val == 'y':
+            properties += ['local_energy']
+        elif val == 'add':
+            properties += ['local_energy']
+            _dict_args['local_energy'] = local_energy
+
+        val = _check_arg(local_virial)
+        if val == 'y':
+            properties += ['local_virial']
+        elif val == 'add':
+            properties += ['local_virial']
+            _dict_args['local_virial'] = local_virial
+
+        # needed dry run of the ase calculator
         ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
 
         if not self.calculation_always_required and not self.calculation_required(self.atoms, properties):
@@ -182,9 +216,9 @@ below.
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
         # the calculation itself
-        energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str)
+        _energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str, **_dict_args)
 
-        self.results['energy'] = energy  # fixme: don't overwrite existing properties, check for changes in atoms
+        self.results['energy'] = _energy  # fixme: don't overwrite existing properties, check for changes in atoms
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params
         _quip_properties = quippy.utils.get_dict_arrays(self._quip_atoms.properties)
@@ -225,7 +259,8 @@ below.
             else:
                 # just use average
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
-            self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3), order='F') / _v_atom
+            self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
+                                                                                            order='F') / _v_atom
 
     def get_virial(self, atoms=None):
         return self.get_property('virial', atoms)
@@ -249,3 +284,24 @@ below.
     def set_default_properties(self, properties):
         """Set the list of properties to be calculated by default"""
         self._default_properties = properties[:]
+
+
+def _check_arg(arg):
+    """Checks if the argument is True bool or string meaning True"""
+
+    true_strings = ('True', 'true', 'T', 't', '.true.', '.True.')
+
+    if arg is None:
+        return 'n'
+    else:
+        if isinstance(arg, bool):
+            if arg:
+                return 'y'
+            else:
+                return 'n'
+        if isinstance(arg, str):
+            if arg in true_strings:
+                return 'y'
+            else:
+                return 'n'
+        return 'add'
