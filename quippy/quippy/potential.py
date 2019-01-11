@@ -156,12 +156,8 @@ below.
             if property not in self.implemented_properties:
                 raise RuntimeError("Don't know how to calculate property '%s'" % property)
 
-        if atoms is not None:
-            self.atoms = atoms.copy()
-
-        ase.calculators.calculator.Calculator.calculate(self, self.atoms, properties, system_changes)
+        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
         if not self.calculation_required(self.atoms, properties):
-            # fixme: is this required+correct?
             return
 
         # construct the quip atoms object which we will use to calculate on
@@ -172,16 +168,15 @@ below.
         # no need to add logic to energy, it is calculated anyways (returned when potential called)
         if 'virial' in properties or 'stress' in properties:
             args_str += ' virial'
-        if 'local_virial' in properties or 'local_stress' in properties:
+        if 'local_virial' in properties or 'stresses' in properties:
             args_str += ' local_virial'
-        if 'local_energy' in properties:
+        if 'energies' in properties or 'local_energy' in properties:
             args_str += ' local_energy'
         if 'force' in properties:
             args_str += ' force'
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
         # the calculation itself
-        print('calcl with arg_string:', args_str)
         energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str)
 
         self.results['energy'] = energy  # fixme: don't overwrite existing properties, check for changes in atoms
@@ -197,15 +192,18 @@ below.
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
-            self.results['virial'] = _quip_params['virial'].copy()  # fixme is this right? or I would need to .T?
+            self.results['virial'] = _quip_params['virial'].copy()
 
         if 'force' in _quip_properties.keys():
             self.results['force'] = np.copy(_quip_properties['force'].T)
 
         if 'local_energy' in _quip_properties.keys():
-            self.results['local_energy'] = np.copy(_quip_properties['local_energy'].T)
+            self.results['energies'] = np.copy(_quip_properties['local_energy'].T)
 
         if 'local_virial' in _quip_properties.keys():
+            self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
+
+        if 'stresses' in properties:
             # use the correct atomic volume
             if vol_per_atom is not None:
                 if vol_per_atom in self.atoms.arrays.keys():
@@ -222,17 +220,19 @@ below.
             else:
                 # just use average
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
-                self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
-                self.results['local_stress'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3), order='F') / _v_atom
+            self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3), order='F') / _v_atom
 
     def get_virial(self, atoms=None):
         return self.get_property('virial', atoms)
 
     def get_local_virial(self, atoms=None):
-        return self.get_property('local_virial', atoms)
+        return self.get_stresses(atoms)
 
     def get_local_energy(self, atoms=None):
-        return self.get_property('local_energy', atoms)
+        return self.get_energies(atoms)
 
-    def get_local_stress(self, atoms=None):
-        return self.get_property('local_stress', atoms)
+    def get_energies(self, atoms=None):
+        return self.get_property('energies', atoms)
+
+    def get_stresses(self, atoms=None):
+        return self.get_property('stresses', atoms)
