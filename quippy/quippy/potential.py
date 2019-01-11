@@ -22,7 +22,7 @@ class potential(ase.calculators.calculator.Calculator):
     #  'numeric_forces', 'elastic_constants',
     #  'unrelaxed_elastic_constants']
 
-    def __init__(self, args_str, param_str, atoms=None, **kwargs):
+    def __init__(self, args_str, param_str, atoms=None, calculation_always_required=False, **kwargs):
 
         # update_docstring not implemented yet, it was oo_quip.update_doc_string() in the earlier version
 
@@ -74,6 +74,9 @@ class potential(ase.calculators.calculator.Calculator):
             calculation_always_required=False
             finalise=True
                 """
+
+        self._default_properties = ['energy', 'forces']
+        self.calculation_always_required = calculation_always_required
 
         ase.calculators.calculator.Calculator.__init__(self, restart=None, ignore_bad_restart_file=False, label=None,
                                                        atoms=atoms, **kwargs)
@@ -146,8 +149,9 @@ below.
 
         # handling the property inputs
         if properties is None:
-            properties = ['energy', 'forces']
-            # properties = ['energy', 'forces', 'stress']
+            properties = self.get_default_properties()
+        else:
+            properties = set(self.get_default_properties() + properties)
 
         if len(properties) == 0:
             raise RuntimeError('Nothing to calculate')
@@ -157,7 +161,8 @@ below.
                 raise RuntimeError("Don't know how to calculate property '%s'" % property)
 
         ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
-        if not self.calculation_required(self.atoms, properties):
+
+        if not self.calculation_always_required and not self.calculation_required(self.atoms, properties):
             return
 
         # construct the quip atoms object which we will use to calculate on
@@ -236,3 +241,11 @@ below.
 
     def get_stresses(self, atoms=None):
         return self.get_property('stresses', atoms)
+
+    def get_default_properties(self):
+        """Get the list of properties to be calculated by default"""
+        return self._default_properties[:]
+
+    def set_default_properties(self, properties):
+        """Set the list of properties to be calculated by default"""
+        self._default_properties = properties[:]
