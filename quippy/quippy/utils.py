@@ -9,7 +9,7 @@ import numpy as np
 import f90wrap.runtime
 
 
-def get_dict_arrays(fdict: quippy.dictionary_module.Dictionary):
+def get_dict_arrays(fdict):
     """Takes the arrays from a quippy dictionary. Copies.
 
     Probably fails if there are non-array elements in the dictionary"""
@@ -21,7 +21,6 @@ def get_dict_arrays(fdict: quippy.dictionary_module.Dictionary):
     for i in range(1, fdict.n + 1):
         key, error = fdict.get_key(i)
         key = key.strip().decode('ascii')
-        print(key)
         # fixme: fails for non_array elements. Make universal: compatible with array or scalar content in dictionary
         try:    # this is an unsufficient temporary fix
             value = f90wrap.runtime.get_array(f90wrap.runtime.sizeof_fortran_t,

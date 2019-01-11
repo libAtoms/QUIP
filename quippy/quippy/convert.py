@@ -38,15 +38,11 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
 
     else:
         # need to regenerate the quip atoms object
-        print('got here 1', type(quip_atoms))  #### debug
         quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), ase_atoms.get_cell().transpose())
-        print('got here 2', type(quip_atoms))  #### debug
 
-    print('got here 3', type(quip_atoms))  #### debug
     quip_atoms.pos[:] = ase_atoms.get_positions().T.copy()
     quip_atoms.is_periodic[:] = ase_atoms.get_pbc()   # fixme this is not making sure it is a quip compatible arr.
     quip_atoms.z[:] = ase_atoms.numbers
-    print('got here 4', type(quip_atoms))  #### debug
 
     # go through all properties
     return quip_atoms
