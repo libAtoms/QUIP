@@ -15,7 +15,8 @@ class potential(ase.calculators.calculator.Calculator):
 
     callback_map = {}
 
-    implemented_properties = ['energy', 'forces', 'virial', 'stress', 'local_virial', 'local_stress', 'force']
+    implemented_properties = ['energy', 'forces', 'virial', 'stress',
+                              'local_virial', 'local_energy', 'local_stress']
 
     # earlier in quippy
     # ['energy', 'energies', 'forces', 'stress', 'stresses',
@@ -159,8 +160,8 @@ below.
         if atoms is not None:
             self.atoms = atoms.copy()
 
-        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
-        if not self.calculation_required(atoms, properties):
+        ase.calculators.calculator.Calculator.calculate(self, self.atoms, properties, system_changes)
+        if not self.calculation_required(self.atoms, properties):
             # fixme: is this required+correct?
             return
 
@@ -174,6 +175,8 @@ below.
             args_str += ' virial'
         if 'local_virial' in properties or 'local_stress' in properties:
             args_str += ' local_virial'
+        if 'local_energy' in properties:
+            args_str += ' local_energy'
         if 'force' in properties:
             args_str += ' force'
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
@@ -181,7 +184,7 @@ below.
         # the calculation itself
         energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str)
 
-        self.results = {'energy': energy}  # fixme: don't overwrite existing properties, check for changes in atoms o
+        self.results['energy'] = energy  # fixme: don't overwrite existing properties, check for changes in atoms
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params
         _quip_properties = quippy.utils.get_dict_arrays(self._quip_atoms.properties)
@@ -190,7 +193,7 @@ below.
         # process potential output to ase.properties
         # not handling energy here, because that is always returned by the potential above
         if 'virial' in _quip_params.keys():
-            stress = -_quip_params['virial'].copy() / self._quip_atoms.get_volume()
+            stress = -_quip_params['virial'].copy() / self.atoms.get_volume()
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
@@ -218,7 +221,6 @@ below.
                                          'as given atomic volume')
             else:
                 # just use average
-                _v_atom = self._quip_atoms.get_volume() / self._quip_atoms.n
+                _v_atom = self.atoms.get_volume() / self._quip_atoms.n
                 self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
-                self.results['local_stress'] = -np.copy(_quip_properties['local_virial']).T.reshape(
-                    (self._quip_atoms.n, 3, 3), order='F') / vol_per_atom
+                self.results['local_stress'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3), order='F') / _v_atom
