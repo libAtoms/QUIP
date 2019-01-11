@@ -12,7 +12,6 @@ import quippy
 
 
 class potential(ase.calculators.calculator.Calculator):
-
     callback_map = {}
 
     implemented_properties = ['energy', 'forces', 'virial', 'stress',
@@ -148,7 +147,7 @@ below.
         # handling the property inputs
         if properties is None:
             properties = ['energy', 'forces']
-            #properties = ['energy', 'forces', 'stress']
+            # properties = ['energy', 'forces', 'stress']
 
         if len(properties) == 0:
             raise RuntimeError('Nothing to calculate')
@@ -182,6 +181,7 @@ below.
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
         # the calculation itself
+        print('calcl with arg_string:', args_str)
         energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str)
 
         self.results['energy'] = energy  # fixme: don't overwrite existing properties, check for changes in atoms
@@ -197,7 +197,7 @@ below.
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
-            self.results['virial'] = _quip_params['virial'].copy()   # fixme is this right? or I would need to .T?
+            self.results['virial'] = _quip_params['virial'].copy()  # fixme is this right? or I would need to .T?
 
         if 'force' in _quip_properties.keys():
             self.results['force'] = np.copy(_quip_properties['force'].T)
@@ -224,3 +224,15 @@ below.
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
                 self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
                 self.results['local_stress'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3), order='F') / _v_atom
+
+    def get_virial(self, atoms=None):
+        return self.get_property('virial', atoms)
+
+    def get_local_virial(self, atoms=None):
+        return self.get_property('local_virial', atoms)
+
+    def get_local_energy(self, atoms=None):
+        return self.get_property('local_energy', atoms)
+
+    def get_local_stress(self, atoms=None):
+        return self.get_property('local_stress', atoms)
