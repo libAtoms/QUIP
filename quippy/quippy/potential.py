@@ -88,7 +88,7 @@ class potential(ase.calculators.calculator.Calculator):
 
         pass
 
-    def calculate(self, atoms=None, properties=('energy', 'forces'),
+    def calculate(self, atoms=None, properties=None,
                   system_changes=None):
         """Do the calculation.
 
@@ -116,23 +116,66 @@ class potential(ase.calculators.calculator.Calculator):
 
         The subclass implementation should first call this
         implementation to set the atoms attribute.
+
+
+
+        from docstring of quippy.potential_module.Potential.calc
+
+        Each physical quantity has a
+corresponding optional argument, which can either be an 'True'
+to store the result inside the Atoms object (i.e. in
+Atoms%params' or in 'Atoms%properties' with the
+default name, a string to specify a different property or
+parameter name, or an array of the the correct shape to
+receive the quantity in question, as set out in the table
+below.
+
+        ================ ============= ================ =========================
+        Array argument Quantity Shape Default storage location
+        ================ ============= ================ =========================
+        ``energy``        Energy        ``()``                  ``energy`` param
+        ``local_energy`` Local energy ``(at.n,)`` ``local_energy`` property
+        ``force``         Force         ``(3,at.n)``     ``force`` property
+        ``virial``        Virial tensor ``(3,3)``        ``virial`` param
+        ``local_virial`` Local virial ``(3,3,at.n)`` ``local_virial`` property
+        ================ ============= ================ =========================
+
+
         """
 
-        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
+        if properties is None:
+            properties = ['energy', 'forces']
+            #properties = ['energy', 'forces', 'stress']
+
+        if len(properties) == 0:
+            raise RuntimeError('Nothing to calculate')
 
         if atoms is not None:
             self.atoms = atoms.copy()
+
+        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
+        if not self.calculation_required(atoms, properties):
+            return
+
         # construct the quip atoms object which we will use to calculate on
         self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, self._quip_atoms)
 
         # construct adequate arrays to put the results into
+        energy = 0
+        local_energy = np.zeros(self._quip_atoms.n, order='F')
         force = np.zeros((3, self._quip_atoms.n), order='F')
+        virial = np.zeros((3, 3), order='F')
+        local_virial = np.zeros((9, self._quip_atoms.n), order='F')
 
         # perform the calculation
-        energy, _ferror = self._quip_potential.calc(self._quip_atoms, force=force)
+        energy, _ferror = self._quip_potential.calc(self._quip_atoms, force=force, virial=virial,
+                                                    local_energy=local_energy, local_virial=local_virial)
 
         # store the results according to ase's standards
         self.results = {'energy': energy,
-                        'forces': np.copy(force.T)
+                        'forces': np.copy(force.T),
+                        'virial': virial,
+                        'local_energy': local_energy,
+                        'local_virial': local_virial
                         }
 
