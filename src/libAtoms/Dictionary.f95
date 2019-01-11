@@ -277,7 +277,7 @@ module dictionary_module
 #endif
   end interface assignment(=)
 
-  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary_get_array, lookup_entry_i
+  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary__array__, lookup_entry_i
 
 contains
 
@@ -3094,7 +3094,7 @@ contains
 
   end subroutine dictionary_deepcopy_no_error
 
-  subroutine dictionary_get_array(this, key, nd, dtype, dshape, dloc)
+  subroutine dictionary__array__(this, key, nd, dtype, dshape, dloc)
     use iso_c_binding, only: c_intptr_t
     type(Dictionary), intent(in) :: this
     character(len=*), intent(in) :: key
@@ -3113,49 +3113,54 @@ contains
     entry_i = lookup_entry_i(this, key)
     if (entry_i == -1) return
 
-    dtype = this%entries(entry_i)%type
-
     select case(this%entries(entry_i)%type)
        case(T_INTEGER_A)
           nd = 1
           dshape(1) = size(this%entries(entry_i)%i_a)
           dloc = loc(this%entries(entry_i)%i_a)
+          dtype = 5
 
        case(T_REAL_A)
           nd = 1
           dshape(1) = size(this%entries(entry_i)%r_a)
           dloc = loc(this%entries(entry_i)%r_a)
+          dtype = 12
 
        case(T_COMPLEX_A)
           nd = 1
           dshape(1) = size(this%entries(entry_i)%c_a)
           dloc = loc(this%entries(entry_i)%c_a)
+          dtype = 14
 
        case(T_LOGICAL_A)
           nd = 1
           dshape(1) = size(this%entries(entry_i)%l_a)
           dloc = loc(this%entries(entry_i)%l_a)
+          dtype = 5
 
        case(T_CHAR_A)
           nd = 2
           dshape(1) = size(this%entries(entry_i)%s_a,1)
           dshape(2) = size(this%entries(entry_i)%s_a,2)
           dloc = loc(this%entries(entry_i)%s_a)
+          dtype = 18
 
        case(T_INTEGER_A2)
           nd = 2
           dshape(1) = size(this%entries(entry_i)%i_a2, 1)
           dshape(2) = size(this%entries(entry_i)%i_a2, 2)
           dloc = loc(this%entries(entry_i)%i_a2)
+          dtype = 5
 
        case(T_REAL_A2)
           nd = 2
           dshape(1) = size(this%entries(entry_i)%r_a2, 1)
           dshape(2) = size(this%entries(entry_i)%r_a2, 2)
           dloc = loc(this%entries(entry_i)%r_a2)
+          dtype = 12
     end select
 
-  end subroutine dictionary_get_array
+  end subroutine dictionary__array__
 
 
 #ifdef POINTER_COMPONENT_MANUAL_COPY
