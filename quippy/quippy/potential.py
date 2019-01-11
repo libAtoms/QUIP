@@ -15,7 +15,8 @@ class potential(ase.calculators.calculator.Calculator):
 
     callback_map = {}
 
-    implemented_properties = ['energy', 'forces']
+    implemented_properties = ['energy', 'forces', 'virial', 'stress', 'local_virial', 'local_stress', 'force']
+
     # earlier in quippy
     # ['energy', 'energies', 'forces', 'stress', 'stresses',
     #  'numeric_forces', 'elastic_constants',
@@ -89,7 +90,7 @@ class potential(ase.calculators.calculator.Calculator):
         pass
 
     def calculate(self, atoms=None, properties=None,
-                  system_changes=None):
+                  system_changes=None, vol_per_atom=None):
         """Do the calculation.
 
         properties: list of str
@@ -166,30 +167,58 @@ below.
         # construct the quip atoms object which we will use to calculate on
         self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, self._quip_atoms)
 
-        # construct adequate arrays to put the results into
-        energy = 0
-        local_energy = np.zeros(self._quip_atoms.n, order='F')
-        force = np.zeros((3, self._quip_atoms.n), order='F')
-        virial = np.zeros((3, 3), order='F')
-        local_virial = np.zeros((9, self._quip_atoms.n), order='F')
+        # costructing args_string with automaticaly aliasing the calculateable non-quippy properties
+        args_str = 'energy'
+        # no need to add logic to energy, it is calculated anyways (returned when potential called)
+        if 'virial' in properties or 'stress' in properties:
+            args_str += ' virial'
+        if 'local_virial' in properties or 'local_stress' in properties:
+            args_str += ' local_virial'
+        if 'force' in properties:
+            args_str += ' force'
+        # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
-        # perform the calculation
-        energy, _ferror = self._quip_potential.calc(self._quip_atoms, force=force, virial=virial,
-                                                    local_energy=local_energy, local_virial=local_virial)
+        # the calculation itself
+        energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str)
 
-        # store the results according to ase's standards
-        self.results = {'energy': energy,
-                        'forces': np.copy(force.T),
-                        'virial': virial,
-                        'local_energy': local_energy,
-                        'local_virial': local_virial
-                        }
+        self.results = {'energy': energy}  # fixme: don't overwrite existing properties, check for changes in atoms o
 
-        # TODO: add logic for what to calculate and what not
+        # retrieve data from _quip_atoms.properties and _quip_atoms.params
+        _quip_properties = quippy.utils.get_dict_arrays(self._quip_atoms.properties)
+        _quip_params = quippy.utils.get_dict_arrays(self._quip_atoms.params)
 
-        if 'stress' in properties:
-            stress = -virial.copy() / self._quip_atoms.get_volume()
+        # process potential output to ase.properties
+        # not handling energy here, because that is always returned by the potential above
+        if 'virial' in _quip_params.keys():
+            stress = -_quip_params['virial'].copy() / self._quip_atoms.get_volume()
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
+            self.results['virial'] = _quip_params['virial'].copy()   # fixme is this right? or I would need to .T?
 
+        if 'force' in _quip_properties.keys():
+            self.results['force'] = np.copy(_quip_properties['force'].T)
+
+        if 'local_energy' in _quip_properties.keys():
+            self.results['local_energy'] = np.copy(_quip_properties['local_energy'].T)
+
+        if 'local_virial' in _quip_properties.keys():
+            # use the correct atomic volume
+            if vol_per_atom is not None:
+                if vol_per_atom in self.atoms.arrays.keys():
+                    # case of reference to a column in atoms.arrays
+                    _v_atom = self.atoms.arrays[vol_per_atom]
+                else:
+                    # try for case of a given volume
+                    try:
+                        _v_atom = float(vol_per_atom)
+                    except ValueError:
+                        # cannot convert to float, so wrong
+                        raise ValueError('volume_per_atom: not found in atoms.arrays.keys() and cannot utilise value '
+                                         'as given atomic volume')
+            else:
+                # just use average
+                _v_atom = self._quip_atoms.get_volume() / self._quip_atoms.n
+                self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
+                self.results['local_stress'] = -np.copy(_quip_properties['local_virial']).T.reshape(
+                    (self._quip_atoms.n, 3, 3), order='F') / vol_per_atom

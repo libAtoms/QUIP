@@ -22,9 +22,13 @@ def get_dict_arrays(fdict: quippy.dictionary_module.Dictionary):
         key, error = fdict.get_key(i)
         key = key.strip().decode('ascii')
         print(key)
-        value = f90wrap.runtime.get_array(f90wrap.runtime.sizeof_fortran_t,
-                                          fdict._handle, _quippy.f90wrap_dictionary__array__, key)
-        arrays[key] = value.copy()
+        # fixme: fails for non_array elements. Make universal: compatible with array or scalar content in dictionary
+        try:    # this is an unsufficient temporary fix
+            value = f90wrap.runtime.get_array(f90wrap.runtime.sizeof_fortran_t,
+                                              fdict._handle, _quippy.f90wrap_dictionary__array__, key)
+            arrays[key] = value.copy()
+        except ValueError:
+            pass
 
     return arrays
 
