@@ -179,3 +179,11 @@ below.
                         'local_virial': local_virial
                         }
 
+        # TODO: add logic for what to calculate and what not
+
+        if 'stress' in properties:
+            stress = -virial.copy() / self._quip_atoms.get_volume()
+            # convert to 6-element array in Voigt order
+            self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
+                                               stress[1, 2], stress[0, 2], stress[0, 1]])
+

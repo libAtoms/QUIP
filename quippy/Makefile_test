@@ -46,7 +46,7 @@ CFLAGS = -fPIC
 
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95   # Table.f95
 POT_SOURCES =  Potential.f95
-GAP_SOURCES =  descriptors.f95 #descriptors_wrapper.f95
+GAP_SOURCES =  #descriptors.f95 #descriptors_wrapper.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
 POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
