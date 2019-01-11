@@ -143,6 +143,7 @@ below.
 
         """
 
+        # handling the property inputs
         if properties is None:
             properties = ['energy', 'forces']
             #properties = ['energy', 'forces', 'stress']
@@ -150,11 +151,16 @@ below.
         if len(properties) == 0:
             raise RuntimeError('Nothing to calculate')
 
+        for property in properties:
+            if property not in self.implemented_properties:
+                raise RuntimeError("Don't know how to calculate property '%s'" % property)
+
         if atoms is not None:
             self.atoms = atoms.copy()
 
         ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
         if not self.calculation_required(atoms, properties):
+            # fixme: is this required+correct?
             return
 
         # construct the quip atoms object which we will use to calculate on
