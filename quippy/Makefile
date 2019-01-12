@@ -2,7 +2,7 @@
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
-# HQ X   Copyright James Kermode 2017
+# HQ X   Copyright James Kermode 2019
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -67,7 +67,6 @@ F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}
 F2PY_LINK_ARGS = $(shell python -c 'import sys; print " ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")])' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
 ###
-
 .PHONY: build clean install
 
 build: _quippy.so
