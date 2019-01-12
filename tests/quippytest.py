@@ -62,9 +62,9 @@ class QuippyTestCase(unittest.TestCase):
         second = np.array(second)
         self.assertEqual(first.shape, second.shape)
 
-        if np.isnan(first):
+        if np.isnan(first).any():
             self.fail('Not a number (NaN) found in first array')
-        if np.isnan(second):
+        if np.isnan(second).any():
             self.fail('Not a number (NaN) found in second array')
 
         absdiff = abs(first - second)
