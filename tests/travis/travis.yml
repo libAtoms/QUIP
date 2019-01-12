@@ -28,7 +28,7 @@ env:
   global:
     secure: "Y5dAhnGQrytV8tJX1oCQMVqAQ2LJIXilFJCgvBMxfaJrs3tORf0gRCKiG7RmUnfWrJtweKkHlXUf4oBWdfg8cCL2rqw3iwun+AV8GY70jd2zUpegv39I5AoLda+BoFaFWYkpdq5jgrFs/DmBgGGZ14dGiIljsAS02MRcGMwxBMg="
 python:
-  - 2.7
+  - 3.6
 install:
   # Always linux, use PAR so that it is easier to read
   # configurations on travis website
