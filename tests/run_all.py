@@ -16,7 +16,9 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys, unittest, os.path, glob
+import sys
+import unittest
+import os.path
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_version
 
@@ -24,22 +26,20 @@ if 'QUIP_ROOT' in os.environ:
     quip_root = os.environ['QUIP_ROOT']
 else:
     quip_root = os.path.join(os.getcwd(), '..')
-quip_arch = os.environ['QUIP_ARCH']
+
+try:
+    quip_arch = os.environ['QUIP_ARCH']
+except KeyError:
+    raise RuntimeError('You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.')
 print('QUIP_ARCH', quip_arch)
 
 platform = '{0}-{1}'.format(get_platform(), get_python_version())
 print('platform', platform)
 
 # extend sys.path
-sys.path.insert(0, os.path.join(quip_root, 'quippy', 'build/{0}/lib.{1}'.format(quip_arch,
-                                                                                platform)))
-# find all the tests
-test_files = glob.glob(os.path.join(os.path.dirname(__file__), 'test*.py'))
-test_mods = [ os.path.splitext(os.path.basename(t))[0] for t in test_files ]
+sys.path.insert(0, os.path.join(quip_root, 'build/{0}/lib.{1}'.format(quip_arch, platform)))
 
-for name in test_mods:
-   __import__(name)
-   globals().update(vars(sys.modules[name]))
-
-unittest.main()
-   
+# find tests and run them
+# ONLY RUNS ONE NOW, THE ONE THAT IS DONE
+suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_pot.py')  # fixme run all tests not just one
+unittest.TextTestRunner().run(suite)
