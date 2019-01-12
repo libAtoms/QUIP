@@ -152,7 +152,7 @@ below.
         if properties is None:
             properties = self.get_default_properties()
         else:
-            properties = set(self.get_default_properties() + properties)
+            properties = list(set(self.get_default_properties() + properties))
 
         if len(properties) == 0:
             raise RuntimeError('Nothing to calculate')
