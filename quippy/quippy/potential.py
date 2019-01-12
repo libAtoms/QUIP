@@ -283,29 +283,35 @@ below.
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
-        if isinstance(copy_all_properties, bool) and copy_all_properties and atoms is not None:
-            _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species', 'map_shift', 'n_neighb'])
+        if isinstance(copy_all_properties, bool) and copy_all_properties:
+            if atoms is not None:
+                _at_list = [self.atoms, atoms]
+            else:
+                _at_list = list(self.atoms)
 
-            # default params arguments
-            atoms.info['energy'] = cp(_energy)
+            for at in _at_list:
+                _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species', 'map_shift', 'n_neighb'])
 
-            if 'stress' in self.results.keys():
-                atoms.info['stress'] = self.results['stress'].copy()
+                # default params arguments
+                at.info['energy'] = cp(_energy)
 
-            # default array arguments
-            for key in ('forces', 'energies', 'stresses'):
-                if key in self.results.keys():
-                    atoms.arrays[key] = self.results[key].copy()
+                if 'stress' in self.results.keys():
+                    at.info['stress'] = self.results['stress'].copy()
 
-            # any other params
-            for param, val in _quip_params.items():
-                if param not in _skip_keys:
-                    atoms.info[param] = cp(val)
+                # default array arguments
+                for key in ('forces', 'energies', 'stresses'):
+                    if key in self.results.keys():
+                        at.arrays[key] = self.results[key].copy()
 
-            # any other arrays
-            for prop, val in _quip_properties.items():
-                if prop not in _skip_keys:
-                    atoms.arrays[prop] = np.copy(val, order='C')
+                # any other params
+                for param, val in _quip_params.items():
+                    if param not in _skip_keys:
+                        at.info[param] = cp(val)
+
+                # any other arrays
+                for prop, val in _quip_properties.items():
+                    if prop not in _skip_keys:
+                        at.arrays[prop] = np.copy(val, order='C')
 
 
     def get_virial(self, atoms=None):
