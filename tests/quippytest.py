@@ -16,16 +16,14 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import unittest, logging
-from numpy import all, unravel_index, loadtxt, isnan
-from quippy import frange, farray, FortranArray, Atoms, FortranDerivedType
-from StringIO import StringIO
-
-Atoms.__eq__ = FortranDerivedType.__eq__
+import unittest
+import logging
+import numpy as np
+import quippy
 
 
-def string_to_array(s):
-    return loadtxt(StringIO(s)).T
+# def string_to_array(s):
+#     return loadtxt(StringIO(s)).T
 
 
 class QuippyTestCase(unittest.TestCase):
@@ -45,64 +43,37 @@ class QuippyTestCase(unittest.TestCase):
             self.fail('Dictionaries differ: d1.keys() (%r) != d2.keys() (%r)' % (d1.keys(), d2.keys()))
         for key in d1:
             v1, v2 = d1[key], d2[key]
-            if isinstance(v1, FortranArray):
-                try:
-                    self.assertArrayAlmostEqual(v1, v2)
-                except AssertionError:
-                    print
-                    key, v1, v2
-                    raise
-            else:
-                if v1 != v2:
-                    self.fail('Dictionaries differ: key=%s value1=%r value2=%r' % (key, v1, v2))
+            if not np.array_equal(v1, v2):
+                self.fail('Dictionaries differ: key=%s value1=%r value2=%r' % (key, v1, v2))
 
-    def assertEqual(self, a, b):
-        if a == b: return
+    def assertEqual(self, first, second, msg=None):
+        if first == second:
+            return
         # Repeat comparison with debug-level logging
         import logging
         level = logging.root.level
         logging.root.setLevel(logging.DEBUG)
-        a == b
+        first == second
         logging.root.setLevel(level)
-        self.fail('%s != %s' % (a, b))
+        self.fail('%s != %s' % (first, second))
 
-    def assertArrayAlmostEqual(self, a, b, tol=1e-7):
-        a = farray(a)
-        b = farray(b)
-        self.assertEqual(a.shape, b.shape)
+    def assertArrayAlmostEqual(self, first, second, tol=1e-7):
+        first = np.array(first)
+        second = np.array(second)
+        self.assertEqual(first.shape, second.shape)
 
-        if isnan(a).any() or isnan(b).any():
-            print
-            'a'
-            print
-            a
-            print
-            'b'
-            print
-            b
-            self.fail('Not a number (NaN) found in array')
+        if np.isnan(first):
+            self.fail('Not a number (NaN) found in first array')
+        if np.isnan(second):
+            self.fail('Not a number (NaN) found in second array')
 
-        if a.dtype.kind != 'f':
-            self.assert_((a == b).all())
-        else:
-            absdiff = abs(a - b)
-            if absdiff.max() > tol:
-                loc = [x + 1 for x in unravel_index(absdiff.argmax() - 1, absdiff.shape)]
-                print
-                'a'
-                print
-                a
-                print
-                print
-                'b'
-                print
-                b
-                print
-                print
-                'Absolute difference'
-                print
-                absdiff
-                self.fail('Maximum abs difference between array elements is %e at location %r' % (absdiff.max(), loc))
+        absdiff = abs(first - second)
+        if np.max(absdiff) > tol:
+            print('First array: \n', first)
+            print('\n \n Second array: \n', second)
+            print('\n \n Abs Difference: \n', absdiff)
+            self.fail('Maximum abs difference between array elements is %e at location %r' % (np.max(absdiff),
+                                                                                              np.argmax(absdiff)))
 
 
 def skip(f):
