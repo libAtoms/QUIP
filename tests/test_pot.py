@@ -16,6 +16,11 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+import sys
+sys.path.append('/home/tks32/james_work/QUIP/build/linux_x86_64_gfortran')
+
+
+
 """ Si structure to be studied was generated with the old vesion:
 $bash: python2
 > import quippy
@@ -36,7 +41,7 @@ $bash: python2
 import unittest
 import quippy
 import numpy as np
-from . import quippytest
+import quippytest
 import ase.build
 import ase
 
@@ -82,7 +87,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
       """
 
         quippy.system_module.system_reseed_rng(2065775975)
-        self.pot = quippy.potential.potential('IP SW', param_str=xml)
+        self.pot_calculator = quippy.potential.potential('IP SW', param_str=xml)
 
         self.at = ase.Atoms('Si8', positions=diamond_pos, pbc=True, cell=[5.44, 5.44, 5.44])
 
@@ -109,19 +114,19 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
         self.stress_ref = - np.array([-0.34103601, -0.36145702, -0.34640615,
                                       - 0.19375487, -0.02138795, 0.60925144]) / self.at.get_volume()
 
-        self.at.set_calculator(self.pot)
+        self.at.set_calculator(self.pot_calculator)
 
     def test_energy(self):
         self.assertAlmostEqual(self.at.get_potential_energy(), self.energy_ref)
 
     def test_forces(self):
-        self.assertArrayAlmostEqual(self.at.get_forces(), self.forces_ref.T)
+        self.assertArrayAlmostEqual(self.at.get_forces(), self.forces_ref, tol=1E-06)
 
     def test_stress(self):
         self.assertArrayAlmostEqual(self.at.get_stress(), self.stress_ref)
 
     def test_virial(self):
-        self.assertArrayAlmostEqual(self.pot.get_virial(), self.virial_ref)
+        self.assertArrayAlmostEqual(self.pot_calculator.get_virial(self.at), self.virial_ref, tol=1E-06)
 
     #def test_numeric_forces(self):
     #    self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.at), self.f_ref.T, tol=1e-4)
