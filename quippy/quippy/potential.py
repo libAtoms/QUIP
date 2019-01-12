@@ -92,9 +92,9 @@ class potential(ase.calculators.calculator.Calculator):
 
         pass
 
-    def calculate(self, atoms=None, force=None, virial=None,
-                  local_energy=None, local_virial=None, properties=None,
-                  system_changes=None, vol_per_atom=None):
+    def calculate(self, atoms=None, properties=None, system_changes=None,
+                  force=None, virial=None, local_energy=None,
+                  local_virial=None, vol_per_atom=None):
         """Do the calculation.
 
         properties: list of str
