@@ -27,7 +27,12 @@ def get_dict_arrays(fdict):
                                               fdict._handle, _quippy.f90wrap_dictionary__array__, key)
             arrays[key] = value.copy()
         except ValueError:
-            pass
+            value = fdict.get_value(key)
+            try:
+                # normally it is an array, because the error arf from fortran is converted to output
+                arrays[key] = value[0]
+            except TypeError:
+                arrays[key] = value
 
     return arrays
 
