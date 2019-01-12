@@ -202,7 +202,7 @@ below.
         # construct the quip atoms object which we will use to calculate on
         self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, self._quip_atoms)
 
-        # costructing args_string with automaticaly aliasing the calculateable non-quippy properties
+        # constructing args_string with automatically aliasing the calculateable non-quippy properties
         args_str = 'energy'
         # no need to add logic to energy, it is calculated anyways (returned when potential called)
         if 'virial' in properties or 'stress' in properties:
