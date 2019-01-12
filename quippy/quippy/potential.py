@@ -240,7 +240,7 @@ below.
         # the calculation itself
         _energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str, **_dict_args)
 
-        self.results['energy'] = _energy  # fixme: don't overwrite existing properties, check for changes in atoms
+        self.results['energy'] = cp(_energy)  # fixme: don't overwrite existing properties, check for changes in atoms
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params
         _quip_properties = quippy.utils.get_dict_arrays(self._quip_atoms.properties)
@@ -287,10 +287,22 @@ below.
         if isinstance(copy_all_properties, bool) and copy_all_properties:
             _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species', 'map_shift', 'n_neighb'])
 
+            # default params arguments
+            self.atoms.info['energy'] = cp(_energy)
+            if 'stress' in self.results.keys():
+                self.atoms.info['stress'] = self.results['stress'].copy()
+
+            # default array arguments
+            for key in ('forces', 'energies', 'stresses'):
+                if key in self.results.keys():
+                    self.atoms.arrays[key] = self.results[key].copy()
+
+            # any other params
             for param, val in _quip_params.items():
                 if param not in _skip_keys:
                     self.atoms.info[param] = cp(val)
 
+            # any other arrays
             for prop, val in _quip_properties.items():
                 if prop not in _skip_keys:
                     self.atoms.arrays[prop] = np.copy(val, order='C')
